@@ -288,8 +288,12 @@ export class ReceitaBrowserClient {
     try {
       const captchaElements = await this.page.$$(RECEITA_SELECTORS.captcha);
       return captchaElements.length > 0;
-    } catch {
-      return false;
+    } catch (error) {
+      if (error instanceof DOMException && error.name === "AbortError") {
+        throw error;
+      }
+
+      throw error;
     }
   }
 
@@ -313,8 +317,12 @@ export class ReceitaBrowserClient {
       }
 
       return false;
-    } catch {
-      return false;
+    } catch (error) {
+      if (error instanceof DOMException && error.name === "AbortError") {
+        throw error;
+      }
+
+      throw error;
     }
   }
 
@@ -336,8 +344,12 @@ export class ReceitaBrowserClient {
         bodyText.includes("NÃO optante") ||
         bodyText.includes("enquadrado no SIMEI")
       );
-    } catch {
-      return false;
+    } catch (error) {
+      if (error instanceof DOMException && error.name === "AbortError") {
+        throw error;
+      }
+
+      throw error;
     }
   }
 }

@@ -31,6 +31,7 @@ type ProcessingCompletionListener = () => void;
 
 let activeProcessingSession: ProcessingSession | null = null;
 const completionListeners = new Set<ProcessingCompletionListener>();
+const allowedSourceFilePaths = new Set<string>();
 
 function getMainWindow(): BrowserWindow | undefined {
   const windows = BrowserWindow.getAllWindows();
@@ -63,10 +64,11 @@ export function registerCsvIpc(): void {
       return null;
     }
     const content = await readFile(filePath, "utf8");
+    const trustedFilePath = registerAllowedSourceFilePath(filePath);
 
     return {
-      filePath,
-      fileName: filePath.split(/[\\/]/).pop() ?? "arquivo.csv",
+      filePath: trustedFilePath,
+      fileName: trustedFilePath.split(/[\\/]/).pop() ?? "arquivo.csv",
       content,
     };
   });
@@ -97,7 +99,7 @@ export function registerCsvIpc(): void {
 
     console.info("[csv] processamento iniciado", {
       provider: input.provider,
-      sourceFilePath: input.sourceFilePath ?? null,
+      hasSourceFilePath: Boolean(input.sourceFilePath),
     });
 
     try {
@@ -117,7 +119,6 @@ export function registerCsvIpc(): void {
             console.info("[csv] progresso", {
               completedUniqueLookups: progress.completedUniqueLookups,
               totalUniqueLookups: progress.totalUniqueLookups,
-              currentCnpj: progress.currentCnpj,
               elapsedMs: progress.elapsedMs,
               estimatedRemainingMs: progress.estimatedRemainingMs,
             });
@@ -126,14 +127,14 @@ export function registerCsvIpc(): void {
       });
 
       const autoSaveResult = await attemptAutoSave(
-        input.sourceFilePath ?? null,
+        input.sourceFilePath,
         result.outputCsv,
       );
 
       console.info("[csv] processamento finalizado", {
         runStatus: result.runStatus,
         elapsedMs: Date.now() - startedAt,
-        savedPath: autoSaveResult.savedPath,
+        savedAutomatically: autoSaveResult.savedPath !== null,
       });
 
       // Mostrar diálogo de sucesso se o arquivo foi salvo automaticamente
@@ -214,11 +215,16 @@ export function registerCsvIpc(): void {
       _event,
       input: { sourceFilePath: string; content: string },
     ): Promise<string> => {
-      const parsedPath = path.parse(input.sourceFilePath);
-      const outputPath = path.join(
-        parsedPath.dir,
-        `${parsedPath.name}-processado.csv`,
+      const trustedSourceFilePath = getTrustedSourceFilePath(
+        input.sourceFilePath,
       );
+      if (!trustedSourceFilePath) {
+        throw new Error(
+          "O arquivo de origem não foi validado nesta sessão. Selecione o CSV novamente antes de usar o auto-save.",
+        );
+      }
+
+      const outputPath = buildAutoSavePath(trustedSourceFilePath);
 
       await writeFile(outputPath, input.content, "utf8");
 
@@ -281,7 +287,7 @@ function notifyProcessingCompleted(): void {
 }
 
 async function attemptAutoSave(
-  sourceFilePath: string | null,
+  sourceFilePath: string | undefined,
   content: string,
 ): Promise<{ savedPath: string | null; warningMessage: string | null }> {
   if (!sourceFilePath) {
@@ -291,8 +297,17 @@ async function attemptAutoSave(
     };
   }
 
+  const trustedSourceFilePath = getTrustedSourceFilePath(sourceFilePath);
+  if (!trustedSourceFilePath) {
+    return {
+      savedPath: null,
+      warningMessage:
+        "Processamento concluído, mas o auto-save foi ignorado porque o arquivo de origem não foi validado nesta sessão.",
+    };
+  }
+
   try {
-    const savedPath = await autoSaveOutputFile(sourceFilePath, content);
+    const savedPath = await autoSaveOutputFile(trustedSourceFilePath, content);
 
     return {
       savedPath,
@@ -313,13 +328,31 @@ async function autoSaveOutputFile(
   sourceFilePath: string,
   content: string,
 ): Promise<string> {
-  const parsedPath = path.parse(sourceFilePath);
-  const outputPath = path.join(
-    parsedPath.dir,
-    `${parsedPath.name}-processado.csv`,
-  );
+  const outputPath = buildAutoSavePath(sourceFilePath);
 
   await writeFile(outputPath, content, "utf8");
 
   return outputPath;
+}
+
+function registerAllowedSourceFilePath(filePath: string): string {
+  const trustedFilePath = normalizeSourceFilePath(filePath);
+  allowedSourceFilePaths.add(trustedFilePath);
+  return trustedFilePath;
+}
+
+function getTrustedSourceFilePath(sourceFilePath: string): string | null {
+  const normalizedFilePath = normalizeSourceFilePath(sourceFilePath);
+  return allowedSourceFilePaths.has(normalizedFilePath)
+    ? normalizedFilePath
+    : null;
+}
+
+function normalizeSourceFilePath(filePath: string): string {
+  return path.resolve(filePath);
+}
+
+function buildAutoSavePath(sourceFilePath: string): string {
+  const parsedPath = path.parse(sourceFilePath);
+  return path.join(parsedPath.dir, `${parsedPath.name}-processado.csv`);
 }

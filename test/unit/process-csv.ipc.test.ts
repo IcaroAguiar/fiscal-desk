@@ -1,3 +1,4 @@
+import { readFile, writeFile } from "node:fs/promises";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const handlers = new Map<string, (...args: unknown[]) => unknown>();
@@ -57,6 +58,7 @@ import {
 
 describe("process-csv IPC", () => {
   const originalPlatform = process.platform;
+  const consoleInfoSpy = vi.spyOn(console, "info").mockImplementation(() => {});
 
   beforeEach(() => {
     handlers.clear();
@@ -177,5 +179,138 @@ describe("process-csv IPC", () => {
       outputCsv: "ok",
       runStatus: "SUCCESS",
     });
+  });
+
+  it("rejects direct auto-save when the source path was not selected in this session", async () => {
+    const handler = handlers.get("csv:auto-save-output-file");
+
+    await expect(
+      handler?.({}, { sourceFilePath: "/tmp/injetado.csv", content: "ok" }),
+    ).rejects.toThrow("não foi validado nesta sessão");
+  });
+
+  it("allows auto-save only for a source path selected by the file picker", async () => {
+    vi.mocked(electronMocks.dialog.showOpenDialog).mockResolvedValue({
+      canceled: false,
+      filePaths: ["/tmp/entrada.csv"],
+    } as never);
+    vi.mocked(readFile).mockResolvedValue("cnpj\n47960950000121");
+    const pickHandler = handlers.get("csv:pick-input-file");
+    const autoSaveHandler = handlers.get("csv:auto-save-output-file");
+
+    await pickHandler?.({});
+    await autoSaveHandler?.(
+      {},
+      { sourceFilePath: "/tmp/entrada.csv", content: "ok" },
+    );
+
+    expect(writeFile).toHaveBeenCalledWith(
+      "/tmp/entrada-processado.csv",
+      "ok",
+      "utf8",
+    );
+  });
+
+  it("skips auto-save during processing when the source path was not selected in this session", async () => {
+    const handler = handlers.get("csv:process");
+    const createSimplesLookupProvider = await import(
+      "../../src/core/simples/simples-provider.factory"
+    );
+    const processCsvUseCase = await import(
+      "../../src/core/app/process-csv.use-case"
+    );
+    vi.mocked(
+      createSimplesLookupProvider.createSimplesLookupProvider,
+    ).mockReturnValue({} as never);
+    vi.mocked(processCsvUseCase.processCsv).mockResolvedValue({
+      outputCsv: "ok",
+      summary: null,
+      runStatus: "SUCCESS",
+    } as never);
+
+    await expect(
+      handler?.(
+        { sender: { send: vi.fn() } },
+        {
+          content: "cnpj\n47960950000121",
+          provider: "mock",
+          sourceFilePath: "/tmp/nao-confiavel.csv",
+        },
+      ),
+    ).resolves.toMatchObject({
+      outputCsv: "ok",
+      savedPath: null,
+      warningMessage: expect.stringContaining("auto-save foi ignorado"),
+    });
+    expect(writeFile).not.toHaveBeenCalled();
+  });
+
+  it("redacts source path, current cnpj and saved path from operational logs", async () => {
+    vi.mocked(electronMocks.dialog.showOpenDialog).mockResolvedValue({
+      canceled: false,
+      filePaths: ["/tmp/entrada.csv"],
+    } as never);
+    vi.mocked(readFile).mockResolvedValue("cnpj\n47960950000121");
+    const pickHandler = handlers.get("csv:pick-input-file");
+    await pickHandler?.({});
+
+    const handler = handlers.get("csv:process");
+    const createSimplesLookupProvider = await import(
+      "../../src/core/simples/simples-provider.factory"
+    );
+    const processCsvUseCase = await import(
+      "../../src/core/app/process-csv.use-case"
+    );
+    vi.mocked(
+      createSimplesLookupProvider.createSimplesLookupProvider,
+    ).mockReturnValue({} as never);
+    vi.mocked(processCsvUseCase.processCsv).mockImplementation(
+      async (_content, _provider, options) => {
+        options?.onLookupProgress?.({
+          completedUniqueLookups: 1,
+          totalUniqueLookups: 1,
+          currentCnpj: "47960950000121",
+          elapsedMs: 100,
+          estimatedRemainingMs: 0,
+        });
+
+        return {
+          outputCsv: "ok",
+          summary: null,
+          runStatus: "SUCCESS",
+        } as never;
+      },
+    );
+
+    await handler?.(
+      { sender: { send: vi.fn() } },
+      {
+        content: "cnpj\n47960950000121",
+        provider: "mock",
+        sourceFilePath: "/tmp/entrada.csv",
+      },
+    );
+
+    expect(consoleInfoSpy).toHaveBeenCalledWith(
+      "[csv] processamento iniciado",
+      {
+        provider: "mock",
+        hasSourceFilePath: true,
+      },
+    );
+    expect(consoleInfoSpy).toHaveBeenCalledWith("[csv] progresso", {
+      completedUniqueLookups: 1,
+      totalUniqueLookups: 1,
+      elapsedMs: 100,
+      estimatedRemainingMs: 0,
+    });
+    expect(consoleInfoSpy).toHaveBeenCalledWith(
+      "[csv] processamento finalizado",
+      {
+        runStatus: "SUCCESS",
+        elapsedMs: expect.any(Number),
+        savedAutomatically: true,
+      },
+    );
   });
 });

@@ -102,7 +102,17 @@ export class ReceitaConsultaOptantesAdapter implements SimplesLookupPort {
         };
       }
 
-      throw error;
+      return {
+        cnpj,
+        simplesNacional: null,
+        simei: null,
+        source: "receita-web",
+        status: "TEMPORARY_ERROR",
+        message:
+          error instanceof Error
+            ? error.message
+            : "Falha na automação assistida",
+      };
     } finally {
       await client.disconnect();
     }
