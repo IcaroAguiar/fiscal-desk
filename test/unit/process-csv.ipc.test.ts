@@ -44,11 +44,11 @@ vi.mock("../../src/core/simples/simples-provider.factory", () => ({
 vi.mock(
   "../../src/core/simples/adapters/receita-web/receita-browser-path",
   () => ({
-    resolvePackagedWindowsBrowserPath: vi.fn(),
+    resolveReceitaBrowserPath: vi.fn(),
   }),
 );
 
-import { resolvePackagedWindowsBrowserPath } from "../../src/core/simples/adapters/receita-web/receita-browser-path";
+import { resolveReceitaBrowserPath } from "../../src/core/simples/adapters/receita-web/receita-browser-path";
 import { loadProviderConfig } from "../../src/core/simples/simples-provider.config";
 import {
   registerCsvIpc,
@@ -84,26 +84,6 @@ describe("process-csv IPC", () => {
     const handler = handlers.get("app:get-defaults");
     vi.mocked(loadProviderConfig).mockReturnValue("mock");
     electronMocks.app.isPackaged = true;
-    vi.mocked(resolvePackagedWindowsBrowserPath).mockReturnValue(undefined);
-
-    const defaults = await handler?.();
-
-    expect(defaults).toEqual({
-      provider: "mock",
-      receitaWebAvailable: false,
-    });
-  });
-
-  it("reports receita-web availability when packaged Windows can find a browser", async () => {
-    const handler = handlers.get("app:get-defaults");
-    vi.mocked(loadProviderConfig).mockReturnValue("mock");
-    electronMocks.app.isPackaged = true;
-    Object.defineProperty(process, "platform", {
-      value: "win32",
-    });
-    vi.mocked(resolvePackagedWindowsBrowserPath).mockReturnValue(
-      "C:\\Program Files\\Microsoft\\Edge\\Application\\msedge.exe",
-    );
 
     const defaults = await handler?.();
 
@@ -113,33 +93,43 @@ describe("process-csv IPC", () => {
     });
   });
 
-  it("keeps receita-web as default when config requests it in packaged Windows app", () => {
+  it("keeps receita-web as default even in packaged app without system browser", () => {
     vi.mocked(loadProviderConfig).mockReturnValue("receita-web");
     electronMocks.app.isPackaged = true;
-    Object.defineProperty(process, "platform", {
-      value: "win32",
-    });
-    vi.mocked(resolvePackagedWindowsBrowserPath).mockReturnValue(
-      "C:\\Program Files\\Microsoft\\Edge\\Application\\msedge.exe",
-    );
 
     const provider = resolveDefaultProvider();
 
     expect(provider).toBe("receita-web");
   });
 
-  it("rejects receita-web processing in packaged non-Windows runtimes", async () => {
+  it("allows receita-web processing in packaged app and delegates browser resolution to runtime", async () => {
     electronMocks.app.isPackaged = true;
     const handler = handlers.get("csv:process");
-    vi.mocked(resolvePackagedWindowsBrowserPath).mockReturnValue(undefined);
+    const createSimplesLookupProvider = await import(
+      "../../src/core/simples/simples-provider.factory"
+    );
+    const processCsvUseCase = await import(
+      "../../src/core/app/process-csv.use-case"
+    );
+    vi.mocked(createSimplesLookupProvider.createSimplesLookupProvider).mockReturnValue(
+      {} as never,
+    );
+    vi.mocked(processCsvUseCase.processCsv).mockResolvedValue({
+      outputCsv: "ok",
+      summary: null,
+      runStatus: "SUCCESS",
+    } as never);
 
     expect(handler).toBeTypeOf("function");
 
     await expect(
       handler?.(
-        {},
+        { sender: { send: vi.fn() } },
         { content: "cnpj\n47960950000121", provider: "receita-web" },
       ),
-    ).rejects.toThrow("disponível apenas no Windows");
+    ).resolves.toMatchObject({
+      outputCsv: "ok",
+      runStatus: "SUCCESS",
+    });
   });
 });

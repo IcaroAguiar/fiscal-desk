@@ -9,17 +9,26 @@ vi.mock("node:fs", () => ({
 describe("resolvePackagedWindowsBrowserPath", () => {
   const originalPlatform = process.platform;
   const originalEnv = { ...process.env };
+  const originalResourcesPath = process.resourcesPath;
+
+  function setResourcesPath(value: string | undefined): void {
+    Object.defineProperty(process, "resourcesPath", {
+      configurable: true,
+      value,
+    });
+  }
 
   afterEach(() => {
     vi.resetModules();
     vi.clearAllMocks();
     process.env = { ...originalEnv };
+    setResourcesPath(originalResourcesPath);
     Object.defineProperty(process, "platform", {
       value: originalPlatform,
     });
   });
 
-  it("returns Chrome path when found in LOCALAPPDATA", async () => {
+  it("prioritizes Chrome from system when found in LOCALAPPDATA", async () => {
     Object.defineProperty(process, "platform", {
       value: "win32",
     });
@@ -28,16 +37,16 @@ describe("resolvePackagedWindowsBrowserPath", () => {
       String(candidate).endsWith("Google\\Chrome\\Application\\chrome.exe"),
     );
 
-    const { resolvePackagedWindowsBrowserPath } = await import(
+    const { resolveReceitaBrowserPath } = await import(
       "../../src/core/simples/adapters/receita-web/receita-browser-path"
     );
 
-    expect(resolvePackagedWindowsBrowserPath()).toBe(
+    expect(resolveReceitaBrowserPath()).toBe(
       "C:\\Users\\tester\\AppData\\Local\\Google\\Chrome\\Application\\chrome.exe",
     );
   });
 
-  it("returns Edge path when Chrome is unavailable", async () => {
+  it("falls back to Edge when Chrome is unavailable", async () => {
     Object.defineProperty(process, "platform", {
       value: "win32",
     });
@@ -46,25 +55,46 @@ describe("resolvePackagedWindowsBrowserPath", () => {
       String(candidate).endsWith("Microsoft\\Edge\\Application\\msedge.exe"),
     );
 
-    const { resolvePackagedWindowsBrowserPath } = await import(
+    const { resolveReceitaBrowserPath } = await import(
       "../../src/core/simples/adapters/receita-web/receita-browser-path"
     );
 
-    expect(resolvePackagedWindowsBrowserPath()).toBe(
+    expect(resolveReceitaBrowserPath()).toBe(
       "C:\\Program Files\\Microsoft\\Edge\\Application\\msedge.exe",
     );
   });
 
-  it("returns undefined outside Windows or when no browser exists", async () => {
+  it("falls back to bundled Chromium in packaged Windows app", async () => {
     Object.defineProperty(process, "platform", {
-      value: "darwin",
+      value: "win32",
     });
-    vi.mocked(existsSync).mockReturnValue(false);
+    setResourcesPath("C:\\Consulta\\resources");
+    vi.mocked(existsSync).mockImplementation((candidate) =>
+      String(candidate).endsWith(
+        "app.asar.unpacked\\node_modules\\playwright-core\\.local-browsers\\chromium-1208\\chrome-win\\chrome.exe",
+      ),
+    );
 
-    const { resolvePackagedWindowsBrowserPath } = await import(
+    const { resolveReceitaBrowserPath } = await import(
       "../../src/core/simples/adapters/receita-web/receita-browser-path"
     );
 
-    expect(resolvePackagedWindowsBrowserPath()).toBeUndefined();
+    expect(resolveReceitaBrowserPath()).toBe(
+      "C:\\Consulta\\resources\\app.asar.unpacked\\node_modules\\playwright-core\\.local-browsers\\chromium-1208\\chrome-win\\chrome.exe",
+    );
+  });
+
+  it("returns undefined when neither system browser nor bundled Chromium exists", async () => {
+    Object.defineProperty(process, "platform", {
+      value: "win32",
+    });
+    setResourcesPath("C:\\Consulta\\resources");
+    vi.mocked(existsSync).mockReturnValue(false);
+
+    const { resolveReceitaBrowserPath } = await import(
+      "../../src/core/simples/adapters/receita-web/receita-browser-path"
+    );
+
+    expect(resolveReceitaBrowserPath()).toBeUndefined();
   });
 });

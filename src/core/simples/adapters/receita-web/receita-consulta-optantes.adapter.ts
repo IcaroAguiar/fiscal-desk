@@ -98,7 +98,7 @@ export class ReceitaConsultaOptantesAdapter implements SimplesLookupPort {
           source: "receita-web",
           status: "TEMPORARY_ERROR",
           message:
-            "Não foi possível abrir o navegador assistido. Instale Google Chrome ou Microsoft Edge nesta máquina e tente novamente.",
+            "Não foi possível abrir o navegador assistido. O app tentou usar Chrome, Edge e o Chromium empacotado, mas nenhum navegador executável ficou disponível.",
         };
       }
 

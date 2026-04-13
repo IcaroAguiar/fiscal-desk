@@ -9,7 +9,6 @@ import {
 } from "electron";
 
 import { processCsv } from "../../core/app/process-csv.use-case";
-import { resolvePackagedWindowsBrowserPath } from "../../core/simples/adapters/receita-web/receita-browser-path";
 import { loadProviderConfig } from "../../core/simples/simples-provider.config";
 import type { SimplesProviderName } from "../../core/simples/simples-provider.factory";
 import { createSimplesLookupProvider } from "../../core/simples/simples-provider.factory";
@@ -43,7 +42,7 @@ export function registerCsvIpc(): void {
 
     return {
       provider,
-      receitaWebAvailable: isReceitaWebAvailable(),
+      receitaWebAvailable: true,
     };
   });
 
@@ -74,13 +73,6 @@ export function registerCsvIpc(): void {
   ipcMain.handle("csv:process", async (_event, input: ProcessCsvInput) => {
     if (activeProcessingSession) {
       throw new Error("Ja existe um processamento em andamento.");
-    }
-
-    if (input.provider === "receita-web" && !isReceitaWebAvailable()) {
-      throw new Error(
-        "O provider assistido da Receita nesta release está disponível apenas no Windows. " +
-          "Use 'mock' para testes locais ou 'cnpja-open' para o fluxo principal.",
-      );
     }
 
     const provider = createSimplesLookupProvider(input.provider);
@@ -260,22 +252,10 @@ function normalizeProvider(value: string | undefined): SimplesProviderName {
   }
 
   if (value === "receita-web") {
-    return isReceitaWebAvailable() ? "receita-web" : "mock";
+    return "receita-web";
   }
 
   return "mock";
-}
-
-function isReceitaWebAvailable(): boolean {
-  if (!app.isPackaged) {
-    return true;
-  }
-
-  if (process.platform !== "win32") {
-    return false;
-  }
-
-  return Boolean(resolvePackagedWindowsBrowserPath());
 }
 
 function notifyProcessingCompleted(): void {
