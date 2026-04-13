@@ -10,7 +10,9 @@ const WINDOWS_BROWSER_CANDIDATES = [
   ["PROGRAMFILES(X86)", "Microsoft", "Edge", "Application", "msedge.exe"],
 ] as const;
 
-const BUNDLED_BROWSER_SEGMENTS: Partial<Record<NodeJS.Platform, readonly string[][]>> = {
+const BUNDLED_BROWSER_SEGMENTS: Partial<
+  Record<NodeJS.Platform, readonly string[][]>
+> = {
   win32: [["chrome-win", "chrome.exe"]],
   darwin: [
     [
@@ -58,7 +60,9 @@ function resolveSystemBrowserPath(): string | undefined {
   return undefined;
 }
 
-function resolveBundledBrowserPath(...roots: readonly string[]): string | undefined {
+function resolveBundledBrowserPath(
+  ...roots: readonly string[]
+): string | undefined {
   const platformSegments = BUNDLED_BROWSER_SEGMENTS[process.platform];
   if (!platformSegments) {
     return;

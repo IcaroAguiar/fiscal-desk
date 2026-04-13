@@ -48,7 +48,6 @@ vi.mock(
   }),
 );
 
-import { resolveReceitaBrowserPath } from "../../src/core/simples/adapters/receita-web/receita-browser-path";
 import { loadProviderConfig } from "../../src/core/simples/simples-provider.config";
 import {
   registerCsvIpc,
@@ -111,9 +110,9 @@ describe("process-csv IPC", () => {
     const processCsvUseCase = await import(
       "../../src/core/app/process-csv.use-case"
     );
-    vi.mocked(createSimplesLookupProvider.createSimplesLookupProvider).mockReturnValue(
-      {} as never,
-    );
+    vi.mocked(
+      createSimplesLookupProvider.createSimplesLookupProvider,
+    ).mockReturnValue({} as never);
     vi.mocked(processCsvUseCase.processCsv).mockResolvedValue({
       outputCsv: "ok",
       summary: null,

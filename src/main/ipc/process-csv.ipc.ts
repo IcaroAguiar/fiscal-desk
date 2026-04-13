@@ -1,12 +1,6 @@
 import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
-import {
-  app,
-  BrowserWindow,
-  dialog,
-  ipcMain,
-  powerSaveBlocker,
-} from "electron";
+import { BrowserWindow, dialog, ipcMain, powerSaveBlocker } from "electron";
 
 import { processCsv } from "../../core/app/process-csv.use-case";
 import { loadProviderConfig } from "../../core/simples/simples-provider.config";
