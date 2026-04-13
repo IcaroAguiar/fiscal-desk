@@ -13,7 +13,7 @@ const WINDOWS_BROWSER_CANDIDATES = [
 const BUNDLED_BROWSER_SEGMENTS: Partial<
   Record<NodeJS.Platform, readonly string[][]>
 > = {
-  win32: [["chrome-win", "chrome.exe"]],
+  win32: [["chrome-win64", "chrome.exe"]],
   darwin: [
     [
       "chrome-mac",

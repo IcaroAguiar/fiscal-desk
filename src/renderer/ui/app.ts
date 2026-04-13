@@ -85,7 +85,7 @@ export function mountApp(root: HTMLDivElement | null): void {
       syncUi();
     } catch {
       state.provider = "mock";
-      state.receitaWebAvailable = true;
+      state.receitaWebAvailable = false;
       syncUi();
     }
   }
@@ -252,6 +252,7 @@ export function mountApp(root: HTMLDivElement | null): void {
     }
 
     if (refs.providerSelect) {
+      syncReceitaWebAvailability(refs.providerSelect, state);
       refs.providerSelect.value = state.provider;
     }
 
@@ -301,5 +302,26 @@ export function mountApp(root: HTMLDivElement | null): void {
     if (refs.saveButton) {
       refs.saveButton.disabled = !state.outputCsv;
     }
+  }
+}
+
+function syncReceitaWebAvailability(
+  providerSelect: HTMLSelectElement,
+  state: UiState,
+): void {
+  const receitaWebOption = providerSelect.querySelector<HTMLOptionElement>(
+    'option[value="receita-web"]',
+  );
+
+  if (!receitaWebOption) {
+    return;
+  }
+
+  const shouldHide = !state.receitaWebAvailable;
+  receitaWebOption.disabled = shouldHide;
+  receitaWebOption.hidden = shouldHide;
+
+  if (shouldHide && state.provider === "receita-web") {
+    state.provider = "mock";
   }
 }

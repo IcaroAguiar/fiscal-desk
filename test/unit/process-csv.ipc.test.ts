@@ -48,6 +48,7 @@ vi.mock(
   }),
 );
 
+import { resolveReceitaBrowserPath } from "../../src/core/simples/adapters/receita-web/receita-browser-path";
 import { loadProviderConfig } from "../../src/core/simples/simples-provider.config";
 import {
   registerCsvIpc,
@@ -79,10 +80,27 @@ describe("process-csv IPC", () => {
     expect(provider).toBe("receita-web");
   });
 
-  it("reports receita-web availability in app defaults based on packaging", async () => {
+  it("reports receita-web as unavailable when packaged build has no browser", async () => {
     const handler = handlers.get("app:get-defaults");
     vi.mocked(loadProviderConfig).mockReturnValue("mock");
     electronMocks.app.isPackaged = true;
+    vi.mocked(resolveReceitaBrowserPath).mockReturnValue(undefined);
+
+    const defaults = await handler?.();
+
+    expect(defaults).toEqual({
+      provider: "mock",
+      receitaWebAvailable: false,
+    });
+  });
+
+  it("reports receita-web as available when packaged build resolves a browser", async () => {
+    const handler = handlers.get("app:get-defaults");
+    vi.mocked(loadProviderConfig).mockReturnValue("mock");
+    electronMocks.app.isPackaged = true;
+    vi.mocked(resolveReceitaBrowserPath).mockReturnValue(
+      "C:\\Consulta\\resources\\playwright-browsers\\win64\\chromium-1208\\chrome-win64\\chrome.exe",
+    );
 
     const defaults = await handler?.();
 
@@ -92,18 +110,47 @@ describe("process-csv IPC", () => {
     });
   });
 
-  it("keeps receita-web as default even in packaged app without system browser", () => {
+  it("falls back to mock when receita-web is configured but unavailable", () => {
     vi.mocked(loadProviderConfig).mockReturnValue("receita-web");
     electronMocks.app.isPackaged = true;
+    vi.mocked(resolveReceitaBrowserPath).mockReturnValue(undefined);
+
+    const provider = resolveDefaultProvider();
+
+    expect(provider).toBe("mock");
+  });
+
+  it("keeps receita-web as default when packaged build resolves a browser", () => {
+    vi.mocked(loadProviderConfig).mockReturnValue("receita-web");
+    electronMocks.app.isPackaged = true;
+    vi.mocked(resolveReceitaBrowserPath).mockReturnValue(
+      "C:\\Consulta\\resources\\playwright-browsers\\win64\\chromium-1208\\chrome-win64\\chrome.exe",
+    );
 
     const provider = resolveDefaultProvider();
 
     expect(provider).toBe("receita-web");
   });
 
-  it("allows receita-web processing in packaged app and delegates browser resolution to runtime", async () => {
+  it("rejects receita-web processing in packaged app when no browser is available", async () => {
     electronMocks.app.isPackaged = true;
     const handler = handlers.get("csv:process");
+    vi.mocked(resolveReceitaBrowserPath).mockReturnValue(undefined);
+
+    await expect(
+      handler?.(
+        { sender: { send: vi.fn() } },
+        { content: "cnpj\n47960950000121", provider: "receita-web" },
+      ),
+    ).rejects.toThrow("não está disponível nesta build");
+  });
+
+  it("allows receita-web processing in packaged app when browser resolution succeeds", async () => {
+    electronMocks.app.isPackaged = true;
+    const handler = handlers.get("csv:process");
+    vi.mocked(resolveReceitaBrowserPath).mockReturnValue(
+      "C:\\Consulta\\resources\\playwright-browsers\\win64\\chromium-1208\\chrome-win64\\chrome.exe",
+    );
     const createSimplesLookupProvider = await import(
       "../../src/core/simples/simples-provider.factory"
     );

@@ -71,7 +71,7 @@ describe("resolvePackagedWindowsBrowserPath", () => {
     setResourcesPath("C:\\Consulta\\resources");
     vi.mocked(existsSync).mockImplementation((candidate) =>
       String(candidate).endsWith(
-        "app.asar.unpacked\\node_modules\\playwright-core\\.local-browsers\\chromium-1208\\chrome-win\\chrome.exe",
+        "app.asar.unpacked\\node_modules\\playwright-core\\.local-browsers\\chromium-1208\\chrome-win64\\chrome.exe",
       ),
     );
 
@@ -80,7 +80,7 @@ describe("resolvePackagedWindowsBrowserPath", () => {
     );
 
     expect(resolveReceitaBrowserPath()).toBe(
-      "C:\\Consulta\\resources\\app.asar.unpacked\\node_modules\\playwright-core\\.local-browsers\\chromium-1208\\chrome-win\\chrome.exe",
+      "C:\\Consulta\\resources\\app.asar.unpacked\\node_modules\\playwright-core\\.local-browsers\\chromium-1208\\chrome-win64\\chrome.exe",
     );
   });
 
