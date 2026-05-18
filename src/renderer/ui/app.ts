@@ -5,7 +5,6 @@ import {
   extractMessage,
   getLiveProgress,
   renderStatusText,
-  renderSummary,
 } from "./app-helpers";
 import {
   getCurrentCnpjLabel,
@@ -61,6 +60,18 @@ export function mountApp(root: HTMLDivElement | null): void {
     ),
     progressBar: root.querySelector<HTMLElement>('[data-slot="progress-bar"]'),
     currentCnpj: root.querySelector<HTMLElement>('[data-slot="current-cnpj"]'),
+    executionStatus: root.querySelector<HTMLElement>(
+      '[data-slot="execution-status"]',
+    ),
+    executionRunId: root.querySelector<HTMLElement>(
+      '[data-slot="execution-run-id"]',
+    ),
+    executionResume: root.querySelector<HTMLElement>(
+      '[data-slot="execution-resume"]',
+    ),
+    executionCheckpoint: root.querySelector<HTMLElement>(
+      '[data-slot="execution-checkpoint"]',
+    ),
   };
 
   void initializeDefaults();
@@ -158,6 +169,7 @@ export function mountApp(root: HTMLDivElement | null): void {
     state.content = result.content;
     state.outputCsv = null;
     state.summary = null;
+    state.execution = null;
     state.savedPath = null;
     state.progress = null;
     state.progressObservedAt = null;
@@ -179,6 +191,7 @@ export function mountApp(root: HTMLDivElement | null): void {
     state.message = "Iniciando processamento...";
     state.progress = null;
     state.progressObservedAt = null;
+    state.execution = null;
     state.now = Date.now();
     syncUi();
 
@@ -194,6 +207,7 @@ export function mountApp(root: HTMLDivElement | null): void {
 
       state.outputCsv = result.outputCsv;
       state.summary = result.summary;
+      state.execution = result.execution;
       state.savedPath = result.savedPath;
       state.status = result.runStatus === "CANCELLED" ? "cancelled" : "success";
       state.message = buildCompletionMessage(result);
@@ -309,7 +323,31 @@ export function mountApp(root: HTMLDivElement | null): void {
     }
 
     if (refs.summary) {
-      refs.summary.innerHTML = renderSummary(state.summary);
+      renderSummaryInto(refs.summary, state.summary);
+    }
+
+    if (refs.executionStatus) {
+      refs.executionStatus.textContent = state.execution
+        ? state.execution.status
+        : "Aguardando";
+    }
+
+    if (refs.executionRunId) {
+      refs.executionRunId.textContent = state.execution
+        ? state.execution.runId.slice(0, 8)
+        : "—";
+    }
+
+    if (refs.executionResume) {
+      refs.executionResume.textContent = state.execution
+        ? `${state.execution.resumedUniqueLookups} retomadas de checkpoint`
+        : "Sem retomada ativa";
+    }
+
+    if (refs.executionCheckpoint) {
+      refs.executionCheckpoint.textContent = state.execution?.checkpointPath
+        ? (state.execution.checkpointPath.split(/[/\\]/).pop() ?? "ledger.json")
+        : "—";
     }
 
     if (refs.processButton) {
@@ -327,6 +365,49 @@ export function mountApp(root: HTMLDivElement | null): void {
       refs.saveButton.disabled = !state.outputCsv;
     }
   }
+}
+
+function renderSummaryInto(
+  container: HTMLElement,
+  summary: UiState["summary"],
+): void {
+  if (!summary) {
+    const empty = document.createElement("div");
+    empty.className = "summary__empty";
+    empty.textContent = "Execute o processamento para ver os resultados aqui";
+    container.replaceChildren(empty);
+    return;
+  }
+
+  const grid = document.createElement("dl");
+  grid.className = "summary__grid";
+
+  const items = [
+    ["Total de linhas", summary.totalLinhas],
+    ["CNPJs únicos", summary.totalCnpjsUnicosConsultados],
+    ["Retomados", summary.totalCnpjsRetomados],
+    ["Optantes Simples", summary.totalOptantesSimples],
+    ["Não optantes", summary.totalNaoOptantesSimples],
+    [
+      "CNPJs inválidos",
+      summary.totalCnpjsValidos -
+        summary.totalOptantesSimples -
+        summary.totalNaoOptantesSimples,
+    ],
+    ["Erros", summary.totalErros],
+  ] as const;
+
+  for (const [label, value] of items) {
+    const item = document.createElement("div");
+    const term = document.createElement("dt");
+    const description = document.createElement("dd");
+    term.textContent = label;
+    description.textContent = String(value);
+    item.append(term, description);
+    grid.append(item);
+  }
+
+  container.replaceChildren(grid);
 }
 
 function syncReceitaWebAvailability(

@@ -691,6 +691,30 @@ input::placeholder {
   font-variant-numeric: tabular-nums;
 }
 
+/* Execution Ledger */
+.execution-ledger {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--spacing-3);
+  padding: var(--spacing-4);
+  background: var(--bg-elevated);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-default);
+}
+
+.execution-ledger > div {
+  min-width: 0;
+}
+
+.execution-ledger strong {
+  display: block;
+  margin-top: var(--spacing-1);
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: break-word;
+}
+
 /* Save Info */
 .save-info {
   display: flex;

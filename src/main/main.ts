@@ -8,10 +8,21 @@ import {
   registerCsvIpc,
   requestProcessingCancel,
 } from "./ipc/process-csv.ipc";
+import {
+  FISCAL_DESK_DEV_SERVER_URL_ENV,
+  FISCAL_DESK_DISABLE_DEVTOOLS_ENV,
+  FISCAL_DESK_USER_DATA_DIR_ENV,
+} from "./runtime-env";
 
-const DEV_SERVER_URL = "http://localhost:5173";
+const DEFAULT_DEV_SERVER_URL = "http://localhost:5173";
+const DEV_SERVER_URL =
+  process.env[FISCAL_DESK_DEV_SERVER_URL_ENV] ?? DEFAULT_DEV_SERVER_URL;
 
 let mainWindow: BrowserWindow | null = null;
+
+if (process.env[FISCAL_DESK_USER_DATA_DIR_ENV]) {
+  app.setPath("userData", process.env[FISCAL_DESK_USER_DATA_DIR_ENV]);
+}
 
 function createWindow(): BrowserWindow {
   const window = new BrowserWindow({
@@ -33,7 +44,9 @@ function createWindow(): BrowserWindow {
     window.loadFile(path.join(app.getAppPath(), "dist", "index.html"));
   } else {
     window.loadURL(DEV_SERVER_URL);
-    window.webContents.openDevTools({ mode: "detach" });
+    if (process.env[FISCAL_DESK_DISABLE_DEVTOOLS_ENV] !== "1") {
+      window.webContents.openDevTools({ mode: "detach" });
+    }
   }
 
   let allowClose = false;

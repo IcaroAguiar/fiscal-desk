@@ -2,8 +2,19 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const handlers = new Map<string, (...args: unknown[]) => unknown>();
 
+const createDeferred = <T>() => {
+  let resolve!: (value: T) => void;
+  let reject!: (error: unknown) => void;
+  const promise = new Promise<T>((promiseResolve, promiseReject) => {
+    resolve = promiseResolve;
+    reject = promiseReject;
+  });
+
+  return { promise, reject, resolve };
+};
+
 const electronMocks = vi.hoisted(() => ({
-  app: { isPackaged: false },
+  app: { getPath: vi.fn(() => "/tmp/fiscal-desk-test"), isPackaged: false },
   BrowserWindow: { getAllWindows: vi.fn(() => []) },
   dialog: {
     showOpenDialog: vi.fn(),
@@ -22,6 +33,21 @@ const electronMocks = vi.hoisted(() => ({
   },
 }));
 
+const ledgerMocks = vi.hoisted(() => ({
+  startRun: vi.fn(),
+  finish: vi.fn(),
+  restoreLookup: vi.fn(),
+  saveLookup: vi.fn(),
+  session: {
+    checkpointPath: "/tmp/fiscal-desk-test/ledger.json",
+    finish: vi.fn(),
+    restoreLookup: vi.fn(),
+    runId: "test-run",
+    saveLookup: vi.fn(),
+    setTotalUniqueLookups: vi.fn(),
+  },
+}));
+
 vi.mock("electron", () => electronMocks);
 
 vi.mock("node:fs/promises", () => ({
@@ -31,6 +57,12 @@ vi.mock("node:fs/promises", () => ({
 
 vi.mock("../../src/core/app/process-csv.use-case", () => ({
   processCsv: vi.fn(),
+}));
+
+vi.mock("../../src/main/execution/file-process-execution-ledger", () => ({
+  FileProcessExecutionLedger: vi.fn(() => ({
+    startRun: ledgerMocks.startRun,
+  })),
 }));
 
 vi.mock("../../src/core/simples/simples-provider.config", () => ({
@@ -48,8 +80,10 @@ vi.mock(
   }),
 );
 
+import { processCsv } from "../../src/core/app/process-csv.use-case";
 import { resolvePackagedWindowsBrowserPath } from "../../src/core/simples/adapters/receita-web/receita-browser-path";
 import { loadProviderConfig } from "../../src/core/simples/simples-provider.config";
+import { createSimplesLookupProvider } from "../../src/core/simples/simples-provider.factory";
 import {
   registerCsvIpc,
   resolveDefaultProvider,
@@ -62,6 +96,32 @@ describe("process-csv IPC", () => {
     handlers.clear();
     vi.clearAllMocks();
     electronMocks.app.isPackaged = false;
+    ledgerMocks.startRun.mockResolvedValue(ledgerMocks.session);
+    vi.mocked(createSimplesLookupProvider).mockReturnValue({
+      lookup: vi.fn(),
+    });
+    vi.mocked(processCsv).mockResolvedValue({
+      execution: {
+        checkpointPath: ledgerMocks.session.checkpointPath,
+        completedUniqueLookups: 1,
+        resumedUniqueLookups: 0,
+        runId: ledgerMocks.session.runId,
+        status: "SUCCESS",
+        totalUniqueLookups: 1,
+      },
+      outputCsv: "cnpj;status\n00000000000191;SUCCESS",
+      runStatus: "SUCCESS",
+      summary: {
+        totalCnpjsEncontrados: 1,
+        totalCnpjsRetomados: 0,
+        totalCnpjsUnicosConsultados: 1,
+        totalCnpjsValidos: 1,
+        totalErros: 0,
+        totalLinhas: 1,
+        totalNaoOptantesSimples: 0,
+        totalOptantesSimples: 1,
+      },
+    });
     registerCsvIpc();
   });
 
@@ -141,5 +201,30 @@ describe("process-csv IPC", () => {
         { content: "cnpj\n47960950000121", provider: "receita-web" },
       ),
     ).rejects.toThrow("disponível apenas no Windows");
+  });
+
+  it("reserves the active processing slot before ledger initialization finishes", async () => {
+    const handler = handlers.get("csv:process");
+    const deferredSession = createDeferred<typeof ledgerMocks.session>();
+    ledgerMocks.startRun.mockReturnValueOnce(deferredSession.promise);
+
+    expect(handler).toBeTypeOf("function");
+
+    const firstProcess = handler?.(
+      { sender: { send: vi.fn() } },
+      { content: "cnpj\n00000000000191", provider: "mock" },
+    );
+
+    await expect(
+      handler?.(
+        { sender: { send: vi.fn() } },
+        { content: "cnpj\n12345678000195", provider: "mock" },
+      ),
+    ).rejects.toThrow("processamento em andamento");
+
+    deferredSession.resolve(ledgerMocks.session);
+    await expect(firstProcess).resolves.toMatchObject({
+      runStatus: "SUCCESS",
+    });
   });
 });

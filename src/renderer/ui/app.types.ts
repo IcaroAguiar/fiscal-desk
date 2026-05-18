@@ -1,6 +1,7 @@
 import type { SimplesProviderName } from "../../core/simples/simples-provider.factory";
 import type {
   LookupProgress,
+  ProcessCsvExecution,
   ProcessCsvRunStatus,
   ProcessCsvSummary,
 } from "../../main/types";
@@ -15,6 +16,7 @@ export type ProcessCsvResult = {
   outputCsv: string;
   summary: ProcessCsvSummary;
   runStatus: ProcessCsvRunStatus;
+  execution: ProcessCsvExecution | null;
   savedPath: string | null;
   warningMessage: string | null;
 };
@@ -62,6 +64,7 @@ export type UiState = {
   message: string;
   outputCsv: string | null;
   summary: ProcessCsvSummary | null;
+  execution: ProcessCsvExecution | null;
   savedPath: string | null;
   progress: LookupProgress | null;
   progressObservedAt: number | null;
@@ -79,6 +82,7 @@ export const initialState: UiState = {
   message: "Selecione um CSV para iniciar uma execução local.",
   outputCsv: null,
   summary: null,
+  execution: null,
   savedPath: null,
   progress: null,
   progressObservedAt: null,

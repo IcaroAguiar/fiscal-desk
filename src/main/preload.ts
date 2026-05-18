@@ -3,6 +3,7 @@ import { contextBridge, ipcRenderer } from "electron";
 import type { SimplesProviderName } from "../core/simples/simples-provider.factory";
 import type {
   LookupProgress,
+  ProcessCsvExecution,
   ProcessCsvRunStatus,
   ProcessCsvSummary,
 } from "./types";
@@ -24,6 +25,7 @@ type ProcessCsvResult = {
   outputCsv: string;
   summary: ProcessCsvSummary;
   runStatus: ProcessCsvRunStatus;
+  execution: ProcessCsvExecution | null;
   savedPath: string | null;
   warningMessage: string | null;
 };

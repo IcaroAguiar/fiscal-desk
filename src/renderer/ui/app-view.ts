@@ -167,6 +167,40 @@ export function renderShell(state: UiState): string {
             }</strong>
           </div>
 
+          <div class="execution-ledger">
+            <div>
+              <span class="ops-label">Ledger local</span>
+              <strong data-slot="execution-status">${
+                state.execution?.status ?? "Aguardando"
+              }</strong>
+            </div>
+            <div>
+              <span class="ops-label">Execução</span>
+              <strong data-slot="execution-run-id">${
+                state.execution?.runId.slice(0, 8) ?? "—"
+              }</strong>
+            </div>
+            <div>
+              <span class="ops-label">Retomada</span>
+              <strong data-slot="execution-resume">${
+                state.execution
+                  ? `${state.execution.resumedUniqueLookups} retomadas de checkpoint`
+                  : "Sem retomada ativa"
+              }</strong>
+            </div>
+            <div>
+              <span class="ops-label">Checkpoint</span>
+              <span class="save-path" data-slot="execution-checkpoint">${
+                state.execution?.checkpointPath
+                  ? escapeHtml(
+                      state.execution.checkpointPath.split(/[/\\]/).pop() ??
+                        "ledger.json",
+                    )
+                  : "—"
+              }</span>
+            </div>
+          </div>
+
           <div class="save-info" ${!autoSavePreview ? 'style="display:none"' : ""}>
             <span class="ops-label">Arquivo de saída</span>
             <span class="save-path">${escapeHtml(autoSavePreview ?? "")}</span>

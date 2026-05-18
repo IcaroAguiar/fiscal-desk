@@ -13,6 +13,11 @@ import { resolvePackagedWindowsBrowserPath } from "../../core/simples/adapters/r
 import { loadProviderConfig } from "../../core/simples/simples-provider.config";
 import type { SimplesProviderName } from "../../core/simples/simples-provider.factory";
 import { createSimplesLookupProvider } from "../../core/simples/simples-provider.factory";
+import {
+  FileProcessExecutionLedger,
+  type FileProcessExecutionSession,
+} from "../execution/file-process-execution-ledger";
+import { FISCAL_DESK_DISABLE_COMPLETION_DIALOG_ENV } from "../runtime-env";
 
 type ProcessCsvInput = {
   content: string;
@@ -94,15 +99,30 @@ export function registerCsvIpc(): void {
       startedAt,
     };
     let lastLoggedAt = startedAt;
-
-    console.info("[csv] processamento iniciado", {
-      provider: input.provider,
-      sourceFilePath: input.sourceFilePath ?? null,
-    });
+    let executionSession: FileProcessExecutionSession | null = null;
 
     try {
+      const executionLedger = new FileProcessExecutionLedger(
+        path.join(app.getPath("userData"), "execution-ledgers"),
+      );
+      executionSession = await executionLedger.startRun({
+        inputCsv: input.content,
+        providerName: input.provider,
+        ...(input.sourceFilePath
+          ? { sourceFilePath: input.sourceFilePath }
+          : {}),
+      });
+
+      console.info("[csv] processamento iniciado", {
+        provider: input.provider,
+        sourceFilePath: input.sourceFilePath ?? null,
+        runId: executionSession.runId,
+        checkpointPath: executionSession.checkpointPath,
+      });
+
       const result = await processCsv(input.content, provider, {
         ...(options ? { cnpjColumn: options } : {}),
+        executionLedger: executionSession,
         signal: controller.signal,
         onLookupProgress(progress) {
           _event.sender.send("csv:lookup-progress", progress);
@@ -129,15 +149,26 @@ export function registerCsvIpc(): void {
         input.sourceFilePath ?? null,
         result.outputCsv,
       );
+      await executionSession.finish({
+        status: result.runStatus,
+        outputPath: autoSaveResult.savedPath,
+        summary: result.summary,
+      });
 
       console.info("[csv] processamento finalizado", {
         runStatus: result.runStatus,
         elapsedMs: Date.now() - startedAt,
         savedPath: autoSaveResult.savedPath,
+        runId: executionSession.runId,
+        resumedUniqueLookups: result.execution?.resumedUniqueLookups ?? 0,
       });
 
       // Mostrar diálogo de sucesso se o arquivo foi salvo automaticamente
-      if (autoSaveResult.savedPath && result.runStatus === "SUCCESS") {
+      if (
+        autoSaveResult.savedPath &&
+        result.runStatus === "SUCCESS" &&
+        process.env[FISCAL_DESK_DISABLE_COMPLETION_DIALOG_ENV] !== "1"
+      ) {
         const mainWindow = getMainWindow();
         if (mainWindow) {
           dialog
@@ -160,6 +191,13 @@ export function registerCsvIpc(): void {
         savedPath: autoSaveResult.savedPath,
         warningMessage: autoSaveResult.warningMessage,
       };
+    } catch (error) {
+      await executionSession?.finish({
+        status: "FAILED",
+        outputPath: null,
+        summary: null,
+      });
+      throw error;
     } finally {
       if (
         activeProcessingSession &&
