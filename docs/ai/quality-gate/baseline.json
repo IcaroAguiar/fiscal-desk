@@ -1,0 +1,353 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-05-18T01:38:06.577Z",
+  "rootName": "consulta-simples-csv",
+  "strategy": "ratchet-clean-as-you-code",
+  "commands": {
+    "packageManager": "pnpm",
+    "install": "pnpm install --frozen-lockfile",
+    "lint": "pnpm lint",
+    "typecheck": "pnpm typecheck",
+    "test": "pnpm test",
+    "coverage": "",
+    "build": "pnpm build"
+  },
+  "tooling": {
+    "eslint": false,
+    "biome": true,
+    "jscpd": false,
+    "sonar": false,
+    "codecov": false,
+    "githubActions": true
+  },
+  "metrics": {
+    "coverage": null,
+    "prCoveragePolicy": {
+      "minimum": 70,
+      "target": 90
+    },
+    "duplication": null,
+    "code": {
+      "sourceFiles": 65,
+      "totalLines": 7298,
+      "commentLines": 101,
+      "commentDensity": 0.0138,
+      "largeFiles": 2,
+      "largeFilesWithoutContextComments": [
+        {
+          "path": "test/unit/receita-browser.client.test.ts",
+          "lines": 567,
+          "commentLines": 0,
+          "commentDensity": 0
+        }
+      ],
+      "largestFiles": [
+        {
+          "path": "src/renderer/styles.css",
+          "lines": 766,
+          "commentLines": 71,
+          "commentDensity": 0.0927
+        },
+        {
+          "path": "test/unit/receita-browser.client.test.ts",
+          "lines": 567,
+          "commentLines": 0,
+          "commentDensity": 0
+        },
+        {
+          "path": "src/core/ingestion/csv-reader.ts",
+          "lines": 439,
+          "commentLines": 0,
+          "commentDensity": 0
+        },
+        {
+          "path": "test/unit/receita-consulta-optantes.adapter.test.ts",
+          "lines": 374,
+          "commentLines": 0,
+          "commentDensity": 0
+        },
+        {
+          "path": "src/main/ipc/process-csv.ipc.ts",
+          "lines": 359,
+          "commentLines": 2,
+          "commentDensity": 0.0056
+        },
+        {
+          "path": "src/core/simples/adapters/receita-web/receita-browser.client.ts",
+          "lines": 356,
+          "commentLines": 8,
+          "commentDensity": 0.0225
+        },
+        {
+          "path": "test/unit/receita-result.parser.test.ts",
+          "lines": 337,
+          "commentLines": 1,
+          "commentDensity": 0.003
+        },
+        {
+          "path": "src/renderer/ui/app.ts",
+          "lines": 328,
+          "commentLines": 0,
+          "commentDensity": 0
+        },
+        {
+          "path": "test/unit/process-csv.ipc.test.ts",
+          "lines": 317,
+          "commentLines": 0,
+          "commentDensity": 0
+        },
+        {
+          "path": "src/core/simples/adapters/cnpja-open-simples-lookup.adapter.ts",
+          "lines": 227,
+          "commentLines": 0,
+          "commentDensity": 0
+        },
+        {
+          "path": "src/core/app/process-csv.use-case.ts",
+          "lines": 226,
+          "commentLines": 0,
+          "commentDensity": 0
+        },
+        {
+          "path": "src/renderer/ui/app-helpers.ts",
+          "lines": 210,
+          "commentLines": 0,
+          "commentDensity": 0
+        },
+        {
+          "path": "src/renderer/ui/app-view.ts",
+          "lines": 205,
+          "commentLines": 0,
+          "commentDensity": 0
+        },
+        {
+          "path": "test/integration/process-csv.use-case.test.ts",
+          "lines": 172,
+          "commentLines": 0,
+          "commentDensity": 0
+        },
+        {
+          "path": "src/core/simples/adapters/receita-web/receita-result.parser.ts",
+          "lines": 161,
+          "commentLines": 9,
+          "commentDensity": 0.0559
+        },
+        {
+          "path": "test/unit/cnpja-open-simples-lookup.retry.test.ts",
+          "lines": 151,
+          "commentLines": 0,
+          "commentDensity": 0
+        },
+        {
+          "path": "test/unit/simples-provider.config.test.ts",
+          "lines": 129,
+          "commentLines": 0,
+          "commentDensity": 0
+        },
+        {
+          "path": "src/main/main.ts",
+          "lines": 125,
+          "commentLines": 0,
+          "commentDensity": 0
+        },
+        {
+          "path": "src/core/simples/adapters/receita-web/receita-consulta-optantes.adapter.ts",
+          "lines": 121,
+          "commentLines": 0,
+          "commentDensity": 0
+        },
+        {
+          "path": "src/core/simples/adapters/receita-web/receita-browser-path.ts",
+          "lines": 112,
+          "commentLines": 0,
+          "commentDensity": 0
+        },
+        {
+          "path": "test/unit/csv-reader.test.ts",
+          "lines": 108,
+          "commentLines": 0,
+          "commentDensity": 0
+        },
+        {
+          "path": "test/unit/receita-browser-path.test.ts",
+          "lines": 101,
+          "commentLines": 0,
+          "commentDensity": 0
+        },
+        {
+          "path": "src/renderer/ui/app.types.ts",
+          "lines": 87,
+          "commentLines": 0,
+          "commentDensity": 0
+        },
+        {
+          "path": "src/main/preload.ts",
+          "lines": 81,
+          "commentLines": 0,
+          "commentDensity": 0
+        },
+        {
+          "path": "src/renderer/ui/operational-copy.ts",
+          "lines": 76,
+          "commentLines": 0,
+          "commentDensity": 0
+        },
+        {
+          "path": "test/unit/simples-provider.factory.test.ts",
+          "lines": 75,
+          "commentLines": 0,
+          "commentDensity": 0
+        },
+        {
+          "path": "src/core/simples/simples-provider.config.ts",
+          "lines": 66,
+          "commentLines": 0,
+          "commentDensity": 0
+        },
+        {
+          "path": "test/unit/cnpja-open-simples-lookup.adapter.test.ts",
+          "lines": 63,
+          "commentLines": 0,
+          "commentDensity": 0
+        },
+        {
+          "path": "test/integration/process-csv-cancel.test.ts",
+          "lines": 59,
+          "commentLines": 0,
+          "commentDensity": 0
+        },
+        {
+          "path": "test/unit/renderer-operational-copy.test.ts",
+          "lines": 59,
+          "commentLines": 0,
+          "commentDensity": 0
+        },
+        {
+          "path": "test/unit/app-helpers.test.ts",
+          "lines": 52,
+          "commentLines": 0,
+          "commentDensity": 0
+        },
+        {
+          "path": "test/unit/close-after-cancel.test.ts",
+          "lines": 49,
+          "commentLines": 0,
+          "commentDensity": 0
+        },
+        {
+          "path": "scripts/ensure-playwright-browser.mjs",
+          "lines": 46,
+          "commentLines": 0,
+          "commentDensity": 0
+        },
+        {
+          "path": "src/renderer/ui/components/button.ts",
+          "lines": 46,
+          "commentLines": 0,
+          "commentDensity": 0
+        },
+        {
+          "path": "src/core/ingestion/detect-cnpj-column.ts",
+          "lines": 44,
+          "commentLines": 0,
+          "commentDensity": 0
+        },
+        {
+          "path": "src/core/infra/rate-limiter.ts",
+          "lines": 43,
+          "commentLines": 0,
+          "commentDensity": 0
+        },
+        {
+          "path": "test/integration/process-csv-progress.test.ts",
+          "lines": 43,
+          "commentLines": 0,
+          "commentDensity": 0
+        },
+        {
+          "path": "src/core/simples/adapters/mock-simples-lookup.adapter.ts",
+          "lines": 39,
+          "commentLines": 0,
+          "commentDensity": 0
+        },
+        {
+          "path": "src/core/cnpj/validate-cnpj.ts",
+          "lines": 32,
+          "commentLines": 0,
+          "commentDensity": 0
+        },
+        {
+          "path": "src/core/simples/adapters/receita-web/receita.selectors.ts",
+          "lines": 30,
+          "commentLines": 9,
+          "commentDensity": 0.3
+        },
+        {
+          "path": "test/unit/detect-cnpj-column.test.ts",
+          "lines": 30,
+          "commentLines": 0,
+          "commentDensity": 0
+        },
+        {
+          "path": "test/unit/mock-simples-lookup.adapter.test.ts",
+          "lines": 27,
+          "commentLines": 0,
+          "commentDensity": 0
+        },
+        {
+          "path": "src/core/export/csv-writer.ts",
+          "lines": 25,
+          "commentLines": 0,
+          "commentDensity": 0
+        },
+        {
+          "path": "src/core/app/eta.ts",
+          "lines": 23,
+          "commentLines": 0,
+          "commentDensity": 0
+        },
+        {
+          "path": "src/core/infra/http-client.ts",
+          "lines": 23,
+          "commentLines": 0,
+          "commentDensity": 0
+        },
+        {
+          "path": "src/main/close-after-cancel.ts",
+          "lines": 23,
+          "commentLines": 0,
+          "commentDensity": 0
+        },
+        {
+          "path": "src/renderer/ui/components/status-pill.ts",
+          "lines": 23,
+          "commentLines": 0,
+          "commentDensity": 0
+        },
+        {
+          "path": "test/integration/process-csv-no-progress-invalid.test.ts",
+          "lines": 23,
+          "commentLines": 0,
+          "commentDensity": 0
+        },
+        {
+          "path": "src/core/simples/simples-lookup.types.ts",
+          "lines": 21,
+          "commentLines": 0,
+          "commentDensity": 0
+        },
+        {
+          "path": "src/core/simples/simples-provider.factory.ts",
+          "lines": 21,
+          "commentLines": 0,
+          "commentDensity": 0
+        }
+      ]
+    },
+    "review": {
+      "blockingFindings": 0,
+      "highFindings": 0,
+      "mediumFindings": 0
+    }
+  }
+}

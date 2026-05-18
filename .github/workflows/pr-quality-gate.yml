@@ -1,0 +1,97 @@
+name: PR Quality Gate
+run-name: PR Quality Gate - ${{ github.ref_name }}
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+concurrency:
+  group: pr-quality-gate-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality-gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.32.1
+          run_install: false
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Test
+        run: pnpm test
+
+      - name: Smoke real CSV offline
+        run: pnpm smoke:real-csv
+
+      - name: Smoke visual UI
+        env:
+          VISUAL_SMOKE_OUTPUT_DIR: docs/qa/visual-smoke-artifacts
+        run: pnpm smoke:visual
+
+      - name: Build
+        run: pnpm build
+
+      - name: Secret scan
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_ENABLE_COMMENTS: "false"
+          GITLEAKS_ENABLE_UPLOAD_ARTIFACT: "false"
+
+      - name: Ratchet quality report
+        env:
+          AGENTIC_REVIEW_BASE: origin/${{ github.base_ref || 'main' }}
+        run: node docs/ai/quality-gate/check-ratchet.mjs
+
+      - name: Publish quality gate PR comment
+        if: always() && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: node docs/ai/quality-gate/comment-pr-report.mjs
+
+      - name: Upload quality artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pr-quality-gate
+          retention-days: 14
+          path: |
+            docs/ai/quality-gate/*report*.json
+            docs/ai/quality-gate/*report*.md
+            docs/ai/quality-gate/quality-trend-entry.json
+            docs/ai/quality-gate/auto-improvement-queue.json
+            docs/qa/visual-smoke-artifacts/**

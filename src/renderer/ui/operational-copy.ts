@@ -25,14 +25,14 @@ export function formatDuration(durationInMs: number): string {
 
 export function formatProviderMode(provider: SimplesProviderName): string {
   if (provider === "cnpja-open") {
-    return "CNPJá Open live";
+    return "CNPJá Open";
   }
 
   if (provider === "receita-web") {
-    return "Receita assistida (experimental)";
+    return "Receita Web assistida";
   }
 
-  return "Mock local";
+  return "Simulação local";
 }
 
 export function formatCommandBarSummary(
@@ -42,6 +42,21 @@ export function formatCommandBarSummary(
   const label = fileName ?? "Nenhum CSV carregado";
 
   return `${label} • ${formatProviderMode(provider)}`;
+}
+
+export function formatProviderHint(
+  fileName: string | null,
+  provider: SimplesProviderName,
+): string {
+  if (!fileName) {
+    return "Selecione um CSV para continuar";
+  }
+
+  if (provider === "receita-web") {
+    return "Receita Web exige navegador visível e supervisão humana";
+  }
+
+  return `Provedor selecionado: ${formatProviderMode(provider)}`;
 }
 
 export function buildDedupeLabel(source: DedupeSource): string {
@@ -64,7 +79,7 @@ export function formatProgressLine(progress: LookupProgress | null): string {
     return "Aguardando arquivo para iniciar as consultas únicas.";
   }
 
-  return `${progress.completedUniqueLookups}/${progress.totalUniqueLookups} consultas únicas • decorrido ${formatDuration(progress.elapsedMs)} • ETA ${formatDuration(progress.estimatedRemainingMs)} • atual ${progress.currentCnpj}`;
+  return `${progress.completedUniqueLookups}/${progress.totalUniqueLookups} consultas únicas • ${formatDuration(progress.elapsedMs)} em execução • ETA ${formatDuration(progress.estimatedRemainingMs)} • atual ${progress.currentCnpj}`;
 }
 
 export function countdownRemainingMs(

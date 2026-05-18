@@ -8,3 +8,12 @@ coverage
 .ai
 .claude
 .playwright-cli
+CONTEXT.md
+.visual-fidelity/
+docs/fiscal-desk/private/
+docs/fiscal-desk/generated/
+docs/qa/visual-smoke-artifacts/
+docs/ai/quality-gate/*report*.json
+docs/ai/quality-gate/*report*.md
+docs/ai/quality-gate/quality-trend-entry.json
+docs/ai/quality-gate/auto-improvement-queue.json

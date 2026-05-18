@@ -11,6 +11,7 @@ import {
   buildDedupeLabel,
   formatCommandBarSummary,
   formatProgressLine,
+  formatProviderHint,
   previewAutoSavePath,
 } from "./operational-copy";
 
@@ -25,10 +26,10 @@ export function renderShell(state: UiState): string {
     <main class="app-shell">
       <header class="topbar">
         <div class="brand-lockup">
-          <span class="brand-mark" aria-hidden="true">CS</span>
+          <span class="brand-mark" aria-hidden="true">FD</span>
           <div class="brand-lockup__copy">
-            <strong>Consulta Simples CSV</strong>
-            <span class="brand-subtitle">Validação de enquadramento no Simples Nacional</span>
+            <strong>Fiscal Desk</strong>
+            <span class="brand-subtitle">Consulta local de CNPJs em lote</span>
           </div>
         </div>
         ${statusPill({ variant: getStatusPillVariant(state.status), children: renderStatusLabel(state.status) })}
@@ -37,7 +38,10 @@ export function renderShell(state: UiState): string {
       <section class="intro">
         <div class="intro__card">
           <div class="intro__header">
-            <h1 class="intro__title">Mesa de operação para lotes de CNPJs</h1>
+            <div>
+              <span class="intro__eyebrow">Execução local-first</span>
+              <h1 class="intro__title">Prepare, consulte e salve lotes de CNPJs sem sair do seu computador.</h1>
+            </div>
             <div class="intro__badges">
               <span class="intro__badge">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
@@ -49,27 +53,42 @@ export function renderShell(state: UiState): string {
               </span>
               <span class="intro__badge">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-                Auto-save
+                Salvamento
               </span>
             </div>
           </div>
           <p class="intro__text">
-            Selecione um arquivo CSV contendo CNPJs para verificar o enquadramento de cada empresa no Simples Nacional.
-            O sistema processa apenas CNPJs únicos, sem duplicatas, e salva o resultado automaticamente ao lado do arquivo original.
+            Esta primeira versão mantém o fluxo confiável de CSV: você escolhe o arquivo, define o provedor,
+            acompanha o processamento e recebe uma cópia salva ao lado do original. Recursos como base pública local,
+            Excel e PDF ainda não são prometidos nesta tela.
           </p>
+          <div class="release-strip" aria-label="Recursos desta versão">
+            <div>
+              <span class="ops-label">Disponível agora</span>
+              <strong>CSV, deduplicação e saída automática</strong>
+            </div>
+            <div>
+              <span class="ops-label">Em evolução</span>
+              <strong>Base local, Excel e relatórios</strong>
+            </div>
+            <div>
+              <span class="ops-label">Transparência</span>
+              <strong>Provedores com limites explícitos</strong>
+            </div>
+          </div>
         </div>
       </section>
 
       <section class="workspace">
         <div class="panel panel--primary">
           <div class="panel__header">
-            <h2>Entrada e processamento</h2>
+            <h2>Nova execução</h2>
             <span class="panel__badge" data-slot="file-badge">${state.fileName ?? "Nenhum arquivo"}</span>
           </div>
 
           <div class="command-bar">
             <div class="command-bar__context">
-              <span class="command-bar__label">Arquivo selecionado</span>
+              <span class="command-bar__label">Entrada</span>
               <span class="command-bar__file" data-slot="command-summary">${
                 state.fileName
                   ? escapeHtml(
@@ -77,17 +96,11 @@ export function renderShell(state: UiState): string {
                     )
                   : "Nenhum arquivo selecionado"
               }</span>
-              <span class="command-bar__hint">${
-                state.fileName
-                  ? state.provider === "receita-web"
-                    ? "Provider assistido: navegador visível e supervisão humana"
-                    : `Provider: ${state.provider}`
-                  : "Selecione um CSV para continuar"
-              }</span>
+              <span class="command-bar__hint" data-slot="command-hint">${formatProviderHint(state.fileName, state.provider)}</span>
             </div>
             <div class="command-bar__actions">
               ${button({ variant: "ghost", "data-action": "pick-file", children: "Selecionar CSV" })}
-              ${button({ variant: "primary", "data-action": "process-file", children: state.status === "processing" ? "Processando..." : "Processar", disabled: state.status === "processing" || !state.content })}
+              ${button({ variant: "primary", "data-action": "process-file", children: state.status === "processing" ? "Processando..." : "Iniciar execução", disabled: state.status === "processing" || !state.content })}
               ${button({ variant: "danger", "data-action": "cancel-processing", children: "Cancelar", disabled: state.status !== "processing" })}
               ${button({ variant: "secondary", "data-action": "save-file", children: "Salvar cópia", disabled: !state.outputCsv })}
             </div>
@@ -96,13 +109,13 @@ export function renderShell(state: UiState): string {
           <div class="controls-row">
             <label class="field" for="provider">
               <span class="field__label">
-                Provider
+                Provedor
                 <span class="field__hint" title="mock: dados simulados, sem rede | cnpja-open: consulta real ao serviço | receita-web: navegador visível e supervisão do usuário">?</span>
               </span>
               <select id="provider" data-field="provider">
-                <option value="mock" ${state.provider === "mock" ? "selected" : ""}>mock — dados simulados (offline)</option>
-                <option value="cnpja-open" ${state.provider === "cnpja-open" ? "selected" : ""}>cnpja-open — consulta real</option>
-                <option value="receita-web" ${state.provider === "receita-web" ? "selected" : ""}>receita-web — assistido (experimental)</option>
+                <option value="mock" ${state.provider === "mock" ? "selected" : ""}>Simulação local — offline</option>
+                <option value="cnpja-open" ${state.provider === "cnpja-open" ? "selected" : ""}>CNPJá Open — consulta real</option>
+                <option value="receita-web" ${state.provider === "receita-web" ? "selected" : ""}>Receita Web — assistido e experimental</option>
               </select>
               ${
                 state.provider === "receita-web"
@@ -141,7 +154,7 @@ export function renderShell(state: UiState): string {
 
         <aside class="panel panel--secondary">
           <div class="panel__header">
-            <h2>Resumo dos resultados</h2>
+            <h2>Painel da execução</h2>
           </div>
           <div class="summary" data-slot="summary">${renderSummary(state.summary)}</div>
 
@@ -162,11 +175,11 @@ export function renderShell(state: UiState): string {
           <div class="info-items">
             <div class="info-item">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
-              Use <strong>mock</strong> para testar sem consumir API.
+              Use <strong>Simulação local</strong> para testar sem consumir API.
             </div>
             <div class="info-item">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l8 4v6c0 5-3.5 8-8 8s-8-3-8-8V7l8-4z"/><path d="M9 12l2 2 4-4"/></svg>
-              <strong>receita-web</strong> é assistido e experimental: funciona melhor com navegador visível, no Windows usa Chrome ou Edge instalados e não deve ser tratado como automação sólida.
+              <strong>Receita Web</strong> é assistida e experimental: funciona melhor com navegador visível, no Windows usa Chrome ou Edge instalados e não deve ser tratada como automação massiva.
             </div>
             <div class="info-item">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>

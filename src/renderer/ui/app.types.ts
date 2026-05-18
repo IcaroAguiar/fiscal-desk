@@ -76,7 +76,7 @@ export const initialState: UiState = {
   receitaWebAvailable: false,
   cnpjColumn: "",
   status: "idle",
-  message: "Selecione um arquivo CSV para começar o processamento.",
+  message: "Selecione um CSV para iniciar uma execução local.",
   outputCsv: null,
   summary: null,
   savedPath: null,
