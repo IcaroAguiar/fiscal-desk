@@ -9,12 +9,15 @@ import type { SimplesLookupResult } from "../simples/simples-lookup.types";
 import { estimateObservedRemainingMs } from "./eta";
 import type {
   LookupProgress,
+  ProcessCsvExecution,
   ProcessCsvRunStatus,
   ProcessCsvSummary,
 } from "./process-csv.types";
+import type { ProcessExecutionLedgerSession } from "./process-execution-ledger.port";
 
 type ProcessCsvOptions = {
   cnpjColumn?: string;
+  executionLedger?: ProcessExecutionLedgerSession;
   onLookupProgress?: (progress: LookupProgress) => void;
   signal?: AbortSignal;
 };
@@ -23,6 +26,7 @@ type ProcessCsvResult = {
   outputCsv: string;
   summary: ProcessCsvSummary;
   runStatus: ProcessCsvRunStatus;
+  execution: ProcessCsvExecution | null;
 };
 
 const ERROR_STATUSES = new Set<SimplesLookupResult["status"]>([
@@ -33,6 +37,12 @@ const ERROR_STATUSES = new Set<SimplesLookupResult["status"]>([
   "BLOCKED",
   "CAPTCHA_REQUIRED",
   "UNPARSABLE_RESULT",
+]);
+
+const CHECKPOINT_REUSABLE_STATUSES = new Set<SimplesLookupResult["status"]>([
+  "SUCCESS",
+  "NOT_FOUND",
+  "PERMANENT_ERROR",
 ]);
 
 export async function processCsv(
@@ -50,9 +60,15 @@ export async function processCsv(
     throw new Error("Nenhuma coluna de CNPJ suportada foi encontrada");
   }
 
-  const lookupCache = new Map<string, SimplesLookupResult>();
   const uniqueValidCnpjs = collectUniqueValidCnpjs(rows, cnpjColumn);
-  let completedUniqueLookups = 0;
+  await options.executionLedger?.setTotalUniqueLookups(uniqueValidCnpjs.length);
+
+  const lookupCache = await restoreLookupCache(
+    uniqueValidCnpjs,
+    options.executionLedger,
+  );
+  const resumedUniqueLookups = lookupCache.size;
+  let completedUniqueLookups = resumedUniqueLookups;
   let totalCnpjsEncontrados = 0;
   let totalCnpjsValidos = 0;
   let runStatus: ProcessCsvRunStatus = "SUCCESS";
@@ -140,6 +156,9 @@ export async function processCsv(
 
         if (runStatus === "SUCCESS") {
           lookupCache.set(cnpjNormalizado, lookupResult);
+          if (isReusableCheckpointResult(lookupResult)) {
+            await options.executionLedger?.saveLookup(lookupResult);
+          }
           completedUniqueLookups += 1;
           options.onLookupProgress?.({
             completedUniqueLookups,
@@ -184,6 +203,7 @@ export async function processCsv(
       totalCnpjsEncontrados,
       totalCnpjsValidos,
       totalCnpjsUnicosConsultados: lookupCache.size,
+      totalCnpjsRetomados: resumedUniqueLookups,
       totalOptantesSimples,
       totalNaoOptantesSimples,
       totalErros: outputRows.filter((row) =>
@@ -191,6 +211,16 @@ export async function processCsv(
       ).length,
     },
     runStatus,
+    execution: options.executionLedger
+      ? {
+          runId: options.executionLedger.runId,
+          status: runStatus,
+          checkpointPath: options.executionLedger.checkpointPath,
+          completedUniqueLookups,
+          totalUniqueLookups: uniqueValidCnpjs.length,
+          resumedUniqueLookups,
+        }
+      : null,
   };
 }
 
@@ -222,4 +252,29 @@ function collectUniqueValidCnpjs(
 
 function isCancellationBoundary(signal?: AbortSignal): boolean {
   return signal?.aborted === true;
+}
+
+async function restoreLookupCache(
+  uniqueValidCnpjs: string[],
+  executionLedger?: ProcessExecutionLedgerSession,
+): Promise<Map<string, SimplesLookupResult>> {
+  const lookupCache = new Map<string, SimplesLookupResult>();
+
+  if (!executionLedger) {
+    return lookupCache;
+  }
+
+  for (const cnpj of uniqueValidCnpjs) {
+    const restored = await executionLedger.restoreLookup(cnpj);
+
+    if (restored && isReusableCheckpointResult(restored)) {
+      lookupCache.set(cnpj, restored);
+    }
+  }
+
+  return lookupCache;
+}
+
+function isReusableCheckpointResult(result: SimplesLookupResult): boolean {
+  return CHECKPOINT_REUSABLE_STATUSES.has(result.status);
 }

@@ -14,6 +14,7 @@ Todo PR material deve executar, no minimo:
 - `pnpm typecheck`
 - `pnpm test`
 - `pnpm smoke:real-csv`
+- `pnpm smoke:electron-ui`
 - `pnpm smoke:visual`
 - `pnpm build`
 - `gitleaks detect --source . --redact --no-banner`
@@ -53,6 +54,16 @@ SMOKE_PROVIDER=cnpja-open pnpm smoke:real-csv
 Esse caminho depende de internet e disponibilidade do provider externo. Nao deve bloquear CI ate termos politica de retry, rate limit e fallback mais madura.
 
 `receita-web` nao e aceito pelo smoke deterministico. Ele continua sendo modo assistido/experimental, com navegador visivel, sujeito a bloqueio e validacao manual separada.
+
+## Smoke real do app Electron
+
+Para PRs que tocam IPC, preload, fluxo de processamento, persistencia local ou estado operacional, executar:
+
+```bash
+pnpm smoke:electron-ui
+```
+
+Esse smoke lanca o app Electron real com `userData` temporario, carrega a UI pelo renderer local, seleciona o provider `mock`, processa a fixture publica pelo `window.appBridge.processCsv`, valida auto-save e valida que o ledger/checkpoint foi criado. Ele existe para impedir fechamento baseado apenas em teste unitario ou mock de DOM.
 
 ## Smoke visual
 

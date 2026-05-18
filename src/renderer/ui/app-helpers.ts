@@ -65,6 +65,7 @@ export function renderSummary(summary: UiState["summary"]): string {
     <dl class="summary__grid">
       <div><dt>Total de linhas</dt><dd>${summary.totalLinhas}</dd></div>
       <div><dt>CNPJs únicos</dt><dd>${summary.totalCnpjsUnicosConsultados}</dd></div>
+      <div><dt>Retomados</dt><dd>${summary.totalCnpjsRetomados}</dd></div>
       <div><dt>Optantes Simples</dt><dd>${summary.totalOptantesSimples}</dd></div>
       <div><dt>Não optantes</dt><dd>${summary.totalNaoOptantesSimples}</dd></div>
       <div><dt>CNPJs inválidos</dt><dd>${summary.totalCnpjsValidos - summary.totalOptantesSimples - summary.totalNaoOptantesSimples}</dd></div>
