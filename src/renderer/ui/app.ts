@@ -12,7 +12,12 @@ import {
   getProgressPercent,
   renderShell,
 } from "./app-view";
-import { buildDedupeLabel, formatProgressLine } from "./operational-copy";
+import {
+  buildDedupeLabel,
+  formatCommandBarSummary,
+  formatProgressLine,
+  formatProviderHint,
+} from "./operational-copy";
 
 export function mountApp(root: HTMLDivElement | null): void {
   if (!root) {
@@ -42,6 +47,10 @@ export function mountApp(root: HTMLDivElement | null): void {
       '[data-field="cnpj-column"]',
     ),
     message: root.querySelector<HTMLElement>('[data-slot="message"]'),
+    commandSummary: root.querySelector<HTMLElement>(
+      '[data-slot="command-summary"]',
+    ),
+    commandHint: root.querySelector<HTMLElement>('[data-slot="command-hint"]'),
     summary: root.querySelector<HTMLElement>('[data-slot="summary"]'),
     outputStatus: root.querySelector<HTMLElement>(
       '[data-slot="output-status"]',
@@ -110,6 +119,7 @@ export function mountApp(root: HTMLDivElement | null): void {
     refs.providerSelect?.addEventListener("change", (event) => {
       state.provider = (event.currentTarget as HTMLSelectElement)
         .value as SimplesProviderName;
+      syncUi();
     });
 
     refs.columnInput?.addEventListener("input", (event) => {
@@ -153,7 +163,7 @@ export function mountApp(root: HTMLDivElement | null): void {
     state.progressObservedAt = null;
     state.now = Date.now();
     state.status = "idle";
-    state.message = `Arquivo "${result.fileName}" carregado com sucesso. Clique em Processar para iniciar.`;
+    state.message = `Arquivo "${result.fileName}" pronto. Revise provedor e coluna antes de iniciar.`;
     syncUi();
   }
 
@@ -264,6 +274,20 @@ export function mountApp(root: HTMLDivElement | null): void {
       refs.outputStatus.textContent = renderStatusText(state);
     }
 
+    if (refs.commandSummary) {
+      refs.commandSummary.textContent = formatCommandBarSummary(
+        state.fileName,
+        state.provider,
+      );
+    }
+
+    if (refs.commandHint) {
+      refs.commandHint.textContent = formatProviderHint(
+        state.fileName,
+        state.provider,
+      );
+    }
+
     if (refs.dedupeLabel) {
       refs.dedupeLabel.textContent = state.summary
         ? buildDedupeLabel(state.summary)
@@ -292,7 +316,7 @@ export function mountApp(root: HTMLDivElement | null): void {
       refs.processButton.disabled =
         state.status === "processing" || !state.content;
       refs.processButton.textContent =
-        state.status === "processing" ? "Processando..." : "Processar";
+        state.status === "processing" ? "Processando..." : "Iniciar execução";
     }
 
     if (refs.cancelButton) {

@@ -20,6 +20,8 @@
     "lint": "biome check .",
     "test": "vitest run",
     "test:watch": "vitest",
+    "smoke:real-csv": "tsx scripts/smoke-real-csv.ts",
+    "smoke:visual": "tsx scripts/smoke-visual-ui.ts",
     "dist:mac": "pnpm build && pnpm build:browser && electron-builder --mac dmg",
     "dist:win": "pnpm build && electron-builder --win nsis --x64 --publish never",
     "dist:win:arm64": "pnpm build && electron-builder --win nsis --arm64 --publish never",

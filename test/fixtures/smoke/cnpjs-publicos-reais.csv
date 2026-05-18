@@ -1,0 +1,6 @@
+empresa;cnpj;observacao
+Banco do Brasil;00.000.000/0001-91;cnpj publico real
+Petrobras;33.000.167/0001-01;cnpj publico real
+Caixa Economica Federal;00.360.305/0001-04;cnpj publico real
+Banco do Brasil duplicado;00.000.000/0001-91;duplicado proposital
+Linha invalida;12.345;cnpj invalido proposital

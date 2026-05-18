@@ -5,6 +5,7 @@ import {
   countdownRemainingMs,
   formatCommandBarSummary,
   formatDuration,
+  formatProviderHint,
   formatProviderMode,
   previewAutoSavePath,
 } from "../../src/renderer/ui/operational-copy";
@@ -17,22 +18,32 @@ describe("renderer operational copy", () => {
   });
 
   it("formats the provider mode label", () => {
-    expect(formatProviderMode("mock")).toBe("Mock local");
-    expect(formatProviderMode("cnpja-open")).toBe("CNPJá Open live");
-    expect(formatProviderMode("receita-web")).toBe(
-      "Receita assistida (experimental)",
-    );
+    expect(formatProviderMode("mock")).toBe("Simulação local");
+    expect(formatProviderMode("cnpja-open")).toBe("CNPJá Open");
+    expect(formatProviderMode("receita-web")).toBe("Receita Web assistida");
   });
 
   it("formats the command bar summary with file and provider", () => {
     expect(formatCommandBarSummary("clientes.csv", "mock")).toBe(
-      "clientes.csv • Mock local",
+      "clientes.csv • Simulação local",
     );
     expect(formatCommandBarSummary(null, "cnpja-open")).toBe(
-      "Nenhum CSV carregado • CNPJá Open live",
+      "Nenhum CSV carregado • CNPJá Open",
     );
     expect(formatCommandBarSummary("clientes.csv", "receita-web")).toBe(
-      "clientes.csv • Receita assistida (experimental)",
+      "clientes.csv • Receita Web assistida",
+    );
+  });
+
+  it("formats the provider hint for the selected execution mode", () => {
+    expect(formatProviderHint(null, "mock")).toBe(
+      "Selecione um CSV para continuar",
+    );
+    expect(formatProviderHint("clientes.csv", "mock")).toBe(
+      "Provedor selecionado: Simulação local",
+    );
+    expect(formatProviderHint("clientes.csv", "receita-web")).toBe(
+      "Receita Web exige navegador visível e supervisão humana",
     );
   });
 

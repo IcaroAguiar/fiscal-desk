@@ -1,31 +1,33 @@
 :root {
-  color-scheme: dark;
+  color-scheme: light;
 
   /* Colors */
-  --brand-accent: #8bb3ff;
-  --brand-accent-strong: #5d7df2;
-  --semantic-success: #32c48d;
-  --semantic-danger: #f87171;
-  --semantic-warning: #f0883e;
-  --semantic-muted: #7d8590;
-  --semantic-text: #e6edf3;
+  --brand-accent: #6f7d64;
+  --brand-accent-strong: #2f3a2c;
+  --semantic-success: #477b5a;
+  --semantic-danger: #a55a52;
+  --semantic-warning: #9b7144;
+  --semantic-muted: #6f6b63;
+  --semantic-text: #25231f;
 
   /* Backgrounds */
-  --bg-base: #0d1117;
-  --bg-surface: #161b22;
-  --bg-elevated: #21262d;
-  --bg-overlay: #2d333b;
+  --bg-base: #f5f2ec;
+  --bg-surface: #fffdfa;
+  --bg-subtle: #faf7f0;
+  --bg-elevated: #f0ece4;
+  --bg-overlay: #e5dfd3;
 
   /* Borders */
-  --border-default: rgba(48, 54, 61, 0.6);
-  --border-focus: rgba(139, 179, 255, 0.5);
+  --border-default: rgba(75, 68, 56, 0.16);
+  --border-focus: rgba(47, 58, 44, 0.35);
 
   /* Shadows */
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5);
-  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.6);
+  --shadow-sm: 0 1px 2px rgba(75, 68, 56, 0.05);
+  --shadow-md: 0 8px 24px rgba(75, 68, 56, 0.06);
+  --shadow-lg: 0 18px 44px rgba(75, 68, 56, 0.08);
 
   /* Spacing */
+  --spacing-1: 4px;
   --spacing-2: 8px;
   --spacing-3: 12px;
   --spacing-4: 16px;
@@ -36,9 +38,9 @@
 
   /* Radius */
   --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 14px;
-  --radius-xl: 18px;
+  --radius-md: 8px;
+  --radius-lg: 10px;
+  --radius-xl: 12px;
   --radius-pill: 999px;
 
   /* Font sizes */
@@ -69,7 +71,9 @@ body {
   margin: 0;
   padding: 0;
   min-height: 100vh;
-  background: var(--bg-base);
+  background:
+    linear-gradient(180deg, rgba(255, 253, 250, 0.84), rgba(245, 242, 236, 0)),
+    var(--bg-base);
   color: var(--semantic-text);
   font-family:
     "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -106,12 +110,9 @@ button {
   align-items: center;
   justify-content: space-between;
   gap: var(--spacing-6);
-  padding: var(--spacing-5) var(--spacing-6);
+  padding: var(--spacing-4) 0;
   margin-bottom: var(--spacing-6);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-xl);
-  background: var(--bg-surface);
-  box-shadow: var(--shadow-md);
+  border-bottom: 1px solid var(--border-default);
 }
 
 .brand-lockup {
@@ -127,18 +128,14 @@ button {
   justify-content: center;
   width: 48px;
   height: 48px;
-  border-radius: var(--radius-lg);
-  background: linear-gradient(
-    135deg,
-    var(--brand-accent),
-    var(--brand-accent-strong)
-  );
-  color: #0d1117;
+  border-radius: var(--radius-md);
+  background: var(--brand-accent-strong);
+  color: #fffdfa;
   font-size: var(--font-size-md);
   font-weight: 800;
   letter-spacing: 0.05em;
   flex-shrink: 0;
-  box-shadow: 0 4px 12px rgba(93, 125, 242, 0.3);
+  box-shadow: none;
 }
 
 .brand-lockup__copy {
@@ -151,7 +148,7 @@ button {
 .brand-lockup__copy strong {
   font-size: var(--font-size-xl);
   font-weight: 700;
-  letter-spacing: -0.02em;
+  letter-spacing: 0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -206,11 +203,11 @@ button {
 }
 
 .intro__card {
-  padding: var(--spacing-6);
+  padding: var(--spacing-8);
   background: var(--bg-surface);
   border: 1px solid var(--border-default);
   border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow-md);
 }
 
 .intro__header {
@@ -223,10 +220,21 @@ button {
 
 .intro__title {
   margin: 0;
-  font-size: var(--font-size-2xl);
+  max-width: 780px;
+  font-size: var(--font-size-3xl);
   font-weight: 700;
-  letter-spacing: -0.03em;
+  letter-spacing: 0;
   line-height: var(--line-height-tight);
+}
+
+.intro__eyebrow {
+  display: inline-flex;
+  margin-bottom: var(--spacing-3);
+  color: var(--semantic-muted);
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .intro__badges {
@@ -241,7 +249,7 @@ button {
   gap: var(--spacing-1);
   padding: var(--spacing-1) var(--spacing-3);
   border-radius: var(--radius-pill);
-  background: var(--bg-elevated);
+  background: var(--bg-subtle);
   border: 1px solid var(--border-default);
   font-size: var(--font-size-xs);
   color: var(--semantic-muted);
@@ -261,6 +269,30 @@ button {
   max-width: 70ch;
 }
 
+.release-strip {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--spacing-3);
+  margin-top: var(--spacing-6);
+}
+
+.release-strip > div {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: var(--spacing-2);
+  padding: var(--spacing-4);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  background: var(--bg-subtle);
+}
+
+.release-strip strong {
+  color: var(--semantic-text);
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-normal);
+}
+
 /* Workspace - 2 column */
 .workspace {
   display: grid;
@@ -273,7 +305,7 @@ button {
 .panel {
   border: 1px solid var(--border-default);
   border-radius: var(--radius-xl);
-  background: var(--bg-surface);
+  background: rgba(255, 253, 250, 0.92);
   box-shadow: var(--shadow-sm);
   overflow: hidden;
 }
@@ -310,7 +342,7 @@ button {
 .panel__badge {
   font-size: var(--font-size-xs);
   color: var(--semantic-muted);
-  background: var(--bg-elevated);
+  background: var(--bg-subtle);
   padding: var(--spacing-1) var(--spacing-3);
   border-radius: var(--radius-pill);
   border: 1px solid var(--border-default);
@@ -320,7 +352,7 @@ button {
 .file-badge {
   font-size: var(--font-size-sm);
   color: var(--semantic-muted);
-  background: var(--bg-elevated);
+  background: var(--bg-subtle);
   padding: var(--spacing-2) var(--spacing-3);
   border-radius: var(--radius-md);
   max-width: 220px;
@@ -371,6 +403,7 @@ button {
 
 .command-bar__actions {
   display: flex;
+  flex-wrap: wrap;
   gap: var(--spacing-3);
   flex-shrink: 0;
 }
@@ -455,7 +488,7 @@ select {
 input:focus,
 select:focus {
   border-color: var(--brand-accent);
-  box-shadow: 0 0 0 3px rgba(139, 179, 255, 0.15);
+  box-shadow: 0 0 0 3px rgba(47, 58, 44, 0.1);
 }
 
 input::placeholder {
@@ -490,17 +523,13 @@ input::placeholder {
 }
 
 .button--primary {
-  background: linear-gradient(
-    135deg,
-    var(--brand-accent),
-    var(--brand-accent-strong)
-  );
-  color: #0d1117;
-  box-shadow: 0 4px 12px rgba(93, 125, 242, 0.25);
+  background: var(--brand-accent-strong);
+  color: #fffdfa;
+  box-shadow: none;
 }
 
 .button--primary:hover:not(:disabled) {
-  filter: brightness(1.1);
+  filter: brightness(1.08);
   transform: translateY(-1px);
 }
 
@@ -526,13 +555,13 @@ input::placeholder {
 }
 
 .button--danger {
-  background: rgba(248, 113, 113, 0.12);
-  border-color: rgba(248, 113, 113, 0.3);
+  background: rgba(165, 90, 82, 0.1);
+  border-color: rgba(165, 90, 82, 0.28);
   color: var(--semantic-danger);
 }
 
 .button--danger:hover:not(:disabled) {
-  background: rgba(248, 113, 113, 0.2);
+  background: rgba(165, 90, 82, 0.16);
 }
 
 /* Progress Section */
@@ -541,7 +570,7 @@ input::placeholder {
   flex-direction: column;
   gap: var(--spacing-3);
   padding: var(--spacing-5);
-  background: var(--bg-elevated);
+  background: var(--bg-subtle);
   border-radius: var(--radius-lg);
   border: 1px solid var(--border-default);
 }
@@ -564,7 +593,7 @@ input::placeholder {
   height: 10px;
   border-radius: var(--radius-pill);
   overflow: hidden;
-  background: var(--bg-base);
+  background: #e8e1d5;
   border: 1px solid var(--border-default);
 }
 
@@ -580,7 +609,7 @@ input::placeholder {
     var(--brand-accent-strong),
     var(--semantic-success)
   );
-  box-shadow: 0 0 12px rgba(50, 196, 141, 0.4);
+  box-shadow: none;
   transition: width var(--duration-normal) ease;
 }
 
@@ -745,6 +774,10 @@ input::placeholder {
     flex-wrap: wrap;
   }
 
+  .release-strip {
+    grid-template-columns: 1fr;
+  }
+
   .topbar {
     flex-direction: column;
     align-items: flex-start;
@@ -756,10 +789,14 @@ input::placeholder {
   }
 
   .command-bar__actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     justify-content: stretch;
   }
 
   .command-bar__actions .button {
-    flex: 1;
+    width: 100%;
+    min-width: 0;
+    padding: 0 var(--spacing-3);
   }
 }

@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 2,
+  "base": "origin/main",
+  "mode": "ratchet-clean-as-you-code",
+  "thresholds": {
+    "newCoverageMin": 80,
+    "prCoverageMin": 70,
+    "prCoverageTarget": 90,
+    "coverageDropMax": 1,
+    "newDuplicationMax": 3,
+    "duplicationIncreaseMax": 0.2,
+    "maxNewFileLines": 500,
+    "maxLargeFileCountIncrease": 0,
+    "maxBlockingReviewFindings": 0,
+    "maxHighReviewFindings": 0,
+    "minChangedLinesForCoverageGate": 20,
+    "minChangedLinesForDuplicationGate": 20,
+    "minCommentDensityForLargeFiles": 0.03,
+    "touchedLargeFileMaxLineIncrease": 0
+  },
+  "policies": {
+    "touchedBadAreaMustImprove": true,
+    "publishPrSummary": true,
+    "allowBaselineRefreshOnlyOnDefaultBranch": true,
+    "autoImproveFromFeedback": true
+  },
+  "exceptions": {
+    "largeFiles": [
+      {
+        "path": "src/renderer/styles.css",
+        "reason": "Legacy single stylesheet touched by the first Fiscal Desk visual foundation; split after the design system stabilizes.",
+        "expiresAfter": "2026-06-30"
+      }
+    ]
+  },
+  "requiredChecks": {
+    "install": true,
+    "lint": true,
+    "typecheck": true,
+    "test": true,
+    "build": true,
+    "coverage": false,
+    "duplication": false,
+    "secretScan": true,
+    "agenticReviewPacket": false
+  },
+  "reportPaths": {
+    "coverageSummary": "coverage/coverage-summary.json",
+    "lcov": "coverage/lcov.info",
+    "jscpd": "report/jscpd-report.json",
+    "agenticReviewPacket": "docs/ai/quality-gate/agentic-review-packet.json",
+    "feedback": "docs/ai/quality-gate/review-feedback.json",
+    "trend": "docs/ai/quality-gate/quality-trend.jsonl"
+  },
+  "commands": {
+    "packageManager": "pnpm",
+    "install": "pnpm install --frozen-lockfile",
+    "lint": "pnpm lint",
+    "typecheck": "pnpm typecheck",
+    "test": "pnpm test",
+    "coverage": "",
+    "build": "pnpm build"
+  }
+}
