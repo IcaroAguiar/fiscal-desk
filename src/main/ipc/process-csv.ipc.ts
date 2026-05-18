@@ -106,6 +106,7 @@ export function registerCsvIpc(): void {
         path.join(app.getPath("userData"), "execution-ledgers"),
       );
       executionSession = await executionLedger.startRun({
+        ...(options ? { cnpjColumn: options } : {}),
         inputCsv: input.content,
         providerName: input.provider,
         ...(input.sourceFilePath
