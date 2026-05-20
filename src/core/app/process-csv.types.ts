@@ -1,3 +1,5 @@
+import type { SimplesProviderName } from "../simples/simples-provider.factory";
+
 export type ProcessCsvSummary = {
   totalLinhas: number;
   totalCnpjsEncontrados: number;
@@ -31,4 +33,25 @@ export type ProcessCsvExecution = {
   completedUniqueLookups: number;
   totalUniqueLookups: number;
   resumedUniqueLookups: number;
+};
+
+export type ProcessExecutionHistoryItem = {
+  ledgerKey: string;
+  runId: string;
+  status: ProcessCsvExecutionStatus;
+  providerName: SimplesProviderName;
+  providerConfigVersion: string;
+  sourceFilePath: string | null;
+  sourceFileName: string | null;
+  outputPath: string | null;
+  checkpointPath: string;
+  startedAt: string;
+  updatedAt: string;
+  completedAt: string | null;
+  cnpjColumn: string | null;
+  totalUniqueLookups: number;
+  checkpointedUniqueLookups: number;
+  summary: ProcessCsvSummary | null;
+  canResume: boolean;
+  resumeBlockedReason: string | null;
 };

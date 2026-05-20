@@ -6,6 +6,7 @@ import type {
   ProcessCsvExecution,
   ProcessCsvRunStatus,
   ProcessCsvSummary,
+  ProcessExecutionHistoryItem,
 } from "./types";
 
 type PickCsvResult = {
@@ -78,5 +79,11 @@ contextBridge.exposeInMainWorld("appBridge", {
   },
   getDefaults: (): Promise<AppDefaults> => {
     return ipcRenderer.invoke("app:get-defaults");
+  },
+  listExecutions: (): Promise<ProcessExecutionHistoryItem[]> => {
+    return ipcRenderer.invoke("csv:list-executions");
+  },
+  resumeExecution: (ledgerKey: string): Promise<ProcessCsvResult> => {
+    return ipcRenderer.invoke("csv:resume-execution", { ledgerKey });
   },
 });

@@ -201,6 +201,19 @@ export function renderShell(state: UiState): string {
             </div>
           </div>
 
+          <div class="execution-history">
+            <div class="execution-history__header">
+              <div>
+                <span class="ops-label">Histórico local</span>
+                <strong>Execuções recentes</strong>
+              </div>
+              <button class="button button--ghost button--compact" type="button" data-action="refresh-history">Atualizar</button>
+            </div>
+            <div data-slot="execution-history">
+              ${renderExecutionHistory(state)}
+            </div>
+          </div>
+
           <div class="save-info" ${!autoSavePreview ? 'style="display:none"' : ""}>
             <span class="ops-label">Arquivo de saída</span>
             <span class="save-path">${escapeHtml(autoSavePreview ?? "")}</span>
@@ -248,4 +261,57 @@ export function getProgressPercent(state: UiState): number {
 
 export function getCurrentCnpjLabel(state: UiState): string {
   return getLiveProgress(state)?.currentCnpj ?? "—";
+}
+
+export function renderExecutionHistory(state: UiState): string {
+  if (state.historyStatus === "loading") {
+    return '<p class="history-empty">Carregando histórico local...</p>';
+  }
+
+  if (state.historyStatus === "error") {
+    return '<p class="history-empty">Não foi possível carregar o histórico local.</p>';
+  }
+
+  if (state.executionHistory.length === 0) {
+    return '<p class="history-empty">Nenhuma execução registrada neste perfil.</p>';
+  }
+
+  return `
+    <ol class="history-list">
+      ${state.executionHistory
+        .map((item) => {
+          const sourceName = item.sourceFileName ?? "CSV sem caminho";
+          const updatedAt = formatHistoryDate(item.updatedAt);
+          const checkpointLabel = `${item.checkpointedUniqueLookups}/${item.totalUniqueLookups || "?"} checkpoints`;
+          const resumeButton = item.canResume
+            ? `<button class="button button--secondary button--compact" type="button" data-action="resume-execution" data-ledger-key="${escapeHtml(item.ledgerKey)}" ${state.status === "processing" ? "disabled" : ""}>Retomar</button>`
+            : `<span class="history-list__blocked">${escapeHtml(item.resumeBlockedReason ?? "Histórico")}</span>`;
+
+          return `
+            <li class="history-list__item">
+              <div class="history-list__main">
+                <strong>${escapeHtml(sourceName)}</strong>
+                <span>${escapeHtml(item.providerName)} • ${escapeHtml(item.status)} • ${escapeHtml(updatedAt)}</span>
+                <span>${escapeHtml(checkpointLabel)}</span>
+              </div>
+              ${resumeButton}
+            </li>
+          `;
+        })
+        .join("")}
+    </ol>
+  `;
+}
+
+function formatHistoryDate(value: string): string {
+  const timestamp = Date.parse(value);
+
+  if (Number.isNaN(timestamp)) {
+    return value;
+  }
+
+  return new Intl.DateTimeFormat("pt-BR", {
+    dateStyle: "short",
+    timeStyle: "short",
+  }).format(timestamp);
 }

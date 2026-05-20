@@ -1,9 +1,10 @@
 import { createHash, randomUUID } from "node:crypto";
-import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
+import { mkdir, readdir, readFile, rename, writeFile } from "node:fs/promises";
 import path from "node:path";
 import type {
   ProcessCsvExecutionStatus,
   ProcessCsvSummary,
+  ProcessExecutionHistoryItem,
 } from "../../core/app/process-csv.types";
 import type { ProcessExecutionLedgerSession } from "../../core/app/process-execution-ledger.port";
 import type { SimplesLookupResult } from "../../core/simples/simples-lookup.types";
@@ -25,6 +26,7 @@ const REUSABLE_CHECKPOINT_STATUSES: SimplesLookupResult["status"][] = [
   "NOT_FOUND",
   "PERMANENT_ERROR",
 ];
+const DEFAULT_HISTORY_LIMIT = 10;
 const TEXT_ENCODING = "utf8";
 
 type LedgerLogger = {
@@ -83,6 +85,10 @@ export type FinishProcessExecutionInput = {
   summary: ProcessCsvSummary | null;
 };
 
+export type ListProcessExecutionsOptions = {
+  limit?: number;
+};
+
 export class FileProcessExecutionLedger {
   constructor(
     private readonly directory: string,
@@ -130,6 +136,38 @@ export class FileProcessExecutionLedger {
     return new FileProcessExecutionSession(ledgerPath, document);
   }
 
+  async listRuns(
+    options: ListProcessExecutionsOptions = {},
+  ): Promise<ProcessExecutionHistoryItem[]> {
+    await mkdir(this.directory, { recursive: true });
+
+    const fileNames = await readdir(this.directory);
+    const items = await Promise.all(
+      fileNames
+        .filter((fileName) => isSafeLedgerKey(fileName))
+        .map((fileName) => this.readHistoryItem(fileName)),
+    );
+    const limit = Math.max(1, options.limit ?? DEFAULT_HISTORY_LIMIT);
+
+    return items
+      .filter((item): item is ProcessExecutionHistoryItem => item !== null)
+      .sort((first, second) => second.updatedAt.localeCompare(first.updatedAt))
+      .slice(0, limit);
+  }
+
+  async getRun(ledgerKey: string): Promise<ProcessExecutionHistoryItem | null> {
+    return this.readHistoryItem(ledgerKey);
+  }
+
+  private async readHistoryItem(
+    ledgerKey: string,
+  ): Promise<ProcessExecutionHistoryItem | null> {
+    const ledgerPath = this.resolveLedgerPathByKey(ledgerKey);
+    const document = await readLedgerDocument(ledgerPath, this.logger);
+
+    return document ? toHistoryItem(ledgerKey, ledgerPath, document) : null;
+  }
+
   private resolveLedgerPath(
     providerName: SimplesProviderName,
     inputFingerprint: string,
@@ -138,6 +176,14 @@ export class FileProcessExecutionLedger {
       this.directory,
       `${providerName}-${inputFingerprint.slice(0, 24)}.json`,
     );
+  }
+
+  private resolveLedgerPathByKey(ledgerKey: string): string {
+    if (!isSafeLedgerKey(ledgerKey)) {
+      throw new Error("Identificador de ledger invalido.");
+    }
+
+    return path.join(this.directory, ledgerKey);
   }
 }
 
@@ -295,6 +341,47 @@ function normalizeOptionalText(value: string | undefined): string | null {
   const normalized = value?.trim();
 
   return normalized ? normalized : null;
+}
+
+function toHistoryItem(
+  ledgerKey: string,
+  checkpointPath: string,
+  document: LedgerDocument,
+): ProcessExecutionHistoryItem {
+  const sourceFileName = document.sourceFilePath
+    ? path.basename(document.sourceFilePath)
+    : null;
+  const canResume = RESUMABLE_STATUSES.has(document.status);
+
+  return {
+    ledgerKey,
+    runId: document.runId,
+    status: document.status,
+    providerName: document.providerName,
+    providerConfigVersion: document.operationalMetadata.provider.configVersion,
+    sourceFilePath: document.sourceFilePath,
+    sourceFileName,
+    outputPath: document.outputPath,
+    checkpointPath,
+    startedAt: document.startedAt,
+    updatedAt: document.updatedAt,
+    completedAt: document.completedAt,
+    cnpjColumn: document.operationalMetadata.cnpjColumn,
+    totalUniqueLookups: document.totalUniqueLookups,
+    checkpointedUniqueLookups: Object.keys(document.checkpoints).length,
+    summary: document.summary,
+    canResume,
+    resumeBlockedReason: canResume
+      ? null
+      : "Execucoes concluidas com sucesso ficam apenas no historico.",
+  };
+}
+
+function isSafeLedgerKey(value: string): boolean {
+  return (
+    path.basename(value) === value &&
+    /^[a-z0-9-]+-[a-f0-9]{24}\.json$/.test(value)
+  );
 }
 
 function isLedgerDocument(value: unknown): value is LedgerDocument {

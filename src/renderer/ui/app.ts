@@ -9,6 +9,7 @@ import {
 import {
   getCurrentCnpjLabel,
   getProgressPercent,
+  renderExecutionHistory,
   renderShell,
 } from "./app-view";
 import {
@@ -17,64 +18,78 @@ import {
   formatProgressLine,
   formatProviderHint,
 } from "./operational-copy";
+import { renderSummaryInto } from "./render-summary";
 
 export function mountApp(root: HTMLDivElement | null): void {
   if (!root) {
     return;
   }
 
+  const appRoot = root;
   const state: UiState = { ...initialState };
-  root.innerHTML = renderShell(state);
+  appRoot.innerHTML = renderShell(state);
 
   const refs = {
-    pickButton: root.querySelector<HTMLButtonElement>(
+    pickButton: appRoot.querySelector<HTMLButtonElement>(
       '[data-action="pick-file"]',
     ),
-    processButton: root.querySelector<HTMLButtonElement>(
+    processButton: appRoot.querySelector<HTMLButtonElement>(
       '[data-action="process-file"]',
     ),
-    saveButton: root.querySelector<HTMLButtonElement>(
+    saveButton: appRoot.querySelector<HTMLButtonElement>(
       '[data-action="save-file"]',
     ),
-    cancelButton: root.querySelector<HTMLButtonElement>(
+    cancelButton: appRoot.querySelector<HTMLButtonElement>(
       '[data-action="cancel-processing"]',
     ),
-    providerSelect: root.querySelector<HTMLSelectElement>(
+    providerSelect: appRoot.querySelector<HTMLSelectElement>(
       '[data-field="provider"]',
     ),
-    columnInput: root.querySelector<HTMLInputElement>(
+    columnInput: appRoot.querySelector<HTMLInputElement>(
       '[data-field="cnpj-column"]',
     ),
-    message: root.querySelector<HTMLElement>('[data-slot="message"]'),
-    commandSummary: root.querySelector<HTMLElement>(
+    message: appRoot.querySelector<HTMLElement>('[data-slot="message"]'),
+    commandSummary: appRoot.querySelector<HTMLElement>(
       '[data-slot="command-summary"]',
     ),
-    commandHint: root.querySelector<HTMLElement>('[data-slot="command-hint"]'),
-    summary: root.querySelector<HTMLElement>('[data-slot="summary"]'),
-    outputStatus: root.querySelector<HTMLElement>(
+    commandHint: appRoot.querySelector<HTMLElement>(
+      '[data-slot="command-hint"]',
+    ),
+    summary: appRoot.querySelector<HTMLElement>('[data-slot="summary"]'),
+    outputStatus: appRoot.querySelector<HTMLElement>(
       '[data-slot="output-status"]',
     ),
-    dedupeLabel: root.querySelector<HTMLElement>('[data-slot="dedupe-label"]'),
-    progressLine: root.querySelector<HTMLElement>(
+    dedupeLabel: appRoot.querySelector<HTMLElement>(
+      '[data-slot="dedupe-label"]',
+    ),
+    progressLine: appRoot.querySelector<HTMLElement>(
       '[data-slot="progress-line"]',
     ),
-    progressBar: root.querySelector<HTMLElement>('[data-slot="progress-bar"]'),
-    currentCnpj: root.querySelector<HTMLElement>('[data-slot="current-cnpj"]'),
-    executionStatus: root.querySelector<HTMLElement>(
+    progressBar: appRoot.querySelector<HTMLElement>(
+      '[data-slot="progress-bar"]',
+    ),
+    currentCnpj: appRoot.querySelector<HTMLElement>(
+      '[data-slot="current-cnpj"]',
+    ),
+    executionStatus: appRoot.querySelector<HTMLElement>(
       '[data-slot="execution-status"]',
     ),
-    executionRunId: root.querySelector<HTMLElement>(
+    executionRunId: appRoot.querySelector<HTMLElement>(
       '[data-slot="execution-run-id"]',
     ),
-    executionResume: root.querySelector<HTMLElement>(
+    executionResume: appRoot.querySelector<HTMLElement>(
       '[data-slot="execution-resume"]',
     ),
-    executionCheckpoint: root.querySelector<HTMLElement>(
+    executionCheckpoint: appRoot.querySelector<HTMLElement>(
       '[data-slot="execution-checkpoint"]',
+    ),
+    executionHistory: appRoot.querySelector<HTMLElement>(
+      '[data-slot="execution-history"]',
     ),
   };
 
   void initializeDefaults();
+  void refreshExecutionHistory();
   const unsubscribeProgress = window.appBridge.onLookupProgress((progress) => {
     state.progress = progress;
     state.progressObservedAt = Date.now();
@@ -125,6 +140,36 @@ export function mountApp(root: HTMLDivElement | null): void {
 
     refs.saveButton?.addEventListener("click", () => {
       void handleSaveFile();
+    });
+
+    appRoot.addEventListener("click", (event) => {
+      const target = event.target as HTMLElement;
+      const action = target.closest<HTMLElement>("[data-action]");
+
+      if (!action) {
+        return;
+      }
+
+      if (action.dataset.action === "refresh-history") {
+        if (state.status === "processing") {
+          return;
+        }
+
+        void refreshExecutionHistory();
+        return;
+      }
+
+      if (action.dataset.action === "resume-execution") {
+        if (state.status === "processing") {
+          return;
+        }
+
+        const ledgerKey = action.dataset.ledgerKey;
+
+        if (ledgerKey) {
+          void handleResumeExecution(ledgerKey);
+        }
+      }
     });
 
     refs.providerSelect?.addEventListener("change", (event) => {
@@ -211,10 +256,55 @@ export function mountApp(root: HTMLDivElement | null): void {
       state.savedPath = result.savedPath;
       state.status = result.runStatus === "CANCELLED" ? "cancelled" : "success";
       state.message = buildCompletionMessage(result);
+      await refreshExecutionHistory();
       syncUi();
     } catch (error) {
       state.status = "error";
       state.message = extractMessage(error, "Falha ao processar o CSV.");
+      await refreshExecutionHistory();
+      syncUi();
+    }
+  }
+
+  async function handleResumeExecution(ledgerKey: string): Promise<void> {
+    const historyItem = state.executionHistory.find(
+      (item) => item.ledgerKey === ledgerKey,
+    );
+
+    if (!historyItem || !historyItem.canResume) {
+      state.status = "error";
+      state.message = "Esta execução não pode ser retomada pelo histórico.";
+      syncUi();
+      return;
+    }
+
+    state.status = "processing";
+    state.message = "Retomando execução a partir do histórico local...";
+    state.progress = null;
+    state.progressObservedAt = null;
+    state.execution = null;
+    state.now = Date.now();
+    syncUi();
+
+    try {
+      const result = await window.appBridge.resumeExecution(ledgerKey);
+      state.fileName = historyItem.sourceFileName;
+      state.filePath = historyItem.sourceFilePath;
+      state.content = null;
+      state.provider = historyItem.providerName;
+      state.cnpjColumn = historyItem.cnpjColumn ?? "";
+      state.outputCsv = result.outputCsv;
+      state.summary = result.summary;
+      state.execution = result.execution;
+      state.savedPath = result.savedPath;
+      state.status = result.runStatus === "CANCELLED" ? "cancelled" : "success";
+      state.message = buildCompletionMessage(result);
+      await refreshExecutionHistory();
+      syncUi();
+    } catch (error) {
+      state.status = "error";
+      state.message = extractMessage(error, "Falha ao retomar a execução.");
+      await refreshExecutionHistory();
       syncUi();
     }
   }
@@ -268,6 +358,21 @@ export function mountApp(root: HTMLDivElement | null): void {
       state.message = extractMessage(error, "Falha ao salvar o CSV.");
       syncUi();
     }
+  }
+
+  async function refreshExecutionHistory(): Promise<void> {
+    state.historyStatus = "loading";
+    syncUi();
+
+    try {
+      state.executionHistory = await window.appBridge.listExecutions();
+      state.historyStatus = "ready";
+    } catch {
+      state.executionHistory = [];
+      state.historyStatus = "error";
+    }
+
+    syncUi();
   }
 
   function syncUi(): void {
@@ -350,6 +455,10 @@ export function mountApp(root: HTMLDivElement | null): void {
         : "—";
     }
 
+    if (refs.executionHistory) {
+      refs.executionHistory.innerHTML = renderExecutionHistory(state);
+    }
+
     if (refs.processButton) {
       refs.processButton.disabled =
         state.status === "processing" || !state.content;
@@ -365,49 +474,6 @@ export function mountApp(root: HTMLDivElement | null): void {
       refs.saveButton.disabled = !state.outputCsv;
     }
   }
-}
-
-function renderSummaryInto(
-  container: HTMLElement,
-  summary: UiState["summary"],
-): void {
-  if (!summary) {
-    const empty = document.createElement("div");
-    empty.className = "summary__empty";
-    empty.textContent = "Execute o processamento para ver os resultados aqui";
-    container.replaceChildren(empty);
-    return;
-  }
-
-  const grid = document.createElement("dl");
-  grid.className = "summary__grid";
-
-  const items = [
-    ["Total de linhas", summary.totalLinhas],
-    ["CNPJs únicos", summary.totalCnpjsUnicosConsultados],
-    ["Retomados", summary.totalCnpjsRetomados],
-    ["Optantes Simples", summary.totalOptantesSimples],
-    ["Não optantes", summary.totalNaoOptantesSimples],
-    [
-      "CNPJs inválidos",
-      summary.totalCnpjsValidos -
-        summary.totalOptantesSimples -
-        summary.totalNaoOptantesSimples,
-    ],
-    ["Erros", summary.totalErros],
-  ] as const;
-
-  for (const [label, value] of items) {
-    const item = document.createElement("div");
-    const term = document.createElement("dt");
-    const description = document.createElement("dd");
-    term.textContent = label;
-    description.textContent = String(value);
-    item.append(term, description);
-    grid.append(item);
-  }
-
-  container.replaceChildren(grid);
 }
 
 function syncReceitaWebAvailability(
