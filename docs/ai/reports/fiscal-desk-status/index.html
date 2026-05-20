@@ -7,7 +7,7 @@
   <meta name="generator" content="interactive-html-reports 0.1.0" />
   <meta name="report-kit-version" content="0.1.0" />
   <meta name="report-preset" content="implementation" />
-  <meta name="report-updated-at" content="2026-05-20T17:53:00-03:00" />
+  <meta name="report-updated-at" content="2026-05-20T18:03:00-03:00" />
   <style>:root {
   color-scheme: light;
   --report-bg: #f4f7f5;
@@ -988,12 +988,12 @@ details.report-card summary {
         <dl class="metadata-list">
           <div class="metadata-row"><dt>Status</dt><dd><span class="status-pill status-partial">parcial</span></dd></div>
           <div class="metadata-row"><dt>Preset</dt><dd>Implementação</dd></div>
-          <div class="metadata-row"><dt>Atualizado</dt><dd>2026-05-20T17:53:00-03:00</dd></div>
+          <div class="metadata-row"><dt>Atualizado</dt><dd>2026-05-20T18:03:00-03:00</dd></div>
           <div class="metadata-row"><dt>Kit</dt><dd>0.1.0</dd></div>
         </dl>
       </aside>
     </section>
-    <section class="report-section" id="metricas" data-search-item><div class="section-body"><div class="metric-grid"><article class="metric-card" data-search-item data-status="partial"><strong>PR #3</strong><span>corte em preparacao</span></article><article class="metric-card" data-search-item data-status="done"><strong>164</strong><span>testes automatizados passando</span></article><article class="metric-card" data-search-item data-status="done"><strong>80k/s</strong><span>linhas por segundo no perf local</span></article><article class="metric-card" data-search-item data-status="done"><strong>0</strong><span>findings bloqueantes apos review</span></article></div></div></section>
+    <section class="report-section" id="metricas" data-search-item><div class="section-body"><div class="metric-grid"><article class="metric-card" data-search-item data-status="partial"><strong>PR #3</strong><span>corte em preparacao</span></article><article class="metric-card" data-search-item data-status="done"><strong>164</strong><span>testes automatizados passando</span></article><article class="metric-card" data-search-item data-status="done"><strong>80k/s</strong><span>linhas por segundo no perf local</span></article><article class="metric-card" data-search-item data-status="done"><strong>0</strong><span>findings bloqueantes apos review</span></article><article class="metric-card" data-search-item data-status="done"><strong>2/2</strong><span>checks remotos verdes</span></article></div></div></section>
     <div class="report-layout">
       <nav class="toc" aria-label="Indice do report">
         <p class="toc-title">Conteúdo</p>
@@ -1076,6 +1076,11 @@ details.report-card summary {
             <td data-label="Comando/Origem">agentic-code-review</td>
             <td data-label="Resultado">3 achados corrigidos; follow-up sem bloqueantes</td>
             <td data-label="Status"><span class="status-pill status-done">pass</span></td>
+          </tr><tr data-search-item data-status="pass">
+            <td data-label="Evidência">Checks remotos da PR #3</td>
+            <td data-label="Comando/Origem"><a href="https://github.com/IcaroAguiar/consulta-simples-csv/pull/3">GitHub Actions / GitGuardian</a></td>
+            <td data-label="Resultado">quality-gate e GitGuardian passaram no head db9bb23</td>
+            <td data-label="Status"><span class="status-pill status-done">pass</span></td>
           </tr></tbody>
   </table></div></div>
   </section>
@@ -1134,13 +1139,13 @@ details.report-card summary {
                 <h4>Atualizar PR artifact</h4>
                 <p>Staging, commit, push e abrir PR sem merge, com evidencia de testes e smokes reais.</p>
                 <div class="chip-row"><span class="chip">PR</span></div>
-              </article><article class="report-card" data-search-item data-status="partial">
+              </article><article class="report-card" data-search-item data-status="done">
                 <h4>Conferir CI remoto</h4>
-                <p>Apos abrir PR, checar GitHub Actions/GitGuardian e corrigir falhas objetivas.</p>
+                <p>GitHub Actions `quality-gate` e GitGuardian estao verdes na PR #3.</p>
                 <div class="chip-row"><span class="chip">CI</span></div>
               </article><article class="report-card" data-search-item data-status="info">
-                <h4>Manter merge bloqueado</h4>
-                <p>Nao fazer merge sem pedido explicito do usuario.</p>
+                <h4>Aguardar decisao humana</h4>
+                <p>Falta review humano ou dispensa explicita, e autorizacao explicita para merge.</p>
                 <div class="chip-row"><span class="chip">guardrail</span></div>
               </article></div>
       </section><section class="kanban-column" data-search-item>
@@ -1206,10 +1211,15 @@ details.report-card summary {
           <h4>Coverage formal warning-only</h4>
           <p>O repo ainda nao gera `coverage/lcov.info`; ratchet segue sem cobertura real por linha alterada.</p>
           
+        </article><article class="report-card" data-search-item data-status="done">
+          <div class="chip-row"><span class="status-pill status-done">feito</span></div>
+          <h4>CI remoto ainda pendente</h4>
+          <p>Resolvido em 2026-05-20: GitHub Actions quality-gate e GitGuardian passaram na PR #3.</p>
+          
         </article><article class="report-card" data-search-item data-status="partial">
           <div class="chip-row"><span class="status-pill status-partial">parcial</span></div>
-          <h4>CI remoto ainda pendente</h4>
-          <p>A branch local passou nos gates; depois do push/PR ainda falta confirmar GitHub Actions e GitGuardian remotos.</p>
+          <h4>Review humano ou dispensa ainda pendente</h4>
+          <p>A PR #3 tem review independente do agente sem bloqueantes, mas ainda precisa review humano ou dispensa explicita antes do merge.</p>
           
         </article><article class="report-card" data-search-item data-status="info">
           <div class="chip-row"><span class="status-pill status-info">info</span></div>

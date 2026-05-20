@@ -4,7 +4,7 @@
   "title": "Fiscal Desk: historico local e retomada operacional",
   "subtitle": "Corte vertical em andamento na branch feat/fiscal-desk-operational-history-ui: historico de execucoes, retomada via UI, smoke Electron real, visual smoke e perf local.",
   "language": "pt-BR",
-  "updatedAt": "2026-05-20T17:53:00-03:00",
+  "updatedAt": "2026-05-20T18:03:00-03:00",
   "status": "partial",
   "source": "consulta-simples-csv / Fiscal Desk",
   "eyebrow": "Fiscal Desk",
@@ -27,6 +27,11 @@
     {
       "value": "0",
       "label": "findings bloqueantes apos review",
+      "status": "done"
+    },
+    {
+      "value": "2/2",
+      "label": "checks remotos verdes",
       "status": "done"
     }
   ],
@@ -110,6 +115,13 @@
           "source": "agentic-code-review",
           "result": "3 achados corrigidos; follow-up sem bloqueantes",
           "status": "pass"
+        },
+        {
+          "title": "Checks remotos da PR #3",
+          "source": "GitHub Actions / GitGuardian",
+          "href": "https://github.com/IcaroAguiar/consulta-simples-csv/pull/3",
+          "result": "quality-gate e GitGuardian passaram no head db9bb23",
+          "status": "pass"
         }
       ]
     },
@@ -179,13 +191,13 @@
             },
             {
               "title": "Conferir CI remoto",
-              "body": "Apos abrir PR, checar GitHub Actions/GitGuardian e corrigir falhas objetivas.",
-              "status": "partial",
+              "body": "GitHub Actions `quality-gate` e GitGuardian estao verdes na PR #3.",
+              "status": "done",
               "tag": "CI"
             },
             {
-              "title": "Manter merge bloqueado",
-              "body": "Nao fazer merge sem pedido explicito do usuario.",
+              "title": "Aguardar decisao humana",
+              "body": "Falta review humano ou dispensa explicita, e autorizacao explicita para merge.",
               "status": "info",
               "tag": "guardrail"
             }
@@ -276,7 +288,12 @@
     },
     {
       "title": "CI remoto ainda pendente",
-      "description": "A branch local passou nos gates; depois do push/PR ainda falta confirmar GitHub Actions e GitGuardian remotos.",
+      "description": "Resolvido em 2026-05-20: GitHub Actions quality-gate e GitGuardian passaram na PR #3.",
+      "status": "done"
+    },
+    {
+      "title": "Review humano ou dispensa ainda pendente",
+      "description": "A PR #3 tem review independente do agente sem bloqueantes, mas ainda precisa review humano ou dispensa explicita antes do merge.",
       "status": "partial"
     },
     {
