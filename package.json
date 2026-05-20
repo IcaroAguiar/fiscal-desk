@@ -20,6 +20,7 @@
     "lint": "biome check .",
     "test": "vitest run",
     "test:watch": "vitest",
+    "perf:local-csv": "tsx scripts/perf-local-csv.ts",
     "smoke:real-csv": "tsx scripts/smoke-real-csv.ts",
     "smoke:electron-ui": "pnpm build && tsx scripts/smoke-electron-ui.ts",
     "smoke:visual": "tsx scripts/smoke-visual-ui.ts",

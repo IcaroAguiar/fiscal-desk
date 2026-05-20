@@ -1,0 +1,288 @@
+{
+  "kitVersion": "0.1.0",
+  "preset": "implementation",
+  "title": "Fiscal Desk: historico local e retomada operacional",
+  "subtitle": "Corte vertical em andamento na branch feat/fiscal-desk-operational-history-ui: historico de execucoes, retomada via UI, smoke Electron real, visual smoke e perf local.",
+  "language": "pt-BR",
+  "updatedAt": "2026-05-20T17:53:00-03:00",
+  "status": "partial",
+  "source": "consulta-simples-csv / Fiscal Desk",
+  "eyebrow": "Fiscal Desk",
+  "metrics": [
+    {
+      "value": "PR #3",
+      "label": "corte em preparacao",
+      "status": "partial"
+    },
+    {
+      "value": "164",
+      "label": "testes automatizados passando",
+      "status": "done"
+    },
+    {
+      "value": "80k/s",
+      "label": "linhas por segundo no perf local",
+      "status": "done"
+    },
+    {
+      "value": "0",
+      "label": "findings bloqueantes apos review",
+      "status": "done"
+    }
+  ],
+  "sections": [
+    {
+      "id": "mudancas",
+      "title": "O que o corte atual entrega",
+      "kicker": "Implementacao",
+      "status": "partial",
+      "body": "Este corte amplia a base da PR #2 para uma operacao local rastreavel e retomavel no app.\n\n- Listagem de execucoes recentes a partir dos ledgers locais em `userData`.\n- Contrato IPC/preload para o renderer consumir snapshots de historico sem ler arquivos diretamente.\n- Botao `Retomar` para execucoes elegiveis e bloqueio explicito para `SUCCESS` historico.\n- Retomada valida o CSV original e a versao de configuracao do provider antes de reprocessar.\n- UI evita reentrada durante processamento e preserva selecao anterior em falha de retomada.\n- Smoke Electron real valida retomada via UI com `1 retomadas de checkpoint`."
+    },
+    {
+      "id": "evidencias",
+      "title": "Evidencias de validacao",
+      "kicker": "Checks",
+      "component": "evidence-table",
+      "status": "done",
+      "items": [
+        {
+          "title": "Lint",
+          "source": "pnpm lint",
+          "result": "Biome sem erros",
+          "status": "pass"
+        },
+        {
+          "title": "Typecheck",
+          "source": "pnpm typecheck",
+          "result": "TypeScript sem erros",
+          "status": "pass"
+        },
+        {
+          "title": "Suite automatizada",
+          "source": "pnpm test",
+          "result": "26 arquivos / 164 testes passando apos correcoes de review",
+          "status": "pass"
+        },
+        {
+          "title": "Build",
+          "source": "pnpm build",
+          "result": "Renderer e main Electron gerados com sucesso",
+          "status": "pass"
+        },
+        {
+          "title": "Smoke CSV real",
+          "source": "pnpm smoke:real-csv",
+          "result": "Fixture publica processada com 3 CNPJs unicos, duplicidade e linha invalida",
+          "status": "pass"
+        },
+        {
+          "title": "Smoke visual",
+          "source": "pnpm smoke:visual",
+          "result": "Desktop 1440x1000 e mobile 390x900 sem overflow nem botoes cortados",
+          "status": "pass"
+        },
+        {
+          "title": "Smoke Electron real",
+          "source": "pnpm smoke:electron-ui",
+          "result": "App Electron real retomou via UI: historico local, auto-save, checkpoint e `1 retomadas de checkpoint`",
+          "status": "pass"
+        },
+        {
+          "title": "Perf local",
+          "source": "pnpm perf:local-csv",
+          "result": "5.000 linhas com provider mock: 62 ms, 80.256 linhas/s",
+          "status": "pass"
+        },
+        {
+          "title": "Secret scan",
+          "source": "gitleaks detect --source . --redact --no-banner",
+          "result": "Sem vazamentos encontrados",
+          "status": "pass"
+        },
+        {
+          "title": "Quality ratchet",
+          "source": "node docs/ai/quality-gate/check-ratchet.mjs",
+          "result": "PASS com warnings esperados: coverage ausente e agentic review nao enforceado em CI",
+          "status": "pass"
+        },
+        {
+          "title": "Review independente",
+          "source": "agentic-code-review",
+          "result": "3 achados corrigidos; follow-up sem bloqueantes",
+          "status": "pass"
+        }
+      ]
+    },
+    {
+      "id": "decisoes",
+      "title": "Decisoes e guardrails consolidados",
+      "kicker": "Racional",
+      "component": "decision-log",
+      "status": "done",
+      "items": [
+        {
+          "title": "Persistencia local simples",
+          "description": "O ledger fica em arquivo local no `userData`; nao ha backend remoto nem banco nesta fase.",
+          "status": "done"
+        },
+        {
+          "title": "Fingerprint semantico",
+          "description": "A retomada considera CSV, provider, coluna de CNPJ e versoes operacionais de ledger/parser/normalizer/policy.",
+          "status": "done"
+        },
+        {
+          "title": "Erro retryable nao vira checkpoint reutilizavel",
+          "description": "Resultados como `TEMPORARY_ERROR` continuam deduplicados dentro da execucao, mas nao sao restaurados em execucoes futuras.",
+          "status": "done"
+        },
+        {
+          "title": "Smoke real obrigatorio",
+          "description": "Mudancas em IPC, preload, execucao e persistencia exigem `pnpm smoke:electron-ui` alem de testes e build.",
+          "status": "done"
+        }
+      ]
+    },
+    {
+      "id": "plano",
+      "title": "Estado do corte e proximo passo",
+      "kicker": "Execucao",
+      "component": "kanban",
+      "status": "partial",
+      "items": [
+        {
+          "title": "Agora",
+          "status": "done",
+          "cards": [
+            {
+              "title": "Historico e retomada implementados",
+              "body": "Branch `feat/fiscal-desk-operational-history-ui` lista ledgers, mostra historico e retoma execucoes elegiveis pela UI.",
+              "status": "done",
+              "tag": "base"
+            },
+            {
+              "title": "Findings de review corrigidos",
+              "body": "Corrigidos estado inconsistente em falha de retomada, reentrada durante processamento e JSON nao-ledger quebrando historico.",
+              "status": "done",
+              "tag": "evidencia"
+            }
+          ]
+        },
+        {
+          "title": "Antes de abrir PR",
+          "status": "partial",
+          "cards": [
+            {
+              "title": "Atualizar PR artifact",
+              "body": "Staging, commit, push e abrir PR sem merge, com evidencia de testes e smokes reais.",
+              "status": "partial",
+              "tag": "PR"
+            },
+            {
+              "title": "Conferir CI remoto",
+              "body": "Apos abrir PR, checar GitHub Actions/GitGuardian e corrigir falhas objetivas.",
+              "status": "partial",
+              "tag": "CI"
+            },
+            {
+              "title": "Manter merge bloqueado",
+              "body": "Nao fazer merge sem pedido explicito do usuario.",
+              "status": "info",
+              "tag": "guardrail"
+            }
+          ]
+        },
+        {
+          "title": "Depois",
+          "status": "info",
+          "cards": [
+            {
+              "title": "Preparar base publica local",
+              "body": "Planejar ingestao local e aviso de frescor da base, mantendo `receita-web` como confirmacao assistida.",
+              "status": "info",
+              "tag": "produto"
+            },
+            {
+              "title": "Entrega Excel",
+              "body": "Adicionar saida XLSX somente depois do historico/retomada estar confiavel.",
+              "status": "info",
+              "tag": "entrega"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "diagrams": [
+    {
+      "type": "native-flow",
+      "title": "Fluxo atual de execucao",
+      "caption": "A proxima fatia deve ler estes ledgers para formar historico e retomada operavel.",
+      "nodes": [
+        {
+          "id": "csv",
+          "label": "CSV local",
+          "tone": "blue"
+        },
+        {
+          "id": "fingerprint",
+          "label": "Fingerprint",
+          "tone": "amber"
+        },
+        {
+          "id": "lookup",
+          "label": "Provider",
+          "tone": "blue"
+        },
+        {
+          "id": "ledger",
+          "label": "Ledger",
+          "tone": "green"
+        },
+        {
+          "id": "ui",
+          "label": "Painel",
+          "tone": "green"
+        }
+      ],
+      "edges": [
+        {
+          "from": "csv",
+          "to": "fingerprint",
+          "label": "contexto"
+        },
+        {
+          "from": "fingerprint",
+          "to": "lookup",
+          "label": "retoma ou consulta"
+        },
+        {
+          "from": "lookup",
+          "to": "ledger",
+          "label": "checkpoint"
+        },
+        {
+          "from": "ledger",
+          "to": "ui",
+          "label": "transparencia"
+        }
+      ]
+    }
+  ],
+  "risks": [
+    {
+      "title": "Coverage formal warning-only",
+      "description": "O repo ainda nao gera `coverage/lcov.info`; ratchet segue sem cobertura real por linha alterada.",
+      "status": "partial"
+    },
+    {
+      "title": "CI remoto ainda pendente",
+      "description": "A branch local passou nos gates; depois do push/PR ainda falta confirmar GitHub Actions e GitGuardian remotos.",
+      "status": "partial"
+    },
+    {
+      "title": "Receita Web segue assistida",
+      "description": "Nao tratar como automacao robusta em lote. Qualquer proxima UX deve preservar navegador visivel, bloqueio anti-bot possivel e supervisao humana.",
+      "status": "info"
+    }
+  ]
+}

@@ -34,6 +34,8 @@ const electronMocks = vi.hoisted(() => ({
 }));
 
 const ledgerMocks = vi.hoisted(() => ({
+  getRun: vi.fn(),
+  listRuns: vi.fn(),
   startRun: vi.fn(),
   finish: vi.fn(),
   restoreLookup: vi.fn(),
@@ -60,7 +62,10 @@ vi.mock("../../src/core/app/process-csv.use-case", () => ({
 }));
 
 vi.mock("../../src/main/execution/file-process-execution-ledger", () => ({
+  createInputFingerprint: vi.fn(() => "0123456789abcdef01234567abcdef"),
   FileProcessExecutionLedger: vi.fn(() => ({
+    getRun: ledgerMocks.getRun,
+    listRuns: ledgerMocks.listRuns,
     startRun: ledgerMocks.startRun,
   })),
 }));
@@ -96,6 +101,8 @@ describe("process-csv IPC", () => {
     handlers.clear();
     vi.clearAllMocks();
     electronMocks.app.isPackaged = false;
+    ledgerMocks.getRun.mockResolvedValue(null);
+    ledgerMocks.listRuns.mockResolvedValue([]);
     ledgerMocks.startRun.mockResolvedValue(ledgerMocks.session);
     vi.mocked(createSimplesLookupProvider).mockReturnValue({
       lookup: vi.fn(),
@@ -226,5 +233,82 @@ describe("process-csv IPC", () => {
     await expect(firstProcess).resolves.toMatchObject({
       runStatus: "SUCCESS",
     });
+  });
+
+  it("lists execution history through the ledger adapter", async () => {
+    const handler = handlers.get("csv:list-executions");
+    const history = [
+      {
+        canResume: true,
+        ledgerKey: "mock-0123456789abcdef01234567.json",
+        runId: "test-run",
+        status: "CANCELLED",
+      },
+    ];
+    ledgerMocks.listRuns.mockResolvedValueOnce(history);
+
+    await expect(handler?.()).resolves.toBe(history);
+    expect(ledgerMocks.listRuns).toHaveBeenCalledWith({ limit: 8 });
+  });
+
+  it("rejects resume for completed history-only executions", async () => {
+    const handler = handlers.get("csv:resume-execution");
+    ledgerMocks.getRun.mockResolvedValueOnce({
+      canResume: false,
+      ledgerKey: "mock-0123456789abcdef01234567.json",
+      resumeBlockedReason:
+        "Execucoes concluidas com sucesso ficam apenas no historico.",
+      status: "SUCCESS",
+    });
+
+    await expect(
+      handler?.(
+        { sender: { send: vi.fn() } },
+        { ledgerKey: "mock-0123456789abcdef01234567.json" },
+      ),
+    ).rejects.toThrow("ficam apenas no historico");
+  });
+
+  it("resumes an eligible execution from its original CSV path", async () => {
+    const handler = handlers.get("csv:resume-execution");
+    const sender = { send: vi.fn() };
+    const sourceFilePath = "/tmp/fiscal-desk-test/entrada.csv";
+    const content = "cnpj\n00000000000191";
+    const { readFile } = await import("node:fs/promises");
+    vi.mocked(readFile).mockResolvedValueOnce(content);
+    ledgerMocks.getRun.mockResolvedValueOnce({
+      canResume: true,
+      cnpjColumn: "cnpj",
+      ledgerKey: "mock-0123456789abcdef01234567.json",
+      providerConfigVersion: "provider-config-v1",
+      providerName: "mock",
+      sourceFilePath,
+      status: "CANCELLED",
+    });
+
+    await expect(
+      handler?.(sender, {
+        ledgerKey: "mock-0123456789abcdef01234567.json",
+      }),
+    ).resolves.toMatchObject({
+      runStatus: "SUCCESS",
+    });
+
+    expect(readFile).toHaveBeenCalledWith(sourceFilePath, "utf8");
+    expect(ledgerMocks.startRun).toHaveBeenCalledWith({
+      cnpjColumn: "cnpj",
+      inputCsv: content,
+      providerConfigVersion: "provider-config-v1",
+      providerName: "mock",
+      sourceFilePath,
+    });
+    expect(processCsv).toHaveBeenCalledWith(
+      content,
+      expect.any(Object),
+      expect.objectContaining({
+        cnpjColumn: "cnpj",
+        executionLedger: ledgerMocks.session,
+      }),
+    );
   });
 });

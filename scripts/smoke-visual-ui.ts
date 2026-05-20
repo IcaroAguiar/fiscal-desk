@@ -106,6 +106,8 @@ async function installAppBridgeMock(page: Page): Promise<void> {
           pickCsvFile: () => Promise<null>;
           processCsv: () => Promise<never>;
           cancelProcessing: () => Promise<boolean>;
+          listExecutions: () => Promise<unknown[]>;
+          resumeExecution: () => Promise<never>;
           saveCsvFile: () => Promise<null>;
           onLookupProgress: () => () => void;
         };
@@ -120,6 +122,10 @@ async function installAppBridgeMock(page: Page): Promise<void> {
         throw new Error("Visual smoke nao executa processamento real.");
       },
       cancelProcessing: async () => false,
+      listExecutions: async () => [],
+      resumeExecution: async () => {
+        throw new Error("Visual smoke nao retoma processamento real.");
+      },
       saveCsvFile: async () => null,
       onLookupProgress: () => () => {},
     };

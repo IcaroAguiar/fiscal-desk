@@ -4,6 +4,7 @@ import type {
   ProcessCsvExecution,
   ProcessCsvRunStatus,
   ProcessCsvSummary,
+  ProcessExecutionHistoryItem,
 } from "../../main/types";
 
 export type PickCsvResult = {
@@ -37,6 +38,8 @@ export type AppBridge = {
     provider: SimplesProviderName;
     receitaWebAvailable: boolean;
   }>;
+  listExecutions(): Promise<ProcessExecutionHistoryItem[]>;
+  resumeExecution(ledgerKey: string): Promise<ProcessCsvResult>;
 };
 
 declare global {
@@ -67,6 +70,8 @@ export type UiState = {
   execution: ProcessCsvExecution | null;
   savedPath: string | null;
   progress: LookupProgress | null;
+  executionHistory: ProcessExecutionHistoryItem[];
+  historyStatus: "loading" | "ready" | "error";
   progressObservedAt: number | null;
   now: number;
 };
@@ -85,6 +90,8 @@ export const initialState: UiState = {
   execution: null,
   savedPath: null,
   progress: null,
+  executionHistory: [],
+  historyStatus: "loading",
   progressObservedAt: null,
   now: Date.now(),
 };
