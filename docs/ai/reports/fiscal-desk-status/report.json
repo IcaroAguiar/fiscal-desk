@@ -5,14 +5,14 @@
   "subtitle": "Corte vertical em feat/fiscal-desk-local-public-base: provider local com Data da Base, consentimento explícito, status de preparo, smoke Electron real, perf XLSX e ratchet preservado.",
   "language": "pt-BR",
   "updatedAt": "2026-05-21T01:41:29-03:00",
-  "status": "partial",
+  "status": "done",
   "source": "consulta-simples-csv / Fiscal Desk",
   "eyebrow": "Fiscal Desk",
   "metrics": [
     {
       "value": "PR #5",
-      "label": "em preparação",
-      "status": "partial"
+      "label": "mergeada em main",
+      "status": "done"
     },
     {
       "value": "182",
@@ -157,7 +157,7 @@
       "title": "Estado e próximo passo",
       "kicker": "Execução",
       "component": "kanban",
-      "status": "partial",
+      "status": "done",
       "items": [
         {
           "title": "Feito localmente",
@@ -178,26 +178,26 @@
           ]
         },
         {
-          "title": "Antes do merge",
-          "status": "partial",
+          "title": "Merge e pós-merge",
+          "status": "done",
           "cards": [
             {
               "title": "Review independente",
-              "body": "Reviewer independente fechou o finding funcional; follow-up pediu apenas alinhamento final do report.",
-              "status": "partial",
+              "body": "Reviewer independente fechou o finding funcional, revalidou o report e não apontou novos bloqueantes.",
+              "status": "done",
               "tag": "review"
             },
             {
-              "title": "Abrir PR #5",
-              "body": "Depois do reviewer, abrir PR com evidência de gates e acompanhar checks remotos.",
-              "status": "info",
-              "tag": "PR"
+              "title": "PR #5 mergeada",
+              "body": "Merge por squash confirmado em `main` com commit `96f2068482cbe8bd7ca7295d4b9755d40cc45454`.",
+              "status": "done",
+              "tag": "merge"
             },
             {
-              "title": "Merge autorizado após gates",
-              "body": "Pela autorização operacional do usuário, merge pode seguir quando PR, review, checks e smoke estiverem verdes.",
-              "status": "info",
-              "tag": "merge"
+              "title": "Smoke pós-merge",
+              "body": "`FISCAL_DESK_SMOKE_PROVIDER=base-publica-local pnpm smoke:electron-ui` passou no commit mergeado.",
+              "status": "done",
+              "tag": "smoke"
             }
           ]
         },
@@ -290,8 +290,8 @@
       "status": "partial"
     },
     {
-      "title": "Review remoto pendente",
-      "description": "Review independente local fechou o finding funcional e apontou somente alinhamento documental final; PR remoto/checks ainda serão abertos e acompanhados.",
+      "title": "Base real ainda não preparada",
+      "description": "O corte valida contrato, UX e smoke com fixture pequena. Download/preparo de base pública completa continua fora deste PR.",
       "status": "partial"
     }
   ]

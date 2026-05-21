@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 
 import { processCsv } from "../../src/core/app/process-csv.use-case";
+import {
+  createLocalPublicBaseIndexFromRecords,
+  prepareLocalPublicBaseFromCsv,
+} from "../../src/core/public-base/local-public-base.index";
 import { LocalPublicBaseSimplesLookupAdapter } from "../../src/core/simples/adapters/local-public-base-simples-lookup.adapter";
 import { MockSimplesLookupAdapter } from "../../src/core/simples/adapters/mock-simples-lookup.adapter";
 import type {
@@ -92,9 +96,20 @@ describe("processCsv", () => {
       "Nao encontrado;11.222.333/0001-81",
     ].join("\n");
 
+    const prepared = prepareLocalPublicBaseFromCsv({
+      content: [
+        "cnpj;razao_social;simples_nacional;simei;data_base",
+        "00000000000191;Banco do Brasil S.A.;sim;nao;2026-05-20",
+      ].join("\n"),
+      sourceFileName: "base.csv",
+      sourceFilePath: "/tmp/base.csv",
+    });
     const result = await processCsv(
       csv,
-      new LocalPublicBaseSimplesLookupAdapter(),
+      new LocalPublicBaseSimplesLookupAdapter(
+        createLocalPublicBaseIndexFromRecords(prepared.records),
+        prepared.status,
+      ),
     );
 
     expect(result.summary.totalLinhas).toBe(2);

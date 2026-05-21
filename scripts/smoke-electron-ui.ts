@@ -22,11 +22,15 @@ import {
 const fixturePath = fileURLToPath(
   new URL("../test/fixtures/smoke/cnpjs-publicos-reais.csv", import.meta.url),
 );
+const localPublicBaseFixturePath = fileURLToPath(
+  new URL("../test/fixtures/smoke/base-publica-local.csv", import.meta.url),
+);
 const smokeProvider = resolveSmokeProvider(process.env.FISCAL_DESK_SMOKE_PROVIDER);
 const tempDir = await mkdtemp(join(tmpdir(), "fiscal-desk-electron-smoke-"));
 const userDataDir = join(tempDir, "user-data");
 const sourceFilePath = join(tempDir, "entrada.csv");
 const fixtureCsv = await readFile(fixturePath, "utf8");
+const localPublicBaseCsv = await readFile(localPublicBaseFixturePath, "utf8");
 let server: ViteDevServer | null = null;
 let electronApp: ElectronApplication | null = null;
 
@@ -58,6 +62,22 @@ try {
 
   const page = await electronApp.firstWindow();
   await page.waitForSelector("text=Fiscal Desk", { timeout: 20_000 });
+  if (smokeProvider === SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL) {
+    await page.evaluate(
+      async ({ content, sourceFilePath }) => {
+        const result = await window.appBridge.prepareLocalPublicBase({
+          content,
+          sourceFileName: "base-publica-local.csv",
+          sourceFilePath,
+        });
+
+        if (result.status.state !== "ready") {
+          throw new Error("Base Publica Local nao ficou pronta no smoke.");
+        }
+      },
+      { content: localPublicBaseCsv, sourceFilePath: localPublicBaseFixturePath },
+    );
+  }
   if (smokeProvider !== SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL) {
     await page.selectOption('[data-field="provider"]', smokeProvider);
   }

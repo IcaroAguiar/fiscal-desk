@@ -1,5 +1,6 @@
 import type { SimplesProviderName } from "../../core/simples/simples-provider.names";
 import type {
+  LocalPublicBasePrepareResult,
   LocalPublicBaseStatus,
   LookupProgress,
   ProcessCsvDeliveryFormat,
@@ -51,6 +52,13 @@ export type AppBridge = {
     provider: SimplesProviderName;
     receitaWebAvailable: boolean;
   }>;
+  getLocalPublicBaseStatus(): Promise<LocalPublicBaseStatus>;
+  pickLocalPublicBaseSourceFile(): Promise<PickCsvResult | null>;
+  prepareLocalPublicBase(input: {
+    content: string;
+    sourceFileName: string;
+    sourceFilePath: string;
+  }): Promise<LocalPublicBasePrepareResult>;
   listExecutions(): Promise<ProcessExecutionHistoryItem[]>;
   resumeExecution(
     ledgerKey: string,
@@ -81,6 +89,7 @@ export type UiState = {
   deliveryFormat: ProcessCsvDeliveryFormat;
   localPublicBaseNoticeAccepted: boolean;
   localPublicBaseStatus: LocalPublicBaseStatus | null;
+  localPublicBasePrepareStatus: "idle" | "loading" | "success" | "error";
   receitaWebAvailable: boolean;
   cnpjColumn: string;
   status: UiStatus;
@@ -106,6 +115,7 @@ export const initialState: UiState = {
   deliveryFormat: "csv",
   localPublicBaseNoticeAccepted: false,
   localPublicBaseStatus: null,
+  localPublicBasePrepareStatus: "idle",
   receitaWebAvailable: false,
   cnpjColumn: "",
   status: "idle",

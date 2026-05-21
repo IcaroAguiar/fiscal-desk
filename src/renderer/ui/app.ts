@@ -10,6 +10,10 @@ import {
   resetOutputState,
 } from "./app-delivery";
 import { buildCompletionMessage, extractMessage } from "./app-helpers";
+import {
+  handlePrepareLocalPublicBase,
+  refreshLocalPublicBaseStatus,
+} from "./app-local-public-base";
 import { prepareLocalPublicBaseResume } from "./app-provider";
 import { syncUi as syncUiRefs } from "./app-sync";
 import { renderShell } from "./app-view";
@@ -56,6 +60,15 @@ export function mountApp(root: HTMLDivElement | null): void {
     ),
     localPublicBaseWarning: appRoot.querySelector<HTMLElement>(
       '[data-slot="local-public-base-warning"]',
+    ),
+    localPublicBaseStatusLine: appRoot.querySelector<HTMLElement>(
+      '[data-slot="local-public-base-status-line"]',
+    ),
+    localPublicBasePrepareButton: appRoot.querySelector<HTMLButtonElement>(
+      '[data-action="prepare-local-public-base"]',
+    ),
+    localPublicBasePrepPanel: appRoot.querySelector<HTMLElement>(
+      '[data-slot="local-public-base-prep-panel"]',
     ),
     message: appRoot.querySelector<HTMLElement>('[data-slot="message"]'),
     commandSummary: appRoot.querySelector<HTMLElement>(
@@ -170,6 +183,15 @@ export function mountApp(root: HTMLDivElement | null): void {
         return;
       }
 
+      if (action.dataset.action === "prepare-local-public-base") {
+        if (state.status === "processing") {
+          return;
+        }
+
+        void handlePrepareLocalPublicBase(state, syncUi);
+        return;
+      }
+
       if (action.dataset.action === "resume-execution") {
         if (state.status === "processing") {
           return;
@@ -187,6 +209,9 @@ export function mountApp(root: HTMLDivElement | null): void {
       state.provider = (event.currentTarget as HTMLSelectElement)
         .value as SimplesProviderName;
       state.localPublicBaseNoticeAccepted = false;
+      if (state.provider === SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL) {
+        void refreshLocalPublicBaseStatus(state);
+      }
       syncUi();
     });
 

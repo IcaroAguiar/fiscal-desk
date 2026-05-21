@@ -1,0 +1,258 @@
+{
+  "kitVersion": "0.1.0",
+  "preset": "implementation",
+  "title": "Fiscal Desk: panorama geral",
+  "subtitle": "Estado atual da entrega acelerada no consulta-simples-csv: PRs já mergeadas, corte finalizado para teste humano, evidência local, review independente e próximo plano.",
+  "language": "pt-BR",
+  "updatedAt": "2026-05-21T03:30:32-03:00",
+  "status": "done",
+  "source": "consulta-simples-csv / feat/fiscal-desk-local-base-prep",
+  "eyebrow": "Fiscal Desk",
+  "metrics": [
+    {
+      "value": "5",
+      "label": "PRs de fundação já mergeadas",
+      "status": "done"
+    },
+    {
+      "value": "186",
+      "label": "testes automatizados passando agora",
+      "status": "done"
+    },
+    {
+      "value": "21",
+      "label": "arquivos modificados no corte atual",
+      "status": "info"
+    },
+    {
+      "value": "2",
+      "label": "novos arquivos do corte atual",
+      "status": "info"
+    },
+    {
+      "value": "Em curso",
+      "label": "preparo real da Base Pública Local",
+      "status": "warn"
+    }
+  ],
+  "sections": [
+    {
+      "id": "estado",
+      "title": "Onde estamos",
+      "kicker": "Resumo executivo",
+      "status": "done",
+      "body": "Estamos no corte `feat/fiscal-desk-local-base-prep`, pronto para teste humano local antes de abrir PR/merge.\n\nA base anterior já está em `main`: PR #1 fundação, PR #2 ledger/retomada, PR #3 histórico operacional, PR #4 entrega XLSX e PR #5 Base Pública Local operacional com fixture pequena. O corte atual amplia a PR #5: sai do provider local baseado apenas em fixture embutida e adiciona preparo real a partir de CSV local escolhido pelo usuário, com índice persistido no perfil do Electron.\n\nO objetivo desta etapa não é baixar uma base pública real automaticamente. O desenho continua explícito e local-first: o usuário escolhe o CSV, o app prepara o índice local, mostra Data da Base, tamanho/uso estimado e só permite executar depois de base pronta e aceite."
+    },
+    {
+      "id": "feito",
+      "title": "O que já foi implementado neste corte",
+      "kicker": "Implementação atual",
+      "status": "done",
+      "body": "- Novo store persistente em `src/core/public-base/local-public-base.store.ts`, gravando `local-public-base-index.json` em `app.getPath(\"userData\")/public-base`.\n- Parser/preparador em `src/core/public-base/local-public-base.index.ts` para CSV com colunas `cnpj`, `simples_nacional`, `simei`, razão social e Data da Base.\n- Status ampliado da base local: `not-prepared`, `ready`, `error`, Data da Base, arquivo de origem, linhas preparadas, rejeitadas, uso estimado e mensagem de erro.\n- Provider `base-publica-local` passa a receber índice/status preparados para lookup, preservando `SimplesLookupPort`.\n- IPC/preload adiciona `local-public-base:get-status`, `local-public-base:pick-source-file` e `local-public-base:prepare`.\n- `csv:process` e `csv:resume-execution` continuam bloqueando Base Pública Local sem aceite e agora também bloqueiam quando a base ainda não foi preparada.\n- UI renderer ganhou painel de preparo da Base Pública Local, botão `Preparar base`, status em linha e bloqueio do botão de execução até base pronta + aceite.\n- Smokes CLI/Electron e perf foram ajustados para preparar fixture local antes de usar `base-publica-local`."
+    },
+    {
+      "id": "evidencias",
+      "title": "Evidência já rodada",
+      "kicker": "Checks locais",
+      "component": "evidence-table",
+      "status": "done",
+      "items": [
+        {
+          "title": "Testes focados",
+          "source": "pnpm vitest run test/unit/local-public-base.test.ts test/unit/process-csv.ipc.test.ts test/unit/app-view.test.ts test/unit/app-provider.test.ts test/integration/process-csv.use-case.test.ts",
+          "result": "35 testes passando; cobrem store/preparo, adapter, IPC, UI view/provider e use-case.",
+          "status": "pass"
+        },
+        {
+          "title": "Typecheck",
+          "source": "pnpm typecheck",
+          "result": "TypeScript sem erros depois de ajustar contrato de status e imports.",
+          "status": "pass"
+        },
+        {
+          "title": "Lint",
+          "source": "pnpm lint",
+          "result": "Biome sem erros em 88 arquivos.",
+          "status": "pass"
+        },
+        {
+          "title": "Suíte completa",
+          "source": "pnpm test",
+          "result": "29 arquivos / 186 testes passando após corrigir findings de review.",
+          "status": "pass"
+        },
+        {
+          "title": "Build",
+          "source": "pnpm build",
+          "result": "Renderer Vite e main/preload Electron gerados com sucesso.",
+          "status": "pass"
+        },
+        {
+          "title": "Smoke CLI Base Pública Local",
+          "source": "SMOKE_PROVIDER=base-publica-local pnpm smoke:real-csv",
+          "result": "5 linhas, 5 CNPJs encontrados, 4 válidos, 3 únicos, 2 optantes, 2 não optantes, 1 erro esperado.",
+          "status": "pass"
+        },
+        {
+          "title": "Smoke Electron real",
+          "source": "FISCAL_DESK_SMOKE_PROVIDER=base-publica-local pnpm smoke:electron-ui",
+          "result": "App Electron real preparou provider local via bridge/IPC, selecionou Base Pública Local, exigiu aceite, retomou checkpoint e salvou XLSX.",
+          "status": "pass"
+        },
+        {
+          "title": "Smoke visual",
+          "source": "pnpm smoke:visual",
+          "result": "Desktop 1440x1000 e mobile 390x900 sem overflow e sem botões cortados.",
+          "status": "pass"
+        },
+        {
+          "title": "Perf local XLSX",
+          "source": "FISCAL_DESK_PERF_PROVIDER=base-publica-local FISCAL_DESK_PERF_DELIVERY_FORMAT=xlsx pnpm perf:local-csv",
+          "result": "5.000 linhas em 626 ms, 7.993 linhas/s, 235.671 bytes.",
+          "status": "pass"
+        },
+        {
+          "title": "Audit e secret scan",
+          "source": "pnpm audit --prod; gitleaks detect --source . --redact --no-banner",
+          "result": "Sem vulnerabilidades conhecidas e sem vazamentos encontrados.",
+          "status": "pass"
+        },
+        {
+          "title": "Quality ratchet",
+          "source": "node docs/ai/quality-gate/check-ratchet.mjs",
+          "result": "PASS; arquivos grandes preservados em 2 depois de extrair IPC/helper do renderer.",
+          "status": "pass"
+        },
+        {
+          "title": "Review independente",
+          "source": "agentic-code-review / reviewer Heisenberg",
+          "result": "Achados altos corrigidos: preparo inválido invalida índice antigo, preparo serializado, temp path único, índice/status lidos de um único documento e records persistidos validados. Sem bloqueante restante para teste humano local.",
+          "status": "pass"
+        },
+        {
+          "title": "Regressão detectada e corrigida",
+          "source": "teste de concorrência em process-csv.ipc",
+          "result": "A validação assíncrona da base foi movida para depois da reserva da sessão ativa, preservando o bloqueio de duplo processamento.",
+          "status": "pass"
+        }
+      ]
+    },
+    {
+      "id": "pendencias",
+      "title": "Estado para teste",
+      "kicker": "Gates concluídos",
+      "component": "kanban",
+      "status": "done",
+      "items": [
+        {
+          "title": "Concluído para teste local",
+          "status": "done",
+          "cards": [
+            {
+              "title": "Smoke CLI Base Pública Local",
+              "body": "Passou com fixture pública pequena e provider local preparado.",
+              "status": "done",
+              "tag": "CLI"
+            },
+            {
+              "title": "Smoke Electron real",
+              "body": "Passou com Base Pública Local, aceite de Data da Base, retomada de checkpoint e XLSX salvo.",
+              "status": "done",
+              "tag": "Electron"
+            },
+            {
+              "title": "Smoke visual",
+              "body": "Passou em desktop e mobile sem overflow ou botões cortados.",
+              "status": "done",
+              "tag": "UI"
+            },
+            {
+              "title": "Perf/carga",
+              "body": "Passou com 5.000 linhas e XLSX local acima do piso de 500 linhas/s.",
+              "status": "done",
+              "tag": "perf"
+            }
+          ]
+        },
+        {
+          "title": "Depois do teste humano",
+          "status": "warn",
+          "cards": [
+            {
+              "title": "Review independente",
+              "body": "Gate executado e findings altos corrigidos. Repetir só se o teste humano gerar novo ajuste material.",
+              "status": "warn",
+              "tag": "review"
+            },
+            {
+              "title": "Report de status",
+              "body": "Atualizar o report de status do Fiscal Desk com resultado final do corte atual e copiar versão operacional para `/private/tmp` se necessário.",
+              "status": "warn",
+              "tag": "report"
+            },
+            {
+              "title": "Commit, push e PR",
+              "body": "Criar commit semanticamente nomeado, abrir PR para `main`, acompanhar CI e só mergear quando gates, review e teste humano estiverem aceitos.",
+              "status": "warn",
+              "tag": "GitHub"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "arquitetura",
+      "title": "Fluxo do corte atual",
+      "kicker": "Arquitetura",
+      "status": "partial",
+      "body": "O fluxo novo preserva a arquitetura `porta + adapters`:\n\n1. Renderer chama `pickLocalPublicBaseSourceFile` e `prepareLocalPublicBase` via preload.\n2. Main lê o CSV escolhido e delega para `LocalPublicBaseStore`.\n3. Store usa o preparador do core para normalizar CNPJs, validar flags `simples_nacional`/`simei`, deduplicar e persistir índice JSON atômico.\n4. `app:get-defaults` e `local-public-base:get-status` expõem o status para a UI.\n5. Ao processar CSV, main valida aceite + base pronta antes de ledger/provider.\n6. Provider `base-publica-local` consulta o índice preparado por `SimplesLookupPort`, sem Receita Web e sem consulta online por item."
+    },
+    {
+      "id": "risco",
+      "title": "Riscos residuais agora",
+      "kicker": "Ainda não fechar",
+      "component": "decision-log",
+      "status": "partial",
+      "items": [
+        {
+          "title": "Smoke real ainda pendente",
+          "description": "Resolvido neste fechamento: smoke Electron real passou. Risco restante é apenas validação manual do usuário em seu fluxo e CSV real.",
+          "status": "done"
+        },
+        {
+          "title": "Formato público real ainda não foi adotado",
+          "description": "O preparador aceita um CSV normalizado/controlado. Integração com layout oficial completo de bases públicas continua como próximo subcorte ou adaptação explícita.",
+          "status": "warn"
+        },
+        {
+          "title": "Report visual mudou",
+          "description": "Há mudança visual/HTML local intencional por geração de report e UI de preparo. Precisa ser validada por smoke visual antes do fechamento.",
+          "status": "warn"
+        },
+        {
+          "title": "Branch ainda sem PR",
+          "description": "Estado atual é worktree local sujo em `feat/fiscal-desk-local-base-prep`; ainda não há CI remoto para este corte.",
+          "status": "warn"
+        }
+      ]
+    },
+    {
+      "id": "proximo",
+      "title": "Próximo plano objetivo",
+      "kicker": "Execução",
+      "status": "partial",
+      "body": "Sequência recomendada após o teste humano:\n\n1. Aplicar qualquer ajuste encontrado no teste manual.\n2. Repetir checks afetados, especialmente smoke Electron real se tocar UI/IPC.\n3. Repetir reviewer independente se houver novo ajuste material.\n4. Atualizar o report de status oficial com as evidências finais.\n5. Pushar, abrir PR e acompanhar checks remotos.\n6. Se CI/review ficarem verdes, mergear sem aguardar nova ação, conforme autorização do usuário."
+    }
+  ],
+  "diagrams": [
+    {
+      "id": "fluxo-base-local",
+      "title": "Preparo e uso da Base Pública Local",
+      "caption": "Fluxo proposto no corte atual: preparo explícito antes de consulta em lote.",
+      "trustedSvg": "<svg viewBox=\"0 0 760 220\" role=\"img\" aria-label=\"Fluxo Base Pública Local\" xmlns=\"http://www.w3.org/2000/svg\"><defs><style>.box{fill:#f8fafc;stroke:#94a3b8;stroke-width:1.4}.txt{font-family:ui-sans-serif,system-ui,sans-serif;font-size:13px;fill:#0f172a}.small{font-size:11px;fill:#475569}.arrow{stroke:#0f766e;stroke-width:2;fill:none;marker-end:url(#m)}</style><marker id=\"m\" markerWidth=\"10\" markerHeight=\"10\" refX=\"8\" refY=\"3\" orient=\"auto\"><path d=\"M0,0 L0,6 L9,3 z\" fill=\"#0f766e\"/></marker></defs><rect class=\"box\" x=\"20\" y=\"40\" width=\"120\" height=\"70\" rx=\"8\"/><text class=\"txt\" x=\"80\" y=\"70\" text-anchor=\"middle\">CSV local</text><text class=\"small\" x=\"80\" y=\"90\" text-anchor=\"middle\">escolhido pelo usuário</text><path class=\"arrow\" d=\"M145 75H205\"/><rect class=\"box\" x=\"210\" y=\"40\" width=\"135\" height=\"70\" rx=\"8\"/><text class=\"txt\" x=\"277\" y=\"70\" text-anchor=\"middle\">Prepare</text><text class=\"small\" x=\"277\" y=\"90\" text-anchor=\"middle\">normaliza e valida</text><path class=\"arrow\" d=\"M350 75H410\"/><rect class=\"box\" x=\"415\" y=\"40\" width=\"135\" height=\"70\" rx=\"8\"/><text class=\"txt\" x=\"482\" y=\"70\" text-anchor=\"middle\">Índice JSON</text><text class=\"small\" x=\"482\" y=\"90\" text-anchor=\"middle\">userData/public-base</text><path class=\"arrow\" d=\"M555 75H615\"/><rect class=\"box\" x=\"620\" y=\"40\" width=\"120\" height=\"70\" rx=\"8\"/><text class=\"txt\" x=\"680\" y=\"70\" text-anchor=\"middle\">Provider</text><text class=\"small\" x=\"680\" y=\"90\" text-anchor=\"middle\">SimplesLookupPort</text><rect class=\"box\" x=\"210\" y=\"145\" width=\"340\" height=\"48\" rx=\"8\"/><text class=\"txt\" x=\"380\" y=\"168\" text-anchor=\"middle\">Main bloqueia execução sem base pronta + aceite</text><text class=\"small\" x=\"380\" y=\"184\" text-anchor=\"middle\">renderer apenas exibe estado e dispara ações via preload</text><path class=\"arrow\" d=\"M482 112V140\"/></svg>"
+    }
+  ],
+  "evidence": [],
+  "decisions": [],
+  "risks": []
+}

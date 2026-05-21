@@ -488,6 +488,33 @@ button {
   font-size: var(--font-size-xs);
 }
 
+.base-prep {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-4);
+  padding: var(--spacing-4);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  background: var(--bg-subtle);
+}
+
+.base-prep strong {
+  display: block;
+  margin-top: var(--spacing-1);
+  color: var(--semantic-text);
+  font-size: var(--font-size-sm);
+  line-height: 1.35;
+}
+
+.base-prep small {
+  display: block;
+  margin-top: var(--spacing-1);
+  color: var(--semantic-muted);
+  font-size: var(--font-size-xs);
+  line-height: 1.45;
+}
+
 .field--inline .field__label {
   min-width: 120px;
 }

@@ -10,8 +10,8 @@ import {
 } from "electron";
 import { processCsv } from "../../core/app/process-csv.use-case";
 import { parseProcessCsvDeliveryFormat } from "../../core/app/process-csv-delivery";
-import { getLocalPublicBaseStatus } from "../../core/public-base/local-public-base.index";
 import { resolvePackagedWindowsBrowserPath } from "../../core/simples/adapters/receita-web/receita-browser-path";
+import type { SimplesLookupPort } from "../../core/simples/simples-lookup.port";
 import { loadProviderConfig } from "../../core/simples/simples-provider.config";
 import {
   createSimplesLookupProvider,
@@ -24,6 +24,12 @@ import {
   type FileProcessExecutionSession,
 } from "../execution/file-process-execution-ledger";
 import { FISCAL_DESK_DISABLE_COMPLETION_DIALOG_ENV } from "../runtime-env";
+import {
+  assertLocalPublicBaseReady,
+  createLocalPublicBaseRuntimeProvider,
+  createLocalPublicBaseStore,
+  registerLocalPublicBaseIpc,
+} from "./local-public-base.ipc";
 import {
   attemptAutoSave,
   getAutoSaveOutputPath,
@@ -69,11 +75,11 @@ function getMainWindow(): BrowserWindow | undefined {
 }
 
 export function registerCsvIpc(): void {
-  ipcMain.handle("app:get-defaults", () => {
+  ipcMain.handle("app:get-defaults", async () => {
     const provider = resolveDefaultProvider();
 
     return {
-      localPublicBaseStatus: getLocalPublicBaseStatus(),
+      localPublicBaseStatus: await createLocalPublicBaseStore().getStatus(),
       provider,
       receitaWebAvailable: isReceitaWebAvailable(),
     };
@@ -107,6 +113,8 @@ export function registerCsvIpc(): void {
     return processCsvWithLedger(event, input);
   });
 
+  registerLocalPublicBaseIpc();
+
   ipcMain.handle("csv:list-executions", async () => {
     return createExecutionLedger().listRuns({ limit: 8 });
   });
@@ -138,6 +146,8 @@ export function registerCsvIpc(): void {
           "Confirme o aviso de Data da Base antes de retomar com a Base Pública Local.",
         );
       }
+
+      await assertLocalPublicBaseReady(execution.providerName);
 
       if (!execution.sourceFilePath) {
         throw new Error(
@@ -292,7 +302,6 @@ async function processCsvWithLedger(
     );
   }
 
-  const provider = createSimplesLookupProvider(input.provider);
   const options = input.cnpjColumn?.trim();
   const controller = new AbortController();
   const blockerId = powerSaveBlocker.start("prevent-app-suspension");
@@ -306,6 +315,9 @@ async function processCsvWithLedger(
   let executionSession: FileProcessExecutionSession | null = null;
 
   try {
+    await assertLocalPublicBaseReady(input.provider);
+    const provider = await createRuntimeProvider(input.provider);
+
     executionSession = await createExecutionLedger().startRun({
       ...(options ? { cnpjColumn: options } : {}),
       inputCsv: input.content,
@@ -421,6 +433,19 @@ function createExecutionLedger(): FileProcessExecutionLedger {
   return new FileProcessExecutionLedger(
     path.join(app.getPath("userData"), "execution-ledgers"),
   );
+}
+
+async function createRuntimeProvider(
+  providerName: SimplesProviderName,
+): Promise<SimplesLookupPort> {
+  const localProvider =
+    await createLocalPublicBaseRuntimeProvider(providerName);
+
+  if (localProvider) {
+    return localProvider;
+  }
+
+  return createSimplesLookupProvider(providerName);
 }
 
 function normalizeProvider(value: string | undefined): SimplesProviderName {

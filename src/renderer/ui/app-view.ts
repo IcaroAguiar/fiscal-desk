@@ -63,7 +63,7 @@ export function renderShell(state: UiState): string {
           <p class="intro__text">
             Esta versão mantém entrada CSV confiável: você escolhe o arquivo, define provedor e formato de entrega,
             acompanha o processamento e recebe uma cópia salva ao lado do original. Excel já está disponível como
-            Planilha de Resultado; Base Pública Local entra como consulta resiliente com Data da Base explícita.
+            Planilha de Resultado; Base Pública Local entra como consulta resiliente depois do preparo local explícito.
           </p>
           <div class="release-strip" aria-label="Recursos desta versão">
             <div>
@@ -103,7 +103,7 @@ export function renderShell(state: UiState): string {
             </div>
             <div class="command-bar__actions">
               ${button({ variant: "ghost", "data-action": "pick-file", children: "Selecionar CSV" })}
-              ${button({ variant: "primary", "data-action": "process-file", children: state.status === "processing" ? "Processando..." : "Iniciar execução", disabled: state.status === "processing" || !state.content })}
+              ${button({ variant: "primary", "data-action": "process-file", children: state.status === "processing" ? "Processando..." : "Iniciar execução", disabled: state.status === "processing" || state.localPublicBasePrepareStatus === "loading" || !state.content || (state.provider === SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL && (!state.localPublicBaseNoticeAccepted || state.localPublicBaseStatus?.state !== "ready")) })}
               ${button({ variant: "danger", "data-action": "cancel-processing", children: "Cancelar", disabled: state.status !== "processing" })}
               ${button({ variant: "secondary", "data-action": "save-file", children: "Salvar cópia", disabled: !state.outputDelivery })}
             </div>
@@ -113,7 +113,7 @@ export function renderShell(state: UiState): string {
             <label class="field" for="provider">
               <span class="field__label">
                 Provedor
-                <span class="field__hint" title="mock: dados simulados, sem rede | base pública local: amostra local com Data da Base | cnpja-open: consulta real ao serviço | receita-web: navegador visível e supervisão do usuário">?</span>
+                <span class="field__hint" title="mock: dados simulados, sem rede | base pública local: índice preparado a partir de CSV local | cnpja-open: consulta real ao serviço | receita-web: navegador visível e supervisão do usuário">?</span>
               </span>
               <select id="provider" data-field="provider">
                 <option value="${SIMPLES_PROVIDER.MOCK}" ${state.provider === SIMPLES_PROVIDER.MOCK ? "selected" : ""}>Simulação local — offline</option>
@@ -125,7 +125,7 @@ export function renderShell(state: UiState): string {
                 state.provider === SIMPLES_PROVIDER.RECEITA_WEB
                   ? '<span class="field__note">Abre navegador visível, pode ser bloqueado por proteção anti-robô, exige supervisão humana em lotes grandes e no Windows depende de Chrome ou Edge instalados.</span>'
                   : state.provider === SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL
-                    ? `<span class="field__note">Base ${escapeHtml(state.localPublicBaseStatus?.baseDate ?? "indisponível")} • ${escapeHtml(state.localPublicBaseStatus?.estimatedSizeLabel ?? "tamanho não informado")} • ${escapeHtml(state.localPublicBaseStatus?.diskUsageLabel ?? "uso de disco não informado")}.</span>`
+                    ? `<span class="field__note">Base ${escapeHtml(state.localPublicBaseStatus?.baseDate ?? "não preparada")} • ${escapeHtml(state.localPublicBaseStatus?.estimatedSizeLabel ?? "tamanho não informado")} • ${escapeHtml(state.localPublicBaseStatus?.diskUsageLabel ?? "uso de disco não informado")}.</span>`
                     : ""
               }
             </label>
@@ -149,6 +149,15 @@ export function renderShell(state: UiState): string {
               </select>
               <span class="field__note">CSV preserva compatibilidade. Excel gera Resumo, Resultados, Falhas, Divergências e Auditoria.</span>
             </label>
+          </div>
+
+          <div class="base-prep" data-slot="local-public-base-prep-panel" ${state.provider !== SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL ? 'style="display:none"' : ""}>
+            <div>
+              <span class="ops-label">Base Pública Local</span>
+              <strong data-slot="local-public-base-status-line">${escapeHtml(formatLocalPublicBaseStatusLine(state))}</strong>
+              <small>O preparo usa um CSV local escolhido por você e grava um índice no perfil local do app.</small>
+            </div>
+            ${button({ variant: "secondary", "data-action": "prepare-local-public-base", children: state.localPublicBasePrepareStatus === "loading" ? "Preparando..." : "Preparar base", disabled: state.status === "processing" || state.localPublicBasePrepareStatus === "loading" })}
           </div>
 
           <label class="notice-check" for="local-public-base-notice" data-slot="local-public-base-notice-panel" ${state.provider !== SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL ? 'style="display:none"' : ""}>
@@ -254,7 +263,7 @@ export function renderShell(state: UiState): string {
             </div>
             <div class="info-item">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5h16"/><path d="M4 12h16"/><path d="M4 19h16"/><path d="M8 5v14"/></svg>
-              <strong>Base Pública Local</strong> roda sem consulta online por item e sempre mostra a Data da Base.
+              <strong>Base Pública Local</strong> roda sem consulta online por item depois do preparo e sempre mostra a Data da Base.
             </div>
             <div class="info-item">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l8 4v6c0 5-3.5 8-8 8s-8-3-8-8V7l8-4z"/><path d="M9 12l2 2 4-4"/></svg>
@@ -346,4 +355,25 @@ function formatHistoryDate(value: string): string {
     dateStyle: "short",
     timeStyle: "short",
   }).format(timestamp);
+}
+
+function formatLocalPublicBaseStatusLine(state: UiState): string {
+  const status = state.localPublicBaseStatus;
+
+  if (!status || status.state === "not-prepared") {
+    return "Base ainda não preparada neste perfil.";
+  }
+
+  if (status.state === "error") {
+    return status.errorMessage ?? "Base Pública Local indisponível.";
+  }
+
+  return [
+    `${status.preparedRows} registros preparados`,
+    `${status.rejectedRows} rejeitados`,
+    `Data da Base: ${status.baseDate ?? "não informada"}`,
+    status.sourceFileName ? `Origem: ${status.sourceFileName}` : null,
+  ]
+    .filter(Boolean)
+    .join(" • ");
 }

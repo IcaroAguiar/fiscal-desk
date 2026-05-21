@@ -4,6 +4,8 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { processCsv } from "../src/core/app/process-csv.use-case";
+import { LocalPublicBaseStore } from "../src/core/public-base/local-public-base.store";
+import { LocalPublicBaseSimplesLookupAdapter } from "../src/core/simples/adapters/local-public-base-simples-lookup.adapter";
 import {
   createSimplesLookupProvider,
 } from "../src/core/simples/simples-provider.factory";
@@ -21,10 +23,13 @@ const providerName = readProviderName();
 const fixturePath = fileURLToPath(
   new URL("../test/fixtures/smoke/cnpjs-publicos-reais.csv", import.meta.url),
 );
+const localPublicBaseFixturePath = fileURLToPath(
+  new URL("../test/fixtures/smoke/base-publica-local.csv", import.meta.url),
+);
 const inputCsv = await readFile(fixturePath, "utf8");
-const provider = createSimplesLookupProvider(providerName);
-const result = await processCsv(inputCsv, provider, { cnpjColumn: "cnpj" });
 const outputDir = await mkdtemp(join(tmpdir(), "fiscal-desk-smoke-"));
+const provider = await createSmokeProvider(providerName, outputDir);
+const result = await processCsv(inputCsv, provider, { cnpjColumn: "cnpj" });
 const outputPath = join(outputDir, `resultado-${providerName}.csv`);
 
 await writeFile(outputPath, result.outputCsv, "utf8");
@@ -91,4 +96,28 @@ function assertSmokeResult(outputCsv: string): void {
       throw new Error(`Resultado do smoke nao contem ${fragment}`);
     }
   }
+}
+
+async function createSmokeProvider(
+  provider: SimplesProviderName,
+  directory: string,
+) {
+  if (provider !== SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL) {
+    return createSimplesLookupProvider(provider);
+  }
+
+  const store = new LocalPublicBaseStore(join(directory, "public-base"));
+  const content = await readFile(localPublicBaseFixturePath, "utf8");
+  const prepareResult = await store.prepareFromCsv({
+    content,
+    sourceFileName: "base-publica-local.csv",
+    sourceFilePath: localPublicBaseFixturePath,
+  });
+  const index = await store.loadIndex();
+
+  if (!index || prepareResult.status.state !== "ready") {
+    throw new Error("Smoke nao preparou a Base Publica Local.");
+  }
+
+  return new LocalPublicBaseSimplesLookupAdapter(index, prepareResult.status);
 }

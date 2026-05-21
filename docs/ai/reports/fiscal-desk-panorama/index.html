@@ -3,11 +3,11 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Fiscal Desk: Base Pública Local</title>
+  <title>Fiscal Desk: panorama geral</title>
   <meta name="generator" content="interactive-html-reports 0.1.0" />
   <meta name="report-kit-version" content="0.1.0" />
   <meta name="report-preset" content="implementation" />
-  <meta name="report-updated-at" content="2026-05-21T01:41:29-03:00" />
+  <meta name="report-updated-at" content="2026-05-21T03:30:32-03:00" />
   <style>:root {
   color-scheme: light;
   --report-bg: #f4f7f5;
@@ -970,7 +970,7 @@ details.report-card summary {
       <span class="crumb">reports</span>
       <span class="crumb">·</span>
       <span class="crumb">Implementação</span>
-      <span class="crumb">·</span><span class="crumb">consulta-simples-csv / Fiscal Desk</span>
+      <span class="crumb">·</span><span class="crumb">consulta-simples-csv / feat/fiscal-desk-local-base-prep</span>
     </div>
     <div class="topbar-actions">
       <input type="search" name="report_search" autocomplete="off" data-report-search placeholder="buscar no report…" aria-label="Buscar no report" />
@@ -981,185 +981,240 @@ details.report-card summary {
     <section class="report-hero">
       <div class="hero-copy">
         <p class="eyebrow">Fiscal Desk</p>
-        <h1>Fiscal Desk: Base Pública Local</h1>
-        <p class="lede">Corte vertical em feat/fiscal-desk-local-public-base: provider local com Data da Base, consentimento explícito, status de preparo, smoke Electron real, perf XLSX e ratchet preservado.</p>
+        <h1>Fiscal Desk: panorama geral</h1>
+        <p class="lede">Estado atual da entrega acelerada no consulta-simples-csv: PRs já mergeadas, corte finalizado para teste humano, evidência local, review independente e próximo plano.</p>
       </div>
       <aside class="hero-panel" aria-label="Metadata do report">
         <dl class="metadata-list">
           <div class="metadata-row"><dt>Status</dt><dd><span class="status-pill status-done">feito</span></dd></div>
           <div class="metadata-row"><dt>Preset</dt><dd>Implementação</dd></div>
-          <div class="metadata-row"><dt>Atualizado</dt><dd>2026-05-21T01:41:29-03:00</dd></div>
+          <div class="metadata-row"><dt>Atualizado</dt><dd>2026-05-21T03:30:32-03:00</dd></div>
           <div class="metadata-row"><dt>Kit</dt><dd>0.1.0</dd></div>
         </dl>
       </aside>
     </section>
-    <section class="report-section" id="metricas" data-search-item><div class="section-body"><div class="metric-grid"><article class="metric-card" data-search-item data-status="done"><strong>PR #5</strong><span>mergeada em main</span></article><article class="metric-card" data-search-item data-status="done"><strong>182</strong><span>testes automatizados passando</span></article><article class="metric-card" data-search-item data-status="done"><strong>Local</strong><span>consulta sem rede por item</span></article><article class="metric-card" data-search-item data-status="done"><strong>22.8k/s</strong><span>linhas por segundo no perf XLSX local</span></article><article class="metric-card" data-search-item data-status="done"><strong>2</strong><span>arquivos grandes preservados no ratchet</span></article></div></div></section>
+    <section class="report-section" id="metricas" data-search-item><div class="section-body"><div class="metric-grid"><article class="metric-card" data-search-item data-status="done"><strong>5</strong><span>PRs de fundação já mergeadas</span></article><article class="metric-card" data-search-item data-status="done"><strong>186</strong><span>testes automatizados passando agora</span></article><article class="metric-card" data-search-item data-status="info"><strong>21</strong><span>arquivos modificados no corte atual</span></article><article class="metric-card" data-search-item data-status="info"><strong>2</strong><span>novos arquivos do corte atual</span></article><article class="metric-card" data-search-item data-status="warn"><strong>Em curso</strong><span>preparo real da Base Pública Local</span></article></div></div></section>
     <div class="report-layout">
       <nav class="toc" aria-label="Indice do report">
         <p class="toc-title">Conteúdo</p>
         <a href="#metricas">Métricas</a>
-        <a href="#mudancas">O que o corte entrega</a><a href="#evidencias">Evidências de validação</a><a href="#decisoes">Decisões do corte</a><a href="#plano">Estado e próximo passo</a><a href="#diagrams">Diagramas</a><a href="#risks">Riscos e pendências</a>
+        <a href="#estado">Onde estamos</a><a href="#feito">O que já foi implementado neste corte</a><a href="#evidencias">Evidência já rodada</a><a href="#pendencias">Estado para teste</a><a href="#arquitetura">Fluxo do corte atual</a><a href="#risco">Riscos residuais agora</a><a href="#proximo">Próximo plano objetivo</a><a href="#mudancas">mudancas</a><a href="#decisoes">decisoes</a><a href="#diagrams">Diagramas</a>
       </nav>
-      <div class="report-content"><section class="report-section" id="mudancas" data-search-item data-status="done">
+      <div class="report-content"><section class="report-section" id="estado" data-search-item data-status="done">
     <header class="section-heading">
       <div>
-        <p class="eyebrow">Implementação</p>
-        <h2>O que o corte entrega</h2>
+        <p class="eyebrow">Resumo executivo</p>
+        <h2>Onde estamos</h2>
       </div>
       <span class="status-pill status-done">feito</span>
     </header>
-    <div class="section-body"><p>Este corte torna a Base Pública Local uma opção operacional real sem baixar base externa nesta etapa.</p>
-<ul><li>Novo módulo <code>src/core/public-base</code> com fixture pequena, status de preparo, Data da Base e índice por CNPJ.</li><li>Novo provider <code>base-publica-local</code> implementa <code>SimplesLookupPort</code>, sem acoplar Receita Web nem depender de consulta online por item.</li><li><code>app:get-defaults</code> expõe status da base local para o renderer.</li><li><code>csv:process</code> e <code>csv:resume-execution</code> exigem consentimento explícito de Data da Base antes de efeitos de processamento.</li><li>UI mostra provider, aviso de defasagem e checkbox de aceite; iniciar fica bloqueado enquanto o aviso não for aceito.</li><li>Scripts de smoke/perf aceitam <code>base-publica-local</code> para validar CLI, Electron real e carga local.</li></ul></div>
+    <div class="section-body"><p>Estamos no corte <code>feat/fiscal-desk-local-base-prep</code>, pronto para teste humano local antes de abrir PR/merge.</p>
+<p>A base anterior já está em <code>main</code>: PR #1 fundação, PR #2 ledger/retomada, PR #3 histórico operacional, PR #4 entrega XLSX e PR #5 Base Pública Local operacional com fixture pequena. O corte atual amplia a PR #5: sai do provider local baseado apenas em fixture embutida e adiciona preparo real a partir de CSV local escolhido pelo usuário, com índice persistido no perfil do Electron.</p>
+<p>O objetivo desta etapa não é baixar uma base pública real automaticamente. O desenho continua explícito e local-first: o usuário escolhe o CSV, o app prepara o índice local, mostra Data da Base, tamanho/uso estimado e só permite executar depois de base pronta e aceite.</p></div>
+  </section>
+<section class="report-section" id="feito" data-search-item data-status="done">
+    <header class="section-heading">
+      <div>
+        <p class="eyebrow">Implementação atual</p>
+        <h2>O que já foi implementado neste corte</h2>
+      </div>
+      <span class="status-pill status-done">feito</span>
+    </header>
+    <div class="section-body"><ul><li>Novo store persistente em <code>src/core/public-base/local-public-base.store.ts</code>, gravando <code>local-public-base-index.json</code> em <code>app.getPath(&quot;userData&quot;)/public-base</code>.</li><li>Parser/preparador em <code>src/core/public-base/local-public-base.index.ts</code> para CSV com colunas <code>cnpj</code>, <code>simples_nacional</code>, <code>simei</code>, razão social e Data da Base.</li><li>Status ampliado da base local: <code>not-prepared</code>, <code>ready</code>, <code>error</code>, Data da Base, arquivo de origem, linhas preparadas, rejeitadas, uso estimado e mensagem de erro.</li><li>Provider <code>base-publica-local</code> passa a receber índice/status preparados para lookup, preservando <code>SimplesLookupPort</code>.</li><li>IPC/preload adiciona <code>local-public-base:get-status</code>, <code>local-public-base:pick-source-file</code> e <code>local-public-base:prepare</code>.</li><li><code>csv:process</code> e <code>csv:resume-execution</code> continuam bloqueando Base Pública Local sem aceite e agora também bloqueiam quando a base ainda não foi preparada.</li><li>UI renderer ganhou painel de preparo da Base Pública Local, botão <code>Preparar base</code>, status em linha e bloqueio do botão de execução até base pronta + aceite.</li><li>Smokes CLI/Electron e perf foram ajustados para preparar fixture local antes de usar <code>base-publica-local</code>.</li></ul></div>
   </section>
 <section class="report-section" id="evidencias" data-search-item data-status="done">
     <header class="section-heading">
       <div>
         <p class="eyebrow">Checks locais</p>
-        <h2>Evidências de validação</h2>
+        <h2>Evidência já rodada</h2>
       </div>
       <span class="status-pill status-done">feito</span>
     </header>
     <div class="section-body"><div class="table-wrap"><table>
     <thead><tr><th>Evidência</th><th>Comando/Origem</th><th>Resultado</th><th>Status</th></tr></thead>
     <tbody><tr data-search-item data-status="pass">
-            <td data-label="Evidência">Lint</td>
-            <td data-label="Comando/Origem">pnpm lint</td>
-            <td data-label="Resultado">Biome sem erros em 86 arquivos</td>
+            <td data-label="Evidência">Testes focados</td>
+            <td data-label="Comando/Origem">pnpm vitest run test/unit/local-public-base.test.ts test/unit/process-csv.ipc.test.ts test/unit/app-view.test.ts test/unit/app-provider.test.ts test/integration/process-csv.use-case.test.ts</td>
+            <td data-label="Resultado">35 testes passando; cobrem store/preparo, adapter, IPC, UI view/provider e use-case.</td>
             <td data-label="Status"><span class="status-pill status-done">pass</span></td>
           </tr><tr data-search-item data-status="pass">
             <td data-label="Evidência">Typecheck</td>
             <td data-label="Comando/Origem">pnpm typecheck</td>
-            <td data-label="Resultado">TypeScript sem erros</td>
+            <td data-label="Resultado">TypeScript sem erros depois de ajustar contrato de status e imports.</td>
             <td data-label="Status"><span class="status-pill status-done">pass</span></td>
           </tr><tr data-search-item data-status="pass">
-            <td data-label="Evidência">Suite automatizada</td>
+            <td data-label="Evidência">Lint</td>
+            <td data-label="Comando/Origem">pnpm lint</td>
+            <td data-label="Resultado">Biome sem erros em 88 arquivos.</td>
+            <td data-label="Status"><span class="status-pill status-done">pass</span></td>
+          </tr><tr data-search-item data-status="pass">
+            <td data-label="Evidência">Suíte completa</td>
             <td data-label="Comando/Origem">pnpm test</td>
-            <td data-label="Resultado">29 arquivos / 182 testes passando, incluindo índice local, adapter, config, IPC, UI, retomada com aceite e use-case</td>
+            <td data-label="Resultado">29 arquivos / 186 testes passando após corrigir findings de review.</td>
             <td data-label="Status"><span class="status-pill status-done">pass</span></td>
           </tr><tr data-search-item data-status="pass">
             <td data-label="Evidência">Build</td>
             <td data-label="Comando/Origem">pnpm build</td>
-            <td data-label="Resultado">Renderer e main Electron gerados; boundary corrigido para o renderer não importar adapters Node</td>
+            <td data-label="Resultado">Renderer Vite e main/preload Electron gerados com sucesso.</td>
             <td data-label="Status"><span class="status-pill status-done">pass</span></td>
           </tr><tr data-search-item data-status="pass">
             <td data-label="Evidência">Smoke CLI Base Pública Local</td>
             <td data-label="Comando/Origem">SMOKE_PROVIDER=base-publica-local pnpm smoke:real-csv</td>
-            <td data-label="Resultado">Fixture pública pequena, provider local, 5 linhas, 3 CNPJs únicos, 1 erro esperado por linha inválida</td>
+            <td data-label="Resultado">5 linhas, 5 CNPJs encontrados, 4 válidos, 3 únicos, 2 optantes, 2 não optantes, 1 erro esperado.</td>
             <td data-label="Status"><span class="status-pill status-done">pass</span></td>
           </tr><tr data-search-item data-status="pass">
             <td data-label="Evidência">Smoke Electron real</td>
             <td data-label="Comando/Origem">FISCAL_DESK_SMOKE_PROVIDER=base-publica-local pnpm smoke:electron-ui</td>
-            <td data-label="Resultado">App Electron real selecionou Base Pública Local, marcou consentimento, retomou checkpoint e salvou XLSX</td>
+            <td data-label="Resultado">App Electron real preparou provider local via bridge/IPC, selecionou Base Pública Local, exigiu aceite, retomou checkpoint e salvou XLSX.</td>
             <td data-label="Status"><span class="status-pill status-done">pass</span></td>
           </tr><tr data-search-item data-status="pass">
             <td data-label="Evidência">Smoke visual</td>
             <td data-label="Comando/Origem">pnpm smoke:visual</td>
-            <td data-label="Resultado">Desktop 1440x1000 e mobile 390x900 sem overflow nem botões cortados</td>
+            <td data-label="Resultado">Desktop 1440x1000 e mobile 390x900 sem overflow e sem botões cortados.</td>
             <td data-label="Status"><span class="status-pill status-done">pass</span></td>
           </tr><tr data-search-item data-status="pass">
             <td data-label="Evidência">Perf local XLSX</td>
             <td data-label="Comando/Origem">FISCAL_DESK_PERF_PROVIDER=base-publica-local FISCAL_DESK_PERF_DELIVERY_FORMAT=xlsx pnpm perf:local-csv</td>
-            <td data-label="Resultado">5.000 linhas: 219 ms, 22.846 linhas/s, 235.671 bytes</td>
+            <td data-label="Resultado">5.000 linhas em 626 ms, 7.993 linhas/s, 235.671 bytes.</td>
             <td data-label="Status"><span class="status-pill status-done">pass</span></td>
           </tr><tr data-search-item data-status="pass">
-            <td data-label="Evidência">Dependency audit</td>
-            <td data-label="Comando/Origem">pnpm audit --prod</td>
-            <td data-label="Resultado">Sem vulnerabilidades conhecidas</td>
-            <td data-label="Status"><span class="status-pill status-done">pass</span></td>
-          </tr><tr data-search-item data-status="pass">
-            <td data-label="Evidência">Secret scan</td>
-            <td data-label="Comando/Origem">gitleaks detect --source . --redact --no-banner</td>
-            <td data-label="Resultado">Sem vazamentos encontrados</td>
+            <td data-label="Evidência">Audit e secret scan</td>
+            <td data-label="Comando/Origem">pnpm audit --prod; gitleaks detect --source . --redact --no-banner</td>
+            <td data-label="Resultado">Sem vulnerabilidades conhecidas e sem vazamentos encontrados.</td>
             <td data-label="Status"><span class="status-pill status-done">pass</span></td>
           </tr><tr data-search-item data-status="pass">
             <td data-label="Evidência">Quality ratchet</td>
             <td data-label="Comando/Origem">node docs/ai/quality-gate/check-ratchet.mjs</td>
-            <td data-label="Resultado">PASS; large files preservados em 2, com warnings esperados de coverage e review não enforceado em CI</td>
+            <td data-label="Resultado">PASS; arquivos grandes preservados em 2 depois de extrair IPC/helper do renderer.</td>
+            <td data-label="Status"><span class="status-pill status-done">pass</span></td>
+          </tr><tr data-search-item data-status="pass">
+            <td data-label="Evidência">Review independente</td>
+            <td data-label="Comando/Origem">agentic-code-review / reviewer Heisenberg</td>
+            <td data-label="Resultado">Achados altos corrigidos: preparo inválido invalida índice antigo, preparo serializado, temp path único, índice/status lidos de um único documento e records persistidos validados. Sem bloqueante restante para teste humano local.</td>
+            <td data-label="Status"><span class="status-pill status-done">pass</span></td>
+          </tr><tr data-search-item data-status="pass">
+            <td data-label="Evidência">Regressão detectada e corrigida</td>
+            <td data-label="Comando/Origem">teste de concorrência em process-csv.ipc</td>
+            <td data-label="Resultado">A validação assíncrona da base foi movida para depois da reserva da sessão ativa, preservando o bloqueio de duplo processamento.</td>
             <td data-label="Status"><span class="status-pill status-done">pass</span></td>
           </tr></tbody>
   </table></div></div>
   </section>
-<section class="report-section" id="decisoes" data-search-item data-status="done">
+<section class="report-section" id="pendencias" data-search-item data-status="done">
     <header class="section-heading">
       <div>
-        <p class="eyebrow">Racional</p>
-        <h2>Decisões do corte</h2>
-      </div>
-      <span class="status-pill status-done">feito</span>
-    </header>
-    <div class="section-body"><div class="card-grid"><article class="report-card" data-search-item data-status="done">
-          <div class="chip-row"><span class="status-pill status-done">feito</span></div>
-          <h4>Sem download real neste corte</h4>
-          <p>O packet proíbe baixar base real sem decisão explícita; a entrega usa fixture local pequena e contrato preparado.</p>
-
-        </article><article class="report-card" data-search-item data-status="done">
-          <div class="chip-row"><span class="status-pill status-done">feito</span></div>
-          <h4>Provider local por porta existente</h4>
-          <p>`base-publica-local` implementa `SimplesLookupPort`; regras de base ficam em `src/core/public-base` e não vazam para adapters existentes.</p>
-
-        </article><article class="report-card" data-search-item data-status="done">
-          <div class="chip-row"><span class="status-pill status-done">feito</span></div>
-          <h4>Consentimento antes de efeitos</h4>
-          <p>IPC rejeita processar ou retomar com Base Pública Local sem aceite de Data da Base antes de ledger, leitura do CSV ou provider.</p>
-
-        </article><article class="report-card" data-search-item data-status="done">
-          <div class="chip-row"><span class="status-pill status-done">feito</span></div>
-          <h4>Base desatualizada não bloqueia</h4>
-          <p>A UI trata defasagem como aviso explícito, não como bloqueio automático depois do aceite do usuário.</p>
-
-        </article><article class="report-card" data-search-item data-status="done">
-          <div class="chip-row"><span class="status-pill status-done">feito</span></div>
-          <h4>Ratchet preservado</h4>
-          <p>A extração de sync do renderer e escrita de saída do IPC evitou aumentar a contagem de arquivos grandes.</p>
-
-        </article></div></div>
-  </section>
-<section class="report-section" id="plano" data-search-item data-status="done">
-    <header class="section-heading">
-      <div>
-        <p class="eyebrow">Execução</p>
-        <h2>Estado e próximo passo</h2>
+        <p class="eyebrow">Gates concluídos</p>
+        <h2>Estado para teste</h2>
       </div>
       <span class="status-pill status-done">feito</span>
     </header>
     <div class="section-body"><div class="kanban"><section class="kanban-column" data-search-item>
-        <header><span>Feito localmente</span><span>2</span></header>
+        <header><span>Concluído para teste local</span><span>4</span></header>
         <div class="kanban-cards"><article class="report-card" data-search-item data-status="done">
-                <h4>Base Pública Local operacional</h4>
-                <p>Provider local, status de preparo, Data da Base, índice e consentimento estão implementados.</p>
-                <div class="chip-row"><span class="chip">produto</span></div>
+                <h4>Smoke CLI Base Pública Local</h4>
+                <p>Passou com fixture pública pequena e provider local preparado.</p>
+                <div class="chip-row"><span class="chip">CLI</span></div>
               </article><article class="report-card" data-search-item data-status="done">
-                <h4>Gates locais completos</h4>
-                <p>Lint, typecheck, testes, build, smokes reais, perf, audit, gitleaks e ratchet passaram localmente.</p>
-                <div class="chip-row"><span class="chip">evidência</span></div>
+                <h4>Smoke Electron real</h4>
+                <p>Passou com Base Pública Local, aceite de Data da Base, retomada de checkpoint e XLSX salvo.</p>
+                <div class="chip-row"><span class="chip">Electron</span></div>
+              </article><article class="report-card" data-search-item data-status="done">
+                <h4>Smoke visual</h4>
+                <p>Passou em desktop e mobile sem overflow ou botões cortados.</p>
+                <div class="chip-row"><span class="chip">UI</span></div>
+              </article><article class="report-card" data-search-item data-status="done">
+                <h4>Perf/carga</h4>
+                <p>Passou com 5.000 linhas e XLSX local acima do piso de 500 linhas/s.</p>
+                <div class="chip-row"><span class="chip">perf</span></div>
               </article></div>
       </section><section class="kanban-column" data-search-item>
-        <header><span>Merge e pós-merge</span><span>3</span></header>
-        <div class="kanban-cards"><article class="report-card" data-search-item data-status="done">
+        <header><span>Depois do teste humano</span><span>3</span></header>
+        <div class="kanban-cards"><article class="report-card" data-search-item data-status="warn">
                 <h4>Review independente</h4>
-                <p>Reviewer independente fechou o finding funcional, revalidou o report e não apontou novos bloqueantes.</p>
+                <p>Gate executado e findings altos corrigidos. Repetir só se o teste humano gerar novo ajuste material.</p>
                 <div class="chip-row"><span class="chip">review</span></div>
-              </article><article class="report-card" data-search-item data-status="done">
-                <h4>PR #5 mergeada</h4>
-                <p>Merge por squash confirmado em `main` com commit `96f2068482cbe8bd7ca7295d4b9755d40cc45454`.</p>
-                <div class="chip-row"><span class="chip">merge</span></div>
-              </article><article class="report-card" data-search-item data-status="done">
-                <h4>Smoke pós-merge</h4>
-                <p>`FISCAL_DESK_SMOKE_PROVIDER=base-publica-local pnpm smoke:electron-ui` passou no commit mergeado.</p>
-                <div class="chip-row"><span class="chip">smoke</span></div>
-              </article></div>
-      </section><section class="kanban-column" data-search-item>
-        <header><span>Depois</span><span>2</span></header>
-        <div class="kanban-cards"><article class="report-card" data-search-item data-status="info">
-                <h4>Preparo real da base</h4>
-                <p>Próximo corte natural: preparar armazenamento local real, progresso e retomada de preparo sem download oculto.</p>
-                <div class="chip-row"><span class="chip">volume</span></div>
-              </article><article class="report-card" data-search-item data-status="info">
-                <h4>Catálogo de provedores</h4>
-                <p>Evoluir a tela para explicar custo, frescor e recomendação por provider.</p>
-                <div class="chip-row"><span class="chip">UX</span></div>
+              </article><article class="report-card" data-search-item data-status="warn">
+                <h4>Report de status</h4>
+                <p>Atualizar o report de status do Fiscal Desk com resultado final do corte atual e copiar versão operacional para `/private/tmp` se necessário.</p>
+                <div class="chip-row"><span class="chip">report</span></div>
+              </article><article class="report-card" data-search-item data-status="warn">
+                <h4>Commit, push e PR</h4>
+                <p>Criar commit semanticamente nomeado, abrir PR para `main`, acompanhar CI e só mergear quando gates, review e teste humano estiverem aceitos.</p>
+                <div class="chip-row"><span class="chip">GitHub</span></div>
               </article></div>
       </section></div></div>
+  </section>
+<section class="report-section" id="arquitetura" data-search-item data-status="partial">
+    <header class="section-heading">
+      <div>
+        <p class="eyebrow">Arquitetura</p>
+        <h2>Fluxo do corte atual</h2>
+      </div>
+      <span class="status-pill status-partial">parcial</span>
+    </header>
+    <div class="section-body"><p>O fluxo novo preserva a arquitetura <code>porta + adapters</code>:</p>
+<ol><li>Renderer chama <code>pickLocalPublicBaseSourceFile</code> e <code>prepareLocalPublicBase</code> via preload.</li><li>Main lê o CSV escolhido e delega para <code>LocalPublicBaseStore</code>.</li><li>Store usa o preparador do core para normalizar CNPJs, validar flags <code>simples_nacional</code>/<code>simei</code>, deduplicar e persistir índice JSON atômico.</li><li><code>app:get-defaults</code> e <code>local-public-base:get-status</code> expõem o status para a UI.</li><li>Ao processar CSV, main valida aceite + base pronta antes de ledger/provider.</li><li>Provider <code>base-publica-local</code> consulta o índice preparado por <code>SimplesLookupPort</code>, sem Receita Web e sem consulta online por item.</li></ol></div>
+  </section>
+<section class="report-section" id="risco" data-search-item data-status="partial">
+    <header class="section-heading">
+      <div>
+        <p class="eyebrow">Ainda não fechar</p>
+        <h2>Riscos residuais agora</h2>
+      </div>
+      <span class="status-pill status-partial">parcial</span>
+    </header>
+    <div class="section-body"><div class="card-grid"><article class="report-card" data-search-item data-status="done">
+          <div class="chip-row"><span class="status-pill status-done">feito</span></div>
+          <h4>Smoke real ainda pendente</h4>
+          <p>Resolvido neste fechamento: smoke Electron real passou. Risco restante é apenas validação manual do usuário em seu fluxo e CSV real.</p>
+          
+        </article><article class="report-card" data-search-item data-status="warn">
+          <div class="chip-row"><span class="status-pill status-info">warn</span></div>
+          <h4>Formato público real ainda não foi adotado</h4>
+          <p>O preparador aceita um CSV normalizado/controlado. Integração com layout oficial completo de bases públicas continua como próximo subcorte ou adaptação explícita.</p>
+          
+        </article><article class="report-card" data-search-item data-status="warn">
+          <div class="chip-row"><span class="status-pill status-info">warn</span></div>
+          <h4>Report visual mudou</h4>
+          <p>Há mudança visual/HTML local intencional por geração de report e UI de preparo. Precisa ser validada por smoke visual antes do fechamento.</p>
+          
+        </article><article class="report-card" data-search-item data-status="warn">
+          <div class="chip-row"><span class="status-pill status-info">warn</span></div>
+          <h4>Branch ainda sem PR</h4>
+          <p>Estado atual é worktree local sujo em `feat/fiscal-desk-local-base-prep`; ainda não há CI remoto para este corte.</p>
+          
+        </article></div></div>
+  </section>
+<section class="report-section" id="proximo" data-search-item data-status="partial">
+    <header class="section-heading">
+      <div>
+        <p class="eyebrow">Execução</p>
+        <h2>Próximo plano objetivo</h2>
+      </div>
+      <span class="status-pill status-partial">parcial</span>
+    </header>
+    <div class="section-body"><p>Sequência recomendada após o teste humano:</p>
+<ol><li>Aplicar qualquer ajuste encontrado no teste manual.</li><li>Repetir checks afetados, especialmente smoke Electron real se tocar UI/IPC.</li><li>Repetir reviewer independente se houver novo ajuste material.</li><li>Atualizar o report de status oficial com as evidências finais.</li><li>Pushar, abrir PR e acompanhar checks remotos.</li><li>Se CI/review ficarem verdes, mergear sem aguardar nova ação, conforme autorização do usuário.</li></ol></div>
+  </section>
+<section class="report-section" id="mudancas" data-search-item data-status="draft">
+    <header class="section-heading">
+      <div>
+        
+        <h2>mudancas</h2>
+      </div>
+      <span class="status-pill status-partial">rascunho</span>
+    </header>
+    <div class="section-body"><p>Seção obrigatória adicionada automaticamente. Preencha antes de publicar o report.</p></div>
+  </section>
+<section class="report-section" id="decisoes" data-search-item data-status="draft">
+    <header class="section-heading">
+      <div>
+        
+        <h2>decisoes</h2>
+      </div>
+      <span class="status-pill status-partial">rascunho</span>
+    </header>
+    <div class="section-body"><p>Seção obrigatória adicionada automaticamente. Preencha antes de publicar o report.</p></div>
   </section>
 <section class="report-section" id="diagrams" data-search-item data-status="info">
     <header class="section-heading">
@@ -1167,61 +1222,17 @@ details.report-card summary {
         <p class="eyebrow">Fluxos</p>
         <h2>Diagramas</h2>
       </div>
-
+      
     </header>
     <div class="section-body"><figure class="diagram-frame" data-search-item>
-    <figcaption class="eyebrow">Fluxo Base Pública Local</figcaption>
-    <svg class="native-flow" viewBox="0 0 930 210" role="img" aria-label="Fluxo Base Pública Local">
+    <figcaption class="eyebrow">Preparo e uso da Base Pública Local</figcaption>
+    <svg class="native-flow" viewBox="0 0 620 210" role="img" aria-label="Preparo e uso da Base Pública Local">
     <defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#8a8173" /></marker></defs>
-    <path d="M 180 106 L 220 106" stroke="#8a8173" stroke-width="1.5" fill="none" marker-end="url(#arrow)" />
-        <text x="200" y="96" text-anchor="middle" font-size="11" fill="#6f716a">usuário escolhe provider</text><path d="M 350 106 L 390 106" stroke="#8a8173" stroke-width="1.5" fill="none" marker-end="url(#arrow)" />
-        <text x="370" y="96" text-anchor="middle" font-size="11" fill="#6f716a">sem rede por item</text><path d="M 520 106 L 560 106" stroke="#8a8173" stroke-width="1.5" fill="none" marker-end="url(#arrow)" />
-        <text x="540" y="96" text-anchor="middle" font-size="11" fill="#6f716a">consulta local</text><path d="M 690 106 L 730 106" stroke="#8a8173" stroke-width="1.5" fill="none" marker-end="url(#arrow)" />
-        <text x="710" y="96" text-anchor="middle" font-size="11" fill="#6f716a">entrega</text>
-    <g>
-        <rect x="50" y="78" width="130" height="56" rx="8" class="tone-blue" stroke="#ded8cc" />
-        <text x="115" y="110" text-anchor="middle" font-size="13" font-family="ui-monospace, monospace" fill="currentColor">Entrada CSV</text>
-      </g><g>
-        <rect x="220" y="78" width="130" height="56" rx="8" class="tone-amber" stroke="#ded8cc" />
-        <text x="285" y="110" text-anchor="middle" font-size="13" font-family="ui-monospace, monospace" fill="currentColor">Aceite Data da Base</text>
-      </g><g>
-        <rect x="390" y="78" width="130" height="56" rx="8" class="tone-blue" stroke="#ded8cc" />
-        <text x="455" y="110" text-anchor="middle" font-size="13" font-family="ui-monospace, monospace" fill="currentColor">Índice local</text>
-      </g><g>
-        <rect x="560" y="78" width="130" height="56" rx="8" class="tone-green" stroke="#ded8cc" />
-        <text x="625" y="110" text-anchor="middle" font-size="13" font-family="ui-monospace, monospace" fill="currentColor">Resultado Simples</text>
-      </g><g>
-        <rect x="730" y="78" width="130" height="56" rx="8" class="tone-green" stroke="#ded8cc" />
-        <text x="795" y="110" text-anchor="middle" font-size="13" font-family="ui-monospace, monospace" fill="currentColor">XLSX/CSV</text>
-      </g>
+    
+    
   </svg>
-    <p class="card-meta">A execução continua usando a porta de consulta; a base local entra como provider explícito com aceite de Data da Base.</p>
+    <p class="card-meta">Fluxo proposto no corte atual: preparo explícito antes de consulta em lote.</p>
   </figure></div>
-  </section>
-<section class="report-section" id="risks" data-search-item data-status="info">
-    <header class="section-heading">
-      <div>
-        <p class="eyebrow">Controle</p>
-        <h2>Riscos e pendências</h2>
-      </div>
-
-    </header>
-    <div class="section-body"><div class="risk-grid"><article class="report-card" data-search-item data-status="partial">
-          <div class="chip-row"><span class="status-pill status-partial">parcial</span></div>
-          <h4>Fixture pequena, não base pública completa</h4>
-          <p>O corte valida contrato e UX sem baixar base real. Volume público real ainda depende de preparo e armazenamento futuros.</p>
-
-        </article><article class="report-card" data-search-item data-status="partial">
-          <div class="chip-row"><span class="status-pill status-partial">parcial</span></div>
-          <h4>Coverage formal warning-only</h4>
-          <p>O repo ainda não gera `coverage/lcov.info`; ratchet segue sem cobertura real por linha alterada.</p>
-
-        </article><article class="report-card" data-search-item data-status="partial">
-          <div class="chip-row"><span class="status-pill status-partial">parcial</span></div>
-          <h4>Base real ainda não preparada</h4>
-          <p>O corte valida contrato, UX e smoke com fixture pequena. Download/preparo de base pública completa continua fora deste PR.</p>
-
-        </article></div></div>
   </section></div>
     </div>
     <footer class="report-footer">Gerado com interactive-html-reports 0.1.0.</footer>

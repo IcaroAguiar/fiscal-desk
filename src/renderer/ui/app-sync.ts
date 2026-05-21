@@ -31,6 +31,9 @@ type AppRefs = {
   localPublicBaseDate: HTMLElement | null;
   localPublicBaseNotice: HTMLInputElement | null;
   localPublicBaseNoticePanel: HTMLElement | null;
+  localPublicBasePrepareButton: HTMLButtonElement | null;
+  localPublicBasePrepPanel: HTMLElement | null;
+  localPublicBaseStatusLine: HTMLElement | null;
   localPublicBaseWarning: HTMLElement | null;
   message: HTMLElement | null;
   outputStatus: HTMLElement | null;
@@ -112,6 +115,11 @@ function syncLocalPublicBaseNotice(refs: AppRefs, state: UiState): void {
       state.provider === SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL ? "flex" : "none";
   }
 
+  if (refs.localPublicBasePrepPanel) {
+    refs.localPublicBasePrepPanel.style.display =
+      state.provider === SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL ? "flex" : "none";
+  }
+
   if (refs.localPublicBaseNotice) {
     refs.localPublicBaseNotice.checked = state.localPublicBaseNoticeAccepted;
   }
@@ -125,6 +133,11 @@ function syncLocalPublicBaseNotice(refs: AppRefs, state: UiState): void {
     refs.localPublicBaseWarning.textContent =
       state.localPublicBaseStatus?.freshnessWarning ??
       "Data da Base indisponível.";
+  }
+
+  if (refs.localPublicBaseStatusLine) {
+    refs.localPublicBaseStatusLine.textContent =
+      formatLocalPublicBaseStatusLine(state);
   }
 }
 
@@ -162,11 +175,23 @@ function syncButtons(refs: AppRefs, state: UiState): void {
   if (refs.processButton) {
     refs.processButton.disabled =
       state.status === "processing" ||
+      state.localPublicBasePrepareStatus === "loading" ||
       !state.content ||
       (state.provider === SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL &&
-        !state.localPublicBaseNoticeAccepted);
+        (!state.localPublicBaseNoticeAccepted ||
+          state.localPublicBaseStatus?.state !== "ready"));
     refs.processButton.textContent =
       state.status === "processing" ? "Processando..." : "Iniciar execução";
+  }
+
+  if (refs.localPublicBasePrepareButton) {
+    refs.localPublicBasePrepareButton.disabled =
+      state.status === "processing" ||
+      state.localPublicBasePrepareStatus === "loading";
+    refs.localPublicBasePrepareButton.textContent =
+      state.localPublicBasePrepareStatus === "loading"
+        ? "Preparando..."
+        : "Preparar base";
   }
 
   if (refs.cancelButton) {
@@ -176,4 +201,25 @@ function syncButtons(refs: AppRefs, state: UiState): void {
   if (refs.saveButton) {
     refs.saveButton.disabled = !state.outputDelivery;
   }
+}
+
+function formatLocalPublicBaseStatusLine(state: UiState): string {
+  const status = state.localPublicBaseStatus;
+
+  if (!status || status.state === "not-prepared") {
+    return "Base ainda não preparada neste perfil.";
+  }
+
+  if (status.state === "error") {
+    return status.errorMessage ?? "Base Pública Local indisponível.";
+  }
+
+  return [
+    `${status.preparedRows} registros preparados`,
+    `${status.rejectedRows} rejeitados`,
+    `Data da Base: ${status.baseDate ?? "não informada"}`,
+    status.sourceFileName ? `Origem: ${status.sourceFileName}` : null,
+  ]
+    .filter(Boolean)
+    .join(" • ");
 }

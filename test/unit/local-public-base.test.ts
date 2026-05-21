@@ -1,23 +1,39 @@
-import { describe, expect, it } from "vitest";
+import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { afterEach, describe, expect, it } from "vitest";
 
 import {
   createLocalPublicBaseIndex,
+  createLocalPublicBaseIndexFromRecords,
   getLocalPublicBaseStatus,
+  prepareLocalPublicBaseFromCsv,
 } from "../../src/core/public-base/local-public-base.index";
+import { LocalPublicBaseStore } from "../../src/core/public-base/local-public-base.store";
 import { LocalPublicBaseSimplesLookupAdapter } from "../../src/core/simples/adapters/local-public-base-simples-lookup.adapter";
 
+const tempDirs: string[] = [];
+
+afterEach(async () => {
+  await Promise.all(
+    tempDirs
+      .splice(0)
+      .map((directory) => rm(directory, { force: true, recursive: true })),
+  );
+});
+
 describe("Base Pública Local", () => {
-  it("exposes preparation status and freshness metadata", () => {
+  it("exposes not-prepared status before a local CSV is prepared", () => {
     const status = getLocalPublicBaseStatus();
 
     expect(status).toMatchObject({
-      state: "ready",
-      baseDate: "2026-05-20",
-      estimatedRows: 3,
+      state: "not-prepared",
+      baseDate: null,
+      preparedRows: 0,
     });
     expect(status.estimatedSizeLabel).toContain("menos de 1 MB");
-    expect(status.diskUsageLabel).toContain("sem download");
-    expect(status.freshnessWarning).toContain("pode estar defasada");
+    expect(status.diskUsageLabel).toContain("sem base preparada");
+    expect(status.freshnessWarning).toContain("Prepare a Base Pública Local");
   });
 
   it("indexes known public fixture records by normalized CNPJ", () => {
@@ -33,7 +49,19 @@ describe("Base Pública Local", () => {
   });
 
   it("returns Resultado Simples with Data da Base for known and missing CNPJs", async () => {
-    const adapter = new LocalPublicBaseSimplesLookupAdapter();
+    const prepared = prepareLocalPublicBaseFromCsv({
+      content: [
+        "cnpj;razao_social;simples_nacional;simei;data_base",
+        "00000000000191;Banco do Brasil S.A.;sim;nao;2026-05-20",
+      ].join("\n"),
+      sourceFileName: "base.csv",
+      sourceFilePath: "/tmp/base.csv",
+    });
+    const index = createLocalPublicBaseIndexFromRecords(prepared.records);
+    const adapter = new LocalPublicBaseSimplesLookupAdapter(
+      index,
+      prepared.status,
+    );
 
     await expect(adapter.lookup("00000000000191")).resolves.toMatchObject({
       cnpj: "00000000000191",
@@ -58,5 +86,125 @@ describe("Base Pública Local", () => {
         baseDate: "2026-05-20",
       },
     });
+  });
+
+  it("prepares a deduplicated local index from a CSV source", () => {
+    const prepared = prepareLocalPublicBaseFromCsv({
+      content: [
+        "cnpj;razao_social;simples_nacional;simei;data_base",
+        "00.000.000/0001-91;Banco do Brasil S.A.;sim;nao;2026-05-20",
+        "33.000.167/0001-01;Petrobras;nao;nao;2026-05-20",
+        "invalido;Linha invalida;sim;nao;2026-05-20",
+      ].join("\n"),
+      sourceFileName: "base-publica.csv",
+      sourceFilePath: "/tmp/base-publica.csv",
+    });
+
+    expect(prepared).toMatchObject({
+      acceptedRows: 2,
+      rejectedRows: 1,
+      status: {
+        baseDate: "2026-05-20",
+        preparedRows: 2,
+        rejectedRows: 1,
+        sourceFileName: "base-publica.csv",
+        state: "ready",
+      },
+    });
+    expect(prepared.records).toHaveLength(2);
+  });
+
+  it("persists and reloads a prepared local base index", async () => {
+    const directory = await mkdtemp(join(tmpdir(), "public-base-test-"));
+    tempDirs.push(directory);
+    const store = new LocalPublicBaseStore(directory);
+
+    const result = await store.prepareFromCsv({
+      content: [
+        "cnpj;razao_social;simples_nacional;simei;data_base",
+        "00000000000191;Banco do Brasil S.A.;sim;nao;2026-05-20",
+      ].join("\n"),
+      sourceFileName: "base.csv",
+      sourceFilePath: join(directory, "base.csv"),
+    });
+    const status = await store.getStatus();
+    const index = await store.loadIndex();
+
+    expect(result.status.state).toBe("ready");
+    expect(status).toMatchObject({
+      baseDate: "2026-05-20",
+      preparedRows: 1,
+      sourceFileName: "base.csv",
+      state: "ready",
+    });
+    expect(index?.findByCnpj("00000000000191")).toMatchObject({
+      razaoSocial: "Banco do Brasil S.A.",
+    });
+  });
+
+  it("persists an error state and invalidates the previous index after an invalid preparation", async () => {
+    const directory = await mkdtemp(join(tmpdir(), "public-base-test-"));
+    tempDirs.push(directory);
+    const store = new LocalPublicBaseStore(directory);
+
+    await store.prepareFromCsv({
+      content: [
+        "cnpj;razao_social;simples_nacional;simei;data_base",
+        "00000000000191;Banco do Brasil S.A.;sim;nao;2026-05-20",
+      ].join("\n"),
+      sourceFileName: "base-valida.csv",
+      sourceFilePath: join(directory, "base-valida.csv"),
+    });
+
+    const failed = await store.prepareFromCsv({
+      content: [
+        "cnpj;razao_social;simples_nacional;simei;data_base",
+        "invalido;Linha invalida;sim;nao;2026-05-21",
+      ].join("\n"),
+      sourceFileName: "base-invalida.csv",
+      sourceFilePath: join(directory, "base-invalida.csv"),
+    });
+
+    expect(failed.status).toMatchObject({
+      sourceFileName: "base-invalida.csv",
+      state: "error",
+    });
+    await expect(store.getStatus()).resolves.toMatchObject({
+      sourceFileName: "base-invalida.csv",
+      state: "error",
+    });
+    await expect(store.loadIndex()).resolves.toBeNull();
+    await expect(store.loadPreparedBase()).resolves.toBeNull();
+  });
+
+  it("discards persisted indexes with malformed records", async () => {
+    const directory = await mkdtemp(join(tmpdir(), "public-base-test-"));
+    tempDirs.push(directory);
+    await mkdir(directory, { recursive: true });
+    await writeFile(
+      join(directory, "local-public-base-index.json"),
+      `${JSON.stringify({
+        version: 1,
+        state: "ready",
+        sourceFileName: "malformada.csv",
+        sourceFilePath: join(directory, "malformada.csv"),
+        preparedAt: "2026-05-21T00:00:00.000Z",
+        baseDate: "2026-05-20",
+        estimatedRows: 1,
+        preparedRows: 1,
+        rejectedRows: 0,
+        sourceSizeBytes: 10,
+        errorMessage: null,
+        records: [{ cnpj: "00000000000191" }],
+      })}\n`,
+      "utf8",
+    );
+
+    const store = new LocalPublicBaseStore(directory, { warn() {} });
+
+    await expect(store.getStatus()).resolves.toMatchObject({
+      state: "not-prepared",
+    });
+    await expect(store.loadIndex()).resolves.toBeNull();
   });
 });

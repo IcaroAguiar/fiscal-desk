@@ -1,7 +1,12 @@
 import { performance } from "node:perf_hooks";
+import { mkdtemp, readFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 
 import type { ProcessCsvDeliveryFormat } from "../src/core/app/process-csv.types";
 import { processCsv } from "../src/core/app/process-csv.use-case";
+import { LocalPublicBaseStore } from "../src/core/public-base/local-public-base.store";
 import { LocalPublicBaseSimplesLookupAdapter } from "../src/core/simples/adapters/local-public-base-simples-lookup.adapter";
 import { MockSimplesLookupAdapter } from "../src/core/simples/adapters/mock-simples-lookup.adapter";
 import type { SimplesLookupPort } from "../src/core/simples/simples-lookup.port";
@@ -18,9 +23,10 @@ const deliveryFormat = resolveDeliveryFormat(
   process.env.FISCAL_DESK_PERF_DELIVERY_FORMAT,
 );
 const providerName = resolveProvider(process.env.FISCAL_DESK_PERF_PROVIDER);
+const tempDir = await mkdtemp(join(tmpdir(), "fiscal-desk-perf-"));
 const csv = buildCsv(totalRows);
 const startedAt = performance.now();
-const result = await processCsv(csv, createProvider(providerName), {
+const result = await processCsv(csv, await createProvider(providerName), {
   cnpjColumn: "cnpj",
   deliveryFormat,
 });
@@ -62,9 +68,27 @@ function resolveProvider(value: string | undefined): SimplesProviderName {
   return SIMPLES_PROVIDER.MOCK;
 }
 
-function createProvider(providerName: SimplesProviderName): SimplesLookupPort {
+async function createProvider(
+  providerName: SimplesProviderName,
+): Promise<SimplesLookupPort> {
   if (providerName === SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL) {
-    return new LocalPublicBaseSimplesLookupAdapter();
+    const store = new LocalPublicBaseStore(join(tempDir, "public-base"));
+    const sourceFilePath = fileURLToPath(
+      new URL("../test/fixtures/smoke/base-publica-local.csv", import.meta.url),
+    );
+    const content = await readFile(sourceFilePath, "utf8");
+    const prepareResult = await store.prepareFromCsv({
+      content,
+      sourceFileName: "base-publica-local.csv",
+      sourceFilePath,
+    });
+    const index = await store.loadIndex();
+
+    if (!index || prepareResult.status.state !== "ready") {
+      throw new Error("Perf nao preparou a Base Publica Local.");
+    }
+
+    return new LocalPublicBaseSimplesLookupAdapter(index, prepareResult.status);
   }
 
   return new MockSimplesLookupAdapter();

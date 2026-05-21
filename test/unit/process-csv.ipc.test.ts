@@ -169,8 +169,8 @@ describe("process-csv IPC", () => {
 
     expect(defaults).toMatchObject({
       localPublicBaseStatus: {
-        baseDate: "2026-05-20",
-        state: "ready",
+        baseDate: null,
+        state: "not-prepared",
       },
       provider: "mock",
       receitaWebAvailable: false,
@@ -192,8 +192,8 @@ describe("process-csv IPC", () => {
 
     expect(defaults).toMatchObject({
       localPublicBaseStatus: {
-        baseDate: "2026-05-20",
-        state: "ready",
+        baseDate: null,
+        state: "not-prepared",
       },
       provider: "mock",
       receitaWebAvailable: true,
@@ -248,7 +248,7 @@ describe("process-csv IPC", () => {
     expect(processCsv).not.toHaveBeenCalled();
   });
 
-  it("rejects Base Pública Local processing without Data da Base consent before ledger side effects", async () => {
+  it("rejects Base Pública Local before ledger side effects without consent or prepared base", async () => {
     const handler = handlers.get("csv:process");
 
     await expect(
@@ -260,6 +260,17 @@ describe("process-csv IPC", () => {
         },
       ),
     ).rejects.toThrow("Confirme o aviso de Data da Base");
+
+    await expect(
+      handler?.(
+        { sender: { send: vi.fn() } },
+        {
+          acceptedLocalPublicBaseNotice: true,
+          content: "cnpj\n00000000000191",
+          provider: "base-publica-local",
+        },
+      ),
+    ).rejects.toThrow("Prepare a Base Pública Local");
 
     expect(ledgerMocks.startRun).not.toHaveBeenCalled();
     expect(processCsv).not.toHaveBeenCalled();

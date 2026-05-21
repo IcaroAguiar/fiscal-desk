@@ -16,6 +16,7 @@ describe("app view execution history", () => {
     expect(html).toContain("Planilha de Resultado");
     expect(html).toContain("Base Pública Local");
     expect(html).toContain('data-field="local-public-base-notice"');
+    expect(html).toContain('data-action="prepare-local-public-base"');
   });
 
   it("renders resumable interrupted executions with an action button", () => {

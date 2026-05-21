@@ -2,6 +2,7 @@ import { contextBridge, ipcRenderer } from "electron";
 
 import type { SimplesProviderName } from "../core/simples/simples-provider.names";
 import type {
+  LocalPublicBasePrepareResult,
   LocalPublicBaseStatus,
   LookupProgress,
   ProcessCsvDeliveryFormat,
@@ -17,6 +18,8 @@ type PickCsvResult = {
   fileName: string;
   content: string;
 };
+
+type PickLocalPublicBaseSourceResult = PickCsvResult;
 
 type ProcessCsvInput = {
   acceptedLocalPublicBaseNotice?: boolean;
@@ -99,6 +102,20 @@ contextBridge.exposeInMainWorld("appBridge", {
   },
   getDefaults: (): Promise<AppDefaults> => {
     return ipcRenderer.invoke("app:get-defaults");
+  },
+  getLocalPublicBaseStatus: (): Promise<LocalPublicBaseStatus> => {
+    return ipcRenderer.invoke("local-public-base:get-status");
+  },
+  pickLocalPublicBaseSourceFile:
+    (): Promise<PickLocalPublicBaseSourceResult | null> => {
+      return ipcRenderer.invoke("local-public-base:pick-source-file");
+    },
+  prepareLocalPublicBase: (input: {
+    content: string;
+    sourceFileName: string;
+    sourceFilePath: string;
+  }): Promise<LocalPublicBasePrepareResult> => {
+    return ipcRenderer.invoke("local-public-base:prepare", input);
   },
   listExecutions: (): Promise<ProcessExecutionHistoryItem[]> => {
     return ipcRenderer.invoke("csv:list-executions");
