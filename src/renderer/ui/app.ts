@@ -77,6 +77,29 @@ export function mountApp(root: HTMLDivElement | null): void {
     commandHint: appRoot.querySelector<HTMLElement>(
       '[data-slot="command-hint"]',
     ),
+    fileBadge: appRoot.querySelector<HTMLElement>('[data-slot="file-badge"]'),
+    fileDropzoneTitle: appRoot.querySelector<HTMLElement>(
+      '[data-slot="file-dropzone-title"]',
+    ),
+    fileDropzoneHint: appRoot.querySelector<HTMLElement>(
+      '[data-slot="file-dropzone-hint"]',
+    ),
+    outputPreview: appRoot.querySelector<HTMLElement>(
+      '[data-slot="output-preview"]',
+    ),
+    outputSavePath: appRoot.querySelector<HTMLElement>(
+      '[data-slot="output-save-path"]',
+    ),
+    saveInfo: appRoot.querySelector<HTMLElement>('[data-slot="save-info"]'),
+    topStatusPill: appRoot.querySelector<HTMLElement>(
+      '[data-slot="top-status-pill"]',
+    ),
+    runStatusPill: appRoot.querySelector<HTMLElement>(
+      '[data-slot="run-status-pill"]',
+    ),
+    progressSection: appRoot.querySelector<HTMLElement>(
+      '[data-slot="progress-section"]',
+    ),
     summary: appRoot.querySelector<HTMLElement>('[data-slot="summary"]'),
     outputStatus: appRoot.querySelector<HTMLElement>(
       '[data-slot="output-status"]',

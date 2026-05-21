@@ -1,17 +1,22 @@
 import { SIMPLES_PROVIDER } from "../../core/simples/simples-provider.names";
 import type { UiState } from "./app.types";
-import { getLiveProgress, renderStatusText } from "./app-helpers";
+import {
+  getStatusPillVariant,
+  renderStatusLabel,
+  renderStatusText,
+} from "./app-helpers";
 import { syncReceitaWebAvailability } from "./app-provider";
 import {
   getCurrentCnpjLabel,
+  getProgressLineLabel,
   getProgressPercent,
   renderExecutionHistory,
 } from "./app-view";
 import {
   buildDedupeLabel,
   formatCommandBarSummary,
-  formatProgressLine,
   formatProviderHint,
+  previewAutoSavePath,
 } from "./operational-copy";
 import { renderSummaryInto } from "./render-summary";
 
@@ -28,6 +33,9 @@ type AppRefs = {
   executionResume: HTMLElement | null;
   executionRunId: HTMLElement | null;
   executionStatus: HTMLElement | null;
+  fileBadge: HTMLElement | null;
+  fileDropzoneHint: HTMLElement | null;
+  fileDropzoneTitle: HTMLElement | null;
   localPublicBaseDate: HTMLElement | null;
   localPublicBaseNotice: HTMLInputElement | null;
   localPublicBaseNoticePanel: HTMLElement | null;
@@ -37,12 +45,19 @@ type AppRefs = {
   localPublicBaseWarning: HTMLElement | null;
   message: HTMLElement | null;
   outputStatus: HTMLElement | null;
+  outputPreview: HTMLElement | null;
+  outputSavePath: HTMLElement | null;
+  pickButton: HTMLButtonElement | null;
   processButton: HTMLButtonElement | null;
   progressBar: HTMLElement | null;
   progressLine: HTMLElement | null;
+  progressSection: HTMLElement | null;
   providerSelect: HTMLSelectElement | null;
   saveButton: HTMLButtonElement | null;
+  saveInfo: HTMLElement | null;
   summary: HTMLElement | null;
+  topStatusPill: HTMLElement | null;
+  runStatusPill: HTMLElement | null;
 };
 
 export function syncUi(refs: AppRefs, state: UiState): void {
@@ -69,6 +84,9 @@ export function syncUi(refs: AppRefs, state: UiState): void {
     refs.outputStatus.textContent = renderStatusText(state);
   }
 
+  syncStatusPills(refs, state);
+  syncOutputPreview(refs, state);
+
   if (refs.commandSummary) {
     refs.commandSummary.textContent = formatCommandBarSummary(
       state.fileName,
@@ -83,6 +101,21 @@ export function syncUi(refs: AppRefs, state: UiState): void {
     );
   }
 
+  if (refs.fileBadge) {
+    refs.fileBadge.textContent = state.fileName ?? "Nenhum arquivo";
+  }
+
+  if (refs.fileDropzoneTitle) {
+    refs.fileDropzoneTitle.textContent =
+      state.fileName ?? "Escolha o CSV de entrada";
+  }
+
+  if (refs.fileDropzoneHint) {
+    refs.fileDropzoneHint.textContent = state.fileName
+      ? formatProviderHint(state.fileName, state.provider)
+      : "Leitura local, detecção de coluna e cópia processada ao lado do arquivo original.";
+  }
+
   if (refs.dedupeLabel) {
     refs.dedupeLabel.textContent = state.summary
       ? buildDedupeLabel(state.summary)
@@ -90,11 +123,16 @@ export function syncUi(refs: AppRefs, state: UiState): void {
   }
 
   if (refs.progressLine) {
-    refs.progressLine.textContent = formatProgressLine(getLiveProgress(state));
+    refs.progressLine.textContent = getProgressLineLabel(state);
   }
 
   if (refs.progressBar) {
     refs.progressBar.style.width = `${getProgressPercent(state)}%`;
+  }
+
+  if (refs.progressSection) {
+    refs.progressSection.style.display =
+      state.status === "processing" || state.summary ? "flex" : "none";
   }
 
   if (refs.currentCnpj) {
@@ -172,6 +210,12 @@ function syncExecutionRefs(refs: AppRefs, state: UiState): void {
 }
 
 function syncButtons(refs: AppRefs, state: UiState): void {
+  if (refs.pickButton) {
+    refs.pickButton.textContent = state.fileName
+      ? "Trocar CSV"
+      : "Selecionar CSV";
+  }
+
   if (refs.processButton) {
     refs.processButton.disabled =
       state.status === "processing" ||
@@ -201,6 +245,46 @@ function syncButtons(refs: AppRefs, state: UiState): void {
   if (refs.saveButton) {
     refs.saveButton.disabled = !state.outputDelivery;
   }
+}
+
+function syncStatusPills(refs: AppRefs, state: UiState): void {
+  for (const pill of [refs.topStatusPill, refs.runStatusPill]) {
+    if (!pill) continue;
+    const variant = getStatusPillVariant(state.status);
+    pill.textContent = renderStatusLabel(state.status);
+    pill.className = [
+      "status-pill",
+      variant !== "default" ? `status-pill--${variant}` : "",
+    ]
+      .filter(Boolean)
+      .join(" ");
+  }
+}
+
+function syncOutputPreview(refs: AppRefs, state: UiState): void {
+  const outputPreview = getOutputPreview(state);
+
+  if (refs.outputPreview) {
+    refs.outputPreview.textContent = outputPreview ?? "Aguardando execução";
+  }
+
+  if (refs.outputSavePath) {
+    refs.outputSavePath.textContent = outputPreview ?? "";
+  }
+
+  if (refs.saveInfo) {
+    refs.saveInfo.style.display = outputPreview ? "flex" : "none";
+  }
+}
+
+function getOutputPreview(state: UiState): string | null {
+  const path = state.savedPath
+    ? state.savedPath
+    : state.filePath
+      ? previewAutoSavePath(state.filePath, state.deliveryFormat)
+      : null;
+
+  return path?.split(/[/\\]/).pop() ?? null;
 }
 
 function formatLocalPublicBaseStatusLine(state: UiState): string {

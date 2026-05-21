@@ -5,6 +5,7 @@ import {
   getLiveProgress,
   getStatusPillVariant,
   renderStatusLabel,
+  renderStatusText,
   renderSummary,
 } from "./app-helpers";
 import { button, statusPill } from "./components";
@@ -26,259 +27,308 @@ export function renderShell(state: UiState): string {
       : null;
 
   return `
-    <main class="app-shell">
-      <header class="topbar">
-        <div class="brand-lockup">
+    <main class="app-shell workbench-shell">
+      <aside class="sidebar" aria-label="Navegação principal">
+        <div class="brand-stack">
           <span class="brand-mark" aria-hidden="true">FD</span>
-          <div class="brand-lockup__copy">
+          <div>
             <strong>Fiscal Desk</strong>
-            <span class="brand-subtitle">Consulta local de CNPJs em lote</span>
+            <span>Local desktop</span>
           </div>
         </div>
-        ${statusPill({ variant: getStatusPillVariant(state.status), children: renderStatusLabel(state.status) })}
-      </header>
 
-      <section class="intro">
-        <div class="intro__card">
-          <div class="intro__header">
-            <div>
-              <span class="intro__eyebrow">Execução local-first</span>
-              <h1 class="intro__title">Prepare, consulte e salve lotes de CNPJs sem sair do seu computador.</h1>
-            </div>
-            <div class="intro__badges">
-              <span class="intro__badge">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
-                CSV local
-              </span>
-              <span class="intro__badge">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                ETA em tempo real
-              </span>
-              <span class="intro__badge">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-                CSV ou Excel
-              </span>
-            </div>
-          </div>
-          <p class="intro__text">
-            Esta versão mantém entrada CSV confiável: você escolhe o arquivo, define provedor e formato de entrega,
-            acompanha o processamento e recebe uma cópia salva ao lado do original. Excel já está disponível como
-            Planilha de Resultado; Base Pública Local entra como consulta resiliente depois do preparo local explícito.
-          </p>
-          <div class="release-strip" aria-label="Recursos desta versão">
-            <div>
-              <span class="ops-label">Disponível agora</span>
-              <strong>CSV, Excel, deduplicação e saída automática</strong>
-            </div>
-            <div>
-              <span class="ops-label">Em evolução</span>
-              <strong>Base local com aviso de defasagem</strong>
-            </div>
-            <div>
-              <span class="ops-label">Transparência</span>
-              <strong>Provedores com limites explícitos</strong>
-            </div>
+        <nav class="sidebar-nav" aria-label="Módulos">
+          <a class="sidebar-nav__item sidebar-nav__item--active" href="#nova-execucao">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18"/><path d="M12 3v18"/></svg>
+            Nova execução
+          </a>
+          <a class="sidebar-nav__item" href="#historico">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5h16"/><path d="M4 12h16"/><path d="M4 19h10"/></svg>
+            Execuções
+          </a>
+          <a class="sidebar-nav__item" href="#base-local">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="7" ry="3"/><path d="M5 5v14c0 1.7 3.1 3 7 3s7-1.3 7-3V5"/><path d="M5 12c0 1.7 3.1 3 7 3s7-1.3 7-3"/></svg>
+            Bases locais
+          </a>
+          <a class="sidebar-nav__item" href="#provedores">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16"/><path d="M7 7v10"/><path d="M17 7v10"/><path d="M5 17h14"/></svg>
+            Provedores
+          </a>
+          <span class="sidebar-nav__item sidebar-nav__item--disabled" aria-disabled="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v16H4z"/><path d="M8 9h8"/><path d="M8 13h8"/></svg>
+            Templates
+          </span>
+          <span class="sidebar-nav__item sidebar-nav__item--disabled" aria-disabled="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v18"/><path d="M3 12h18"/><path d="M5 5l14 14"/></svg>
+            Configurações
+          </span>
+        </nav>
+
+        <div class="sidebar-footer">
+          <span class="system-dot" aria-hidden="true"></span>
+          <div>
+            <strong>Ambiente local</strong>
+            <span>v0.1.1 • sem backend remoto</span>
           </div>
         </div>
-      </section>
+      </aside>
 
-      <section class="workspace">
-        <div class="panel panel--primary">
-          <div class="panel__header">
-            <h2>Nova execução</h2>
-            <span class="panel__badge" data-slot="file-badge">${state.fileName ?? "Nenhum arquivo"}</span>
+      <section class="workbench-main" aria-label="Workbench Fiscal Desk">
+        <header class="ops-topbar">
+          <div>
+            <span class="ops-label">Workbench fiscal local</span>
+            <h1>Execução de CNPJs em lote</h1>
           </div>
-
-          <div class="command-bar">
-            <div class="command-bar__context">
-              <span class="command-bar__label">Entrada</span>
-              <span class="command-bar__file" data-slot="command-summary">${
-                state.fileName
-                  ? escapeHtml(
-                      formatCommandBarSummary(state.fileName, state.provider),
-                    )
-                  : "Nenhum arquivo selecionado"
-              }</span>
-              <span class="command-bar__hint" data-slot="command-hint">${formatProviderHint(state.fileName, state.provider)}</span>
-            </div>
-            <div class="command-bar__actions">
-              ${button({ variant: "ghost", "data-action": "pick-file", children: "Selecionar CSV" })}
-              ${button({ variant: "primary", "data-action": "process-file", children: state.status === "processing" ? "Processando..." : "Iniciar execução", disabled: state.status === "processing" || state.localPublicBasePrepareStatus === "loading" || !state.content || (state.provider === SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL && (!state.localPublicBaseNoticeAccepted || state.localPublicBaseStatus?.state !== "ready")) })}
-              ${button({ variant: "danger", "data-action": "cancel-processing", children: "Cancelar", disabled: state.status !== "processing" })}
-              ${button({ variant: "secondary", "data-action": "save-file", children: "Salvar cópia", disabled: !state.outputDelivery })}
-            </div>
+          <div class="ops-topbar__status">
+            <span class="ops-chip">Base: ${escapeHtml(state.localPublicBaseStatus?.baseDate ?? "não preparada")}</span>
+            <span class="ops-chip">Provider: ${escapeHtml(state.provider)}</span>
+            ${statusPill({ variant: getStatusPillVariant(state.status), children: renderStatusLabel(state.status), dataSlot: "top-status-pill" })}
           </div>
+        </header>
 
-          <div class="controls-row">
-            <label class="field" for="provider">
-              <span class="field__label">
-                Provedor
-                <span class="field__hint" title="mock: dados simulados, sem rede | base pública local: índice preparado a partir de CSV local | cnpja-open: consulta real ao serviço | receita-web: navegador visível e supervisão do usuário">?</span>
-              </span>
-              <select id="provider" data-field="provider">
-                <option value="${SIMPLES_PROVIDER.MOCK}" ${state.provider === SIMPLES_PROVIDER.MOCK ? "selected" : ""}>Simulação local — offline</option>
-                <option value="${SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL}" ${state.provider === SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL ? "selected" : ""}>Base Pública Local — Data da Base</option>
-                <option value="${SIMPLES_PROVIDER.CNPJA_OPEN}" ${state.provider === SIMPLES_PROVIDER.CNPJA_OPEN ? "selected" : ""}>CNPJá Open — consulta real</option>
-                <option value="${SIMPLES_PROVIDER.RECEITA_WEB}" ${state.provider === SIMPLES_PROVIDER.RECEITA_WEB ? "selected" : ""}>Receita Web — assistido e experimental</option>
-              </select>
-              ${
-                state.provider === SIMPLES_PROVIDER.RECEITA_WEB
-                  ? '<span class="field__note">Abre navegador visível, pode ser bloqueado por proteção anti-robô, exige supervisão humana em lotes grandes e no Windows depende de Chrome ou Edge instalados.</span>'
-                  : state.provider === SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL
-                    ? `<span class="field__note">Base ${escapeHtml(state.localPublicBaseStatus?.baseDate ?? "não preparada")} • ${escapeHtml(state.localPublicBaseStatus?.estimatedSizeLabel ?? "tamanho não informado")} • ${escapeHtml(state.localPublicBaseStatus?.diskUsageLabel ?? "uso de disco não informado")}.</span>`
-                    : ""
-              }
-            </label>
-
-            <label class="field" for="cnpj-column">
-              <span class="field__label">Coluna de CNPJ</span>
-              <input
-                id="cnpj-column"
-                data-field="cnpj-column"
-                type="text"
-                placeholder="Detectada automaticamente"
-                value="${escapeHtml(state.cnpjColumn)}"
-              />
-            </label>
-
-            <label class="field" for="delivery-format">
-              <span class="field__label">Entrega</span>
-              <select id="delivery-format" data-field="delivery-format">
-                <option value="csv" ${state.deliveryFormat === "csv" ? "selected" : ""}>CSV compatível</option>
-                <option value="xlsx" ${state.deliveryFormat === "xlsx" ? "selected" : ""}>Excel com abas</option>
-              </select>
-              <span class="field__note">CSV preserva compatibilidade. Excel gera Resumo, Resultados, Falhas, Divergências e Auditoria.</span>
-            </label>
+        <div class="system-strip" aria-label="Estado operacional">
+          <div>
+            <span class="ops-label">Entrada</span>
+            <strong data-slot="command-summary">${escapeHtml(formatCommandBarSummary(state.fileName, state.provider))}</strong>
+            <small data-slot="command-hint">${escapeHtml(formatProviderHint(state.fileName, state.provider))}</small>
           </div>
-
-          <div class="base-prep" data-slot="local-public-base-prep-panel" ${state.provider !== SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL ? 'style="display:none"' : ""}>
-            <div>
-              <span class="ops-label">Base Pública Local</span>
-              <strong data-slot="local-public-base-status-line">${escapeHtml(formatLocalPublicBaseStatusLine(state))}</strong>
-              <small>O preparo usa um CSV local escolhido por você e grava um índice no perfil local do app.</small>
-            </div>
-            ${button({ variant: "secondary", "data-action": "prepare-local-public-base", children: state.localPublicBasePrepareStatus === "loading" ? "Preparando..." : "Preparar base", disabled: state.status === "processing" || state.localPublicBasePrepareStatus === "loading" })}
+          <div>
+            <span class="ops-label">Saída</span>
+            <strong data-slot="output-status">${escapeHtml(renderStatusText(state))}</strong>
+            <small data-slot="output-preview">${autoSavePreview ? escapeHtml(autoSavePreview) : "Aguardando execução"}</small>
           </div>
-
-          <label class="notice-check" for="local-public-base-notice" data-slot="local-public-base-notice-panel" ${state.provider !== SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL ? 'style="display:none"' : ""}>
-            <input
-              id="local-public-base-notice"
-              data-field="local-public-base-notice"
-              type="checkbox"
-              ${state.localPublicBaseNoticeAccepted ? "checked" : ""}
-            />
-            <span>
-              Entendo que a Base Pública Local usa dados de <strong data-slot="local-public-base-date">${escapeHtml(state.localPublicBaseStatus?.baseDate ?? "data não informada")}</strong>, pode estar defasada e deve ser confirmada em casos sensíveis.
-              <small data-slot="local-public-base-warning">${escapeHtml(state.localPublicBaseStatus?.freshnessWarning ?? "Data da Base indisponível.")}</small>
-            </span>
-          </label>
-
-          <div class="progress-section" ${state.status !== "processing" && !state.summary ? 'style="display:none"' : ""}>
-            <div class="progress-header">
-              <span class="ops-label">Progresso</span>
-              <strong data-slot="progress-line">${formatProgressLine(state.progress)}</strong>
-            </div>
-            <div class="ops-progress__track">
-              <span data-slot="progress-bar"></span>
-            </div>
-            <span class="current-cnpj" data-slot="current-cnpj">${
-              state.progress?.currentCnpj ?? "—"
-            }</span>
+          <div>
+            <span class="ops-label">Próxima verificação</span>
+            <strong>Manual</strong>
+            <small>Atualização pelo app em preparação</small>
           </div>
-
-          <p class="message" data-slot="message">${escapeHtml(state.message)}</p>
         </div>
 
-        <aside class="panel panel--secondary">
-          <div class="panel__header">
-            <h2>Painel da execução</h2>
-          </div>
-          <div class="summary" data-slot="summary">${renderSummary(state.summary)}</div>
-
-          <div class="dedupe-info">
-            <span class="ops-label">Deduplicação aplicada</span>
-            <strong data-slot="dedupe-label">${
-              state.summary
-                ? buildDedupeLabel(state.summary)
-                : "Aguardando processamento"
-            }</strong>
-          </div>
-
-          <div class="execution-ledger">
-            <div>
-              <span class="ops-label">Ledger local</span>
-              <strong data-slot="execution-status">${
-                state.execution?.status ?? "Aguardando"
-              }</strong>
-            </div>
-            <div>
-              <span class="ops-label">Execução</span>
-              <strong data-slot="execution-run-id">${
-                state.execution?.runId.slice(0, 8) ?? "—"
-              }</strong>
-            </div>
-            <div>
-              <span class="ops-label">Retomada</span>
-              <strong data-slot="execution-resume">${
-                state.execution
-                  ? `${state.execution.resumedUniqueLookups} retomadas de checkpoint`
-                  : "Sem retomada ativa"
-              }</strong>
-            </div>
-            <div>
-              <span class="ops-label">Checkpoint</span>
-              <span class="save-path" data-slot="execution-checkpoint">${
-                state.execution?.checkpointPath
-                  ? escapeHtml(
-                      state.execution.checkpointPath.split(/[/\\]/).pop() ??
-                        "ledger.json",
-                    )
-                  : "—"
-              }</span>
-            </div>
-          </div>
-
-          <div class="execution-history">
-            <div class="execution-history__header">
-              <div>
-                <span class="ops-label">Histórico local</span>
-                <strong>Execuções recentes</strong>
+        <section class="workbench-grid" id="nova-execucao">
+          <div class="primary-rail">
+            <section class="surface execution-card">
+              <div class="surface__header">
+                <div>
+                  <span class="ops-label">Nova execução</span>
+                  <h2>Entrada, base e entrega</h2>
+                </div>
+                <span class="panel__badge" data-slot="file-badge">${escapeHtml(state.fileName ?? "Nenhum arquivo")}</span>
               </div>
-              <button class="button button--ghost button--compact" type="button" data-action="refresh-history">Atualizar</button>
-            </div>
-            <div data-slot="execution-history">
-              ${renderExecutionHistory(state)}
-            </div>
+
+              <ol class="stepper" aria-label="Etapas da execução">
+                <li class="stepper__item stepper__item--active"><span>1</span>Entrada</li>
+                <li class="stepper__item ${state.provider === SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL ? "stepper__item--active" : ""}"><span>2</span>Base</li>
+                <li class="stepper__item"><span>3</span>Provedor</li>
+                <li class="stepper__item"><span>4</span>Entrega</li>
+                <li class="stepper__item ${state.status === "processing" ? "stepper__item--active" : ""}"><span>5</span>Execução</li>
+                <li class="stepper__item ${state.summary ? "stepper__item--active" : ""}"><span>6</span>Resultado</li>
+              </ol>
+
+              <div class="file-dropzone">
+                <div class="file-dropzone__icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8"/><path d="M8 17h5"/></svg>
+                </div>
+                <div>
+                  <strong data-slot="file-dropzone-title">${state.fileName ? escapeHtml(state.fileName) : "Escolha o CSV de entrada"}</strong>
+                  <span data-slot="file-dropzone-hint">${state.fileName ? escapeHtml(formatProviderHint(state.fileName, state.provider)) : "Leitura local, detecção de coluna e cópia processada ao lado do arquivo original."}</span>
+                </div>
+                ${button({ variant: "secondary", "data-action": "pick-file", children: state.fileName ? "Trocar CSV" : "Selecionar CSV" })}
+              </div>
+
+              <div class="controls-row controls-row--workbench">
+                <label class="field" for="provider">
+                  <span class="field__label">
+                    Provedor
+                    <span class="field__hint" title="mock: dados simulados, sem rede | base pública local: índice preparado a partir de CSV local | cnpja-open: consulta real ao serviço | receita-web: navegador visível e supervisão do usuário">?</span>
+                  </span>
+                  <select id="provider" data-field="provider">
+                    <option value="${SIMPLES_PROVIDER.MOCK}" ${state.provider === SIMPLES_PROVIDER.MOCK ? "selected" : ""}>Simulação local — offline</option>
+                    <option value="${SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL}" ${state.provider === SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL ? "selected" : ""}>Base Pública Local — Data da Base</option>
+                    <option value="${SIMPLES_PROVIDER.CNPJA_OPEN}" ${state.provider === SIMPLES_PROVIDER.CNPJA_OPEN ? "selected" : ""}>CNPJá Open — consulta real</option>
+                    <option value="${SIMPLES_PROVIDER.RECEITA_WEB}" ${state.provider === SIMPLES_PROVIDER.RECEITA_WEB ? "selected" : ""}>Receita Web — assistido e experimental</option>
+                  </select>
+                  ${
+                    state.provider === SIMPLES_PROVIDER.RECEITA_WEB
+                      ? '<span class="field__note">Navegador visível, sujeito a bloqueios e supervisão humana.</span>'
+                      : state.provider === SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL
+                        ? `<span class="field__note">Base ${escapeHtml(state.localPublicBaseStatus?.baseDate ?? "não preparada")} • ${escapeHtml(state.localPublicBaseStatus?.estimatedSizeLabel ?? "tamanho não informado")} • ${escapeHtml(state.localPublicBaseStatus?.diskUsageLabel ?? "uso de disco não informado")}.</span>`
+                        : '<span class="field__note">Modo offline para validação segura do fluxo.</span>'
+                  }
+                </label>
+
+                <label class="field" for="cnpj-column">
+                  <span class="field__label">Coluna de CNPJ</span>
+                  <input
+                    id="cnpj-column"
+                    data-field="cnpj-column"
+                    type="text"
+                    placeholder="Detectada automaticamente"
+                    value="${escapeHtml(state.cnpjColumn)}"
+                  />
+                </label>
+
+                <label class="field" for="delivery-format">
+                  <span class="field__label">Entrega</span>
+                  <select id="delivery-format" data-field="delivery-format">
+                    <option value="csv" ${state.deliveryFormat === "csv" ? "selected" : ""}>CSV compatível</option>
+                    <option value="xlsx" ${state.deliveryFormat === "xlsx" ? "selected" : ""}>Excel com abas</option>
+                  </select>
+                  <span class="field__note">Planilha de Resultado inclui Resumo, Resultados, Falhas, Divergências e Auditoria.</span>
+                </label>
+              </div>
+
+              <div class="base-prep" id="base-local" data-slot="local-public-base-prep-panel" ${state.provider !== SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL ? 'style="display:none"' : ""}>
+                <div>
+                  <span class="ops-label">Base Pública Local</span>
+                  <strong data-slot="local-public-base-status-line">${escapeHtml(formatLocalPublicBaseStatusLine(state))}</strong>
+                  <small>Índice persistido no perfil local do Electron. Não há consulta online por item.</small>
+                </div>
+                ${button({ variant: "secondary", "data-action": "prepare-local-public-base", children: state.localPublicBasePrepareStatus === "loading" ? "Preparando..." : "Preparar base", disabled: state.status === "processing" || state.localPublicBasePrepareStatus === "loading" })}
+              </div>
+
+              <label class="notice-check" for="local-public-base-notice" data-slot="local-public-base-notice-panel" ${state.provider !== SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL ? 'style="display:none"' : ""}>
+                <input
+                  id="local-public-base-notice"
+                  data-field="local-public-base-notice"
+                  type="checkbox"
+                  ${state.localPublicBaseNoticeAccepted ? "checked" : ""}
+                />
+                <span>
+                  Entendo que a Base Pública Local usa dados de <strong data-slot="local-public-base-date">${escapeHtml(state.localPublicBaseStatus?.baseDate ?? "data não informada")}</strong>, pode estar defasada e deve ser confirmada em casos sensíveis.
+                  <small data-slot="local-public-base-warning">${escapeHtml(state.localPublicBaseStatus?.freshnessWarning ?? "Data da Base indisponível.")}</small>
+                </span>
+              </label>
+
+              <div class="command-bar command-bar--workbench">
+                <p class="message" data-slot="message">${escapeHtml(state.message)}</p>
+                <div class="command-bar__actions">
+                  ${button({ variant: "primary", "data-action": "process-file", children: state.status === "processing" ? "Processando..." : "Iniciar execução", disabled: state.status === "processing" || state.localPublicBasePrepareStatus === "loading" || !state.content || (state.provider === SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL && (!state.localPublicBaseNoticeAccepted || state.localPublicBaseStatus?.state !== "ready")) })}
+                  ${button({ variant: "danger", "data-action": "cancel-processing", children: "Cancelar", disabled: state.status !== "processing" })}
+                  ${button({ variant: "secondary", "data-action": "save-file", children: "Salvar cópia", disabled: !state.outputDelivery })}
+                </div>
+              </div>
+            </section>
+
+            <section class="surface result-rail">
+              <div class="surface__header">
+                <div>
+                  <span class="ops-label">Resultado e entrega</span>
+                  <h2>Saída profissional</h2>
+                </div>
+                <span class="ops-chip">${state.deliveryFormat === "xlsx" ? "Excel com abas" : "CSV compatível"}</span>
+              </div>
+              <div class="result-actions">
+                <button class="button button--ghost" type="button" disabled>Modelo de entrega</button>
+                <button class="button button--ghost" type="button" disabled>Divergências</button>
+                <button class="button button--ghost" type="button" disabled>Auditoria</button>
+                <button class="button button--ghost" type="button" disabled>Exportar parcial</button>
+              </div>
+              <div class="save-info" data-slot="save-info" ${!autoSavePreview ? 'style="display:none"' : ""}>
+                <span class="ops-label">Arquivo de saída</span>
+                <span class="save-path" data-slot="output-save-path">${escapeHtml(autoSavePreview ?? "")}</span>
+              </div>
+            </section>
           </div>
 
-          <div class="save-info" ${!autoSavePreview ? 'style="display:none"' : ""}>
-            <span class="ops-label">Arquivo de saída</span>
-            <span class="save-path">${escapeHtml(autoSavePreview ?? "")}</span>
-          </div>
+          <aside class="secondary-rail">
+            <section class="surface run-panel">
+              <div class="surface__header">
+                <div>
+                  <span class="ops-label">Painel da execução</span>
+                  <h2>Status do lote</h2>
+                </div>
+                ${statusPill({ variant: getStatusPillVariant(state.status), children: renderStatusLabel(state.status), dataSlot: "run-status-pill" })}
+              </div>
 
-          <div class="info-items">
-            <div class="info-item">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
-              Use <strong>Simulação local</strong> para testar sem consumir API.
-            </div>
-            <div class="info-item">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5h16"/><path d="M4 12h16"/><path d="M4 19h16"/><path d="M8 5v14"/></svg>
-              <strong>Base Pública Local</strong> roda sem consulta online por item depois do preparo e sempre mostra a Data da Base.
-            </div>
-            <div class="info-item">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l8 4v6c0 5-3.5 8-8 8s-8-3-8-8V7l8-4z"/><path d="M9 12l2 2 4-4"/></svg>
-              <strong>Receita Web</strong> é assistida e experimental: funciona melhor com navegador visível, no Windows usa Chrome ou Edge instalados e não deve ser tratada como automação massiva.
-            </div>
-            <div class="info-item">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
-              O arquivo é salvo automaticamente ao lado do original.
-            </div>
-            <div class="info-item">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-              CNPJs duplicados são contados mas consultados apenas uma vez.
-            </div>
-          </div>
-        </aside>
+              <div class="summary" data-slot="summary">${renderSummary(state.summary)}</div>
+
+              <div class="progress-section" data-slot="progress-section" ${state.status !== "processing" && !state.summary ? 'style="display:none"' : ""}>
+                <div class="progress-header">
+                  <span class="ops-label">Progresso</span>
+                  <strong data-slot="progress-line">${getProgressLineLabel(state)}</strong>
+                </div>
+                <div class="ops-progress__track">
+                  <span data-slot="progress-bar" style="width: ${getProgressPercent(state)}%"></span>
+                </div>
+                <span class="current-cnpj" data-slot="current-cnpj">${
+                  state.progress?.currentCnpj ?? "—"
+                }</span>
+              </div>
+
+              <div class="dedupe-info">
+                <span class="ops-label">Deduplicação aplicada</span>
+                <strong data-slot="dedupe-label">${
+                  state.summary
+                    ? buildDedupeLabel(state.summary)
+                    : "Aguardando processamento"
+                }</strong>
+              </div>
+
+              <div class="execution-ledger">
+                <div>
+                  <span class="ops-label">Ledger local</span>
+                  <strong data-slot="execution-status">${
+                    state.execution?.status ?? "Aguardando"
+                  }</strong>
+                </div>
+                <div>
+                  <span class="ops-label">Execução</span>
+                  <strong data-slot="execution-run-id">${
+                    state.execution?.runId.slice(0, 8) ?? "—"
+                  }</strong>
+                </div>
+                <div>
+                  <span class="ops-label">Retomada</span>
+                  <strong data-slot="execution-resume">${
+                    state.execution
+                      ? `${state.execution.resumedUniqueLookups} retomadas de checkpoint`
+                      : "Sem retomada ativa"
+                  }</strong>
+                </div>
+                <div>
+                  <span class="ops-label">Checkpoint</span>
+                  <span class="save-path" data-slot="execution-checkpoint">${
+                    state.execution?.checkpointPath
+                      ? escapeHtml(
+                          state.execution.checkpointPath.split(/[/\\]/).pop() ??
+                            "ledger.json",
+                        )
+                      : "—"
+                  }</span>
+                </div>
+              </div>
+            </section>
+
+            <section class="surface provider-health" id="provedores">
+              <div class="surface__header">
+                <div>
+                  <span class="ops-label">Saúde operacional</span>
+                  <h2>Provedores</h2>
+                </div>
+                <button class="button button--ghost button--compact" type="button" disabled>Testar</button>
+              </div>
+              <div class="provider-list">
+                <div><strong>Base local</strong><span class="status-token status-token--success">Preparável</span></div>
+                <div><strong>Simulação</strong><span class="status-token">Offline</span></div>
+                <div><strong>CNPJá Open</strong><span class="status-token status-token--warning">Externo</span></div>
+                <div><strong>Receita Web</strong><span class="status-token status-token--danger">Assistido</span></div>
+              </div>
+            </section>
+
+            <section class="surface execution-history" id="historico">
+              <div class="execution-history__header">
+                <div>
+                  <span class="ops-label">Histórico local</span>
+                  <strong>Execuções recentes</strong>
+                </div>
+                <button class="button button--ghost button--compact" type="button" data-action="refresh-history">Atualizar</button>
+              </div>
+              <div data-slot="execution-history">
+                ${renderExecutionHistory(state)}
+              </div>
+            </section>
+          </aside>
+        </section>
       </section>
     </main>
   `;
@@ -300,8 +350,24 @@ export function getProgressPercent(state: UiState): number {
       : 0;
 }
 
+export function getProgressLineLabel(state: UiState): string {
+  const progress = getLiveProgress(state);
+
+  if (progress) {
+    return formatProgressLine(progress);
+  }
+
+  if (state.summary) {
+    return `${state.summary.totalCnpjsUnicosConsultados} de ${state.summary.totalCnpjsUnicosConsultados} CNPJs únicos concluídos.`;
+  }
+
+  return formatProgressLine(null);
+}
+
 export function getCurrentCnpjLabel(state: UiState): string {
-  return getLiveProgress(state)?.currentCnpj ?? "—";
+  return (
+    getLiveProgress(state)?.currentCnpj ?? (state.summary ? "Concluído" : "—")
+  );
 }
 
 export function renderExecutionHistory(state: UiState): string {

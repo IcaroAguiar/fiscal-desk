@@ -6,21 +6,25 @@ import { chromium, type Page } from "playwright";
 import { createServer } from "vite";
 
 type ViewportCase = {
-  name: "desktop" | "mobile";
+  name: string;
   width: number;
   height: number;
 };
 
 type VisualSmokeResult = {
   viewport: ViewportCase;
-  screenshotPath: string;
   overflow: boolean;
   clippedButtons: string[];
+  overlaps: string[];
+  screenshots: Record<string, string>;
 };
 
 const viewports: ViewportCase[] = [
-  { name: "desktop", width: 1440, height: 1000 },
-  { name: "mobile", width: 390, height: 900 },
+  { name: "desktop-wide", width: 1440, height: 1000 },
+  { name: "desktop-compact", width: 1180, height: 900 },
+  { name: "tablet", width: 900, height: 1000 },
+  { name: "mobile-wide", width: 430, height: 932 },
+  { name: "mobile-narrow", width: 360, height: 780 },
 ];
 const outputDir = resolve(
   process.env.VISUAL_SMOKE_OUTPUT_DIR ??
@@ -49,23 +53,72 @@ try {
     const page = await browser.newPage({
       viewport: { width: viewport.width, height: viewport.height },
     });
+    page.on("pageerror", (error) => {
+      throw error;
+    });
     await installAppBridgeMock(page);
     await page.goto(`http://127.0.0.1:${address.port}/`, {
       waitUntil: "networkidle",
     });
     await page.waitForSelector("text=Fiscal Desk");
 
-    const screenshotPath = join(outputDir, `${viewport.name}.png`);
-    await page.screenshot({ path: screenshotPath, fullPage: true });
+    const screenshots: Record<string, string> = {};
+    let overflow = false;
+    const clippedButtons: string[] = [];
+    const overlaps: string[] = [];
 
-    const overflow = await hasHorizontalOverflow(page);
-    const clippedButtons = await clippedPrimaryButtons(page);
-    results.push({ viewport, screenshotPath, overflow, clippedButtons });
+    await collectScenarioChecks(page, viewport, "idle", screenshots, {
+      clippedButtons,
+      overlaps,
+      setOverflow: (value) => {
+        overflow = overflow || value;
+      },
+    });
+
+    await page.evaluate(
+      `document.querySelector('[data-action="pick-file"]')?.click()`,
+    );
+    await page.waitForFunction(
+      `document.querySelector('[data-slot="file-badge"]')?.textContent?.includes("clientes-fiscais-com-nome-longo")`,
+    );
+    await collectScenarioChecks(page, viewport, "selected", screenshots, {
+      clippedButtons,
+      overlaps,
+      setOverflow: (value) => {
+        overflow = overflow || value;
+      },
+    });
+
+    await page.evaluate(
+      `document.querySelector('[data-action="process-file"]')?.click()`,
+    );
+    await page.waitForFunction(
+      `document.querySelector('[data-slot="run-status-pill"]')?.textContent?.includes("Concluído") &&
+        document.querySelector('[data-slot="output-preview"]')?.textContent?.includes("entrada-processado.csv")`,
+    );
+    await collectScenarioChecks(page, viewport, "success", screenshots, {
+      clippedButtons,
+      overlaps,
+      setOverflow: (value) => {
+        overflow = overflow || value;
+      },
+    });
+
+    results.push({
+      viewport,
+      overflow,
+      clippedButtons: [...new Set(clippedButtons)],
+      overlaps: [...new Set(overlaps)],
+      screenshots,
+    });
     await page.close();
   }
 
   const failed = results.filter(
-    (result) => result.overflow || result.clippedButtons.length > 0,
+    (result) =>
+      result.overflow ||
+      result.clippedButtons.length > 0 ||
+      result.overlaps.length > 0,
   );
   const report = {
     status: failed.length ? "fail" : "pass",
@@ -95,34 +148,10 @@ try {
 }
 
 async function installAppBridgeMock(page: Page): Promise<void> {
-  await page.addInitScript(() => {
-    (
-      window as unknown as {
-        appBridge: {
-          getDefaults: () => Promise<{
-            localPublicBaseStatus: {
-              baseDate: string;
-              diskUsageLabel: string;
-              estimatedPreparationTimeLabel: string;
-              estimatedRows: number;
-              estimatedSizeLabel: string;
-              freshnessWarning: string;
-              state: "ready";
-            };
-            provider: "mock";
-            receitaWebAvailable: boolean;
-          }>;
-          pickCsvFile: () => Promise<null>;
-          processCsv: () => Promise<never>;
-          cancelProcessing: () => Promise<boolean>;
-          listExecutions: () => Promise<unknown[]>;
-          resumeExecution: () => Promise<never>;
-          saveCsvFile: () => Promise<null>;
-          saveOutputFile: () => Promise<null>;
-          onLookupProgress: () => () => void;
-        };
-      }
-    ).appBridge = {
+  await page.addInitScript({
+    content: `
+    const history = [];
+    window.appBridge = {
       getDefaults: async () => ({
         localPublicBaseStatus: {
           baseDate: "2026-05-20",
@@ -137,12 +166,70 @@ async function installAppBridgeMock(page: Page): Promise<void> {
         provider: "mock",
         receitaWebAvailable: true,
       }),
-      pickCsvFile: async () => null,
+      pickCsvFile: async () => ({
+        filePath:
+          "/tmp/fiscal-desk/clientes-fiscais-com-nome-longo-para-validacao-responsiva.csv",
+        fileName:
+          "clientes-fiscais-com-nome-longo-para-validacao-responsiva.csv",
+        content: ["cnpj", "11222333000181", "44555666000190"].join("\\n"),
+      }),
       processCsv: async () => {
-        throw new Error("Visual smoke nao executa processamento real.");
+        const result = {
+          delivery: {
+            extension: "csv",
+            format: "csv",
+            mimeType: "text/csv",
+          },
+          outputCsv: ["cnpj,situacao", "11222333000181,optante"].join("\\n"),
+          outputXlsx: null,
+          summary: {
+            totalLinhas: 2,
+            totalCnpjsEncontrados: 2,
+            totalCnpjsValidos: 2,
+            totalCnpjsUnicosConsultados: 2,
+            totalCnpjsRetomados: 0,
+            totalOptantesSimples: 1,
+            totalNaoOptantesSimples: 1,
+            totalErros: 0,
+          },
+          runStatus: "SUCCESS",
+          execution: {
+            checkpointPath: "/tmp/fiscal-desk/ledger-visual.json",
+            completedUniqueLookups: 2,
+            resumedUniqueLookups: 0,
+            runId: "visual-smoke-run",
+            status: "SUCCESS",
+            totalUniqueLookups: 2,
+          },
+          savedPath: "/tmp/fiscal-desk/entrada-processado.csv",
+          warningMessage: null,
+        };
+        history.splice(0, history.length, {
+          canResume: false,
+          checkpointPath: "/tmp/fiscal-desk/ledger-visual.json",
+          checkpointedUniqueLookups: 2,
+          cnpjColumn: null,
+          completedAt: "2026-05-21T17:40:00.000Z",
+          ledgerKey: "visual-smoke",
+          outputPath: "/tmp/fiscal-desk/entrada-processado.csv",
+          providerConfigVersion: "visual",
+          providerName: "mock",
+          resumeBlockedReason: "Execução concluída.",
+          runId: "visual-smoke-run",
+          sourceFileName:
+            "clientes-fiscais-com-nome-longo-para-validacao-responsiva.csv",
+          sourceFilePath:
+            "/tmp/fiscal-desk/clientes-fiscais-com-nome-longo-para-validacao-responsiva.csv",
+          startedAt: "2026-05-21T17:39:00.000Z",
+          status: "SUCCESS",
+          summary: result.summary,
+          totalUniqueLookups: 2,
+          updatedAt: "2026-05-21T17:40:00.000Z",
+        });
+        return result;
       },
       cancelProcessing: async () => false,
-      listExecutions: async () => [],
+      listExecutions: async () => history,
       resumeExecution: async () => {
         throw new Error("Visual smoke nao retoma processamento real.");
       },
@@ -150,7 +237,32 @@ async function installAppBridgeMock(page: Page): Promise<void> {
       saveOutputFile: async () => null,
       onLookupProgress: () => () => {},
     };
+  `,
   });
+}
+
+async function collectScenarioChecks(
+  page: Page,
+  viewport: ViewportCase,
+  scenario: string,
+  screenshots: Record<string, string>,
+  checks: {
+    clippedButtons: string[];
+    overlaps: string[];
+    setOverflow(value: boolean): void;
+  },
+): Promise<void> {
+  const screenshotPath = join(outputDir, `${viewport.name}-${scenario}.png`);
+  await page.screenshot({ path: screenshotPath, fullPage: true });
+  screenshots[scenario] = screenshotPath;
+
+  checks.setOverflow(await hasHorizontalOverflow(page));
+  checks.clippedButtons.push(
+    ...(await clippedPrimaryButtons(page)).map((item) => `${scenario}:${item}`),
+  );
+  checks.overlaps.push(
+    ...(await siblingOverlaps(page)).map((item) => `${scenario}:${item}`),
+  );
 }
 
 async function hasHorizontalOverflow(page: Page): Promise<boolean> {
@@ -190,6 +302,83 @@ async function clippedPrimaryButtons(page: Page): Promise<string[]> {
   });
 }
 
+async function siblingOverlaps(page: Page): Promise<string[]> {
+  return page.evaluate<string[]>(`(() => {
+    const parents = [
+      ".ops-topbar",
+      ".ops-topbar__status",
+      ".system-strip",
+      ".workbench-grid",
+      ".surface__header",
+      ".stepper",
+      ".file-dropzone",
+      ".controls-row--workbench",
+      ".command-bar--workbench",
+      ".command-bar__actions",
+      ".result-actions",
+      ".provider-list",
+      ".sidebar-nav",
+      ".history-list",
+    ];
+
+    const visibleRect = (element) => {
+      const rect = element.getBoundingClientRect();
+      const style = window.getComputedStyle(element);
+      if (
+        style.display === "none" ||
+        style.visibility === "hidden" ||
+        rect.width <= 0 ||
+        rect.height <= 0
+      ) {
+        return null;
+      }
+      return rect;
+    };
+
+    const overlapArea = (a, b) => {
+      const width = Math.max(0, Math.min(a.right, b.right) - Math.max(a.left, b.left));
+      const height = Math.max(0, Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top));
+      return width * height;
+    };
+
+    return parents.flatMap((selector) => {
+      return Array.from(document.querySelectorAll(selector)).flatMap(
+        (parent, parentIndex) => {
+          const children = Array.from(parent.children)
+            .map((child, childIndex) => ({
+              child,
+              childIndex,
+              rect: visibleRect(child),
+            }))
+            .filter(
+              (item) => Boolean(item.rect),
+            );
+
+          const collisions = [];
+          for (let index = 0; index < children.length; index += 1) {
+            for (let next = index + 1; next < children.length; next += 1) {
+              const current = children[index];
+              const other = children[next];
+              if (overlapArea(current.rect, other.rect) > 4) {
+                collisions.push(
+                  selector +
+                    "[" +
+                    parentIndex +
+                    "] child " +
+                    current.childIndex +
+                    " overlaps " +
+                    other.childIndex,
+                );
+              }
+            }
+          }
+          return collisions;
+        },
+      );
+    });
+  })()`);
+}
+
 function renderMarkdown(report: {
   status: string;
   generatedAt: string;
@@ -200,15 +389,18 @@ function renderMarkdown(report: {
     "",
     `Status: **${report.status.toUpperCase()}**`,
     "",
-    "| Viewport | Overflow | Clipped buttons | Screenshot |",
-    "| --- | ---: | --- | --- |",
+    "| Viewport | Overflow | Clipped buttons | Overlaps | Screenshots |",
+    "| --- | ---: | --- | --- | --- |",
     ...report.results.map((result) =>
       [
         result.viewport.name +
           ` (${result.viewport.width}x${result.viewport.height})`,
         String(result.overflow),
         result.clippedButtons.length ? result.clippedButtons.join(", ") : "none",
-        result.screenshotPath,
+        result.overlaps.length ? result.overlaps.join(", ") : "none",
+        Object.entries(result.screenshots)
+          .map(([scenario, path]) => `${scenario}: ${path}`)
+          .join("<br>"),
       ].join(" | "),
     ).map((row) => "| " + row + " |"),
     "",
