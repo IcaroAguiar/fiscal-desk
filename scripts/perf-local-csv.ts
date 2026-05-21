@@ -2,7 +2,13 @@ import { performance } from "node:perf_hooks";
 
 import type { ProcessCsvDeliveryFormat } from "../src/core/app/process-csv.types";
 import { processCsv } from "../src/core/app/process-csv.use-case";
+import { LocalPublicBaseSimplesLookupAdapter } from "../src/core/simples/adapters/local-public-base-simples-lookup.adapter";
 import { MockSimplesLookupAdapter } from "../src/core/simples/adapters/mock-simples-lookup.adapter";
+import type { SimplesLookupPort } from "../src/core/simples/simples-lookup.port";
+import {
+  SIMPLES_PROVIDER,
+  type SimplesProviderName,
+} from "../src/core/simples/simples-provider.names";
 
 const totalRows = Number(process.env.FISCAL_DESK_PERF_ROWS ?? 5_000);
 const minimumRowsPerSecond = Number(
@@ -11,9 +17,10 @@ const minimumRowsPerSecond = Number(
 const deliveryFormat = resolveDeliveryFormat(
   process.env.FISCAL_DESK_PERF_DELIVERY_FORMAT,
 );
+const providerName = resolveProvider(process.env.FISCAL_DESK_PERF_PROVIDER);
 const csv = buildCsv(totalRows);
 const startedAt = performance.now();
-const result = await processCsv(csv, new MockSimplesLookupAdapter(), {
+const result = await processCsv(csv, createProvider(providerName), {
   cnpjColumn: "cnpj",
   deliveryFormat,
 });
@@ -24,6 +31,7 @@ const report = {
   status: rowsPerSecond >= minimumRowsPerSecond ? "pass" : "fail",
   totalRows: result.summary.totalLinhas,
   totalUniqueLookups: result.summary.totalCnpjsUnicosConsultados,
+  provider: providerName,
   deliveryFormat,
   outputBytes:
     deliveryFormat === "xlsx"
@@ -44,6 +52,22 @@ function resolveDeliveryFormat(
   value: string | undefined,
 ): ProcessCsvDeliveryFormat {
   return value === "xlsx" ? "xlsx" : "csv";
+}
+
+function resolveProvider(value: string | undefined): SimplesProviderName {
+  if (value === SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL) {
+    return SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL;
+  }
+
+  return SIMPLES_PROVIDER.MOCK;
+}
+
+function createProvider(providerName: SimplesProviderName): SimplesLookupPort {
+  if (providerName === SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL) {
+    return new LocalPublicBaseSimplesLookupAdapter();
+  }
+
+  return new MockSimplesLookupAdapter();
 }
 
 function buildCsv(rows: number): string {

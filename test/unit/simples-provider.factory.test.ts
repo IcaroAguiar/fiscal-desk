@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { CnpjaOpenSimplesLookupAdapter } from "../../src/core/simples/adapters/cnpja-open-simples-lookup.adapter";
+import { LocalPublicBaseSimplesLookupAdapter } from "../../src/core/simples/adapters/local-public-base-simples-lookup.adapter";
 import { MockSimplesLookupAdapter } from "../../src/core/simples/adapters/mock-simples-lookup.adapter";
 import { ReceitaConsultaOptantesAdapter } from "../../src/core/simples/adapters/receita-web/receita-consulta-optantes.adapter";
 import type { SimplesLookupPort } from "../../src/core/simples/simples-lookup.port";
@@ -8,6 +9,13 @@ import { createSimplesLookupProvider } from "../../src/core/simples/simples-prov
 vi.mock("../../src/core/simples/adapters/mock-simples-lookup.adapter", () => ({
   MockSimplesLookupAdapter: vi.fn(),
 }));
+
+vi.mock(
+  "../../src/core/simples/adapters/local-public-base-simples-lookup.adapter",
+  () => ({
+    LocalPublicBaseSimplesLookupAdapter: vi.fn(),
+  }),
+);
 
 vi.mock(
   "../../src/core/simples/adapters/cnpja-open-simples-lookup.adapter",
@@ -24,6 +32,9 @@ vi.mock(
 );
 
 const MockSimplesLookupAdapterMock = vi.mocked(MockSimplesLookupAdapter);
+const LocalPublicBaseSimplesLookupAdapterMock = vi.mocked(
+  LocalPublicBaseSimplesLookupAdapter,
+);
 const CnpjaOpenSimplesLookupAdapterMock = vi.mocked(
   CnpjaOpenSimplesLookupAdapter,
 );
@@ -58,6 +69,18 @@ describe("createSimplesLookupProvider", () => {
 
     expect(CnpjaOpenSimplesLookupAdapter).toHaveBeenCalled();
     expect(result).toBe(cnpjaInstance);
+  });
+
+  it("returns LocalPublicBaseSimplesLookupAdapter for base-publica-local provider", () => {
+    const localBaseInstance = createMockAdapter();
+    LocalPublicBaseSimplesLookupAdapterMock.mockImplementation(
+      () => localBaseInstance as unknown as LocalPublicBaseSimplesLookupAdapter,
+    );
+
+    const result = createSimplesLookupProvider("base-publica-local");
+
+    expect(LocalPublicBaseSimplesLookupAdapter).toHaveBeenCalled();
+    expect(result).toBe(localBaseInstance);
   });
 
   it("returns ReceitaConsultaOptantesAdapter for receita-web provider", () => {

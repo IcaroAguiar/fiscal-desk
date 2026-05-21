@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { processCsv } from "../../src/core/app/process-csv.use-case";
+import { LocalPublicBaseSimplesLookupAdapter } from "../../src/core/simples/adapters/local-public-base-simples-lookup.adapter";
 import { MockSimplesLookupAdapter } from "../../src/core/simples/adapters/mock-simples-lookup.adapter";
 import type {
   SimplesLookupOptions,
@@ -82,6 +83,29 @@ describe("processCsv", () => {
     });
     expect(result.outputCsv).toContain("Empresa A");
     expect(result.outputXlsx?.byteLength).toBeGreaterThan(1000);
+  });
+
+  it("processes rows with the Base Pública Local provider and records Data da Base in the result", async () => {
+    const csv = [
+      "nome;cpf_cnpj",
+      "Banco do Brasil;00.000.000/0001-91",
+      "Nao encontrado;11.222.333/0001-81",
+    ].join("\n");
+
+    const result = await processCsv(
+      csv,
+      new LocalPublicBaseSimplesLookupAdapter(),
+    );
+
+    expect(result.summary.totalLinhas).toBe(2);
+    expect(result.summary.totalCnpjsUnicosConsultados).toBe(2);
+    expect(result.summary.totalOptantesSimples).toBe(1);
+    expect(result.summary.totalErros).toBe(1);
+    expect(result.outputCsv).toContain("SUCCESS;base-publica-local");
+    expect(result.outputCsv).toContain(
+      "Base Pública Local 2026-05-20: Banco do Brasil S.A.",
+    );
+    expect(result.outputCsv).toContain("NOT_FOUND;base-publica-local");
   });
 
   it("keeps tab-separated input and output aligned end to end", async () => {

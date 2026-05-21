@@ -100,6 +100,15 @@ async function installAppBridgeMock(page: Page): Promise<void> {
       window as unknown as {
         appBridge: {
           getDefaults: () => Promise<{
+            localPublicBaseStatus: {
+              baseDate: string;
+              diskUsageLabel: string;
+              estimatedPreparationTimeLabel: string;
+              estimatedRows: number;
+              estimatedSizeLabel: string;
+              freshnessWarning: string;
+              state: "ready";
+            };
             provider: "mock";
             receitaWebAvailable: boolean;
           }>;
@@ -115,6 +124,16 @@ async function installAppBridgeMock(page: Page): Promise<void> {
       }
     ).appBridge = {
       getDefaults: async () => ({
+        localPublicBaseStatus: {
+          baseDate: "2026-05-20",
+          diskUsageLabel: "sem download adicional nesta versão",
+          estimatedPreparationTimeLabel: "pronta para uso neste corte",
+          estimatedRows: 3,
+          estimatedSizeLabel: "menos de 1 MB nesta amostra local",
+          freshnessWarning:
+            "A Base Pública Local pode estar defasada; confirme casos sensíveis.",
+          state: "ready",
+        },
         provider: "mock",
         receitaWebAvailable: true,
       }),

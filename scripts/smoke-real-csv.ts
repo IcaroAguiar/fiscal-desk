@@ -6,12 +6,16 @@ import { fileURLToPath } from "node:url";
 import { processCsv } from "../src/core/app/process-csv.use-case";
 import {
   createSimplesLookupProvider,
-  type SimplesProviderName,
 } from "../src/core/simples/simples-provider.factory";
+import {
+  SIMPLES_PROVIDER,
+  type SimplesProviderName,
+} from "../src/core/simples/simples-provider.names";
 
 const allowedProviders = new Set<SimplesProviderName>([
-  "mock",
-  "cnpja-open",
+  SIMPLES_PROVIDER.MOCK,
+  SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL,
+  SIMPLES_PROVIDER.CNPJA_OPEN,
 ]);
 const providerName = readProviderName();
 const fixturePath = fileURLToPath(
@@ -63,11 +67,11 @@ console.log(
 );
 
 function readProviderName(): SimplesProviderName {
-  const rawProvider = process.env.SMOKE_PROVIDER ?? "mock";
+  const rawProvider = process.env.SMOKE_PROVIDER ?? SIMPLES_PROVIDER.MOCK;
 
   if (!allowedProviders.has(rawProvider as SimplesProviderName)) {
     throw new Error(
-      `SMOKE_PROVIDER invalido: ${rawProvider}. Use mock ou cnpja-open. Receita Web e assistido/experimental e deve ter smoke manual separado.`,
+      `SMOKE_PROVIDER invalido: ${rawProvider}. Use mock, base-publica-local ou cnpja-open. Receita Web e assistido/experimental e deve ter smoke manual separado.`,
     );
   }
 

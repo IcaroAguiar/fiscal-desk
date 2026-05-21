@@ -1,3 +1,4 @@
+import { SIMPLES_PROVIDER } from "../../core/simples/simples-provider.names";
 import type { UiState } from "./app.types";
 import {
   escapeHtml,
@@ -62,7 +63,7 @@ export function renderShell(state: UiState): string {
           <p class="intro__text">
             Esta versão mantém entrada CSV confiável: você escolhe o arquivo, define provedor e formato de entrega,
             acompanha o processamento e recebe uma cópia salva ao lado do original. Excel já está disponível como
-            Planilha de Resultado; base pública local e PDF seguem planejados.
+            Planilha de Resultado; Base Pública Local entra como consulta resiliente com Data da Base explícita.
           </p>
           <div class="release-strip" aria-label="Recursos desta versão">
             <div>
@@ -71,7 +72,7 @@ export function renderShell(state: UiState): string {
             </div>
             <div>
               <span class="ops-label">Em evolução</span>
-              <strong>Base local e relatórios executivos</strong>
+              <strong>Base local com aviso de defasagem</strong>
             </div>
             <div>
               <span class="ops-label">Transparência</span>
@@ -112,17 +113,20 @@ export function renderShell(state: UiState): string {
             <label class="field" for="provider">
               <span class="field__label">
                 Provedor
-                <span class="field__hint" title="mock: dados simulados, sem rede | cnpja-open: consulta real ao serviço | receita-web: navegador visível e supervisão do usuário">?</span>
+                <span class="field__hint" title="mock: dados simulados, sem rede | base pública local: amostra local com Data da Base | cnpja-open: consulta real ao serviço | receita-web: navegador visível e supervisão do usuário">?</span>
               </span>
               <select id="provider" data-field="provider">
-                <option value="mock" ${state.provider === "mock" ? "selected" : ""}>Simulação local — offline</option>
-                <option value="cnpja-open" ${state.provider === "cnpja-open" ? "selected" : ""}>CNPJá Open — consulta real</option>
-                <option value="receita-web" ${state.provider === "receita-web" ? "selected" : ""}>Receita Web — assistido e experimental</option>
+                <option value="${SIMPLES_PROVIDER.MOCK}" ${state.provider === SIMPLES_PROVIDER.MOCK ? "selected" : ""}>Simulação local — offline</option>
+                <option value="${SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL}" ${state.provider === SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL ? "selected" : ""}>Base Pública Local — Data da Base</option>
+                <option value="${SIMPLES_PROVIDER.CNPJA_OPEN}" ${state.provider === SIMPLES_PROVIDER.CNPJA_OPEN ? "selected" : ""}>CNPJá Open — consulta real</option>
+                <option value="${SIMPLES_PROVIDER.RECEITA_WEB}" ${state.provider === SIMPLES_PROVIDER.RECEITA_WEB ? "selected" : ""}>Receita Web — assistido e experimental</option>
               </select>
               ${
-                state.provider === "receita-web"
-                  ? '<span class="field__hint">Abre navegador visível, pode ser bloqueado por proteção anti-robô, exige supervisão humana em lotes grandes e no Windows depende de Chrome ou Edge instalados.</span>'
-                  : ""
+                state.provider === SIMPLES_PROVIDER.RECEITA_WEB
+                  ? '<span class="field__note">Abre navegador visível, pode ser bloqueado por proteção anti-robô, exige supervisão humana em lotes grandes e no Windows depende de Chrome ou Edge instalados.</span>'
+                  : state.provider === SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL
+                    ? `<span class="field__note">Base ${escapeHtml(state.localPublicBaseStatus?.baseDate ?? "indisponível")} • ${escapeHtml(state.localPublicBaseStatus?.estimatedSizeLabel ?? "tamanho não informado")} • ${escapeHtml(state.localPublicBaseStatus?.diskUsageLabel ?? "uso de disco não informado")}.</span>`
+                    : ""
               }
             </label>
 
@@ -143,9 +147,22 @@ export function renderShell(state: UiState): string {
                 <option value="csv" ${state.deliveryFormat === "csv" ? "selected" : ""}>CSV compatível</option>
                 <option value="xlsx" ${state.deliveryFormat === "xlsx" ? "selected" : ""}>Excel com abas</option>
               </select>
-              <span class="field__hint">CSV preserva compatibilidade. Excel gera Resumo, Resultados, Falhas, Divergências e Auditoria.</span>
+              <span class="field__note">CSV preserva compatibilidade. Excel gera Resumo, Resultados, Falhas, Divergências e Auditoria.</span>
             </label>
           </div>
+
+          <label class="notice-check" for="local-public-base-notice" data-slot="local-public-base-notice-panel" ${state.provider !== SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL ? 'style="display:none"' : ""}>
+            <input
+              id="local-public-base-notice"
+              data-field="local-public-base-notice"
+              type="checkbox"
+              ${state.localPublicBaseNoticeAccepted ? "checked" : ""}
+            />
+            <span>
+              Entendo que a Base Pública Local usa dados de <strong data-slot="local-public-base-date">${escapeHtml(state.localPublicBaseStatus?.baseDate ?? "data não informada")}</strong>, pode estar defasada e deve ser confirmada em casos sensíveis.
+              <small data-slot="local-public-base-warning">${escapeHtml(state.localPublicBaseStatus?.freshnessWarning ?? "Data da Base indisponível.")}</small>
+            </span>
+          </label>
 
           <div class="progress-section" ${state.status !== "processing" && !state.summary ? 'style="display:none"' : ""}>
             <div class="progress-header">
@@ -234,6 +251,10 @@ export function renderShell(state: UiState): string {
             <div class="info-item">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
               Use <strong>Simulação local</strong> para testar sem consumir API.
+            </div>
+            <div class="info-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5h16"/><path d="M4 12h16"/><path d="M4 19h16"/><path d="M8 5v14"/></svg>
+              <strong>Base Pública Local</strong> roda sem consulta online por item e sempre mostra a Data da Base.
             </div>
             <div class="info-item">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l8 4v6c0 5-3.5 8-8 8s-8-3-8-8V7l8-4z"/><path d="M9 12l2 2 4-4"/></svg>

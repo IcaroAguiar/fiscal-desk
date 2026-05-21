@@ -1,4 +1,7 @@
-import type { SimplesProviderName } from "../../core/simples/simples-provider.factory";
+import {
+  SIMPLES_PROVIDER,
+  type SimplesProviderName,
+} from "../../core/simples/simples-provider.names";
 import type {
   LookupProgress,
   ProcessCsvDeliveryFormat,
@@ -27,11 +30,15 @@ export function formatDuration(durationInMs: number): string {
 }
 
 export function formatProviderMode(provider: SimplesProviderName): string {
-  if (provider === "cnpja-open") {
+  if (provider === SIMPLES_PROVIDER.CNPJA_OPEN) {
     return "CNPJá Open";
   }
 
-  if (provider === "receita-web") {
+  if (provider === SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL) {
+    return "Base Pública Local";
+  }
+
+  if (provider === SIMPLES_PROVIDER.RECEITA_WEB) {
     return "Receita Web assistida";
   }
 
@@ -55,8 +62,12 @@ export function formatProviderHint(
     return "Selecione um CSV para continuar";
   }
 
-  if (provider === "receita-web") {
+  if (provider === SIMPLES_PROVIDER.RECEITA_WEB) {
     return "Receita Web exige navegador visível e supervisão humana";
+  }
+
+  if (provider === SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL) {
+    return "Base Pública Local usa Data da Base e não consulta online por item";
   }
 
   return `Provedor selecionado: ${formatProviderMode(provider)}`;

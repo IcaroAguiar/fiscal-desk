@@ -1,5 +1,6 @@
-import type { SimplesProviderName } from "../../core/simples/simples-provider.factory";
+import type { SimplesProviderName } from "../../core/simples/simples-provider.names";
 import type {
+  LocalPublicBaseStatus,
   LookupProgress,
   ProcessCsvDeliveryFormat,
   ProcessCsvExecution,
@@ -29,6 +30,7 @@ export type ProcessCsvResult = {
 export type AppBridge = {
   pickCsvFile(): Promise<PickCsvResult | null>;
   processCsv(input: {
+    acceptedLocalPublicBaseNotice?: boolean;
     content: string;
     deliveryFormat?: ProcessCsvDeliveryFormat;
     provider: SimplesProviderName;
@@ -45,6 +47,7 @@ export type AppBridge = {
   autoSaveCsvFile(sourceFilePath: string, content: string): Promise<string>;
   onLookupProgress(callback: (progress: LookupProgress) => void): () => void;
   getDefaults(): Promise<{
+    localPublicBaseStatus: LocalPublicBaseStatus;
     provider: SimplesProviderName;
     receitaWebAvailable: boolean;
   }>;
@@ -52,6 +55,7 @@ export type AppBridge = {
   resumeExecution(
     ledgerKey: string,
     deliveryFormat?: ProcessCsvDeliveryFormat,
+    acceptedLocalPublicBaseNotice?: boolean,
   ): Promise<ProcessCsvResult>;
 };
 
@@ -75,6 +79,8 @@ export type UiState = {
   content: string | null;
   provider: SimplesProviderName;
   deliveryFormat: ProcessCsvDeliveryFormat;
+  localPublicBaseNoticeAccepted: boolean;
+  localPublicBaseStatus: LocalPublicBaseStatus | null;
   receitaWebAvailable: boolean;
   cnpjColumn: string;
   status: UiStatus;
@@ -98,6 +104,8 @@ export const initialState: UiState = {
   content: null,
   provider: "mock",
   deliveryFormat: "csv",
+  localPublicBaseNoticeAccepted: false,
+  localPublicBaseStatus: null,
   receitaWebAvailable: false,
   cnpjColumn: "",
   status: "idle",

@@ -76,6 +76,12 @@ vi.mock("../../src/core/simples/simples-provider.config", () => ({
 
 vi.mock("../../src/core/simples/simples-provider.factory", () => ({
   createSimplesLookupProvider: vi.fn(),
+  SIMPLES_PROVIDER: {
+    BASE_PUBLICA_LOCAL: "base-publica-local",
+    CNPJA_OPEN: "cnpja-open",
+    MOCK: "mock",
+    RECEITA_WEB: "receita-web",
+  },
 }));
 
 vi.mock(
@@ -161,7 +167,11 @@ describe("process-csv IPC", () => {
 
     const defaults = await handler?.();
 
-    expect(defaults).toEqual({
+    expect(defaults).toMatchObject({
+      localPublicBaseStatus: {
+        baseDate: "2026-05-20",
+        state: "ready",
+      },
       provider: "mock",
       receitaWebAvailable: false,
     });
@@ -180,7 +190,11 @@ describe("process-csv IPC", () => {
 
     const defaults = await handler?.();
 
-    expect(defaults).toEqual({
+    expect(defaults).toMatchObject({
+      localPublicBaseStatus: {
+        baseDate: "2026-05-20",
+        state: "ready",
+      },
       provider: "mock",
       receitaWebAvailable: true,
     });
@@ -229,6 +243,23 @@ describe("process-csv IPC", () => {
         },
       ),
     ).rejects.toThrow("Formato de entrega invalido");
+
+    expect(ledgerMocks.startRun).not.toHaveBeenCalled();
+    expect(processCsv).not.toHaveBeenCalled();
+  });
+
+  it("rejects Base Pública Local processing without Data da Base consent before ledger side effects", async () => {
+    const handler = handlers.get("csv:process");
+
+    await expect(
+      handler?.(
+        { sender: { send: vi.fn() } },
+        {
+          content: "cnpj\n00000000000191",
+          provider: "base-publica-local",
+        },
+      ),
+    ).rejects.toThrow("Confirme o aviso de Data da Base");
 
     expect(ledgerMocks.startRun).not.toHaveBeenCalled();
     expect(processCsv).not.toHaveBeenCalled();
@@ -324,6 +355,29 @@ describe("process-csv IPC", () => {
         { ledgerKey: "mock-0123456789abcdef01234567.json" },
       ),
     ).rejects.toThrow("ficam apenas no historico");
+  });
+
+  it("rejects Base Pública Local resume without Data da Base consent before reading the source CSV", async () => {
+    const handler = handlers.get("csv:resume-execution");
+    const { readFile } = await import("node:fs/promises");
+    ledgerMocks.getRun.mockResolvedValueOnce({
+      canResume: true,
+      cnpjColumn: "cnpj",
+      ledgerKey: "base-publica-local-0123456789abcdef01234567.json",
+      providerName: "base-publica-local",
+      sourceFilePath: "/tmp/fiscal-desk-test/entrada.csv",
+      status: "CANCELLED",
+    });
+
+    await expect(
+      handler?.(
+        { sender: { send: vi.fn() } },
+        { ledgerKey: "base-publica-local-0123456789abcdef01234567.json" },
+      ),
+    ).rejects.toThrow("Confirme o aviso de Data da Base");
+
+    expect(readFile).not.toHaveBeenCalled();
+    expect(ledgerMocks.startRun).not.toHaveBeenCalled();
   });
 
   it("resumes an eligible execution from its original CSV path", async () => {

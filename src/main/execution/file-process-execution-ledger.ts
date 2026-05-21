@@ -8,7 +8,7 @@ import type {
 } from "../../core/app/process-csv.types";
 import type { ProcessExecutionLedgerSession } from "../../core/app/process-execution-ledger.port";
 import type { SimplesLookupResult } from "../../core/simples/simples-lookup.types";
-import type { SimplesProviderName } from "../../core/simples/simples-provider.factory";
+import type { SimplesProviderName } from "../../core/simples/simples-provider.names";
 
 const LEDGER_VERSION = 1;
 const CHECKPOINT_POLICY_VERSION = "stable-results-v1";

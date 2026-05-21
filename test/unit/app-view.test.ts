@@ -14,6 +14,8 @@ describe("app view execution history", () => {
     expect(html).toContain("CSV compatível");
     expect(html).toContain("Excel com abas");
     expect(html).toContain("Planilha de Resultado");
+    expect(html).toContain("Base Pública Local");
+    expect(html).toContain('data-field="local-public-base-notice"');
   });
 
   it("renders resumable interrupted executions with an action button", () => {
