@@ -54,6 +54,7 @@ try {
   const page = await electronApp.firstWindow();
   await page.waitForSelector("text=Fiscal Desk", { timeout: 20_000 });
   await page.selectOption('[data-field="provider"]', "mock");
+  await page.selectOption('[data-field="delivery-format"]', "xlsx");
   await page.waitForSelector('[data-action="resume-execution"]', {
     timeout: 20_000,
   });
@@ -72,6 +73,7 @@ try {
 
   assertElectronSmokeHistory(latestHistory);
   await access(latestHistory.outputPath ?? "");
+  await assertXlsxOutput(latestHistory.outputPath ?? "");
   await access(latestHistory.checkpointPath);
 
   console.log(
@@ -80,6 +82,7 @@ try {
         status: "pass",
         app: "electron",
         provider: "mock",
+        deliveryFormat: "xlsx",
         sourceFilePath,
         savedPath: latestHistory.outputPath,
         checkpointPath: latestHistory.checkpointPath,
@@ -108,6 +111,10 @@ function assertElectronSmokeHistory(history: ProcessExecutionHistoryItem): void 
     throw new Error("Smoke Electron nao gerou auto-save.");
   }
 
+  if (!history.outputPath.endsWith(".xlsx")) {
+    throw new Error(`Esperado auto-save XLSX, recebido ${history.outputPath}`);
+  }
+
   if (!history.checkpointPath) {
     throw new Error("Smoke Electron nao gerou ledger de checkpoint.");
   }
@@ -134,6 +141,15 @@ function assertElectronSmokeHistory(history: ProcessExecutionHistoryItem): void 
     throw new Error(
       `Esperado 3 CNPJs unicos, recebido ${history.summary.totalCnpjsUnicosConsultados}`,
     );
+  }
+}
+
+async function assertXlsxOutput(outputPath: string): Promise<void> {
+  const bytes = await readFile(outputPath);
+  const signature = bytes.subarray(0, 4).toString("hex");
+
+  if (signature !== "504b0304") {
+    throw new Error(`Arquivo XLSX nao possui assinatura ZIP valida: ${signature}`);
   }
 }
 

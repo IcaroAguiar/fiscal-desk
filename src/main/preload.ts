@@ -3,7 +3,9 @@ import { contextBridge, ipcRenderer } from "electron";
 import type { SimplesProviderName } from "../core/simples/simples-provider.factory";
 import type {
   LookupProgress,
+  ProcessCsvDeliveryFormat,
   ProcessCsvExecution,
+  ProcessCsvOutputDelivery,
   ProcessCsvRunStatus,
   ProcessCsvSummary,
   ProcessExecutionHistoryItem,
@@ -17,13 +19,16 @@ type PickCsvResult = {
 
 type ProcessCsvInput = {
   content: string;
+  deliveryFormat?: ProcessCsvDeliveryFormat;
   provider: SimplesProviderName;
   cnpjColumn?: string;
   sourceFilePath?: string;
 };
 
 type ProcessCsvResult = {
+  delivery: ProcessCsvOutputDelivery;
   outputCsv: string;
+  outputXlsx: number[] | null;
   summary: ProcessCsvSummary;
   runStatus: ProcessCsvRunStatus;
   execution: ProcessCsvExecution | null;
@@ -52,7 +57,19 @@ contextBridge.exposeInMainWorld("appBridge", {
   ): Promise<string | null> => {
     return ipcRenderer.invoke("csv:save-output-file", {
       defaultName,
+      format: "csv",
       content,
+    });
+  },
+  saveOutputFile: (
+    defaultName: string,
+    format: ProcessCsvDeliveryFormat,
+    content: string | number[],
+  ): Promise<string | null> => {
+    return ipcRenderer.invoke("csv:save-output-file", {
+      content,
+      defaultName,
+      format,
     });
   },
   autoSaveCsvFile: (
@@ -83,7 +100,13 @@ contextBridge.exposeInMainWorld("appBridge", {
   listExecutions: (): Promise<ProcessExecutionHistoryItem[]> => {
     return ipcRenderer.invoke("csv:list-executions");
   },
-  resumeExecution: (ledgerKey: string): Promise<ProcessCsvResult> => {
-    return ipcRenderer.invoke("csv:resume-execution", { ledgerKey });
+  resumeExecution: (
+    ledgerKey: string,
+    deliveryFormat?: ProcessCsvDeliveryFormat,
+  ): Promise<ProcessCsvResult> => {
+    return ipcRenderer.invoke("csv:resume-execution", {
+      ...(deliveryFormat ? { deliveryFormat } : {}),
+      ledgerKey,
+    });
   },
 });

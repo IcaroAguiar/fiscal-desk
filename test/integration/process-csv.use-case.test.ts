@@ -58,6 +58,30 @@ describe("processCsv", () => {
     expect(result.outputCsv).toContain(
       "Empresa D;123;123;123;false;;;INVALID_CNPJ;system;CNPJ invalido;5",
     );
+    expect(result.delivery).toMatchObject({
+      extension: "csv",
+      format: "csv",
+    });
+    expect(result.outputXlsx).toBeNull();
+  });
+
+  it("can generate an Excel delivery while preserving the CSV output contract", async () => {
+    const csv = [
+      "nome;cpf_cnpj",
+      "Empresa A;00.000.000/0001-91",
+      "Empresa B;123",
+    ].join("\n");
+
+    const result = await processCsv(csv, new MockSimplesLookupAdapter(), {
+      deliveryFormat: "xlsx",
+    });
+
+    expect(result.delivery).toMatchObject({
+      extension: "xlsx",
+      format: "xlsx",
+    });
+    expect(result.outputCsv).toContain("Empresa A");
+    expect(result.outputXlsx?.byteLength).toBeGreaterThan(1000);
   });
 
   it("keeps tab-separated input and output aligned end to end", async () => {

@@ -108,6 +108,11 @@ describe("process-csv IPC", () => {
       lookup: vi.fn(),
     });
     vi.mocked(processCsv).mockResolvedValue({
+      delivery: {
+        extension: "csv",
+        format: "csv",
+        mimeType: "text/csv;charset=utf-8",
+      },
       execution: {
         checkpointPath: ledgerMocks.session.checkpointPath,
         completedUniqueLookups: 1,
@@ -117,6 +122,7 @@ describe("process-csv IPC", () => {
         totalUniqueLookups: 1,
       },
       outputCsv: "cnpj;status\n00000000000191;SUCCESS",
+      outputXlsx: null,
       runStatus: "SUCCESS",
       summary: {
         totalCnpjsEncontrados: 1,
@@ -208,6 +214,57 @@ describe("process-csv IPC", () => {
         { content: "cnpj\n47960950000121", provider: "receita-web" },
       ),
     ).rejects.toThrow("disponível apenas no Windows");
+  });
+
+  it("rejects invalid delivery formats before starting processing", async () => {
+    const handler = handlers.get("csv:process");
+
+    await expect(
+      handler?.(
+        { sender: { send: vi.fn() } },
+        {
+          content: "cnpj\n00000000000191",
+          deliveryFormat: "pdf",
+          provider: "mock",
+        },
+      ),
+    ).rejects.toThrow("Formato de entrega invalido");
+
+    expect(ledgerMocks.startRun).not.toHaveBeenCalled();
+    expect(processCsv).not.toHaveBeenCalled();
+  });
+
+  it("rejects invalid delivery formats before resolving resume history", async () => {
+    const handler = handlers.get("csv:resume-execution");
+
+    await expect(
+      handler?.(
+        { sender: { send: vi.fn() } },
+        {
+          deliveryFormat: "pdf",
+          ledgerKey: "mock-0123456789abcdef01234567.json",
+        },
+      ),
+    ).rejects.toThrow("Formato de entrega invalido");
+
+    expect(ledgerMocks.getRun).not.toHaveBeenCalled();
+  });
+
+  it("rejects invalid delivery formats before opening the save dialog", async () => {
+    const handler = handlers.get("csv:save-output-file");
+
+    await expect(
+      handler?.(
+        {},
+        {
+          content: "cnpj;status\n00000000000191;SUCCESS",
+          defaultName: "saida.pdf",
+          format: "pdf",
+        },
+      ),
+    ).rejects.toThrow("Formato de entrega invalido");
+
+    expect(electronMocks.dialog.showSaveDialog).not.toHaveBeenCalled();
   });
 
   it("reserves the active processing slot before ledger initialization finishes", async () => {
@@ -309,6 +366,68 @@ describe("process-csv IPC", () => {
         cnpjColumn: "cnpj",
         executionLedger: ledgerMocks.session,
       }),
+    );
+  });
+
+  it("passes xlsx delivery selection and auto-saves the generated workbook", async () => {
+    const handler = handlers.get("csv:process");
+    const sender = { send: vi.fn() };
+    const { writeFile } = await import("node:fs/promises");
+    vi.mocked(processCsv).mockResolvedValueOnce({
+      delivery: {
+        extension: "xlsx",
+        format: "xlsx",
+        mimeType:
+          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      },
+      execution: {
+        checkpointPath: ledgerMocks.session.checkpointPath,
+        completedUniqueLookups: 1,
+        resumedUniqueLookups: 0,
+        runId: ledgerMocks.session.runId,
+        status: "SUCCESS",
+        totalUniqueLookups: 1,
+      },
+      outputCsv: "cnpj;status\n00000000000191;SUCCESS",
+      outputXlsx: new Uint8Array([80, 75, 3, 4]),
+      runStatus: "SUCCESS",
+      summary: {
+        totalCnpjsEncontrados: 1,
+        totalCnpjsRetomados: 0,
+        totalCnpjsUnicosConsultados: 1,
+        totalCnpjsValidos: 1,
+        totalErros: 0,
+        totalLinhas: 1,
+        totalNaoOptantesSimples: 0,
+        totalOptantesSimples: 1,
+      },
+    });
+
+    await expect(
+      handler?.(sender, {
+        content: "cnpj\n00000000000191",
+        deliveryFormat: "xlsx",
+        provider: "mock",
+        sourceFilePath: "/tmp/fiscal-desk-test/entrada.csv",
+      }),
+    ).resolves.toMatchObject({
+      delivery: {
+        format: "xlsx",
+      },
+      outputXlsx: [80, 75, 3, 4],
+      savedPath: "/tmp/fiscal-desk-test/entrada-processado.xlsx",
+    });
+
+    expect(processCsv).toHaveBeenCalledWith(
+      "cnpj\n00000000000191",
+      expect.any(Object),
+      expect.objectContaining({
+        deliveryFormat: "xlsx",
+      }),
+    );
+    expect(writeFile).toHaveBeenCalledWith(
+      "/tmp/fiscal-desk-test/entrada-processado.xlsx",
+      Buffer.from([80, 75, 3, 4]),
     );
   });
 });

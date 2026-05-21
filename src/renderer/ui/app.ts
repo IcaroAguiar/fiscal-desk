@@ -1,11 +1,18 @@
 import type { SimplesProviderName } from "../../core/simples/simples-provider.factory";
 import { initialState, type PickCsvResult, type UiState } from "./app.types";
 import {
+  applyProcessResult,
+  getDefaultOutputFileName,
+  getOutputContent,
+  resetOutputState,
+} from "./app-delivery";
+import {
   buildCompletionMessage,
   extractMessage,
   getLiveProgress,
   renderStatusText,
 } from "./app-helpers";
+import { syncReceitaWebAvailability } from "./app-provider";
 import {
   getCurrentCnpjLabel,
   getProgressPercent,
@@ -47,6 +54,9 @@ export function mountApp(root: HTMLDivElement | null): void {
     ),
     columnInput: appRoot.querySelector<HTMLInputElement>(
       '[data-field="cnpj-column"]',
+    ),
+    deliverySelect: appRoot.querySelector<HTMLSelectElement>(
+      '[data-field="delivery-format"]',
     ),
     message: appRoot.querySelector<HTMLElement>('[data-slot="message"]'),
     commandSummary: appRoot.querySelector<HTMLElement>(
@@ -181,6 +191,12 @@ export function mountApp(root: HTMLDivElement | null): void {
     refs.columnInput?.addEventListener("input", (event) => {
       state.cnpjColumn = (event.currentTarget as HTMLInputElement).value;
     });
+
+    refs.deliverySelect?.addEventListener("change", (event) => {
+      state.deliveryFormat = (event.currentTarget as HTMLSelectElement)
+        .value as UiState["deliveryFormat"];
+      syncUi();
+    });
   }
 
   async function handlePickFile(): Promise<void> {
@@ -212,10 +228,9 @@ export function mountApp(root: HTMLDivElement | null): void {
     state.fileName = result.fileName;
     state.filePath = result.filePath;
     state.content = result.content;
-    state.outputCsv = null;
+    resetOutputState(state);
     state.summary = null;
     state.execution = null;
-    state.savedPath = null;
     state.progress = null;
     state.progressObservedAt = null;
     state.now = Date.now();
@@ -234,6 +249,7 @@ export function mountApp(root: HTMLDivElement | null): void {
 
     state.status = "processing";
     state.message = "Iniciando processamento...";
+    resetOutputState(state);
     state.progress = null;
     state.progressObservedAt = null;
     state.execution = null;
@@ -243,6 +259,7 @@ export function mountApp(root: HTMLDivElement | null): void {
     try {
       const result = await window.appBridge.processCsv({
         content: state.content,
+        deliveryFormat: state.deliveryFormat,
         provider: state.provider,
         ...(state.filePath ? { sourceFilePath: state.filePath } : {}),
         ...(state.cnpjColumn.trim()
@@ -250,11 +267,7 @@ export function mountApp(root: HTMLDivElement | null): void {
           : {}),
       });
 
-      state.outputCsv = result.outputCsv;
-      state.summary = result.summary;
-      state.execution = result.execution;
-      state.savedPath = result.savedPath;
-      state.status = result.runStatus === "CANCELLED" ? "cancelled" : "success";
+      applyProcessResult(state, result);
       state.message = buildCompletionMessage(result);
       await refreshExecutionHistory();
       syncUi();
@@ -280,6 +293,7 @@ export function mountApp(root: HTMLDivElement | null): void {
 
     state.status = "processing";
     state.message = "Retomando execução a partir do histórico local...";
+    resetOutputState(state);
     state.progress = null;
     state.progressObservedAt = null;
     state.execution = null;
@@ -287,17 +301,16 @@ export function mountApp(root: HTMLDivElement | null): void {
     syncUi();
 
     try {
-      const result = await window.appBridge.resumeExecution(ledgerKey);
+      const result = await window.appBridge.resumeExecution(
+        ledgerKey,
+        state.deliveryFormat,
+      );
       state.fileName = historyItem.sourceFileName;
       state.filePath = historyItem.sourceFilePath;
       state.content = null;
       state.provider = historyItem.providerName;
       state.cnpjColumn = historyItem.cnpjColumn ?? "";
-      state.outputCsv = result.outputCsv;
-      state.summary = result.summary;
-      state.execution = result.execution;
-      state.savedPath = result.savedPath;
-      state.status = result.runStatus === "CANCELLED" ? "cancelled" : "success";
+      applyProcessResult(state, result);
       state.message = buildCompletionMessage(result);
       await refreshExecutionHistory();
       syncUi();
@@ -327,7 +340,10 @@ export function mountApp(root: HTMLDivElement | null): void {
   }
 
   async function handleSaveFile(): Promise<void> {
-    if (!state.outputCsv || !state.fileName) {
+    const outputContent = getOutputContent(state);
+    const defaultName = getDefaultOutputFileName(state);
+
+    if (!outputContent || !state.outputDelivery || !defaultName) {
       return;
     }
 
@@ -336,10 +352,10 @@ export function mountApp(root: HTMLDivElement | null): void {
     syncUi();
 
     try {
-      const defaultName = state.fileName.replace(/\.csv$/i, "-processado.csv");
-      const savedPath = await window.appBridge.saveCsvFile(
+      const savedPath = await window.appBridge.saveOutputFile(
         defaultName,
-        state.outputCsv,
+        state.outputDelivery.format,
+        outputContent,
       );
 
       if (!savedPath) {
@@ -387,6 +403,10 @@ export function mountApp(root: HTMLDivElement | null): void {
 
     if (refs.columnInput) {
       refs.columnInput.value = state.cnpjColumn;
+    }
+
+    if (refs.deliverySelect) {
+      refs.deliverySelect.value = state.deliveryFormat;
     }
 
     if (refs.outputStatus) {
@@ -471,28 +491,7 @@ export function mountApp(root: HTMLDivElement | null): void {
     }
 
     if (refs.saveButton) {
-      refs.saveButton.disabled = !state.outputCsv;
+      refs.saveButton.disabled = !state.outputDelivery;
     }
-  }
-}
-
-function syncReceitaWebAvailability(
-  providerSelect: HTMLSelectElement,
-  state: UiState,
-): void {
-  const receitaWebOption = providerSelect.querySelector<HTMLOptionElement>(
-    'option[value="receita-web"]',
-  );
-
-  if (!receitaWebOption) {
-    return;
-  }
-
-  const shouldHide = !state.receitaWebAvailable;
-  receitaWebOption.disabled = shouldHide;
-  receitaWebOption.hidden = shouldHide;
-
-  if (shouldHide && state.provider === "receita-web") {
-    state.provider = "mock";
   }
 }

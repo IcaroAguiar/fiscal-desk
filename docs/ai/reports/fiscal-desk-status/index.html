@@ -3,11 +3,11 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Fiscal Desk: historico local e retomada operacional</title>
+  <title>Fiscal Desk: entrega Excel operacional</title>
   <meta name="generator" content="interactive-html-reports 0.1.0" />
   <meta name="report-kit-version" content="0.1.0" />
   <meta name="report-preset" content="implementation" />
-  <meta name="report-updated-at" content="2026-05-20T18:03:00-03:00" />
+  <meta name="report-updated-at" content="2026-05-20T23:09:07-03:00" />
   <style>:root {
   color-scheme: light;
   --report-bg: #f4f7f5;
@@ -981,40 +981,40 @@ details.report-card summary {
     <section class="report-hero">
       <div class="hero-copy">
         <p class="eyebrow">Fiscal Desk</p>
-        <h1>Fiscal Desk: historico local e retomada operacional</h1>
-        <p class="lede">Corte vertical em andamento na branch feat/fiscal-desk-operational-history-ui: historico de execucoes, retomada via UI, smoke Electron real, visual smoke e perf local.</p>
+        <h1>Fiscal Desk: entrega Excel operacional</h1>
+        <p class="lede">Corte vertical na branch feat/fiscal-desk-xlsx-delivery: Planilha de Resultado .xlsx com abas, seleção de entrega na UI, auto-save Electron real, regressão CSV, audit de dependência e perf proporcional.</p>
       </div>
       <aside class="hero-panel" aria-label="Metadata do report">
         <dl class="metadata-list">
           <div class="metadata-row"><dt>Status</dt><dd><span class="status-pill status-partial">parcial</span></dd></div>
           <div class="metadata-row"><dt>Preset</dt><dd>Implementação</dd></div>
-          <div class="metadata-row"><dt>Atualizado</dt><dd>2026-05-20T18:03:00-03:00</dd></div>
+          <div class="metadata-row"><dt>Atualizado</dt><dd>2026-05-20T23:09:07-03:00</dd></div>
           <div class="metadata-row"><dt>Kit</dt><dd>0.1.0</dd></div>
         </dl>
       </aside>
     </section>
-    <section class="report-section" id="metricas" data-search-item><div class="section-body"><div class="metric-grid"><article class="metric-card" data-search-item data-status="partial"><strong>PR #3</strong><span>corte em preparacao</span></article><article class="metric-card" data-search-item data-status="done"><strong>164</strong><span>testes automatizados passando</span></article><article class="metric-card" data-search-item data-status="done"><strong>80k/s</strong><span>linhas por segundo no perf local</span></article><article class="metric-card" data-search-item data-status="done"><strong>0</strong><span>findings bloqueantes apos review</span></article><article class="metric-card" data-search-item data-status="done"><strong>2/2</strong><span>checks remotos verdes</span></article></div></div></section>
+    <section class="report-section" id="metricas" data-search-item><div class="section-body"><div class="metric-grid"><article class="metric-card" data-search-item data-status="done"><strong>PR #4</strong><span>aberta com checks verdes</span></article><article class="metric-card" data-search-item data-status="done"><strong>171</strong><span>testes automatizados passando</span></article><article class="metric-card" data-search-item data-status="done"><strong>XLSX</strong><span>entrega Excel real</span></article><article class="metric-card" data-search-item data-status="done"><strong>13k/s</strong><span>linhas por segundo no perf XLSX</span></article><article class="metric-card" data-search-item data-status="done"><strong>0</strong><span>vulnerabilidades conhecidas no audit prod</span></article></div></div></section>
     <div class="report-layout">
       <nav class="toc" aria-label="Indice do report">
         <p class="toc-title">Conteúdo</p>
         <a href="#metricas">Métricas</a>
-        <a href="#mudancas">O que o corte atual entrega</a><a href="#evidencias">Evidencias de validacao</a><a href="#decisoes">Decisoes e guardrails consolidados</a><a href="#plano">Estado do corte e proximo passo</a><a href="#diagrams">Diagramas</a><a href="#risks">Riscos e pendências</a>
+        <a href="#mudancas">O que o corte entrega</a><a href="#evidencias">Evidencias de validacao</a><a href="#decisoes">Decisoes do corte</a><a href="#plano">Estado e proximo passo</a><a href="#diagrams">Diagramas</a><a href="#risks">Riscos e pendências</a>
       </nav>
-      <div class="report-content"><section class="report-section" id="mudancas" data-search-item data-status="partial">
+      <div class="report-content"><section class="report-section" id="mudancas" data-search-item data-status="done">
     <header class="section-heading">
       <div>
         <p class="eyebrow">Implementacao</p>
-        <h2>O que o corte atual entrega</h2>
+        <h2>O que o corte entrega</h2>
       </div>
-      <span class="status-pill status-partial">parcial</span>
+      <span class="status-pill status-done">feito</span>
     </header>
-    <div class="section-body"><p>Este corte amplia a base da PR #2 para uma operacao local rastreavel e retomavel no app.</p>
-<ul><li>Listagem de execucoes recentes a partir dos ledgers locais em <code>userData</code>.</li><li>Contrato IPC/preload para o renderer consumir snapshots de historico sem ler arquivos diretamente.</li><li>Botao <code>Retomar</code> para execucoes elegiveis e bloqueio explicito para <code>SUCCESS</code> historico.</li><li>Retomada valida o CSV original e a versao de configuracao do provider antes de reprocessar.</li><li>UI evita reentrada durante processamento e preserva selecao anterior em falha de retomada.</li><li>Smoke Electron real valida retomada via UI com <code>1 retomadas de checkpoint</code>.</li></ul></div>
+    <div class="section-body"><p>Este corte transforma a entrega Excel em funcionalidade real sem remover o CSV compatível.</p>
+<ul><li><code>exceljs</code> gera <code>.xlsx</code> nativo com abas Resumo, Resultados, Falhas, Divergencias e Auditoria.</li><li><code>processCsv</code> mantém <code>outputCsv</code> por compatibilidade e adiciona <code>outputXlsx</code> quando <code>deliveryFormat</code> é <code>xlsx</code>.</li><li>IPC/preload salvam CSV ou XLSX usando o formato escolhido, com auto-save ao lado do arquivo original.</li><li>UI ganhou seletor de Entrega com opção <code>CSV compatível</code> ou <code>Excel com abas</code>.</li><li>Smoke Electron real seleciona Excel, retoma execução pelo histórico e valida assinatura XLSX do arquivo salvo.</li><li>Overrides do pnpm corrigem <code>brace-expansion</code> transitivo trazido pelo <code>exceljs</code>.</li></ul></div>
   </section>
 <section class="report-section" id="evidencias" data-search-item data-status="done">
     <header class="section-heading">
       <div>
-        <p class="eyebrow">Checks</p>
+        <p class="eyebrow">Checks locais</p>
         <h2>Evidencias de validacao</h2>
       </div>
       <span class="status-pill status-done">feito</span>
@@ -1024,7 +1024,7 @@ details.report-card summary {
     <tbody><tr data-search-item data-status="pass">
             <td data-label="Evidência">Lint</td>
             <td data-label="Comando/Origem">pnpm lint</td>
-            <td data-label="Resultado">Biome sem erros</td>
+            <td data-label="Resultado">Biome sem erros em 77 arquivos</td>
             <td data-label="Status"><span class="status-pill status-done">pass</span></td>
           </tr><tr data-search-item data-status="pass">
             <td data-label="Evidência">Typecheck</td>
@@ -1034,7 +1034,7 @@ details.report-card summary {
           </tr><tr data-search-item data-status="pass">
             <td data-label="Evidência">Suite automatizada</td>
             <td data-label="Comando/Origem">pnpm test</td>
-            <td data-label="Resultado">26 arquivos / 164 testes passando apos correcoes de review</td>
+            <td data-label="Resultado">27 arquivos / 171 testes passando, incluindo writer XLSX, use-case, IPC, UI e rejeicao de formato invalido no boundary</td>
             <td data-label="Status"><span class="status-pill status-done">pass</span></td>
           </tr><tr data-search-item data-status="pass">
             <td data-label="Evidência">Build</td>
@@ -1044,7 +1044,12 @@ details.report-card summary {
           </tr><tr data-search-item data-status="pass">
             <td data-label="Evidência">Smoke CSV real</td>
             <td data-label="Comando/Origem">pnpm smoke:real-csv</td>
-            <td data-label="Resultado">Fixture publica processada com 3 CNPJs unicos, duplicidade e linha invalida</td>
+            <td data-label="Resultado">Compatibilidade CSV preservada com fixture publica e provider mock</td>
+            <td data-label="Status"><span class="status-pill status-done">pass</span></td>
+          </tr><tr data-search-item data-status="pass">
+            <td data-label="Evidência">Smoke Electron real</td>
+            <td data-label="Comando/Origem">pnpm smoke:electron-ui</td>
+            <td data-label="Resultado">App Electron abriu, selecionou Excel, retomou checkpoint e salvou `entrada-processado.xlsx` com assinatura ZIP/XLSX valida</td>
             <td data-label="Status"><span class="status-pill status-done">pass</span></td>
           </tr><tr data-search-item data-status="pass">
             <td data-label="Evidência">Smoke visual</td>
@@ -1052,14 +1057,29 @@ details.report-card summary {
             <td data-label="Resultado">Desktop 1440x1000 e mobile 390x900 sem overflow nem botoes cortados</td>
             <td data-label="Status"><span class="status-pill status-done">pass</span></td>
           </tr><tr data-search-item data-status="pass">
-            <td data-label="Evidência">Smoke Electron real</td>
-            <td data-label="Comando/Origem">pnpm smoke:electron-ui</td>
-            <td data-label="Resultado">App Electron real retomou via UI: historico local, auto-save, checkpoint e `1 retomadas de checkpoint`</td>
+            <td data-label="Evidência">Perf CSV</td>
+            <td data-label="Comando/Origem">pnpm perf:local-csv</td>
+            <td data-label="Resultado">5.000 linhas: 38 ms, 131.113 linhas/s</td>
             <td data-label="Status"><span class="status-pill status-done">pass</span></td>
           </tr><tr data-search-item data-status="pass">
-            <td data-label="Evidência">Perf local</td>
-            <td data-label="Comando/Origem">pnpm perf:local-csv</td>
-            <td data-label="Resultado">5.000 linhas com provider mock: 62 ms, 80.256 linhas/s</td>
+            <td data-label="Evidência">Perf XLSX</td>
+            <td data-label="Comando/Origem">FISCAL_DESK_PERF_DELIVERY_FORMAT=xlsx pnpm perf:local-csv</td>
+            <td data-label="Resultado">5.000 linhas: 514 ms, 9.724 linhas/s, 334.156 bytes</td>
+            <td data-label="Status"><span class="status-pill status-done">pass</span></td>
+          </tr><tr data-search-item data-status="pass">
+            <td data-label="Evidência">Checks remotos da PR #4</td>
+            <td data-label="Comando/Origem"><a href="https://github.com/IcaroAguiar/consulta-simples-csv/pull/4">GitHub Actions / GitGuardian</a></td>
+            <td data-label="Resultado">quality-gate e GitGuardian passaram no head atual da PR #4</td>
+            <td data-label="Status"><span class="status-pill status-done">pass</span></td>
+          </tr><tr data-search-item data-status="pass">
+            <td data-label="Evidência">Review independente</td>
+            <td data-label="Comando/Origem">agentic-code-review</td>
+            <td data-label="Resultado">Finding medio de validacao runtime de `deliveryFormat` corrigido; follow-up independente sem novos bloqueantes</td>
+            <td data-label="Status"><span class="status-pill status-done">pass</span></td>
+          </tr><tr data-search-item data-status="pass">
+            <td data-label="Evidência">Dependency audit</td>
+            <td data-label="Comando/Origem">pnpm audit --prod</td>
+            <td data-label="Resultado">Sem vulnerabilidades conhecidas depois dos overrides de `brace-expansion`</td>
             <td data-label="Status"><span class="status-pill status-done">pass</span></td>
           </tr><tr data-search-item data-status="pass">
             <td data-label="Evidência">Secret scan</td>
@@ -1069,17 +1089,7 @@ details.report-card summary {
           </tr><tr data-search-item data-status="pass">
             <td data-label="Evidência">Quality ratchet</td>
             <td data-label="Comando/Origem">node docs/ai/quality-gate/check-ratchet.mjs</td>
-            <td data-label="Resultado">PASS com warnings esperados: coverage ausente e agentic review nao enforceado em CI</td>
-            <td data-label="Status"><span class="status-pill status-done">pass</span></td>
-          </tr><tr data-search-item data-status="pass">
-            <td data-label="Evidência">Review independente</td>
-            <td data-label="Comando/Origem">agentic-code-review</td>
-            <td data-label="Resultado">3 achados corrigidos; follow-up sem bloqueantes</td>
-            <td data-label="Status"><span class="status-pill status-done">pass</span></td>
-          </tr><tr data-search-item data-status="pass">
-            <td data-label="Evidência">Checks remotos da PR #3</td>
-            <td data-label="Comando/Origem"><a href="https://github.com/IcaroAguiar/consulta-simples-csv/pull/3">GitHub Actions / GitGuardian</a></td>
-            <td data-label="Resultado">quality-gate e GitGuardian passaram no head db9bb23</td>
+            <td data-label="Resultado">PASS; large files permanecem em 2, com warnings esperados de coverage e review nao enforceado em CI</td>
             <td data-label="Status"><span class="status-pill status-done">pass</span></td>
           </tr></tbody>
   </table></div></div>
@@ -1088,75 +1098,80 @@ details.report-card summary {
     <header class="section-heading">
       <div>
         <p class="eyebrow">Racional</p>
-        <h2>Decisoes e guardrails consolidados</h2>
+        <h2>Decisoes do corte</h2>
       </div>
       <span class="status-pill status-done">feito</span>
     </header>
     <div class="section-body"><div class="card-grid"><article class="report-card" data-search-item data-status="done">
           <div class="chip-row"><span class="status-pill status-done">feito</span></div>
-          <h4>Persistencia local simples</h4>
-          <p>O ledger fica em arquivo local no `userData`; nao ha backend remoto nem banco nesta fase.</p>
-          
+          <h4>ExcelJS como dependencia</h4>
+          <p>`exceljs` foi escolhido por gerar workbook nativo com multiplas abas e estilos simples, evitando ZIP/XML manual no app Electron.</p>
+
         </article><article class="report-card" data-search-item data-status="done">
           <div class="chip-row"><span class="status-pill status-done">feito</span></div>
-          <h4>Fingerprint semantico</h4>
-          <p>A retomada considera CSV, provider, coluna de CNPJ e versoes operacionais de ledger/parser/normalizer/policy.</p>
-          
+          <h4>CSV continua contrato base</h4>
+          <p>`outputCsv` continua sempre disponivel; XLSX e gerado apenas quando a entrega escolhida e `xlsx`.</p>
+
         </article><article class="report-card" data-search-item data-status="done">
           <div class="chip-row"><span class="status-pill status-done">feito</span></div>
-          <h4>Erro retryable nao vira checkpoint reutilizavel</h4>
-          <p>Resultados como `TEMPORARY_ERROR` continuam deduplicados dentro da execucao, mas nao sao restaurados em execucoes futuras.</p>
-          
+          <h4>Planilha nao muda provider</h4>
+          <p>A escolha de entrega fica no use-case/IPC/UI e nao altera adapters nem regras especificas de provider.</p>
+
         </article><article class="report-card" data-search-item data-status="done">
           <div class="chip-row"><span class="status-pill status-done">feito</span></div>
-          <h4>Smoke real obrigatorio</h4>
-          <p>Mudancas em IPC, preload, execucao e persistencia exigem `pnpm smoke:electron-ui` alem de testes e build.</p>
-          
+          <h4>Audit transitive corrigido</h4>
+          <p>O `pnpm audit --prod` inicialmente apontou `brace-expansion`; overrides travam as versoes corrigidas no lockfile.</p>
+
+        </article><article class="report-card" data-search-item data-status="done">
+          <div class="chip-row"><span class="status-pill status-done">feito</span></div>
+          <h4>Formato de entrega validado no boundary</h4>
+          <p>`csv:process`, `csv:resume-execution` e `csv:save-output-file` rejeitam formatos fora de `csv` e `xlsx` antes de executar efeitos.</p>
+
         </article></div></div>
   </section>
 <section class="report-section" id="plano" data-search-item data-status="partial">
     <header class="section-heading">
       <div>
         <p class="eyebrow">Execucao</p>
-        <h2>Estado do corte e proximo passo</h2>
+        <h2>Estado e proximo passo</h2>
       </div>
       <span class="status-pill status-partial">parcial</span>
     </header>
     <div class="section-body"><div class="kanban"><section class="kanban-column" data-search-item>
         <header><span>Agora</span><span>2</span></header>
         <div class="kanban-cards"><article class="report-card" data-search-item data-status="done">
-                <h4>Historico e retomada implementados</h4>
-                <p>Branch `feat/fiscal-desk-operational-history-ui` lista ledgers, mostra historico e retoma execucoes elegiveis pela UI.</p>
-                <div class="chip-row"><span class="chip">base</span></div>
+                <h4>Entrega Excel implementada</h4>
+                <p>Planilha de Resultado `.xlsx` com abas operacionais e auto-save pelo app Electron.</p>
+                <div class="chip-row"><span class="chip">produto</span></div>
               </article><article class="report-card" data-search-item data-status="done">
-                <h4>Findings de review corrigidos</h4>
-                <p>Corrigidos estado inconsistente em falha de retomada, reentrada durante processamento e JSON nao-ledger quebrando historico.</p>
+                <h4>Gates locais completos</h4>
+                <p>Lint, typecheck, testes, build, smokes reais, perf, audit, gitleaks e ratchet passaram localmente.</p>
                 <div class="chip-row"><span class="chip">evidencia</span></div>
               </article></div>
       </section><section class="kanban-column" data-search-item>
-        <header><span>Antes de abrir PR</span><span>3</span></header>
-        <div class="kanban-cards"><article class="report-card" data-search-item data-status="partial">
-                <h4>Atualizar PR artifact</h4>
-                <p>Staging, commit, push e abrir PR sem merge, com evidencia de testes e smokes reais.</p>
-                <div class="chip-row"><span class="chip">PR</span></div>
+        <header><span>Antes do merge</span><span>3</span></header>
+        <div class="kanban-cards"><article class="report-card" data-search-item data-status="done">
+                <h4>Review independente</h4>
+                <p>Reviewer independente confirmou que o finding de boundary foi resolvido e nao encontrou novos bloqueantes.</p>
+                <div class="chip-row"><span class="chip">review</span></div>
               </article><article class="report-card" data-search-item data-status="done">
-                <h4>Conferir CI remoto</h4>
-                <p>GitHub Actions `quality-gate` e GitGuardian estao verdes na PR #3.</p>
+                <h4>PR e CI remoto</h4>
+                <p>PR #4 aberta; GitHub Actions quality-gate e GitGuardian passaram no head inicial.</p>
                 <div class="chip-row"><span class="chip">CI</span></div>
               </article><article class="report-card" data-search-item data-status="info">
-                <h4>Aguardar decisao humana</h4>
-                <p>Falta review humano ou dispensa explicita, e autorizacao explicita para merge.</p>
+                <h4>Merge somente autorizado</h4>
+                <p>Nao fazer merge sem autorizacao explicita do usuario para esta PR.</p>
                 <div class="chip-row"><span class="chip">guardrail</span></div>
               </article></div>
       </section><section class="kanban-column" data-search-item>
         <header><span>Depois</span><span>2</span></header>
         <div class="kanban-cards"><article class="report-card" data-search-item data-status="info">
-                <h4>Preparar base publica local</h4>
-                <p>Planejar ingestao local e aviso de frescor da base, mantendo `receita-web` como confirmacao assistida.</p>
-                <div class="chip-row"><span class="chip">produto</span></div>
+                <h4>Base publica local</h4>
+                <p>Proximo corte recomendado: contrato e fixture de Base Publica Local com consentimento e aviso de frescor.</p>
+                <div class="chip-row"><span class="chip">volume</span></div>
               </article><article class="report-card" data-search-item data-status="info">
-                <h4>Entrega Excel</h4>
-                <p>Adicionar saida XLSX somente depois do historico/retomada estar confiavel.</p>
+                <h4>Customizacao de entrega</h4>
+                <p>Depois do XLSX base, evoluir presets de colunas/abas sem prometer entrada Excel ainda.</p>
                 <div class="chip-row"><span class="chip">entrega</span></div>
               </article></div>
       </section></div></div>
@@ -1167,35 +1182,35 @@ details.report-card summary {
         <p class="eyebrow">Fluxos</p>
         <h2>Diagramas</h2>
       </div>
-      
+
     </header>
     <div class="section-body"><figure class="diagram-frame" data-search-item>
-    <figcaption class="eyebrow">Fluxo atual de execucao</figcaption>
-    <svg class="native-flow" viewBox="0 0 930 210" role="img" aria-label="Fluxo atual de execucao">
+    <figcaption class="eyebrow">Fluxo de entrega</figcaption>
+    <svg class="native-flow" viewBox="0 0 930 210" role="img" aria-label="Fluxo de entrega">
     <defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#8a8173" /></marker></defs>
     <path d="M 180 106 L 220 106" stroke="#8a8173" stroke-width="1.5" fill="none" marker-end="url(#arrow)" />
-        <text x="200" y="96" text-anchor="middle" font-size="11" fill="#6f716a">contexto</text><path d="M 350 106 L 390 106" stroke="#8a8173" stroke-width="1.5" fill="none" marker-end="url(#arrow)" />
-        <text x="370" y="96" text-anchor="middle" font-size="11" fill="#6f716a">retoma ou consulta</text><path d="M 520 106 L 560 106" stroke="#8a8173" stroke-width="1.5" fill="none" marker-end="url(#arrow)" />
-        <text x="540" y="96" text-anchor="middle" font-size="11" fill="#6f716a">checkpoint</text><path d="M 690 106 L 730 106" stroke="#8a8173" stroke-width="1.5" fill="none" marker-end="url(#arrow)" />
-        <text x="710" y="96" text-anchor="middle" font-size="11" fill="#6f716a">transparencia</text>
+        <text x="200" y="96" text-anchor="middle" font-size="11" fill="#6f716a">entrada</text><path d="M 350 106 L 390 106" stroke="#8a8173" stroke-width="1.5" fill="none" marker-end="url(#arrow)" />
+        <text x="370" y="96" text-anchor="middle" font-size="11" fill="#6f716a">resultado simples</text><path d="M 520 106 L 560 106" stroke="#8a8173" stroke-width="1.5" fill="none" marker-end="url(#arrow)" />
+        <text x="540" y="96" text-anchor="middle" font-size="11" fill="#6f716a">compatibilidade</text><path d="M 520 106 L 730 106" stroke="#8a8173" stroke-width="1.5" fill="none" marker-end="url(#arrow)" />
+        <text x="625" y="96" text-anchor="middle" font-size="11" fill="#6f716a">planilha</text>
     <g>
         <rect x="50" y="78" width="130" height="56" rx="8" class="tone-blue" stroke="#ded8cc" />
         <text x="115" y="110" text-anchor="middle" font-size="13" font-family="ui-monospace, monospace" fill="currentColor">CSV local</text>
       </g><g>
-        <rect x="220" y="78" width="130" height="56" rx="8" class="tone-amber" stroke="#ded8cc" />
-        <text x="285" y="110" text-anchor="middle" font-size="13" font-family="ui-monospace, monospace" fill="currentColor">Fingerprint</text>
+        <rect x="220" y="78" width="130" height="56" rx="8" class="tone-blue" stroke="#ded8cc" />
+        <text x="285" y="110" text-anchor="middle" font-size="13" font-family="ui-monospace, monospace" fill="currentColor">Consulta</text>
       </g><g>
-        <rect x="390" y="78" width="130" height="56" rx="8" class="tone-blue" stroke="#ded8cc" />
-        <text x="455" y="110" text-anchor="middle" font-size="13" font-family="ui-monospace, monospace" fill="currentColor">Provider</text>
+        <rect x="390" y="78" width="130" height="56" rx="8" class="tone-amber" stroke="#ded8cc" />
+        <text x="455" y="110" text-anchor="middle" font-size="13" font-family="ui-monospace, monospace" fill="currentColor">Linhas enriquecidas</text>
       </g><g>
         <rect x="560" y="78" width="130" height="56" rx="8" class="tone-green" stroke="#ded8cc" />
-        <text x="625" y="110" text-anchor="middle" font-size="13" font-family="ui-monospace, monospace" fill="currentColor">Ledger</text>
+        <text x="625" y="110" text-anchor="middle" font-size="13" font-family="ui-monospace, monospace" fill="currentColor">CSV</text>
       </g><g>
         <rect x="730" y="78" width="130" height="56" rx="8" class="tone-green" stroke="#ded8cc" />
-        <text x="795" y="110" text-anchor="middle" font-size="13" font-family="ui-monospace, monospace" fill="currentColor">Painel</text>
+        <text x="795" y="110" text-anchor="middle" font-size="13" font-family="ui-monospace, monospace" fill="currentColor">Excel com abas</text>
       </g>
   </svg>
-    <p class="card-meta">A proxima fatia deve ler estes ledgers para formar historico e retomada operavel.</p>
+    <p class="card-meta">A consulta permanece unica; a entrega escolhe CSV ou Excel no fim do processamento.</p>
   </figure></div>
   </section>
 <section class="report-section" id="risks" data-search-item data-status="info">
@@ -1204,28 +1219,23 @@ details.report-card summary {
         <p class="eyebrow">Controle</p>
         <h2>Riscos e pendências</h2>
       </div>
-      
+
     </header>
     <div class="section-body"><div class="risk-grid"><article class="report-card" data-search-item data-status="partial">
           <div class="chip-row"><span class="status-pill status-partial">parcial</span></div>
           <h4>Coverage formal warning-only</h4>
           <p>O repo ainda nao gera `coverage/lcov.info`; ratchet segue sem cobertura real por linha alterada.</p>
-          
-        </article><article class="report-card" data-search-item data-status="done">
-          <div class="chip-row"><span class="status-pill status-done">feito</span></div>
-          <h4>CI remoto ainda pendente</h4>
-          <p>Resolvido em 2026-05-20: GitHub Actions quality-gate e GitGuardian passaram na PR #3.</p>
-          
+
         </article><article class="report-card" data-search-item data-status="partial">
           <div class="chip-row"><span class="status-pill status-partial">parcial</span></div>
-          <h4>Review humano ou dispensa ainda pendente</h4>
-          <p>A PR #3 tem review independente do agente sem bloqueantes, mas ainda precisa review humano ou dispensa explicita antes do merge.</p>
-          
+          <h4>Dependencia nova aumenta superficie</h4>
+          <p>`exceljs` trouxe dependencias transitivas e subdependencias depreciadas; `pnpm audit --prod` esta verde com overrides, mas o peso deve ser observado nos builds de distribuicao.</p>
+
         </article><article class="report-card" data-search-item data-status="info">
           <div class="chip-row"><span class="status-pill status-info">info</span></div>
-          <h4>Receita Web segue assistida</h4>
-          <p>Nao tratar como automacao robusta em lote. Qualquer proxima UX deve preservar navegador visivel, bloqueio anti-bot possivel e supervisao humana.</p>
-          
+          <h4>Entrada Excel ainda nao implementada</h4>
+          <p>O corte entrega saida Excel. Entrada `.xlsx` continua fora do escopo e a UI permanece clara sobre CSV como entrada.</p>
+
         </article></div></div>
   </section></div>
     </div>

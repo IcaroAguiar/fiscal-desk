@@ -1,6 +1,8 @@
 export type {
   LookupProgress,
+  ProcessCsvDeliveryFormat,
   ProcessCsvExecution,
+  ProcessCsvOutputDelivery,
   ProcessCsvRunStatus,
   ProcessCsvSummary,
   ProcessExecutionHistoryItem,

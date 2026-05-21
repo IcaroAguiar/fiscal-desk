@@ -8,8 +8,12 @@ import {
   ipcMain,
   powerSaveBlocker,
 } from "electron";
-
+import type {
+  ProcessCsvDeliveryFormat,
+  ProcessCsvOutputDelivery,
+} from "../../core/app/process-csv.types";
 import { processCsv } from "../../core/app/process-csv.use-case";
+import { parseProcessCsvDeliveryFormat } from "../../core/app/process-csv-delivery";
 import { resolvePackagedWindowsBrowserPath } from "../../core/simples/adapters/receita-web/receita-browser-path";
 import { loadProviderConfig } from "../../core/simples/simples-provider.config";
 import type { SimplesProviderName } from "../../core/simples/simples-provider.factory";
@@ -23,6 +27,7 @@ import { FISCAL_DESK_DISABLE_COMPLETION_DIALOG_ENV } from "../runtime-env";
 
 type ProcessCsvInput = {
   content: string;
+  deliveryFormat?: unknown;
   provider: SimplesProviderName;
   cnpjColumn?: string;
   providerConfigVersion?: string;
@@ -30,7 +35,20 @@ type ProcessCsvInput = {
 };
 
 type ResumeProcessExecutionInput = {
+  deliveryFormat?: unknown;
   ledgerKey: string;
+};
+
+type ProcessCsvOutput = {
+  delivery: ProcessCsvOutputDelivery;
+  outputCsv: string;
+  outputXlsx: Uint8Array | null;
+};
+
+type SaveOutputInput = {
+  content: string | number[];
+  defaultName: string;
+  format: unknown;
 };
 
 type ProcessingSession = {
@@ -94,6 +112,9 @@ export function registerCsvIpc(): void {
   ipcMain.handle(
     "csv:resume-execution",
     async (event, input: ResumeProcessExecutionInput) => {
+      const deliveryFormat = parseProcessCsvDeliveryFormat(
+        input.deliveryFormat,
+      );
       const execution = await createExecutionLedger().getRun(input.ledgerKey);
 
       if (!execution) {
@@ -133,6 +154,7 @@ export function registerCsvIpc(): void {
 
       return processCsvWithLedger(event, {
         content,
+        deliveryFormat,
         provider: execution.providerName,
         ...(execution.cnpjColumn ? { cnpjColumn: execution.cnpjColumn } : {}),
         providerConfigVersion: execution.providerConfigVersion,
@@ -156,21 +178,27 @@ export function registerCsvIpc(): void {
 
   ipcMain.handle(
     "csv:save-output-file",
-    async (
-      _event,
-      input: { defaultName: string; content: string },
-    ): Promise<string | null> => {
+    async (_event, input: SaveOutputInput): Promise<string | null> => {
+      const format = parseProcessCsvDeliveryFormat(input.format);
+      const extension = format === "xlsx" ? "xlsx" : "csv";
       const result = await dialog.showSaveDialog({
-        title: "Salvar CSV processado",
+        title:
+          format === "xlsx"
+            ? "Salvar planilha processada"
+            : "Salvar CSV processado",
         defaultPath: input.defaultName,
-        filters: [{ name: "CSV", extensions: ["csv"] }],
+        filters: [
+          format === "xlsx"
+            ? { name: "Excel", extensions: [extension] }
+            : { name: "CSV", extensions: [extension] },
+        ],
       });
 
       if (result.canceled || !result.filePath) {
         return null;
       }
 
-      await writeFile(result.filePath, input.content, "utf8");
+      await writeOutputFile(result.filePath, format, input.content);
 
       return result.filePath;
     },
@@ -180,13 +208,9 @@ export function registerCsvIpc(): void {
     "csv:auto-save-output-file",
     async (
       _event,
-      input: { sourceFilePath: string; content: string },
+      input: { content: string; sourceFilePath: string },
     ): Promise<string> => {
-      const parsedPath = path.parse(input.sourceFilePath);
-      const outputPath = path.join(
-        parsedPath.dir,
-        `${parsedPath.name}-processado.csv`,
-      );
+      const outputPath = getAutoSaveOutputPath(input.sourceFilePath, "csv");
 
       await writeFile(outputPath, input.content, "utf8");
 
@@ -226,6 +250,8 @@ async function processCsvWithLedger(
   event: IpcMainInvokeEvent,
   input: ProcessCsvInput,
 ) {
+  const deliveryFormat = parseProcessCsvDeliveryFormat(input.deliveryFormat);
+
   if (activeProcessingSession) {
     throw new Error("Ja existe um processamento em andamento.");
   }
@@ -270,6 +296,7 @@ async function processCsvWithLedger(
 
     const result = await processCsv(input.content, provider, {
       ...(options ? { cnpjColumn: options } : {}),
+      deliveryFormat,
       executionLedger: executionSession,
       signal: controller.signal,
       onLookupProgress(progress) {
@@ -293,10 +320,11 @@ async function processCsvWithLedger(
       },
     });
 
-    const autoSaveResult = await attemptAutoSave(
-      input.sourceFilePath ?? null,
-      result.outputCsv,
-    );
+    const autoSaveResult = await attemptAutoSave(input.sourceFilePath ?? null, {
+      delivery: result.delivery,
+      outputCsv: result.outputCsv,
+      outputXlsx: result.outputXlsx,
+    });
     await executionSession.finish({
       status: result.runStatus,
       outputPath: autoSaveResult.savedPath,
@@ -336,6 +364,7 @@ async function processCsvWithLedger(
 
     return {
       ...result,
+      outputXlsx: result.outputXlsx ? Array.from(result.outputXlsx) : null,
       savedPath: autoSaveResult.savedPath,
       warningMessage: autoSaveResult.warningMessage,
     };
@@ -397,7 +426,7 @@ function notifyProcessingCompleted(): void {
 
 async function attemptAutoSave(
   sourceFilePath: string | null,
-  content: string,
+  output: ProcessCsvOutput,
 ): Promise<{ savedPath: string | null; warningMessage: string | null }> {
   if (!sourceFilePath) {
     return {
@@ -407,7 +436,18 @@ async function attemptAutoSave(
   }
 
   try {
-    const savedPath = await autoSaveOutputFile(sourceFilePath, content);
+    const content =
+      output.delivery.format === "xlsx" ? output.outputXlsx : output.outputCsv;
+
+    if (!content) {
+      throw new Error("Entrega XLSX não foi gerada.");
+    }
+
+    const savedPath = await autoSaveOutputFile(
+      sourceFilePath,
+      output.delivery.format,
+      content,
+    );
 
     return {
       savedPath,
@@ -426,15 +466,33 @@ async function attemptAutoSave(
 
 async function autoSaveOutputFile(
   sourceFilePath: string,
-  content: string,
+  format: ProcessCsvDeliveryFormat,
+  content: string | Uint8Array,
 ): Promise<string> {
-  const parsedPath = path.parse(sourceFilePath);
-  const outputPath = path.join(
-    parsedPath.dir,
-    `${parsedPath.name}-processado.csv`,
-  );
+  const outputPath = getAutoSaveOutputPath(sourceFilePath, format);
 
-  await writeFile(outputPath, content, "utf8");
+  await writeOutputFile(outputPath, format, content);
 
   return outputPath;
+}
+
+function getAutoSaveOutputPath(
+  sourceFilePath: string,
+  format: ProcessCsvDeliveryFormat,
+): string {
+  const parsedPath = path.parse(sourceFilePath);
+  return path.join(parsedPath.dir, `${parsedPath.name}-processado.${format}`);
+}
+
+async function writeOutputFile(
+  filePath: string,
+  format: ProcessCsvDeliveryFormat,
+  content: string | number[] | Uint8Array,
+): Promise<void> {
+  if (format === "xlsx") {
+    await writeFile(filePath, Buffer.from(content as number[] | Uint8Array));
+    return;
+  }
+
+  await writeFile(filePath, String(content), "utf8");
 }

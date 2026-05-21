@@ -1,5 +1,7 @@
 import type { SimplesProviderName } from "../simples/simples-provider.factory";
 
+export type ProcessCsvDeliveryFormat = "csv" | "xlsx";
+
 export type ProcessCsvSummary = {
   totalLinhas: number;
   totalCnpjsEncontrados: number;
@@ -54,4 +56,10 @@ export type ProcessExecutionHistoryItem = {
   summary: ProcessCsvSummary | null;
   canResume: boolean;
   resumeBlockedReason: string | null;
+};
+
+export type ProcessCsvOutputDelivery = {
+  format: ProcessCsvDeliveryFormat;
+  extension: "csv" | "xlsx";
+  mimeType: string;
 };

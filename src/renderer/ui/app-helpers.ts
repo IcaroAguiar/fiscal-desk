@@ -106,11 +106,14 @@ export function getLiveProgress(state: UiState): LookupProgress | null {
 }
 
 export function buildCompletionMessage(result: ProcessCsvResult): string {
+  const deliveryLabel =
+    result.delivery.format === "xlsx" ? "planilha Excel" : "CSV";
+
   if (result.runStatus === "CANCELLED") {
     return (
       result.warningMessage ??
       (result.savedPath
-        ? "Processamento cancelado. CSV parcial salvo automaticamente."
+        ? `Processamento cancelado. ${deliveryLabel} parcial salvo automaticamente.`
         : "Processamento cancelado.")
     );
   }

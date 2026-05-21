@@ -1,5 +1,6 @@
 import { performance } from "node:perf_hooks";
 
+import type { ProcessCsvDeliveryFormat } from "../src/core/app/process-csv.types";
 import { processCsv } from "../src/core/app/process-csv.use-case";
 import { MockSimplesLookupAdapter } from "../src/core/simples/adapters/mock-simples-lookup.adapter";
 
@@ -7,10 +8,14 @@ const totalRows = Number(process.env.FISCAL_DESK_PERF_ROWS ?? 5_000);
 const minimumRowsPerSecond = Number(
   process.env.FISCAL_DESK_PERF_MIN_ROWS_PER_SECOND ?? 1_000,
 );
+const deliveryFormat = resolveDeliveryFormat(
+  process.env.FISCAL_DESK_PERF_DELIVERY_FORMAT,
+);
 const csv = buildCsv(totalRows);
 const startedAt = performance.now();
 const result = await processCsv(csv, new MockSimplesLookupAdapter(), {
   cnpjColumn: "cnpj",
+  deliveryFormat,
 });
 const elapsedMs = performance.now() - startedAt;
 const rowsPerSecond = result.summary.totalLinhas / (elapsedMs / 1000);
@@ -19,6 +24,11 @@ const report = {
   status: rowsPerSecond >= minimumRowsPerSecond ? "pass" : "fail",
   totalRows: result.summary.totalLinhas,
   totalUniqueLookups: result.summary.totalCnpjsUnicosConsultados,
+  deliveryFormat,
+  outputBytes:
+    deliveryFormat === "xlsx"
+      ? (result.outputXlsx?.byteLength ?? 0)
+      : Buffer.byteLength(result.outputCsv, "utf8"),
   elapsedMs: Math.round(elapsedMs),
   rowsPerSecond: Math.round(rowsPerSecond),
   minimumRowsPerSecond,
@@ -28,6 +38,12 @@ console.log(JSON.stringify(report, null, 2));
 
 if (report.status !== "pass") {
   process.exit(1);
+}
+
+function resolveDeliveryFormat(
+  value: string | undefined,
+): ProcessCsvDeliveryFormat {
+  return value === "xlsx" ? "xlsx" : "csv";
 }
 
 function buildCsv(rows: number): string {

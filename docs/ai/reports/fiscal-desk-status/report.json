@@ -1,59 +1,59 @@
 {
   "kitVersion": "0.1.0",
   "preset": "implementation",
-  "title": "Fiscal Desk: historico local e retomada operacional",
-  "subtitle": "Corte vertical em andamento na branch feat/fiscal-desk-operational-history-ui: historico de execucoes, retomada via UI, smoke Electron real, visual smoke e perf local.",
+  "title": "Fiscal Desk: entrega Excel operacional",
+  "subtitle": "Corte vertical na branch feat/fiscal-desk-xlsx-delivery: Planilha de Resultado .xlsx com abas, seleção de entrega na UI, auto-save Electron real, regressão CSV, audit de dependência e perf proporcional.",
   "language": "pt-BR",
-  "updatedAt": "2026-05-20T18:03:00-03:00",
+  "updatedAt": "2026-05-20T23:09:07-03:00",
   "status": "partial",
   "source": "consulta-simples-csv / Fiscal Desk",
   "eyebrow": "Fiscal Desk",
   "metrics": [
     {
-      "value": "PR #3",
-      "label": "corte em preparacao",
-      "status": "partial"
+      "value": "PR #4",
+      "label": "aberta com checks verdes",
+      "status": "done"
     },
     {
-      "value": "164",
+      "value": "171",
       "label": "testes automatizados passando",
       "status": "done"
     },
     {
-      "value": "80k/s",
-      "label": "linhas por segundo no perf local",
+      "value": "XLSX",
+      "label": "entrega Excel real",
+      "status": "done"
+    },
+    {
+      "value": "13k/s",
+      "label": "linhas por segundo no perf XLSX",
       "status": "done"
     },
     {
       "value": "0",
-      "label": "findings bloqueantes apos review",
-      "status": "done"
-    },
-    {
-      "value": "2/2",
-      "label": "checks remotos verdes",
+      "label": "vulnerabilidades conhecidas no audit prod",
       "status": "done"
     }
   ],
   "sections": [
     {
       "id": "mudancas",
-      "title": "O que o corte atual entrega",
+      "title": "O que o corte entrega",
       "kicker": "Implementacao",
-      "status": "partial",
-      "body": "Este corte amplia a base da PR #2 para uma operacao local rastreavel e retomavel no app.\n\n- Listagem de execucoes recentes a partir dos ledgers locais em `userData`.\n- Contrato IPC/preload para o renderer consumir snapshots de historico sem ler arquivos diretamente.\n- Botao `Retomar` para execucoes elegiveis e bloqueio explicito para `SUCCESS` historico.\n- Retomada valida o CSV original e a versao de configuracao do provider antes de reprocessar.\n- UI evita reentrada durante processamento e preserva selecao anterior em falha de retomada.\n- Smoke Electron real valida retomada via UI com `1 retomadas de checkpoint`."
+      "status": "done",
+      "body": "Este corte transforma a entrega Excel em funcionalidade real sem remover o CSV compatível.\n\n- `exceljs` gera `.xlsx` nativo com abas Resumo, Resultados, Falhas, Divergencias e Auditoria.\n- `processCsv` mantém `outputCsv` por compatibilidade e adiciona `outputXlsx` quando `deliveryFormat` é `xlsx`.\n- IPC/preload salvam CSV ou XLSX usando o formato escolhido, com auto-save ao lado do arquivo original.\n- UI ganhou seletor de Entrega com opção `CSV compatível` ou `Excel com abas`.\n- Smoke Electron real seleciona Excel, retoma execução pelo histórico e valida assinatura XLSX do arquivo salvo.\n- Overrides do pnpm corrigem `brace-expansion` transitivo trazido pelo `exceljs`."
     },
     {
       "id": "evidencias",
       "title": "Evidencias de validacao",
-      "kicker": "Checks",
+      "kicker": "Checks locais",
       "component": "evidence-table",
       "status": "done",
       "items": [
         {
           "title": "Lint",
           "source": "pnpm lint",
-          "result": "Biome sem erros",
+          "result": "Biome sem erros em 77 arquivos",
           "status": "pass"
         },
         {
@@ -65,7 +65,7 @@
         {
           "title": "Suite automatizada",
           "source": "pnpm test",
-          "result": "26 arquivos / 164 testes passando apos correcoes de review",
+          "result": "27 arquivos / 171 testes passando, incluindo writer XLSX, use-case, IPC, UI e rejeicao de formato invalido no boundary",
           "status": "pass"
         },
         {
@@ -77,7 +77,13 @@
         {
           "title": "Smoke CSV real",
           "source": "pnpm smoke:real-csv",
-          "result": "Fixture publica processada com 3 CNPJs unicos, duplicidade e linha invalida",
+          "result": "Compatibilidade CSV preservada com fixture publica e provider mock",
+          "status": "pass"
+        },
+        {
+          "title": "Smoke Electron real",
+          "source": "pnpm smoke:electron-ui",
+          "result": "App Electron abriu, selecionou Excel, retomou checkpoint e salvou `entrada-processado.xlsx` com assinatura ZIP/XLSX valida",
           "status": "pass"
         },
         {
@@ -87,15 +93,34 @@
           "status": "pass"
         },
         {
-          "title": "Smoke Electron real",
-          "source": "pnpm smoke:electron-ui",
-          "result": "App Electron real retomou via UI: historico local, auto-save, checkpoint e `1 retomadas de checkpoint`",
+          "title": "Perf CSV",
+          "source": "pnpm perf:local-csv",
+          "result": "5.000 linhas: 38 ms, 131.113 linhas/s",
           "status": "pass"
         },
         {
-          "title": "Perf local",
-          "source": "pnpm perf:local-csv",
-          "result": "5.000 linhas com provider mock: 62 ms, 80.256 linhas/s",
+          "title": "Perf XLSX",
+          "source": "FISCAL_DESK_PERF_DELIVERY_FORMAT=xlsx pnpm perf:local-csv",
+          "result": "5.000 linhas: 514 ms, 9.724 linhas/s, 334.156 bytes",
+          "status": "pass"
+        },
+        {
+          "title": "Checks remotos da PR #4",
+          "source": "GitHub Actions / GitGuardian",
+          "href": "https://github.com/IcaroAguiar/consulta-simples-csv/pull/4",
+          "result": "quality-gate e GitGuardian passaram no head atual da PR #4",
+          "status": "pass"
+        },
+        {
+          "title": "Review independente",
+          "source": "agentic-code-review",
+          "result": "Finding medio de validacao runtime de `deliveryFormat` corrigido; follow-up independente sem novos bloqueantes",
+          "status": "pass"
+        },
+        {
+          "title": "Dependency audit",
+          "source": "pnpm audit --prod",
+          "result": "Sem vulnerabilidades conhecidas depois dos overrides de `brace-expansion`",
           "status": "pass"
         },
         {
@@ -107,56 +132,48 @@
         {
           "title": "Quality ratchet",
           "source": "node docs/ai/quality-gate/check-ratchet.mjs",
-          "result": "PASS com warnings esperados: coverage ausente e agentic review nao enforceado em CI",
-          "status": "pass"
-        },
-        {
-          "title": "Review independente",
-          "source": "agentic-code-review",
-          "result": "3 achados corrigidos; follow-up sem bloqueantes",
-          "status": "pass"
-        },
-        {
-          "title": "Checks remotos da PR #3",
-          "source": "GitHub Actions / GitGuardian",
-          "href": "https://github.com/IcaroAguiar/consulta-simples-csv/pull/3",
-          "result": "quality-gate e GitGuardian passaram no head db9bb23",
+          "result": "PASS; large files permanecem em 2, com warnings esperados de coverage e review nao enforceado em CI",
           "status": "pass"
         }
       ]
     },
     {
       "id": "decisoes",
-      "title": "Decisoes e guardrails consolidados",
+      "title": "Decisoes do corte",
       "kicker": "Racional",
       "component": "decision-log",
       "status": "done",
       "items": [
         {
-          "title": "Persistencia local simples",
-          "description": "O ledger fica em arquivo local no `userData`; nao ha backend remoto nem banco nesta fase.",
+          "title": "ExcelJS como dependencia",
+          "description": "`exceljs` foi escolhido por gerar workbook nativo com multiplas abas e estilos simples, evitando ZIP/XML manual no app Electron.",
           "status": "done"
         },
         {
-          "title": "Fingerprint semantico",
-          "description": "A retomada considera CSV, provider, coluna de CNPJ e versoes operacionais de ledger/parser/normalizer/policy.",
+          "title": "CSV continua contrato base",
+          "description": "`outputCsv` continua sempre disponivel; XLSX e gerado apenas quando a entrega escolhida e `xlsx`.",
           "status": "done"
         },
         {
-          "title": "Erro retryable nao vira checkpoint reutilizavel",
-          "description": "Resultados como `TEMPORARY_ERROR` continuam deduplicados dentro da execucao, mas nao sao restaurados em execucoes futuras.",
+          "title": "Planilha nao muda provider",
+          "description": "A escolha de entrega fica no use-case/IPC/UI e nao altera adapters nem regras especificas de provider.",
           "status": "done"
         },
         {
-          "title": "Smoke real obrigatorio",
-          "description": "Mudancas em IPC, preload, execucao e persistencia exigem `pnpm smoke:electron-ui` alem de testes e build.",
+          "title": "Audit transitive corrigido",
+          "description": "O `pnpm audit --prod` inicialmente apontou `brace-expansion`; overrides travam as versoes corrigidas no lockfile.",
+          "status": "done"
+        },
+        {
+          "title": "Formato de entrega validado no boundary",
+          "description": "`csv:process`, `csv:resume-execution` e `csv:save-output-file` rejeitam formatos fora de `csv` e `xlsx` antes de executar efeitos.",
           "status": "done"
         }
       ]
     },
     {
       "id": "plano",
-      "title": "Estado do corte e proximo passo",
+      "title": "Estado e proximo passo",
       "kicker": "Execucao",
       "component": "kanban",
       "status": "partial",
@@ -166,38 +183,38 @@
           "status": "done",
           "cards": [
             {
-              "title": "Historico e retomada implementados",
-              "body": "Branch `feat/fiscal-desk-operational-history-ui` lista ledgers, mostra historico e retoma execucoes elegiveis pela UI.",
+              "title": "Entrega Excel implementada",
+              "body": "Planilha de Resultado `.xlsx` com abas operacionais e auto-save pelo app Electron.",
               "status": "done",
-              "tag": "base"
+              "tag": "produto"
             },
             {
-              "title": "Findings de review corrigidos",
-              "body": "Corrigidos estado inconsistente em falha de retomada, reentrada durante processamento e JSON nao-ledger quebrando historico.",
+              "title": "Gates locais completos",
+              "body": "Lint, typecheck, testes, build, smokes reais, perf, audit, gitleaks e ratchet passaram localmente.",
               "status": "done",
               "tag": "evidencia"
             }
           ]
         },
         {
-          "title": "Antes de abrir PR",
+          "title": "Antes do merge",
           "status": "partial",
           "cards": [
             {
-              "title": "Atualizar PR artifact",
-              "body": "Staging, commit, push e abrir PR sem merge, com evidencia de testes e smokes reais.",
-              "status": "partial",
-              "tag": "PR"
+              "title": "Review independente",
+              "body": "Reviewer independente confirmou que o finding de boundary foi resolvido e nao encontrou novos bloqueantes.",
+              "status": "done",
+              "tag": "review"
             },
             {
-              "title": "Conferir CI remoto",
-              "body": "GitHub Actions `quality-gate` e GitGuardian estao verdes na PR #3.",
+              "title": "PR e CI remoto",
+              "body": "PR #4 aberta; GitHub Actions quality-gate e GitGuardian passaram no head inicial.",
               "status": "done",
               "tag": "CI"
             },
             {
-              "title": "Aguardar decisao humana",
-              "body": "Falta review humano ou dispensa explicita, e autorizacao explicita para merge.",
+              "title": "Merge somente autorizado",
+              "body": "Nao fazer merge sem autorizacao explicita do usuario para esta PR.",
               "status": "info",
               "tag": "guardrail"
             }
@@ -208,14 +225,14 @@
           "status": "info",
           "cards": [
             {
-              "title": "Preparar base publica local",
-              "body": "Planejar ingestao local e aviso de frescor da base, mantendo `receita-web` como confirmacao assistida.",
+              "title": "Base publica local",
+              "body": "Proximo corte recomendado: contrato e fixture de Base Publica Local com consentimento e aviso de frescor.",
               "status": "info",
-              "tag": "produto"
+              "tag": "volume"
             },
             {
-              "title": "Entrega Excel",
-              "body": "Adicionar saida XLSX somente depois do historico/retomada estar confiavel.",
+              "title": "Customizacao de entrega",
+              "body": "Depois do XLSX base, evoluir presets de colunas/abas sem prometer entrada Excel ainda.",
               "status": "info",
               "tag": "entrega"
             }
@@ -227,8 +244,8 @@
   "diagrams": [
     {
       "type": "native-flow",
-      "title": "Fluxo atual de execucao",
-      "caption": "A proxima fatia deve ler estes ledgers para formar historico e retomada operavel.",
+      "title": "Fluxo de entrega",
+      "caption": "A consulta permanece unica; a entrega escolhe CSV ou Excel no fim do processamento.",
       "nodes": [
         {
           "id": "csv",
@@ -236,46 +253,46 @@
           "tone": "blue"
         },
         {
-          "id": "fingerprint",
-          "label": "Fingerprint",
-          "tone": "amber"
-        },
-        {
           "id": "lookup",
-          "label": "Provider",
+          "label": "Consulta",
           "tone": "blue"
         },
         {
-          "id": "ledger",
-          "label": "Ledger",
+          "id": "rows",
+          "label": "Linhas enriquecidas",
+          "tone": "amber"
+        },
+        {
+          "id": "csvout",
+          "label": "CSV",
           "tone": "green"
         },
         {
-          "id": "ui",
-          "label": "Painel",
+          "id": "xlsx",
+          "label": "Excel com abas",
           "tone": "green"
         }
       ],
       "edges": [
         {
           "from": "csv",
-          "to": "fingerprint",
-          "label": "contexto"
-        },
-        {
-          "from": "fingerprint",
           "to": "lookup",
-          "label": "retoma ou consulta"
+          "label": "entrada"
         },
         {
           "from": "lookup",
-          "to": "ledger",
-          "label": "checkpoint"
+          "to": "rows",
+          "label": "resultado simples"
         },
         {
-          "from": "ledger",
-          "to": "ui",
-          "label": "transparencia"
+          "from": "rows",
+          "to": "csvout",
+          "label": "compatibilidade"
+        },
+        {
+          "from": "rows",
+          "to": "xlsx",
+          "label": "planilha"
         }
       ]
     }
@@ -287,18 +304,13 @@
       "status": "partial"
     },
     {
-      "title": "CI remoto ainda pendente",
-      "description": "Resolvido em 2026-05-20: GitHub Actions quality-gate e GitGuardian passaram na PR #3.",
-      "status": "done"
-    },
-    {
-      "title": "Review humano ou dispensa ainda pendente",
-      "description": "A PR #3 tem review independente do agente sem bloqueantes, mas ainda precisa review humano ou dispensa explicita antes do merge.",
+      "title": "Dependencia nova aumenta superficie",
+      "description": "`exceljs` trouxe dependencias transitivas e subdependencias depreciadas; `pnpm audit --prod` esta verde com overrides, mas o peso deve ser observado nos builds de distribuicao.",
       "status": "partial"
     },
     {
-      "title": "Receita Web segue assistida",
-      "description": "Nao tratar como automacao robusta em lote. Qualquer proxima UX deve preservar navegador visivel, bloqueio anti-bot possivel e supervisao humana.",
+      "title": "Entrada Excel ainda nao implementada",
+      "description": "O corte entrega saida Excel. Entrada `.xlsx` continua fora do escopo e a UI permanece clara sobre CSV como entrada.",
       "status": "info"
     }
   ]
