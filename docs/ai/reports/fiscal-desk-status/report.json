@@ -4,15 +4,15 @@
   "title": "Fiscal Desk: entrega Excel operacional",
   "subtitle": "Corte vertical na branch feat/fiscal-desk-xlsx-delivery: Planilha de Resultado .xlsx com abas, seleção de entrega na UI, auto-save Electron real, regressão CSV, audit de dependência e perf proporcional.",
   "language": "pt-BR",
-  "updatedAt": "2026-05-20T22:56:00-03:00",
+  "updatedAt": "2026-05-20T23:09:07-03:00",
   "status": "partial",
   "source": "consulta-simples-csv / Fiscal Desk",
   "eyebrow": "Fiscal Desk",
   "metrics": [
     {
       "value": "PR #4",
-      "label": "corte em preparacao",
-      "status": "partial"
+      "label": "aberta com checks verdes",
+      "status": "done"
     },
     {
       "value": "171",
@@ -102,6 +102,13 @@
           "title": "Perf XLSX",
           "source": "FISCAL_DESK_PERF_DELIVERY_FORMAT=xlsx pnpm perf:local-csv",
           "result": "5.000 linhas: 514 ms, 9.724 linhas/s, 334.156 bytes",
+          "status": "pass"
+        },
+        {
+          "title": "Checks remotos da PR #4",
+          "source": "GitHub Actions / GitGuardian",
+          "href": "https://github.com/IcaroAguiar/consulta-simples-csv/pull/4",
+          "result": "quality-gate e GitGuardian passaram no head bba5088",
           "status": "pass"
         },
         {
@@ -201,8 +208,8 @@
             },
             {
               "title": "PR e CI remoto",
-              "body": "Abrir PR #4, aguardar quality-gate/GitGuardian e corrigir findings objetivos se aparecerem.",
-              "status": "partial",
+              "body": "PR #4 aberta; GitHub Actions quality-gate e GitGuardian passaram no head inicial.",
+              "status": "done",
               "tag": "CI"
             },
             {

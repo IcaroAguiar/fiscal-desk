@@ -7,7 +7,7 @@
   <meta name="generator" content="interactive-html-reports 0.1.0" />
   <meta name="report-kit-version" content="0.1.0" />
   <meta name="report-preset" content="implementation" />
-  <meta name="report-updated-at" content="2026-05-20T22:56:00-03:00" />
+  <meta name="report-updated-at" content="2026-05-20T23:09:07-03:00" />
   <style>:root {
   color-scheme: light;
   --report-bg: #f4f7f5;
@@ -988,12 +988,12 @@ details.report-card summary {
         <dl class="metadata-list">
           <div class="metadata-row"><dt>Status</dt><dd><span class="status-pill status-partial">parcial</span></dd></div>
           <div class="metadata-row"><dt>Preset</dt><dd>Implementação</dd></div>
-          <div class="metadata-row"><dt>Atualizado</dt><dd>2026-05-20T22:56:00-03:00</dd></div>
+          <div class="metadata-row"><dt>Atualizado</dt><dd>2026-05-20T23:09:07-03:00</dd></div>
           <div class="metadata-row"><dt>Kit</dt><dd>0.1.0</dd></div>
         </dl>
       </aside>
     </section>
-    <section class="report-section" id="metricas" data-search-item><div class="section-body"><div class="metric-grid"><article class="metric-card" data-search-item data-status="partial"><strong>PR #4</strong><span>corte em preparacao</span></article><article class="metric-card" data-search-item data-status="done"><strong>171</strong><span>testes automatizados passando</span></article><article class="metric-card" data-search-item data-status="done"><strong>XLSX</strong><span>entrega Excel real</span></article><article class="metric-card" data-search-item data-status="done"><strong>13k/s</strong><span>linhas por segundo no perf XLSX</span></article><article class="metric-card" data-search-item data-status="done"><strong>0</strong><span>vulnerabilidades conhecidas no audit prod</span></article></div></div></section>
+    <section class="report-section" id="metricas" data-search-item><div class="section-body"><div class="metric-grid"><article class="metric-card" data-search-item data-status="done"><strong>PR #4</strong><span>aberta com checks verdes</span></article><article class="metric-card" data-search-item data-status="done"><strong>171</strong><span>testes automatizados passando</span></article><article class="metric-card" data-search-item data-status="done"><strong>XLSX</strong><span>entrega Excel real</span></article><article class="metric-card" data-search-item data-status="done"><strong>13k/s</strong><span>linhas por segundo no perf XLSX</span></article><article class="metric-card" data-search-item data-status="done"><strong>0</strong><span>vulnerabilidades conhecidas no audit prod</span></article></div></div></section>
     <div class="report-layout">
       <nav class="toc" aria-label="Indice do report">
         <p class="toc-title">Conteúdo</p>
@@ -1065,6 +1065,11 @@ details.report-card summary {
             <td data-label="Evidência">Perf XLSX</td>
             <td data-label="Comando/Origem">FISCAL_DESK_PERF_DELIVERY_FORMAT=xlsx pnpm perf:local-csv</td>
             <td data-label="Resultado">5.000 linhas: 514 ms, 9.724 linhas/s, 334.156 bytes</td>
+            <td data-label="Status"><span class="status-pill status-done">pass</span></td>
+          </tr><tr data-search-item data-status="pass">
+            <td data-label="Evidência">Checks remotos da PR #4</td>
+            <td data-label="Comando/Origem"><a href="https://github.com/IcaroAguiar/consulta-simples-csv/pull/4">GitHub Actions / GitGuardian</a></td>
+            <td data-label="Resultado">quality-gate e GitGuardian passaram no head bba5088</td>
             <td data-label="Status"><span class="status-pill status-done">pass</span></td>
           </tr><tr data-search-item data-status="pass">
             <td data-label="Evidência">Review independente</td>
@@ -1149,9 +1154,9 @@ details.report-card summary {
                 <h4>Review independente</h4>
                 <p>Reviewer independente confirmou que o finding de boundary foi resolvido e nao encontrou novos bloqueantes.</p>
                 <div class="chip-row"><span class="chip">review</span></div>
-              </article><article class="report-card" data-search-item data-status="partial">
+              </article><article class="report-card" data-search-item data-status="done">
                 <h4>PR e CI remoto</h4>
-                <p>Abrir PR #4, aguardar quality-gate/GitGuardian e corrigir findings objetivos se aparecerem.</p>
+                <p>PR #4 aberta; GitHub Actions quality-gate e GitGuardian passaram no head inicial.</p>
                 <div class="chip-row"><span class="chip">CI</span></div>
               </article><article class="report-card" data-search-item data-status="info">
                 <h4>Merge somente autorizado</h4>
