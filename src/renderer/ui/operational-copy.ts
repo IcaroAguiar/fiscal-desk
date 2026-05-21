@@ -1,5 +1,8 @@
 import type { SimplesProviderName } from "../../core/simples/simples-provider.factory";
-import type { LookupProgress } from "../../main/types";
+import type {
+  LookupProgress,
+  ProcessCsvDeliveryFormat,
+} from "../../main/types";
 
 type DedupeSource = {
   totalCnpjsEncontrados: number;
@@ -68,10 +71,13 @@ export function buildDedupeLabel(source: DedupeSource): string {
   return `${duplicates} duplicados removidos`;
 }
 
-export function previewAutoSavePath(sourceFilePath: string): string {
+export function previewAutoSavePath(
+  sourceFilePath: string,
+  deliveryFormat: ProcessCsvDeliveryFormat = "csv",
+): string {
   const normalized = sourceFilePath.replace(/\.csv$/i, "");
 
-  return `${normalized}-processado.csv`;
+  return `${normalized}-processado.${deliveryFormat}`;
 }
 
 export function formatProgressLine(progress: LookupProgress | null): string {

@@ -1,7 +1,9 @@
 import type { SimplesProviderName } from "../../core/simples/simples-provider.factory";
 import type {
   LookupProgress,
+  ProcessCsvDeliveryFormat,
   ProcessCsvExecution,
+  ProcessCsvOutputDelivery,
   ProcessCsvRunStatus,
   ProcessCsvSummary,
   ProcessExecutionHistoryItem,
@@ -14,7 +16,9 @@ export type PickCsvResult = {
 };
 
 export type ProcessCsvResult = {
+  delivery: ProcessCsvOutputDelivery;
   outputCsv: string;
+  outputXlsx: number[] | null;
   summary: ProcessCsvSummary;
   runStatus: ProcessCsvRunStatus;
   execution: ProcessCsvExecution | null;
@@ -26,12 +30,18 @@ export type AppBridge = {
   pickCsvFile(): Promise<PickCsvResult | null>;
   processCsv(input: {
     content: string;
+    deliveryFormat?: ProcessCsvDeliveryFormat;
     provider: SimplesProviderName;
     cnpjColumn?: string;
     sourceFilePath?: string;
   }): Promise<ProcessCsvResult>;
   cancelProcessing(): Promise<boolean>;
   saveCsvFile(defaultName: string, content: string): Promise<string | null>;
+  saveOutputFile(
+    defaultName: string,
+    format: ProcessCsvDeliveryFormat,
+    content: string | number[],
+  ): Promise<string | null>;
   autoSaveCsvFile(sourceFilePath: string, content: string): Promise<string>;
   onLookupProgress(callback: (progress: LookupProgress) => void): () => void;
   getDefaults(): Promise<{
@@ -39,7 +49,10 @@ export type AppBridge = {
     receitaWebAvailable: boolean;
   }>;
   listExecutions(): Promise<ProcessExecutionHistoryItem[]>;
-  resumeExecution(ledgerKey: string): Promise<ProcessCsvResult>;
+  resumeExecution(
+    ledgerKey: string,
+    deliveryFormat?: ProcessCsvDeliveryFormat,
+  ): Promise<ProcessCsvResult>;
 };
 
 declare global {
@@ -61,11 +74,14 @@ export type UiState = {
   filePath: string | null;
   content: string | null;
   provider: SimplesProviderName;
+  deliveryFormat: ProcessCsvDeliveryFormat;
   receitaWebAvailable: boolean;
   cnpjColumn: string;
   status: UiStatus;
   message: string;
   outputCsv: string | null;
+  outputXlsx: number[] | null;
+  outputDelivery: ProcessCsvOutputDelivery | null;
   summary: ProcessCsvSummary | null;
   execution: ProcessCsvExecution | null;
   savedPath: string | null;
@@ -81,11 +97,14 @@ export const initialState: UiState = {
   filePath: null,
   content: null,
   provider: "mock",
+  deliveryFormat: "csv",
   receitaWebAvailable: false,
   cnpjColumn: "",
   status: "idle",
   message: "Selecione um CSV para iniciar uma execução local.",
   outputCsv: null,
+  outputXlsx: null,
+  outputDelivery: null,
   summary: null,
   execution: null,
   savedPath: null,

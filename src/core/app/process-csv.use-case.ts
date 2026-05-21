@@ -1,6 +1,7 @@
 import { normalizeCnpj } from "../cnpj/normalize-cnpj";
 import { validateCnpj } from "../cnpj/validate-cnpj";
 import { writeCsv } from "../export/csv-writer";
+import { writeXlsxWorkbook } from "../export/xlsx-writer";
 import { AbortError } from "../infra/rate-limiter";
 import { readCsv } from "../ingestion/csv-reader";
 import { detectCnpjColumn } from "../ingestion/detect-cnpj-column";
@@ -9,21 +10,30 @@ import type { SimplesLookupResult } from "../simples/simples-lookup.types";
 import { estimateObservedRemainingMs } from "./eta";
 import type {
   LookupProgress,
+  ProcessCsvDeliveryFormat,
   ProcessCsvExecution,
+  ProcessCsvOutputDelivery,
   ProcessCsvRunStatus,
   ProcessCsvSummary,
 } from "./process-csv.types";
+import {
+  getProcessCsvOutputDelivery,
+  parseProcessCsvDeliveryFormat,
+} from "./process-csv-delivery";
 import type { ProcessExecutionLedgerSession } from "./process-execution-ledger.port";
 
 type ProcessCsvOptions = {
   cnpjColumn?: string;
+  deliveryFormat?: ProcessCsvDeliveryFormat;
   executionLedger?: ProcessExecutionLedgerSession;
   onLookupProgress?: (progress: LookupProgress) => void;
   signal?: AbortSignal;
 };
 
 type ProcessCsvResult = {
+  delivery: ProcessCsvOutputDelivery;
   outputCsv: string;
+  outputXlsx: Uint8Array | null;
   summary: ProcessCsvSummary;
   runStatus: ProcessCsvRunStatus;
   execution: ProcessCsvExecution | null;
@@ -196,20 +206,34 @@ export async function processCsv(
     (row) => row.simples_nacional === "false",
   ).length;
 
+  const summary = {
+    totalLinhas: rows.length,
+    totalCnpjsEncontrados,
+    totalCnpjsValidos,
+    totalCnpjsUnicosConsultados: lookupCache.size,
+    totalCnpjsRetomados: resumedUniqueLookups,
+    totalOptantesSimples,
+    totalNaoOptantesSimples,
+    totalErros: outputRows.filter((row) =>
+      ERROR_STATUSES.has(row.status as SimplesLookupResult["status"]),
+    ).length,
+  };
+  const outputCsv = writeCsv(outputRows, delimiter, outputColumns);
+  const deliveryFormat = parseProcessCsvDeliveryFormat(options.deliveryFormat);
+  const outputXlsx =
+    deliveryFormat === "xlsx"
+      ? await writeXlsxWorkbook({
+          columns: outputColumns,
+          rows: outputRows,
+          summary,
+        })
+      : null;
+
   return {
-    outputCsv: writeCsv(outputRows, delimiter, outputColumns),
-    summary: {
-      totalLinhas: rows.length,
-      totalCnpjsEncontrados,
-      totalCnpjsValidos,
-      totalCnpjsUnicosConsultados: lookupCache.size,
-      totalCnpjsRetomados: resumedUniqueLookups,
-      totalOptantesSimples,
-      totalNaoOptantesSimples,
-      totalErros: outputRows.filter((row) =>
-        ERROR_STATUSES.has(row.status as SimplesLookupResult["status"]),
-      ).length,
-    },
+    delivery: getProcessCsvOutputDelivery(deliveryFormat),
+    outputCsv,
+    outputXlsx,
+    summary,
     runStatus,
     execution: options.executionLedger
       ? {

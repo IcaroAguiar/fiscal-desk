@@ -1,9 +1,21 @@
 import { describe, expect, it } from "vitest";
 
 import { initialState, type UiState } from "../../src/renderer/ui/app.types";
-import { renderExecutionHistory } from "../../src/renderer/ui/app-view";
+import {
+  renderExecutionHistory,
+  renderShell,
+} from "../../src/renderer/ui/app-view";
 
 describe("app view execution history", () => {
+  it("renders delivery format selection with CSV and Excel options", () => {
+    const html = renderShell(initialState);
+
+    expect(html).toContain('data-field="delivery-format"');
+    expect(html).toContain("CSV compatível");
+    expect(html).toContain("Excel com abas");
+    expect(html).toContain("Planilha de Resultado");
+  });
+
   it("renders resumable interrupted executions with an action button", () => {
     const state: UiState = {
       ...initialState,

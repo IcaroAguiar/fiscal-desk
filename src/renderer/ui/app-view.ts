@@ -19,7 +19,9 @@ export function renderShell(state: UiState): string {
   const autoSavePreview = state.savedPath
     ? state.savedPath.split(/[/\\]/).pop()
     : state.filePath
-      ? previewAutoSavePath(state.filePath).split(/[/\\]/).pop()
+      ? previewAutoSavePath(state.filePath, state.deliveryFormat)
+          .split(/[/\\]/)
+          .pop()
       : null;
 
   return `
@@ -53,23 +55,23 @@ export function renderShell(state: UiState): string {
               </span>
               <span class="intro__badge">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-                Salvamento
+                CSV ou Excel
               </span>
             </div>
           </div>
           <p class="intro__text">
-            Esta primeira versão mantém o fluxo confiável de CSV: você escolhe o arquivo, define o provedor,
-            acompanha o processamento e recebe uma cópia salva ao lado do original. Recursos como base pública local,
-            Excel e PDF ainda não são prometidos nesta tela.
+            Esta versão mantém entrada CSV confiável: você escolhe o arquivo, define provedor e formato de entrega,
+            acompanha o processamento e recebe uma cópia salva ao lado do original. Excel já está disponível como
+            Planilha de Resultado; base pública local e PDF seguem planejados.
           </p>
           <div class="release-strip" aria-label="Recursos desta versão">
             <div>
               <span class="ops-label">Disponível agora</span>
-              <strong>CSV, deduplicação e saída automática</strong>
+              <strong>CSV, Excel, deduplicação e saída automática</strong>
             </div>
             <div>
               <span class="ops-label">Em evolução</span>
-              <strong>Base local, Excel e relatórios</strong>
+              <strong>Base local e relatórios executivos</strong>
             </div>
             <div>
               <span class="ops-label">Transparência</span>
@@ -102,7 +104,7 @@ export function renderShell(state: UiState): string {
               ${button({ variant: "ghost", "data-action": "pick-file", children: "Selecionar CSV" })}
               ${button({ variant: "primary", "data-action": "process-file", children: state.status === "processing" ? "Processando..." : "Iniciar execução", disabled: state.status === "processing" || !state.content })}
               ${button({ variant: "danger", "data-action": "cancel-processing", children: "Cancelar", disabled: state.status !== "processing" })}
-              ${button({ variant: "secondary", "data-action": "save-file", children: "Salvar cópia", disabled: !state.outputCsv })}
+              ${button({ variant: "secondary", "data-action": "save-file", children: "Salvar cópia", disabled: !state.outputDelivery })}
             </div>
           </div>
 
@@ -133,6 +135,15 @@ export function renderShell(state: UiState): string {
                 placeholder="Detectada automaticamente"
                 value="${escapeHtml(state.cnpjColumn)}"
               />
+            </label>
+
+            <label class="field" for="delivery-format">
+              <span class="field__label">Entrega</span>
+              <select id="delivery-format" data-field="delivery-format">
+                <option value="csv" ${state.deliveryFormat === "csv" ? "selected" : ""}>CSV compatível</option>
+                <option value="xlsx" ${state.deliveryFormat === "xlsx" ? "selected" : ""}>Excel com abas</option>
+              </select>
+              <span class="field__hint">CSV preserva compatibilidade. Excel gera Resumo, Resultados, Falhas, Divergências e Auditoria.</span>
             </label>
           </div>
 
