@@ -1,0 +1,547 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Fiscal Desk - operational app concepts</title>
+    <style>
+      :root {
+        --bg: #ece8df;
+        --app: #fbfaf7;
+        --panel: #f5f2ec;
+        --panel-2: #fffdfa;
+        --ink: #24221f;
+        --muted: #6f6a63;
+        --line: rgba(36, 34, 31, 0.12);
+        --line-strong: rgba(36, 34, 31, 0.18);
+        --green: #1f3527;
+        --green-soft: #dceee0;
+        --amber: #f1dfbf;
+        --red: #f2d7d2;
+        --blue: #dfe8ee;
+        --shadow: 0 30px 100px rgba(36, 34, 31, 0.13);
+        --sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+
+      * { box-sizing: border-box; }
+
+      body {
+        margin: 0;
+        padding: 42px;
+        background: var(--bg);
+        color: var(--ink);
+        font-family: var(--sans);
+      }
+
+      .gallery {
+        display: grid;
+        gap: 56px;
+      }
+
+      .screen {
+        width: 1440px;
+        height: 960px;
+        overflow: hidden;
+        border-radius: 28px;
+        background: var(--app);
+        box-shadow: var(--shadow);
+      }
+
+      .windowbar {
+        display: grid;
+        grid-template-columns: 120px 1fr auto;
+        height: 40px;
+        align-items: center;
+        padding: 0 16px;
+        border-bottom: 1px solid var(--line);
+        background: rgba(255, 253, 250, 0.72);
+      }
+
+      .dots { display: flex; gap: 7px; }
+      .dots span { width: 10px; height: 10px; border-radius: 999px; background: #cec5b7; }
+      .windowbar strong { justify-self: center; color: var(--muted); font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; }
+      .windowbar em { color: var(--muted); font-size: 12px; font-style: normal; font-weight: 760; letter-spacing: 0.08em; text-transform: uppercase; }
+
+      h1, h2, h3, p { margin: 0; }
+      h1 { font-size: 24px; letter-spacing: -0.01em; }
+      h2 { font-size: 18px; }
+      h3 { font-size: 15px; }
+
+      .muted { color: var(--muted); }
+      .small { font-size: 12px; }
+      .body { color: var(--muted); font-size: 13px; line-height: 1.45; }
+      .label { color: var(--muted); font-size: 11px; font-weight: 820; letter-spacing: 0.1em; text-transform: uppercase; }
+      .mono { font-variant-numeric: tabular-nums; }
+
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 36px;
+        padding: 0 13px;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        background: var(--panel-2);
+        color: var(--ink);
+        font-size: 13px;
+        font-weight: 760;
+      }
+
+      .btn.primary { border-color: transparent; background: var(--green); color: #fffdf8; }
+      .btn.ghost { background: transparent; }
+      .btn.danger { background: var(--red); border-color: transparent; }
+
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        min-height: 24px;
+        padding: 0 9px;
+        border-radius: 999px;
+        background: rgba(36, 34, 31, 0.06);
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 760;
+        white-space: nowrap;
+      }
+
+      .badge.ok { background: var(--green-soft); color: #265d3e; }
+      .badge.warn { background: var(--amber); color: #735321; }
+      .badge.err { background: var(--red); color: #8b4036; }
+      .badge.info { background: var(--blue); color: #405f70; }
+
+      .app-shell {
+        display: grid;
+        grid-template-columns: 232px minmax(0, 1fr);
+        height: calc(100% - 40px);
+      }
+
+      .side {
+        display: grid;
+        grid-template-rows: auto 1fr auto;
+        gap: 24px;
+        padding: 22px 16px;
+        border-right: 1px solid var(--line);
+        background: #f3f0ea;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-height: 36px;
+        font-weight: 850;
+      }
+
+      .mark {
+        display: grid;
+        width: 34px;
+        height: 34px;
+        place-items: center;
+        border-radius: 10px;
+        background: var(--green);
+        color: #fffdf8;
+        font-size: 12px;
+        font-weight: 850;
+      }
+
+      .nav { display: grid; gap: 4px; align-content: start; }
+      .nav span {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        min-height: 36px;
+        padding: 0 11px;
+        border-radius: 10px;
+        color: var(--muted);
+        font-size: 13px;
+        font-weight: 720;
+      }
+      .nav span.active { background: #fffdf8; color: var(--ink); box-shadow: 0 8px 30px rgba(36, 34, 31, 0.04); }
+
+      .side-foot {
+        display: grid;
+        gap: 10px;
+        padding-top: 14px;
+        border-top: 1px solid var(--line);
+      }
+
+      .main {
+        display: grid;
+        grid-template-rows: 68px minmax(0, 1fr);
+        min-width: 0;
+      }
+
+      .top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 18px;
+        padding: 0 24px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .top-left { display: flex; align-items: center; gap: 16px; min-width: 0; }
+      .top-actions { display: flex; align-items: center; gap: 8px; }
+      .tabs { display: flex; gap: 4px; padding: 4px; border-radius: 12px; background: var(--panel); }
+      .tabs span { padding: 7px 10px; border-radius: 9px; color: var(--muted); font-size: 13px; font-weight: 760; }
+      .tabs span.active { background: #fffdf8; color: var(--ink); }
+
+      .content { min-height: 0; padding: 18px; }
+
+      .surface {
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        background: var(--panel-2);
+      }
+
+      .section-head {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        align-items: center;
+        min-height: 48px;
+        padding: 0 14px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .metric-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+      .metric { min-height: 78px; padding: 13px; border: 1px solid var(--line); border-radius: 14px; background: var(--panel-2); }
+      .metric strong { display: block; margin-top: 8px; font-size: 26px; line-height: 1; }
+
+      .table { display: grid; min-width: 0; }
+      .row {
+        display: grid;
+        align-items: center;
+        gap: 12px;
+        min-height: 46px;
+        padding: 0 14px;
+        border-bottom: 1px solid var(--line);
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .row.head { min-height: 38px; color: var(--ink); font-size: 12px; font-weight: 820; letter-spacing: 0.04em; text-transform: uppercase; background: #f8f5ef; }
+      .row:last-child { border-bottom: 0; }
+      .row strong { color: var(--ink); }
+
+      .status-dot {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        border-radius: 99px;
+        background: #8d867d;
+        margin-right: 7px;
+      }
+      .status-dot.ok { background: #2b7a4d; }
+      .status-dot.warn { background: #b9832d; }
+      .status-dot.err { background: #b95245; }
+
+      .log {
+        display: grid;
+        gap: 7px;
+        padding: 12px 14px;
+        color: #514c46;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        font-size: 12px;
+        line-height: 1.35;
+      }
+
+      .log span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+      /* A: Cockpit */
+      .cockpit-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 330px;
+        grid-template-rows: auto auto minmax(0, 1fr) 190px;
+        gap: 12px;
+        height: 100%;
+      }
+
+      .run-card {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 260px;
+        gap: 18px;
+        padding: 16px;
+        align-items: stretch;
+      }
+
+      .drop {
+        display: grid;
+        grid-template-columns: 54px minmax(0, 1fr) auto;
+        gap: 14px;
+        align-items: center;
+        padding: 16px;
+        border: 1px dashed var(--line-strong);
+        border-radius: 14px;
+        background: #faf7f1;
+      }
+
+      .fileicon { display: grid; width: 48px; height: 48px; place-items: center; border-radius: 12px; background: var(--panel); font-weight: 850; }
+      .config-list { display: grid; border-top: 1px solid var(--line); }
+      .config-list div { display: flex; justify-content: space-between; gap: 12px; padding: 11px 0; border-bottom: 1px solid var(--line); font-size: 13px; }
+
+      .queue { grid-row: span 2; display: grid; grid-template-rows: auto minmax(0, 1fr); min-height: 0; }
+      .queue-item { display: grid; gap: 6px; padding: 13px 14px; border-bottom: 1px solid var(--line); }
+      .queue-item.active { background: #f7f4ec; }
+      .queue-line { display: flex; justify-content: space-between; gap: 10px; align-items: center; }
+
+      .job-table .row { grid-template-columns: 1.3fr 0.8fr 0.7fr 0.7fr 0.8fr; }
+      .bottom-split { display: grid; grid-template-columns: minmax(0, 1fr) 330px; gap: 12px; }
+
+      /* B: Review queue */
+      .review-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 360px;
+        gap: 12px;
+        height: 100%;
+      }
+
+      .review-main { display: grid; grid-template-rows: auto minmax(0, 1fr); min-height: 0; }
+      .review-toolbar {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 12px;
+        padding: 14px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .searchbox { min-height: 38px; padding: 10px 12px; border-radius: 10px; background: var(--panel); color: var(--muted); font-size: 13px; }
+      .review-table .row { grid-template-columns: 1fr 1.1fr 0.7fr 0.7fr 0.7fr; }
+      .review-side { display: grid; grid-template-rows: auto auto minmax(0, 1fr); gap: 12px; min-height: 0; }
+      .field-stack { display: grid; gap: 10px; padding: 14px; }
+      .field { display: grid; gap: 5px; }
+      .field .box { min-height: 38px; padding: 10px 11px; border: 1px solid var(--line); border-radius: 10px; background: #fffdf8; font-size: 13px; font-weight: 730; }
+
+      /* C: Monitor */
+      .monitor-grid {
+        display: grid;
+        grid-template-columns: 300px minmax(0, 1fr);
+        gap: 12px;
+        height: 100%;
+      }
+
+      .runs-list { display: grid; grid-template-rows: auto minmax(0, 1fr); min-height: 0; }
+      .run-list-row { display: grid; gap: 7px; padding: 13px 14px; border-bottom: 1px solid var(--line); }
+      .run-list-row.active { background: #f7f4ec; }
+      .monitor-main { display: grid; grid-template-rows: auto 190px minmax(0, 1fr); gap: 12px; min-height: 0; }
+      .progress-panel { display: grid; grid-template-columns: 1fr 240px; gap: 14px; padding: 16px; }
+      .progress-bar { height: 10px; overflow: hidden; border-radius: 99px; background: var(--panel); margin-top: 16px; }
+      .progress-bar span { display: block; width: 64%; height: 100%; background: var(--green); }
+      .timeline { display: grid; gap: 8px; }
+      .timeline div { display: flex; justify-content: space-between; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--line); font-size: 13px; }
+      .monitor-bottom { display: grid; grid-template-columns: minmax(0, 1fr) 330px; gap: 12px; min-height: 0; }
+
+      @media (max-width: 900px) {
+        body { padding: 18px; }
+        .screen { width: 390px; height: auto; min-height: 920px; border-radius: 24px; }
+        .windowbar { grid-template-columns: 60px 1fr; }
+        .windowbar em { display: none; }
+        .app-shell, .cockpit-grid, .review-grid, .monitor-grid, .bottom-split, .monitor-bottom, .progress-panel, .run-card { grid-template-columns: 1fr; }
+        .app-shell, .main { height: auto; }
+        .side { display: none; }
+        .main { grid-template-rows: auto minmax(0, 1fr); }
+        .monitor-main { grid-template-rows: auto; }
+        .top { align-items: flex-start; flex-direction: column; padding: 14px; }
+        .top-left, .top-actions { width: 100%; flex-wrap: wrap; }
+        .tabs { max-width: 100%; overflow: hidden; }
+        .content { padding: 10px; }
+        .metric-grid { grid-template-columns: 1fr 1fr; }
+        .cockpit-grid, .review-grid, .monitor-grid { height: auto; }
+        .queue { grid-row: auto; }
+        .drop { grid-template-columns: 1fr; }
+        .job-table .row, .review-table .row { grid-template-columns: 1fr 1fr; min-height: 76px; align-items: start; padding: 10px 12px; }
+        .row.head { display: none; }
+        .bottom-split, .monitor-bottom { min-height: 0; }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="gallery">
+      <section class="screen" id="ops-a" aria-label="Ops A">
+        <div class="windowbar"><div class="dots"><span></span><span></span><span></span></div><strong>A · cockpit de execuções</strong><em>produto electron</em></div>
+        <div class="app-shell">
+          <aside class="side">
+            <div class="brand"><span class="mark">FD</span><span>Fiscal Desk</span></div>
+            <nav class="nav">
+              <span class="active">Execuções <b>12</b></span>
+              <span>Nova consulta</span>
+              <span>Bases locais</span>
+              <span>Provedores</span>
+              <span>Entregas</span>
+              <span>Configurações</span>
+            </nav>
+            <div class="side-foot"><span class="badge ok">offline pronto</span><p class="body">Base pública: 21/05/2026</p></div>
+          </aside>
+          <section class="main">
+            <header class="top">
+              <div class="top-left"><h1>Operação fiscal</h1><div class="tabs"><span class="active">Painel</span><span>Fila</span><span>Resultados</span><span>Logs</span></div></div>
+              <div class="top-actions"><span class="badge ok">mock ativo</span><span class="badge info">Receita Web assistida</span><span class="btn primary">Nova execução</span></div>
+            </header>
+            <div class="content cockpit-grid">
+              <section class="surface run-card">
+                <div>
+                  <div class="section-head" style="padding:0 0 12px;border-bottom:0"><div><h2>Entrada</h2><p class="body">Selecione um CSV, revise a coluna e execute.</p></div><span class="badge warn">aguardando arquivo</span></div>
+                  <div class="drop"><span class="fileicon">CSV</span><div><strong>Arquivo de CNPJs</strong><p class="body">Arraste aqui ou selecione no computador.</p></div><span class="btn primary">Selecionar CSV</span></div>
+                </div>
+                <aside>
+                  <p class="label">Configuração</p>
+                  <div class="config-list">
+                    <div><span>Provider</span><strong>mock</strong></div>
+                    <div><span>Coluna</span><strong>auto</strong></div>
+                    <div><span>Saída</span><strong>csv</strong></div>
+                    <div><span>Checkpoint</span><strong>ligado</strong></div>
+                  </div>
+                </aside>
+              </section>
+
+              <aside class="surface queue">
+                <div class="section-head"><h2>Fila</h2><span class="badge">3 itens</span></div>
+                <div>
+                  <div class="queue-item active"><div class="queue-line"><strong>clientes-maio.csv</strong><span class="badge warn">revisão</span></div><p class="body">1 linha pendente</p></div>
+                  <div class="queue-item"><div class="queue-line"><strong>base-fornecedores.csv</strong><span class="badge ok">concluído</span></div><p class="body">246 linhas processadas</p></div>
+                  <div class="queue-item"><div class="queue-line"><strong>entrada-manual.csv</strong><span class="badge err">erro</span></div><p class="body">2 CNPJs inválidos</p></div>
+                </div>
+              </aside>
+
+              <section class="metric-grid">
+                <div class="metric"><span class="label">Hoje</span><strong>8</strong><p class="body">execuções</p></div>
+                <div class="metric"><span class="label">Processados</span><strong>1.284</strong><p class="body">CNPJs</p></div>
+                <div class="metric"><span class="label">Pendentes</span><strong>3</strong><p class="body">linhas</p></div>
+                <div class="metric"><span class="label">Erros</span><strong>2</strong><p class="body">revisar</p></div>
+              </section>
+
+              <section class="surface job-table">
+                <div class="section-head"><h2>Últimas execuções</h2><span class="btn ghost">Abrir histórico</span></div>
+                <div class="table">
+                  <div class="row head"><span>Arquivo</span><span>Estado</span><span>Linhas</span><span>Provider</span><span>Saída</span></div>
+                  <div class="row"><strong>clientes-maio.csv</strong><span><i class="status-dot warn"></i>revisão</span><span>5</span><span>mock</span><span>pendente</span></div>
+                  <div class="row"><strong>base-fornecedores.csv</strong><span><i class="status-dot ok"></i>concluído</span><span>246</span><span>mock</span><span>baixado</span></div>
+                  <div class="row"><strong>entrada-manual.csv</strong><span><i class="status-dot err"></i>erro</span><span>18</span><span>mock</span><span>bloqueado</span></div>
+                </div>
+              </section>
+
+              <div class="bottom-split">
+                <section class="surface"><div class="section-head"><h2>Log de execução</h2><span class="badge">tempo real</span></div><div class="log"><span>10:41:12 base local carregada</span><span>10:41:16 aguardando arquivo de entrada</span><span>10:41:19 provider mock disponível</span><span>10:41:23 receita-web em modo assistido</span></div></section>
+                <section class="surface"><div class="section-head"><h2>Saída</h2><span class="badge">csv</span></div><div style="padding:14px"><p class="body">O arquivo processado aparecerá aqui após a execução.</p><div style="margin-top:14px;display:flex;gap:8px"><span class="btn">Abrir pasta</span><span class="btn">Exportar</span></div></div></section>
+              </div>
+            </div>
+          </section>
+        </div>
+      </section>
+
+      <section class="screen" id="ops-b" aria-label="Ops B">
+        <div class="windowbar"><div class="dots"><span></span><span></span><span></span></div><strong>B · revisão + fila</strong><em>produto electron</em></div>
+        <div class="app-shell">
+          <aside class="side">
+            <div class="brand"><span class="mark">FD</span><span>Fiscal Desk</span></div>
+            <nav class="nav">
+              <span>Execuções</span>
+              <span class="active">Revisão <b>1</b></span>
+              <span>Resultados</span>
+              <span>Bases locais</span>
+              <span>Provedores</span>
+            </nav>
+            <div class="side-foot"><span class="badge warn">revisão necessária</span><p class="body">clientes-maio.csv</p></div>
+          </aside>
+          <section class="main">
+            <header class="top">
+              <div class="top-left"><h1>Revisão de entrada</h1><div class="tabs"><span>Arquivo</span><span class="active">Leitura</span><span>Execução</span><span>Saída</span></div></div>
+              <div class="top-actions"><span class="btn">Trocar CSV</span><span class="btn primary">Executar consulta</span></div>
+            </header>
+            <div class="content review-grid">
+              <section class="surface review-main">
+                <div class="review-toolbar"><div class="searchbox">Filtrar por CNPJ, razão social ou status</div><div class="top-actions"><span class="badge">5 linhas</span><span class="badge warn">1 revisar</span></div></div>
+                <div class="table review-table">
+                  <div class="row head"><span>CNPJ</span><span>Razão social</span><span>Coluna</span><span>Status</span><span>Ação</span></div>
+                  <div class="row"><strong>11.222.333/0001-81</strong><span>Empresa Alfa</span><span>cnpj</span><span><i class="status-dot ok"></i>válido</span><span class="btn ghost">ver</span></div>
+                  <div class="row"><strong>44.555.666/0001-90</strong><span>Empresa Beta</span><span>cnpj</span><span><i class="status-dot ok"></i>válido</span><span class="btn ghost">ver</span></div>
+                  <div class="row"><strong>00.000.000/0000-00</strong><span>Sem leitura</span><span>cnpj</span><span><i class="status-dot warn"></i>revisar</span><span class="btn">corrigir</span></div>
+                  <div class="row"><strong>19.888.777/0001-10</strong><span>Empresa Delta</span><span>cnpj</span><span><i class="status-dot ok"></i>válido</span><span class="btn ghost">ver</span></div>
+                  <div class="row"><strong>72.111.000/0001-43</strong><span>Empresa Gama</span><span>cnpj</span><span><i class="status-dot ok"></i>válido</span><span class="btn ghost">ver</span></div>
+                </div>
+              </section>
+              <aside class="review-side">
+                <section class="surface">
+                  <div class="section-head"><h2>Arquivo</h2><span class="badge ok">lido</span></div>
+                  <div class="field-stack">
+                    <div class="field"><span class="label">Nome</span><div class="box">clientes-maio.csv</div></div>
+                    <div class="field"><span class="label">Coluna CNPJ</span><div class="box">cnpj</div></div>
+                    <div class="field"><span class="label">Provider</span><div class="box">mock</div></div>
+                  </div>
+                </section>
+                <section class="metric-grid" style="grid-template-columns:1fr 1fr">
+                  <div class="metric"><span class="label">Linhas</span><strong>5</strong></div>
+                  <div class="metric"><span class="label">Únicos</span><strong>5</strong></div>
+                  <div class="metric"><span class="label">Válidos</span><strong>4</strong></div>
+                  <div class="metric"><span class="label">Revisar</span><strong>1</strong></div>
+                </section>
+                <section class="surface"><div class="section-head"><h2>Orientação</h2></div><div style="padding:14px"><p class="body">Corrija ou ignore a linha marcada antes de executar a consulta. O relatório final preserva as linhas inválidas.</p><div style="display:grid;gap:8px;margin-top:14px"><span class="btn">Ignorar inválidas</span><span class="btn primary">Executar válidas</span></div></div></section>
+              </aside>
+            </div>
+          </section>
+        </div>
+      </section>
+
+      <section class="screen" id="ops-c" aria-label="Ops C">
+        <div class="windowbar"><div class="dots"><span></span><span></span><span></span></div><strong>C · monitor de lote</strong><em>produto electron</em></div>
+        <div class="app-shell">
+          <aside class="side">
+            <div class="brand"><span class="mark">FD</span><span>Fiscal Desk</span></div>
+            <nav class="nav">
+              <span class="active">Monitor</span>
+              <span>Fila</span>
+              <span>Resultados</span>
+              <span>Logs</span>
+              <span>Configuração</span>
+            </nav>
+            <div class="side-foot"><span class="badge info">execução local</span><p class="body">Sem envio remoto.</p></div>
+          </aside>
+          <section class="main">
+            <header class="top">
+              <div class="top-left"><h1>Execução em andamento</h1><div class="tabs"><span class="active">Agora</span><span>Eventos</span><span>Erros</span><span>Exportação</span></div></div>
+              <div class="top-actions"><span class="btn">Pausar</span><span class="btn danger">Cancelar</span></div>
+            </header>
+            <div class="content monitor-grid">
+              <aside class="surface runs-list">
+                <div class="section-head"><h2>Lotes</h2><span class="badge">hoje</span></div>
+                <div>
+                  <div class="run-list-row active"><strong>clientes-maio.csv</strong><span class="badge warn">64%</span><p class="body">128 de 200 linhas</p></div>
+                  <div class="run-list-row"><strong>base-fornecedores.csv</strong><span class="badge ok">concluído</span><p class="body">246 linhas</p></div>
+                  <div class="run-list-row"><strong>entrada-manual.csv</strong><span class="badge err">erro</span><p class="body">2 linhas bloqueadas</p></div>
+                </div>
+              </aside>
+              <section class="monitor-main">
+                <section class="surface progress-panel">
+                  <div>
+                    <p class="label">clientes-maio.csv</p>
+                    <h2 style="margin-top:8px;font-size:24px">Consultando CNPJs únicos</h2>
+                    <div class="progress-bar"><span></span></div>
+                    <p class="body" style="margin-top:10px">128 processados, 72 pendentes, 1 retomado.</p>
+                  </div>
+                  <div class="metric-grid" style="grid-template-columns:1fr 1fr">
+                    <div class="metric"><span class="label">OK</span><strong>126</strong></div>
+                    <div class="metric"><span class="label">Erro</span><strong>2</strong></div>
+                    <div class="metric"><span class="label">Fila</span><strong>72</strong></div>
+                    <div class="metric"><span class="label">Tempo</span><strong>04:18</strong></div>
+                  </div>
+                </section>
+                <section class="surface">
+                  <div class="section-head"><h2>Fluxo</h2><span class="badge warn">executando</span></div>
+                  <div class="timeline" style="padding:10px 14px">
+                    <div><span><i class="status-dot ok"></i>Entrada lida</span><strong>10:31</strong></div>
+                    <div><span><i class="status-dot ok"></i>Coluna validada</span><strong>10:32</strong></div>
+                    <div><span><i class="status-dot warn"></i>Consulta em lote</span><strong>agora</strong></div>
+                    <div><span><i class="status-dot"></i>Arquivo de saída</span><strong>pendente</strong></div>
+                  </div>
+                </section>
+                <div class="monitor-bottom">
+                  <section class="surface"><div class="section-head"><h2>Eventos</h2><span class="badge">stream</span></div><div class="log"><span>10:34:11 linha 126 concluída</span><span>10:34:12 linha 127 concluída</span><span>10:34:13 linha 128 concluída</span><span>10:34:15 aguardando próximo lote</span></div></section>
+                  <section class="surface"><div class="section-head"><h2>Saída parcial</h2><span class="badge">disponível</span></div><div style="padding:14px"><p class="body">Prévia salva localmente. Exportação final será liberada ao concluir.</p><div style="display:grid;gap:8px;margin-top:14px"><span class="btn">Abrir prévia</span><span class="btn primary">Salvar parcial</span></div></div></section>
+                </div>
+              </section>
+            </div>
+          </section>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>
