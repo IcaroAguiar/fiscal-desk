@@ -7,7 +7,7 @@
   <meta name="generator" content="interactive-html-reports 0.1.0" />
   <meta name="report-kit-version" content="0.1.0" />
   <meta name="report-preset" content="implementation" />
-  <meta name="report-updated-at" content="2026-05-21T03:30:32-03:00" />
+  <meta name="report-updated-at" content="2026-05-21T04:29:00-03:00" />
   <style>:root {
   color-scheme: light;
   --report-bg: #f4f7f5;
@@ -982,18 +982,18 @@ details.report-card summary {
       <div class="hero-copy">
         <p class="eyebrow">Fiscal Desk</p>
         <h1>Fiscal Desk: panorama geral</h1>
-        <p class="lede">Estado atual da entrega acelerada no consulta-simples-csv: PRs já mergeadas, corte finalizado para teste humano, evidência local, review independente e próximo plano.</p>
+        <p class="lede">Estado atual da entrega acelerada no consulta-simples-csv: PRs já mergeadas, corte finalizado para teste humano, evidência local, smoke real por Computer Use, review independente e próximo plano.</p>
       </div>
       <aside class="hero-panel" aria-label="Metadata do report">
         <dl class="metadata-list">
           <div class="metadata-row"><dt>Status</dt><dd><span class="status-pill status-done">feito</span></dd></div>
           <div class="metadata-row"><dt>Preset</dt><dd>Implementação</dd></div>
-          <div class="metadata-row"><dt>Atualizado</dt><dd>2026-05-21T03:30:32-03:00</dd></div>
+          <div class="metadata-row"><dt>Atualizado</dt><dd>2026-05-21T04:29:00-03:00</dd></div>
           <div class="metadata-row"><dt>Kit</dt><dd>0.1.0</dd></div>
         </dl>
       </aside>
     </section>
-    <section class="report-section" id="metricas" data-search-item><div class="section-body"><div class="metric-grid"><article class="metric-card" data-search-item data-status="done"><strong>5</strong><span>PRs de fundação já mergeadas</span></article><article class="metric-card" data-search-item data-status="done"><strong>186</strong><span>testes automatizados passando agora</span></article><article class="metric-card" data-search-item data-status="info"><strong>21</strong><span>arquivos modificados no corte atual</span></article><article class="metric-card" data-search-item data-status="info"><strong>2</strong><span>novos arquivos do corte atual</span></article><article class="metric-card" data-search-item data-status="warn"><strong>Em curso</strong><span>preparo real da Base Pública Local</span></article></div></div></section>
+    <section class="report-section" id="metricas" data-search-item><div class="section-body"><div class="metric-grid"><article class="metric-card" data-search-item data-status="done"><strong>5</strong><span>PRs de fundação já mergeadas</span></article><article class="metric-card" data-search-item data-status="done"><strong>186</strong><span>testes automatizados passando agora</span></article><article class="metric-card" data-search-item data-status="info"><strong>21</strong><span>arquivos modificados no corte atual</span></article><article class="metric-card" data-search-item data-status="info"><strong>2</strong><span>novos arquivos do corte atual</span></article><article class="metric-card" data-search-item data-status="done"><strong>Pronto</strong><span>preparo real da Base Pública Local</span></article></div></div></section>
     <div class="report-layout">
       <nav class="toc" aria-label="Indice do report">
         <p class="toc-title">Conteúdo</p>
@@ -1088,6 +1088,11 @@ details.report-card summary {
             <td data-label="Resultado">PASS; arquivos grandes preservados em 2 depois de extrair IPC/helper do renderer.</td>
             <td data-label="Status"><span class="status-pill status-done">pass</span></td>
           </tr><tr data-search-item data-status="pass">
+            <td data-label="Evidência">Smoke real assistido por Computer Use</td>
+            <td data-label="Comando/Origem">pnpm run dev + app Electron via Computer Use</td>
+            <td data-label="Resultado">Fluxo de usuário validado: preparar base via seletor nativo, selecionar CSV de entrada, aceitar aviso, iniciar execução e confirmar alerta de arquivo salvo. UI mostrou 5 linhas, 3 CNPJs únicos, 2 duplicados removidos, 2 optantes, 2 não optantes, 1 erro esperado e histórico SUCCESS.</td>
+            <td data-label="Status"><span class="status-pill status-done">pass</span></td>
+          </tr><tr data-search-item data-status="pass">
             <td data-label="Evidência">Review independente</td>
             <td data-label="Comando/Origem">agentic-code-review / reviewer Heisenberg</td>
             <td data-label="Resultado">Achados altos corrigidos: preparo inválido invalida índice antigo, preparo serializado, temp path único, índice/status lidos de um único documento e records persistidos validados. Sem bloqueante restante para teste humano local.</td>
@@ -1109,7 +1114,7 @@ details.report-card summary {
       <span class="status-pill status-done">feito</span>
     </header>
     <div class="section-body"><div class="kanban"><section class="kanban-column" data-search-item>
-        <header><span>Concluído para teste local</span><span>4</span></header>
+        <header><span>Concluído para teste local</span><span>5</span></header>
         <div class="kanban-cards"><article class="report-card" data-search-item data-status="done">
                 <h4>Smoke CLI Base Pública Local</h4>
                 <p>Passou com fixture pública pequena e provider local preparado.</p>
@@ -1118,6 +1123,10 @@ details.report-card summary {
                 <h4>Smoke Electron real</h4>
                 <p>Passou com Base Pública Local, aceite de Data da Base, retomada de checkpoint e XLSX salvo.</p>
                 <div class="chip-row"><span class="chip">Electron</span></div>
+              </article><article class="report-card" data-search-item data-status="done">
+                <h4>Smoke por Computer Use</h4>
+                <p>Passou no app Electron visível: preparo de base, seleção de CSV, aceite, execução, alerta de salvamento e painel SUCCESS.</p>
+                <div class="chip-row"><span class="chip">UI real</span></div>
               </article><article class="report-card" data-search-item data-status="done">
                 <h4>Smoke visual</h4>
                 <p>Passou em desktop e mobile sem overflow ou botões cortados.</p>
@@ -1133,9 +1142,9 @@ details.report-card summary {
                 <h4>Review independente</h4>
                 <p>Gate executado e findings altos corrigidos. Repetir só se o teste humano gerar novo ajuste material.</p>
                 <div class="chip-row"><span class="chip">review</span></div>
-              </article><article class="report-card" data-search-item data-status="warn">
+              </article><article class="report-card" data-search-item data-status="done">
                 <h4>Report de status</h4>
-                <p>Atualizar o report de status do Fiscal Desk com resultado final do corte atual e copiar versão operacional para `/private/tmp` se necessário.</p>
+                <p>Report atualizado com o smoke real assistido por Computer Use; copiar versão operacional para `/private/tmp` se necessário.</p>
                 <div class="chip-row"><span class="chip">report</span></div>
               </article><article class="report-card" data-search-item data-status="warn">
                 <h4>Commit, push e PR</h4>
@@ -1165,23 +1174,23 @@ details.report-card summary {
     </header>
     <div class="section-body"><div class="card-grid"><article class="report-card" data-search-item data-status="done">
           <div class="chip-row"><span class="status-pill status-done">feito</span></div>
-          <h4>Smoke real ainda pendente</h4>
-          <p>Resolvido neste fechamento: smoke Electron real passou. Risco restante é apenas validação manual do usuário em seu fluxo e CSV real.</p>
+          <h4>Smoke real concluído</h4>
+          <p>Resolvido neste fechamento: smoke Electron real e smoke assistido por Computer Use passaram. Risco restante é apenas validação manual do usuário em seu fluxo e CSV real.</p>
           
         </article><article class="report-card" data-search-item data-status="warn">
           <div class="chip-row"><span class="status-pill status-info">warn</span></div>
           <h4>Formato público real ainda não foi adotado</h4>
           <p>O preparador aceita um CSV normalizado/controlado. Integração com layout oficial completo de bases públicas continua como próximo subcorte ou adaptação explícita.</p>
           
-        </article><article class="report-card" data-search-item data-status="warn">
-          <div class="chip-row"><span class="status-pill status-info">warn</span></div>
+        </article><article class="report-card" data-search-item data-status="done">
+          <div class="chip-row"><span class="status-pill status-done">feito</span></div>
           <h4>Report visual mudou</h4>
-          <p>Há mudança visual/HTML local intencional por geração de report e UI de preparo. Precisa ser validada por smoke visual antes do fechamento.</p>
+          <p>Há mudança visual/HTML local intencional por geração de report e UI de preparo. Smoke visual e smoke assistido por Computer Use passaram.</p>
           
         </article><article class="report-card" data-search-item data-status="warn">
           <div class="chip-row"><span class="status-pill status-info">warn</span></div>
           <h4>Branch ainda sem PR</h4>
-          <p>Estado atual é worktree local sujo em `feat/fiscal-desk-local-base-prep`; ainda não há CI remoto para este corte.</p>
+          <p>Estado atual é branch local `feat/fiscal-desk-local-base-prep`; ainda não há CI remoto para este corte.</p>
           
         </article></div></div>
   </section>
@@ -1194,7 +1203,7 @@ details.report-card summary {
       <span class="status-pill status-partial">parcial</span>
     </header>
     <div class="section-body"><p>Sequência recomendada após o teste humano:</p>
-<ol><li>Aplicar qualquer ajuste encontrado no teste manual.</li><li>Repetir checks afetados, especialmente smoke Electron real se tocar UI/IPC.</li><li>Repetir reviewer independente se houver novo ajuste material.</li><li>Atualizar o report de status oficial com as evidências finais.</li><li>Pushar, abrir PR e acompanhar checks remotos.</li><li>Se CI/review ficarem verdes, mergear sem aguardar nova ação, conforme autorização do usuário.</li></ol></div>
+<ol><li>Aplicar qualquer ajuste encontrado no teste manual.</li><li>Repetir checks afetados, especialmente smoke Electron real se tocar UI/IPC.</li><li>Repetir reviewer independente se houver novo ajuste material.</li><li>Pushar, abrir PR e acompanhar CI remoto.</li><li>Se CI/review ficarem verdes, mergear sem aguardar nova ação, conforme autorização do usuário.</li></ol></div>
   </section>
 <section class="report-section" id="mudancas" data-search-item data-status="draft">
     <header class="section-heading">

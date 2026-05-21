@@ -2,9 +2,9 @@
   "kitVersion": "0.1.0",
   "preset": "implementation",
   "title": "Fiscal Desk: panorama geral",
-  "subtitle": "Estado atual da entrega acelerada no consulta-simples-csv: PRs já mergeadas, corte finalizado para teste humano, evidência local, review independente e próximo plano.",
+  "subtitle": "Estado atual da entrega acelerada no consulta-simples-csv: PRs já mergeadas, corte finalizado para teste humano, evidência local, smoke real por Computer Use, review independente e próximo plano.",
   "language": "pt-BR",
-  "updatedAt": "2026-05-21T03:30:32-03:00",
+  "updatedAt": "2026-05-21T04:29:00-03:00",
   "status": "done",
   "source": "consulta-simples-csv / feat/fiscal-desk-local-base-prep",
   "eyebrow": "Fiscal Desk",
@@ -30,9 +30,9 @@
       "status": "info"
     },
     {
-      "value": "Em curso",
+      "value": "Pronto",
       "label": "preparo real da Base Pública Local",
-      "status": "warn"
+      "status": "done"
     }
   ],
   "sections": [
@@ -124,6 +124,12 @@
           "status": "pass"
         },
         {
+          "title": "Smoke real assistido por Computer Use",
+          "source": "pnpm run dev + app Electron via Computer Use",
+          "result": "Fluxo de usuário validado: preparar base via seletor nativo, selecionar CSV de entrada, aceitar aviso, iniciar execução e confirmar alerta de arquivo salvo. UI mostrou 5 linhas, 3 CNPJs únicos, 2 duplicados removidos, 2 optantes, 2 não optantes, 1 erro esperado e histórico SUCCESS.",
+          "status": "pass"
+        },
+        {
           "title": "Review independente",
           "source": "agentic-code-review / reviewer Heisenberg",
           "result": "Achados altos corrigidos: preparo inválido invalida índice antigo, preparo serializado, temp path único, índice/status lidos de um único documento e records persistidos validados. Sem bloqueante restante para teste humano local.",
@@ -161,6 +167,12 @@
               "tag": "Electron"
             },
             {
+              "title": "Smoke por Computer Use",
+              "body": "Passou no app Electron visível: preparo de base, seleção de CSV, aceite, execução, alerta de salvamento e painel SUCCESS.",
+              "status": "done",
+              "tag": "UI real"
+            },
+            {
               "title": "Smoke visual",
               "body": "Passou em desktop e mobile sem overflow ou botões cortados.",
               "status": "done",
@@ -186,8 +198,8 @@
             },
             {
               "title": "Report de status",
-              "body": "Atualizar o report de status do Fiscal Desk com resultado final do corte atual e copiar versão operacional para `/private/tmp` se necessário.",
-              "status": "warn",
+              "body": "Report atualizado com o smoke real assistido por Computer Use; copiar versão operacional para `/private/tmp` se necessário.",
+              "status": "done",
               "tag": "report"
             },
             {
@@ -215,8 +227,8 @@
       "status": "partial",
       "items": [
         {
-          "title": "Smoke real ainda pendente",
-          "description": "Resolvido neste fechamento: smoke Electron real passou. Risco restante é apenas validação manual do usuário em seu fluxo e CSV real.",
+          "title": "Smoke real concluído",
+          "description": "Resolvido neste fechamento: smoke Electron real e smoke assistido por Computer Use passaram. Risco restante é apenas validação manual do usuário em seu fluxo e CSV real.",
           "status": "done"
         },
         {
@@ -226,12 +238,12 @@
         },
         {
           "title": "Report visual mudou",
-          "description": "Há mudança visual/HTML local intencional por geração de report e UI de preparo. Precisa ser validada por smoke visual antes do fechamento.",
-          "status": "warn"
+          "description": "Há mudança visual/HTML local intencional por geração de report e UI de preparo. Smoke visual e smoke assistido por Computer Use passaram.",
+          "status": "done"
         },
         {
           "title": "Branch ainda sem PR",
-          "description": "Estado atual é worktree local sujo em `feat/fiscal-desk-local-base-prep`; ainda não há CI remoto para este corte.",
+          "description": "Estado atual é branch local `feat/fiscal-desk-local-base-prep`; ainda não há CI remoto para este corte.",
           "status": "warn"
         }
       ]
@@ -241,7 +253,7 @@
       "title": "Próximo plano objetivo",
       "kicker": "Execução",
       "status": "partial",
-      "body": "Sequência recomendada após o teste humano:\n\n1. Aplicar qualquer ajuste encontrado no teste manual.\n2. Repetir checks afetados, especialmente smoke Electron real se tocar UI/IPC.\n3. Repetir reviewer independente se houver novo ajuste material.\n4. Atualizar o report de status oficial com as evidências finais.\n5. Pushar, abrir PR e acompanhar checks remotos.\n6. Se CI/review ficarem verdes, mergear sem aguardar nova ação, conforme autorização do usuário."
+      "body": "Sequência recomendada após o teste humano:\n\n1. Aplicar qualquer ajuste encontrado no teste manual.\n2. Repetir checks afetados, especialmente smoke Electron real se tocar UI/IPC.\n3. Repetir reviewer independente se houver novo ajuste material.\n4. Pushar, abrir PR e acompanhar CI remoto.\n5. Se CI/review ficarem verdes, mergear sem aguardar nova ação, conforme autorização do usuário."
     }
   ],
   "diagrams": [
