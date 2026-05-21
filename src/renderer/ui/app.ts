@@ -1,4 +1,7 @@
-import type { SimplesProviderName } from "../../core/simples/simples-provider.factory";
+import {
+  SIMPLES_PROVIDER,
+  type SimplesProviderName,
+} from "../../core/simples/simples-provider.names";
 import { initialState, type PickCsvResult, type UiState } from "./app.types";
 import {
   applyProcessResult,
@@ -6,26 +9,10 @@ import {
   getOutputContent,
   resetOutputState,
 } from "./app-delivery";
-import {
-  buildCompletionMessage,
-  extractMessage,
-  getLiveProgress,
-  renderStatusText,
-} from "./app-helpers";
-import { syncReceitaWebAvailability } from "./app-provider";
-import {
-  getCurrentCnpjLabel,
-  getProgressPercent,
-  renderExecutionHistory,
-  renderShell,
-} from "./app-view";
-import {
-  buildDedupeLabel,
-  formatCommandBarSummary,
-  formatProgressLine,
-  formatProviderHint,
-} from "./operational-copy";
-import { renderSummaryInto } from "./render-summary";
+import { buildCompletionMessage, extractMessage } from "./app-helpers";
+import { prepareLocalPublicBaseResume } from "./app-provider";
+import { syncUi as syncUiRefs } from "./app-sync";
+import { renderShell } from "./app-view";
 
 export function mountApp(root: HTMLDivElement | null): void {
   if (!root) {
@@ -57,6 +44,18 @@ export function mountApp(root: HTMLDivElement | null): void {
     ),
     deliverySelect: appRoot.querySelector<HTMLSelectElement>(
       '[data-field="delivery-format"]',
+    ),
+    localPublicBaseNotice: appRoot.querySelector<HTMLInputElement>(
+      '[data-field="local-public-base-notice"]',
+    ),
+    localPublicBaseNoticePanel: appRoot.querySelector<HTMLElement>(
+      '[data-slot="local-public-base-notice-panel"]',
+    ),
+    localPublicBaseDate: appRoot.querySelector<HTMLElement>(
+      '[data-slot="local-public-base-date"]',
+    ),
+    localPublicBaseWarning: appRoot.querySelector<HTMLElement>(
+      '[data-slot="local-public-base-warning"]',
     ),
     message: appRoot.querySelector<HTMLElement>('[data-slot="message"]'),
     commandSummary: appRoot.querySelector<HTMLElement>(
@@ -127,10 +126,12 @@ export function mountApp(root: HTMLDivElement | null): void {
       const defaults = await window.appBridge.getDefaults();
       state.provider = defaults.provider;
       state.receitaWebAvailable = defaults.receitaWebAvailable;
+      state.localPublicBaseStatus = defaults.localPublicBaseStatus;
       syncUi();
     } catch {
       state.provider = "mock";
       state.receitaWebAvailable = false;
+      state.localPublicBaseStatus = null;
       syncUi();
     }
   }
@@ -185,6 +186,7 @@ export function mountApp(root: HTMLDivElement | null): void {
     refs.providerSelect?.addEventListener("change", (event) => {
       state.provider = (event.currentTarget as HTMLSelectElement)
         .value as SimplesProviderName;
+      state.localPublicBaseNoticeAccepted = false;
       syncUi();
     });
 
@@ -195,6 +197,13 @@ export function mountApp(root: HTMLDivElement | null): void {
     refs.deliverySelect?.addEventListener("change", (event) => {
       state.deliveryFormat = (event.currentTarget as HTMLSelectElement)
         .value as UiState["deliveryFormat"];
+      syncUi();
+    });
+
+    refs.localPublicBaseNotice?.addEventListener("change", (event) => {
+      state.localPublicBaseNoticeAccepted = (
+        event.currentTarget as HTMLInputElement
+      ).checked;
       syncUi();
     });
   }
@@ -258,6 +267,12 @@ export function mountApp(root: HTMLDivElement | null): void {
 
     try {
       const result = await window.appBridge.processCsv({
+        ...(state.provider === SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL
+          ? {
+              acceptedLocalPublicBaseNotice:
+                state.localPublicBaseNoticeAccepted,
+            }
+          : {}),
         content: state.content,
         deliveryFormat: state.deliveryFormat,
         provider: state.provider,
@@ -291,6 +306,11 @@ export function mountApp(root: HTMLDivElement | null): void {
       return;
     }
 
+    if (!prepareLocalPublicBaseResume(state, historyItem)) {
+      syncUi();
+      return;
+    }
+
     state.status = "processing";
     state.message = "Retomando execução a partir do histórico local...";
     resetOutputState(state);
@@ -304,6 +324,9 @@ export function mountApp(root: HTMLDivElement | null): void {
       const result = await window.appBridge.resumeExecution(
         ledgerKey,
         state.deliveryFormat,
+        historyItem.providerName === SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL
+          ? state.localPublicBaseNoticeAccepted
+          : undefined,
       );
       state.fileName = historyItem.sourceFileName;
       state.filePath = historyItem.sourceFilePath;
@@ -392,106 +415,6 @@ export function mountApp(root: HTMLDivElement | null): void {
   }
 
   function syncUi(): void {
-    if (refs.message) {
-      refs.message.textContent = state.message;
-    }
-
-    if (refs.providerSelect) {
-      syncReceitaWebAvailability(refs.providerSelect, state);
-      refs.providerSelect.value = state.provider;
-    }
-
-    if (refs.columnInput) {
-      refs.columnInput.value = state.cnpjColumn;
-    }
-
-    if (refs.deliverySelect) {
-      refs.deliverySelect.value = state.deliveryFormat;
-    }
-
-    if (refs.outputStatus) {
-      refs.outputStatus.textContent = renderStatusText(state);
-    }
-
-    if (refs.commandSummary) {
-      refs.commandSummary.textContent = formatCommandBarSummary(
-        state.fileName,
-        state.provider,
-      );
-    }
-
-    if (refs.commandHint) {
-      refs.commandHint.textContent = formatProviderHint(
-        state.fileName,
-        state.provider,
-      );
-    }
-
-    if (refs.dedupeLabel) {
-      refs.dedupeLabel.textContent = state.summary
-        ? buildDedupeLabel(state.summary)
-        : "—";
-    }
-
-    if (refs.progressLine) {
-      refs.progressLine.textContent = formatProgressLine(
-        getLiveProgress(state),
-      );
-    }
-
-    if (refs.progressBar) {
-      refs.progressBar.style.width = `${getProgressPercent(state)}%`;
-    }
-
-    if (refs.currentCnpj) {
-      refs.currentCnpj.textContent = getCurrentCnpjLabel(state);
-    }
-
-    if (refs.summary) {
-      renderSummaryInto(refs.summary, state.summary);
-    }
-
-    if (refs.executionStatus) {
-      refs.executionStatus.textContent = state.execution
-        ? state.execution.status
-        : "Aguardando";
-    }
-
-    if (refs.executionRunId) {
-      refs.executionRunId.textContent = state.execution
-        ? state.execution.runId.slice(0, 8)
-        : "—";
-    }
-
-    if (refs.executionResume) {
-      refs.executionResume.textContent = state.execution
-        ? `${state.execution.resumedUniqueLookups} retomadas de checkpoint`
-        : "Sem retomada ativa";
-    }
-
-    if (refs.executionCheckpoint) {
-      refs.executionCheckpoint.textContent = state.execution?.checkpointPath
-        ? (state.execution.checkpointPath.split(/[/\\]/).pop() ?? "ledger.json")
-        : "—";
-    }
-
-    if (refs.executionHistory) {
-      refs.executionHistory.innerHTML = renderExecutionHistory(state);
-    }
-
-    if (refs.processButton) {
-      refs.processButton.disabled =
-        state.status === "processing" || !state.content;
-      refs.processButton.textContent =
-        state.status === "processing" ? "Processando..." : "Iniciar execução";
-    }
-
-    if (refs.cancelButton) {
-      refs.cancelButton.disabled = state.status !== "processing";
-    }
-
-    if (refs.saveButton) {
-      refs.saveButton.disabled = !state.outputDelivery;
-    }
+    syncUiRefs(refs, state);
   }
 }

@@ -1,4 +1,4 @@
-import type { SimplesProviderName } from "../simples/simples-provider.factory";
+import type { SimplesProviderName } from "../simples/simples-provider.names";
 
 export type ProcessCsvDeliveryFormat = "csv" | "xlsx";
 

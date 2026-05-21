@@ -3,11 +3,11 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Fiscal Desk: entrega Excel operacional</title>
+  <title>Fiscal Desk: Base Pública Local</title>
   <meta name="generator" content="interactive-html-reports 0.1.0" />
   <meta name="report-kit-version" content="0.1.0" />
   <meta name="report-preset" content="implementation" />
-  <meta name="report-updated-at" content="2026-05-20T23:09:07-03:00" />
+  <meta name="report-updated-at" content="2026-05-21T01:41:29-03:00" />
   <style>:root {
   color-scheme: light;
   --report-bg: #f4f7f5;
@@ -981,41 +981,41 @@ details.report-card summary {
     <section class="report-hero">
       <div class="hero-copy">
         <p class="eyebrow">Fiscal Desk</p>
-        <h1>Fiscal Desk: entrega Excel operacional</h1>
-        <p class="lede">Corte vertical na branch feat/fiscal-desk-xlsx-delivery: Planilha de Resultado .xlsx com abas, seleção de entrega na UI, auto-save Electron real, regressão CSV, audit de dependência e perf proporcional.</p>
+        <h1>Fiscal Desk: Base Pública Local</h1>
+        <p class="lede">Corte vertical em feat/fiscal-desk-local-public-base: provider local com Data da Base, consentimento explícito, status de preparo, smoke Electron real, perf XLSX e ratchet preservado.</p>
       </div>
       <aside class="hero-panel" aria-label="Metadata do report">
         <dl class="metadata-list">
           <div class="metadata-row"><dt>Status</dt><dd><span class="status-pill status-partial">parcial</span></dd></div>
           <div class="metadata-row"><dt>Preset</dt><dd>Implementação</dd></div>
-          <div class="metadata-row"><dt>Atualizado</dt><dd>2026-05-20T23:09:07-03:00</dd></div>
+          <div class="metadata-row"><dt>Atualizado</dt><dd>2026-05-21T01:41:29-03:00</dd></div>
           <div class="metadata-row"><dt>Kit</dt><dd>0.1.0</dd></div>
         </dl>
       </aside>
     </section>
-    <section class="report-section" id="metricas" data-search-item><div class="section-body"><div class="metric-grid"><article class="metric-card" data-search-item data-status="done"><strong>PR #4</strong><span>aberta com checks verdes</span></article><article class="metric-card" data-search-item data-status="done"><strong>171</strong><span>testes automatizados passando</span></article><article class="metric-card" data-search-item data-status="done"><strong>XLSX</strong><span>entrega Excel real</span></article><article class="metric-card" data-search-item data-status="done"><strong>13k/s</strong><span>linhas por segundo no perf XLSX</span></article><article class="metric-card" data-search-item data-status="done"><strong>0</strong><span>vulnerabilidades conhecidas no audit prod</span></article></div></div></section>
+    <section class="report-section" id="metricas" data-search-item><div class="section-body"><div class="metric-grid"><article class="metric-card" data-search-item data-status="partial"><strong>PR #5</strong><span>em preparação</span></article><article class="metric-card" data-search-item data-status="done"><strong>182</strong><span>testes automatizados passando</span></article><article class="metric-card" data-search-item data-status="done"><strong>Local</strong><span>consulta sem rede por item</span></article><article class="metric-card" data-search-item data-status="done"><strong>22.8k/s</strong><span>linhas por segundo no perf XLSX local</span></article><article class="metric-card" data-search-item data-status="done"><strong>2</strong><span>arquivos grandes preservados no ratchet</span></article></div></div></section>
     <div class="report-layout">
       <nav class="toc" aria-label="Indice do report">
         <p class="toc-title">Conteúdo</p>
         <a href="#metricas">Métricas</a>
-        <a href="#mudancas">O que o corte entrega</a><a href="#evidencias">Evidencias de validacao</a><a href="#decisoes">Decisoes do corte</a><a href="#plano">Estado e proximo passo</a><a href="#diagrams">Diagramas</a><a href="#risks">Riscos e pendências</a>
+        <a href="#mudancas">O que o corte entrega</a><a href="#evidencias">Evidências de validação</a><a href="#decisoes">Decisões do corte</a><a href="#plano">Estado e próximo passo</a><a href="#diagrams">Diagramas</a><a href="#risks">Riscos e pendências</a>
       </nav>
       <div class="report-content"><section class="report-section" id="mudancas" data-search-item data-status="done">
     <header class="section-heading">
       <div>
-        <p class="eyebrow">Implementacao</p>
+        <p class="eyebrow">Implementação</p>
         <h2>O que o corte entrega</h2>
       </div>
       <span class="status-pill status-done">feito</span>
     </header>
-    <div class="section-body"><p>Este corte transforma a entrega Excel em funcionalidade real sem remover o CSV compatível.</p>
-<ul><li><code>exceljs</code> gera <code>.xlsx</code> nativo com abas Resumo, Resultados, Falhas, Divergencias e Auditoria.</li><li><code>processCsv</code> mantém <code>outputCsv</code> por compatibilidade e adiciona <code>outputXlsx</code> quando <code>deliveryFormat</code> é <code>xlsx</code>.</li><li>IPC/preload salvam CSV ou XLSX usando o formato escolhido, com auto-save ao lado do arquivo original.</li><li>UI ganhou seletor de Entrega com opção <code>CSV compatível</code> ou <code>Excel com abas</code>.</li><li>Smoke Electron real seleciona Excel, retoma execução pelo histórico e valida assinatura XLSX do arquivo salvo.</li><li>Overrides do pnpm corrigem <code>brace-expansion</code> transitivo trazido pelo <code>exceljs</code>.</li></ul></div>
+    <div class="section-body"><p>Este corte torna a Base Pública Local uma opção operacional real sem baixar base externa nesta etapa.</p>
+<ul><li>Novo módulo <code>src/core/public-base</code> com fixture pequena, status de preparo, Data da Base e índice por CNPJ.</li><li>Novo provider <code>base-publica-local</code> implementa <code>SimplesLookupPort</code>, sem acoplar Receita Web nem depender de consulta online por item.</li><li><code>app:get-defaults</code> expõe status da base local para o renderer.</li><li><code>csv:process</code> e <code>csv:resume-execution</code> exigem consentimento explícito de Data da Base antes de efeitos de processamento.</li><li>UI mostra provider, aviso de defasagem e checkbox de aceite; iniciar fica bloqueado enquanto o aviso não for aceito.</li><li>Scripts de smoke/perf aceitam <code>base-publica-local</code> para validar CLI, Electron real e carga local.</li></ul></div>
   </section>
 <section class="report-section" id="evidencias" data-search-item data-status="done">
     <header class="section-heading">
       <div>
         <p class="eyebrow">Checks locais</p>
-        <h2>Evidencias de validacao</h2>
+        <h2>Evidências de validação</h2>
       </div>
       <span class="status-pill status-done">feito</span>
     </header>
@@ -1024,7 +1024,7 @@ details.report-card summary {
     <tbody><tr data-search-item data-status="pass">
             <td data-label="Evidência">Lint</td>
             <td data-label="Comando/Origem">pnpm lint</td>
-            <td data-label="Resultado">Biome sem erros em 77 arquivos</td>
+            <td data-label="Resultado">Biome sem erros em 86 arquivos</td>
             <td data-label="Status"><span class="status-pill status-done">pass</span></td>
           </tr><tr data-search-item data-status="pass">
             <td data-label="Evidência">Typecheck</td>
@@ -1034,52 +1034,37 @@ details.report-card summary {
           </tr><tr data-search-item data-status="pass">
             <td data-label="Evidência">Suite automatizada</td>
             <td data-label="Comando/Origem">pnpm test</td>
-            <td data-label="Resultado">27 arquivos / 171 testes passando, incluindo writer XLSX, use-case, IPC, UI e rejeicao de formato invalido no boundary</td>
+            <td data-label="Resultado">29 arquivos / 182 testes passando, incluindo índice local, adapter, config, IPC, UI, retomada com aceite e use-case</td>
             <td data-label="Status"><span class="status-pill status-done">pass</span></td>
           </tr><tr data-search-item data-status="pass">
             <td data-label="Evidência">Build</td>
             <td data-label="Comando/Origem">pnpm build</td>
-            <td data-label="Resultado">Renderer e main Electron gerados com sucesso</td>
+            <td data-label="Resultado">Renderer e main Electron gerados; boundary corrigido para o renderer não importar adapters Node</td>
             <td data-label="Status"><span class="status-pill status-done">pass</span></td>
           </tr><tr data-search-item data-status="pass">
-            <td data-label="Evidência">Smoke CSV real</td>
-            <td data-label="Comando/Origem">pnpm smoke:real-csv</td>
-            <td data-label="Resultado">Compatibilidade CSV preservada com fixture publica e provider mock</td>
+            <td data-label="Evidência">Smoke CLI Base Pública Local</td>
+            <td data-label="Comando/Origem">SMOKE_PROVIDER=base-publica-local pnpm smoke:real-csv</td>
+            <td data-label="Resultado">Fixture pública pequena, provider local, 5 linhas, 3 CNPJs únicos, 1 erro esperado por linha inválida</td>
             <td data-label="Status"><span class="status-pill status-done">pass</span></td>
           </tr><tr data-search-item data-status="pass">
             <td data-label="Evidência">Smoke Electron real</td>
-            <td data-label="Comando/Origem">pnpm smoke:electron-ui</td>
-            <td data-label="Resultado">App Electron abriu, selecionou Excel, retomou checkpoint e salvou `entrada-processado.xlsx` com assinatura ZIP/XLSX valida</td>
+            <td data-label="Comando/Origem">FISCAL_DESK_SMOKE_PROVIDER=base-publica-local pnpm smoke:electron-ui</td>
+            <td data-label="Resultado">App Electron real selecionou Base Pública Local, marcou consentimento, retomou checkpoint e salvou XLSX</td>
             <td data-label="Status"><span class="status-pill status-done">pass</span></td>
           </tr><tr data-search-item data-status="pass">
             <td data-label="Evidência">Smoke visual</td>
             <td data-label="Comando/Origem">pnpm smoke:visual</td>
-            <td data-label="Resultado">Desktop 1440x1000 e mobile 390x900 sem overflow nem botoes cortados</td>
+            <td data-label="Resultado">Desktop 1440x1000 e mobile 390x900 sem overflow nem botões cortados</td>
             <td data-label="Status"><span class="status-pill status-done">pass</span></td>
           </tr><tr data-search-item data-status="pass">
-            <td data-label="Evidência">Perf CSV</td>
-            <td data-label="Comando/Origem">pnpm perf:local-csv</td>
-            <td data-label="Resultado">5.000 linhas: 38 ms, 131.113 linhas/s</td>
-            <td data-label="Status"><span class="status-pill status-done">pass</span></td>
-          </tr><tr data-search-item data-status="pass">
-            <td data-label="Evidência">Perf XLSX</td>
-            <td data-label="Comando/Origem">FISCAL_DESK_PERF_DELIVERY_FORMAT=xlsx pnpm perf:local-csv</td>
-            <td data-label="Resultado">5.000 linhas: 514 ms, 9.724 linhas/s, 334.156 bytes</td>
-            <td data-label="Status"><span class="status-pill status-done">pass</span></td>
-          </tr><tr data-search-item data-status="pass">
-            <td data-label="Evidência">Checks remotos da PR #4</td>
-            <td data-label="Comando/Origem"><a href="https://github.com/IcaroAguiar/consulta-simples-csv/pull/4">GitHub Actions / GitGuardian</a></td>
-            <td data-label="Resultado">quality-gate e GitGuardian passaram no head atual da PR #4</td>
-            <td data-label="Status"><span class="status-pill status-done">pass</span></td>
-          </tr><tr data-search-item data-status="pass">
-            <td data-label="Evidência">Review independente</td>
-            <td data-label="Comando/Origem">agentic-code-review</td>
-            <td data-label="Resultado">Finding medio de validacao runtime de `deliveryFormat` corrigido; follow-up independente sem novos bloqueantes</td>
+            <td data-label="Evidência">Perf local XLSX</td>
+            <td data-label="Comando/Origem">FISCAL_DESK_PERF_PROVIDER=base-publica-local FISCAL_DESK_PERF_DELIVERY_FORMAT=xlsx pnpm perf:local-csv</td>
+            <td data-label="Resultado">5.000 linhas: 219 ms, 22.846 linhas/s, 235.671 bytes</td>
             <td data-label="Status"><span class="status-pill status-done">pass</span></td>
           </tr><tr data-search-item data-status="pass">
             <td data-label="Evidência">Dependency audit</td>
             <td data-label="Comando/Origem">pnpm audit --prod</td>
-            <td data-label="Resultado">Sem vulnerabilidades conhecidas depois dos overrides de `brace-expansion`</td>
+            <td data-label="Resultado">Sem vulnerabilidades conhecidas</td>
             <td data-label="Status"><span class="status-pill status-done">pass</span></td>
           </tr><tr data-search-item data-status="pass">
             <td data-label="Evidência">Secret scan</td>
@@ -1089,7 +1074,7 @@ details.report-card summary {
           </tr><tr data-search-item data-status="pass">
             <td data-label="Evidência">Quality ratchet</td>
             <td data-label="Comando/Origem">node docs/ai/quality-gate/check-ratchet.mjs</td>
-            <td data-label="Resultado">PASS; large files permanecem em 2, com warnings esperados de coverage e review nao enforceado em CI</td>
+            <td data-label="Resultado">PASS; large files preservados em 2, com warnings esperados de coverage e review não enforceado em CI</td>
             <td data-label="Status"><span class="status-pill status-done">pass</span></td>
           </tr></tbody>
   </table></div></div>
@@ -1098,81 +1083,81 @@ details.report-card summary {
     <header class="section-heading">
       <div>
         <p class="eyebrow">Racional</p>
-        <h2>Decisoes do corte</h2>
+        <h2>Decisões do corte</h2>
       </div>
       <span class="status-pill status-done">feito</span>
     </header>
     <div class="section-body"><div class="card-grid"><article class="report-card" data-search-item data-status="done">
           <div class="chip-row"><span class="status-pill status-done">feito</span></div>
-          <h4>ExcelJS como dependencia</h4>
-          <p>`exceljs` foi escolhido por gerar workbook nativo com multiplas abas e estilos simples, evitando ZIP/XML manual no app Electron.</p>
+          <h4>Sem download real neste corte</h4>
+          <p>O packet proíbe baixar base real sem decisão explícita; a entrega usa fixture local pequena e contrato preparado.</p>
 
         </article><article class="report-card" data-search-item data-status="done">
           <div class="chip-row"><span class="status-pill status-done">feito</span></div>
-          <h4>CSV continua contrato base</h4>
-          <p>`outputCsv` continua sempre disponivel; XLSX e gerado apenas quando a entrega escolhida e `xlsx`.</p>
+          <h4>Provider local por porta existente</h4>
+          <p>`base-publica-local` implementa `SimplesLookupPort`; regras de base ficam em `src/core/public-base` e não vazam para adapters existentes.</p>
 
         </article><article class="report-card" data-search-item data-status="done">
           <div class="chip-row"><span class="status-pill status-done">feito</span></div>
-          <h4>Planilha nao muda provider</h4>
-          <p>A escolha de entrega fica no use-case/IPC/UI e nao altera adapters nem regras especificas de provider.</p>
+          <h4>Consentimento antes de efeitos</h4>
+          <p>IPC rejeita processar ou retomar com Base Pública Local sem aceite de Data da Base antes de ledger, leitura do CSV ou provider.</p>
 
         </article><article class="report-card" data-search-item data-status="done">
           <div class="chip-row"><span class="status-pill status-done">feito</span></div>
-          <h4>Audit transitive corrigido</h4>
-          <p>O `pnpm audit --prod` inicialmente apontou `brace-expansion`; overrides travam as versoes corrigidas no lockfile.</p>
+          <h4>Base desatualizada não bloqueia</h4>
+          <p>A UI trata defasagem como aviso explícito, não como bloqueio automático depois do aceite do usuário.</p>
 
         </article><article class="report-card" data-search-item data-status="done">
           <div class="chip-row"><span class="status-pill status-done">feito</span></div>
-          <h4>Formato de entrega validado no boundary</h4>
-          <p>`csv:process`, `csv:resume-execution` e `csv:save-output-file` rejeitam formatos fora de `csv` e `xlsx` antes de executar efeitos.</p>
+          <h4>Ratchet preservado</h4>
+          <p>A extração de sync do renderer e escrita de saída do IPC evitou aumentar a contagem de arquivos grandes.</p>
 
         </article></div></div>
   </section>
 <section class="report-section" id="plano" data-search-item data-status="partial">
     <header class="section-heading">
       <div>
-        <p class="eyebrow">Execucao</p>
-        <h2>Estado e proximo passo</h2>
+        <p class="eyebrow">Execução</p>
+        <h2>Estado e próximo passo</h2>
       </div>
       <span class="status-pill status-partial">parcial</span>
     </header>
     <div class="section-body"><div class="kanban"><section class="kanban-column" data-search-item>
-        <header><span>Agora</span><span>2</span></header>
+        <header><span>Feito localmente</span><span>2</span></header>
         <div class="kanban-cards"><article class="report-card" data-search-item data-status="done">
-                <h4>Entrega Excel implementada</h4>
-                <p>Planilha de Resultado `.xlsx` com abas operacionais e auto-save pelo app Electron.</p>
+                <h4>Base Pública Local operacional</h4>
+                <p>Provider local, status de preparo, Data da Base, índice e consentimento estão implementados.</p>
                 <div class="chip-row"><span class="chip">produto</span></div>
               </article><article class="report-card" data-search-item data-status="done">
                 <h4>Gates locais completos</h4>
                 <p>Lint, typecheck, testes, build, smokes reais, perf, audit, gitleaks e ratchet passaram localmente.</p>
-                <div class="chip-row"><span class="chip">evidencia</span></div>
+                <div class="chip-row"><span class="chip">evidência</span></div>
               </article></div>
       </section><section class="kanban-column" data-search-item>
         <header><span>Antes do merge</span><span>3</span></header>
-        <div class="kanban-cards"><article class="report-card" data-search-item data-status="done">
+        <div class="kanban-cards"><article class="report-card" data-search-item data-status="partial">
                 <h4>Review independente</h4>
-                <p>Reviewer independente confirmou que o finding de boundary foi resolvido e nao encontrou novos bloqueantes.</p>
+                <p>Reviewer independente fechou o finding funcional; follow-up pediu apenas alinhamento final do report.</p>
                 <div class="chip-row"><span class="chip">review</span></div>
-              </article><article class="report-card" data-search-item data-status="done">
-                <h4>PR e CI remoto</h4>
-                <p>PR #4 aberta; GitHub Actions quality-gate e GitGuardian passaram no head inicial.</p>
-                <div class="chip-row"><span class="chip">CI</span></div>
               </article><article class="report-card" data-search-item data-status="info">
-                <h4>Merge somente autorizado</h4>
-                <p>Nao fazer merge sem autorizacao explicita do usuario para esta PR.</p>
-                <div class="chip-row"><span class="chip">guardrail</span></div>
+                <h4>Abrir PR #5</h4>
+                <p>Depois do reviewer, abrir PR com evidência de gates e acompanhar checks remotos.</p>
+                <div class="chip-row"><span class="chip">PR</span></div>
+              </article><article class="report-card" data-search-item data-status="info">
+                <h4>Merge autorizado após gates</h4>
+                <p>Pela autorização operacional do usuário, merge pode seguir quando PR, review, checks e smoke estiverem verdes.</p>
+                <div class="chip-row"><span class="chip">merge</span></div>
               </article></div>
       </section><section class="kanban-column" data-search-item>
         <header><span>Depois</span><span>2</span></header>
         <div class="kanban-cards"><article class="report-card" data-search-item data-status="info">
-                <h4>Base publica local</h4>
-                <p>Proximo corte recomendado: contrato e fixture de Base Publica Local com consentimento e aviso de frescor.</p>
+                <h4>Preparo real da base</h4>
+                <p>Próximo corte natural: preparar armazenamento local real, progresso e retomada de preparo sem download oculto.</p>
                 <div class="chip-row"><span class="chip">volume</span></div>
               </article><article class="report-card" data-search-item data-status="info">
-                <h4>Customizacao de entrega</h4>
-                <p>Depois do XLSX base, evoluir presets de colunas/abas sem prometer entrada Excel ainda.</p>
-                <div class="chip-row"><span class="chip">entrega</span></div>
+                <h4>Catálogo de provedores</h4>
+                <p>Evoluir a tela para explicar custo, frescor e recomendação por provider.</p>
+                <div class="chip-row"><span class="chip">UX</span></div>
               </article></div>
       </section></div></div>
   </section>
@@ -1185,32 +1170,32 @@ details.report-card summary {
 
     </header>
     <div class="section-body"><figure class="diagram-frame" data-search-item>
-    <figcaption class="eyebrow">Fluxo de entrega</figcaption>
-    <svg class="native-flow" viewBox="0 0 930 210" role="img" aria-label="Fluxo de entrega">
+    <figcaption class="eyebrow">Fluxo Base Pública Local</figcaption>
+    <svg class="native-flow" viewBox="0 0 930 210" role="img" aria-label="Fluxo Base Pública Local">
     <defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#8a8173" /></marker></defs>
     <path d="M 180 106 L 220 106" stroke="#8a8173" stroke-width="1.5" fill="none" marker-end="url(#arrow)" />
-        <text x="200" y="96" text-anchor="middle" font-size="11" fill="#6f716a">entrada</text><path d="M 350 106 L 390 106" stroke="#8a8173" stroke-width="1.5" fill="none" marker-end="url(#arrow)" />
-        <text x="370" y="96" text-anchor="middle" font-size="11" fill="#6f716a">resultado simples</text><path d="M 520 106 L 560 106" stroke="#8a8173" stroke-width="1.5" fill="none" marker-end="url(#arrow)" />
-        <text x="540" y="96" text-anchor="middle" font-size="11" fill="#6f716a">compatibilidade</text><path d="M 520 106 L 730 106" stroke="#8a8173" stroke-width="1.5" fill="none" marker-end="url(#arrow)" />
-        <text x="625" y="96" text-anchor="middle" font-size="11" fill="#6f716a">planilha</text>
+        <text x="200" y="96" text-anchor="middle" font-size="11" fill="#6f716a">usuário escolhe provider</text><path d="M 350 106 L 390 106" stroke="#8a8173" stroke-width="1.5" fill="none" marker-end="url(#arrow)" />
+        <text x="370" y="96" text-anchor="middle" font-size="11" fill="#6f716a">sem rede por item</text><path d="M 520 106 L 560 106" stroke="#8a8173" stroke-width="1.5" fill="none" marker-end="url(#arrow)" />
+        <text x="540" y="96" text-anchor="middle" font-size="11" fill="#6f716a">consulta local</text><path d="M 690 106 L 730 106" stroke="#8a8173" stroke-width="1.5" fill="none" marker-end="url(#arrow)" />
+        <text x="710" y="96" text-anchor="middle" font-size="11" fill="#6f716a">entrega</text>
     <g>
         <rect x="50" y="78" width="130" height="56" rx="8" class="tone-blue" stroke="#ded8cc" />
-        <text x="115" y="110" text-anchor="middle" font-size="13" font-family="ui-monospace, monospace" fill="currentColor">CSV local</text>
+        <text x="115" y="110" text-anchor="middle" font-size="13" font-family="ui-monospace, monospace" fill="currentColor">Entrada CSV</text>
       </g><g>
-        <rect x="220" y="78" width="130" height="56" rx="8" class="tone-blue" stroke="#ded8cc" />
-        <text x="285" y="110" text-anchor="middle" font-size="13" font-family="ui-monospace, monospace" fill="currentColor">Consulta</text>
+        <rect x="220" y="78" width="130" height="56" rx="8" class="tone-amber" stroke="#ded8cc" />
+        <text x="285" y="110" text-anchor="middle" font-size="13" font-family="ui-monospace, monospace" fill="currentColor">Aceite Data da Base</text>
       </g><g>
-        <rect x="390" y="78" width="130" height="56" rx="8" class="tone-amber" stroke="#ded8cc" />
-        <text x="455" y="110" text-anchor="middle" font-size="13" font-family="ui-monospace, monospace" fill="currentColor">Linhas enriquecidas</text>
+        <rect x="390" y="78" width="130" height="56" rx="8" class="tone-blue" stroke="#ded8cc" />
+        <text x="455" y="110" text-anchor="middle" font-size="13" font-family="ui-monospace, monospace" fill="currentColor">Índice local</text>
       </g><g>
         <rect x="560" y="78" width="130" height="56" rx="8" class="tone-green" stroke="#ded8cc" />
-        <text x="625" y="110" text-anchor="middle" font-size="13" font-family="ui-monospace, monospace" fill="currentColor">CSV</text>
+        <text x="625" y="110" text-anchor="middle" font-size="13" font-family="ui-monospace, monospace" fill="currentColor">Resultado Simples</text>
       </g><g>
         <rect x="730" y="78" width="130" height="56" rx="8" class="tone-green" stroke="#ded8cc" />
-        <text x="795" y="110" text-anchor="middle" font-size="13" font-family="ui-monospace, monospace" fill="currentColor">Excel com abas</text>
+        <text x="795" y="110" text-anchor="middle" font-size="13" font-family="ui-monospace, monospace" fill="currentColor">XLSX/CSV</text>
       </g>
   </svg>
-    <p class="card-meta">A consulta permanece unica; a entrega escolhe CSV ou Excel no fim do processamento.</p>
+    <p class="card-meta">A execução continua usando a porta de consulta; a base local entra como provider explícito com aceite de Data da Base.</p>
   </figure></div>
   </section>
 <section class="report-section" id="risks" data-search-item data-status="info">
@@ -1223,18 +1208,18 @@ details.report-card summary {
     </header>
     <div class="section-body"><div class="risk-grid"><article class="report-card" data-search-item data-status="partial">
           <div class="chip-row"><span class="status-pill status-partial">parcial</span></div>
-          <h4>Coverage formal warning-only</h4>
-          <p>O repo ainda nao gera `coverage/lcov.info`; ratchet segue sem cobertura real por linha alterada.</p>
+          <h4>Fixture pequena, não base pública completa</h4>
+          <p>O corte valida contrato e UX sem baixar base real. Volume público real ainda depende de preparo e armazenamento futuros.</p>
 
         </article><article class="report-card" data-search-item data-status="partial">
           <div class="chip-row"><span class="status-pill status-partial">parcial</span></div>
-          <h4>Dependencia nova aumenta superficie</h4>
-          <p>`exceljs` trouxe dependencias transitivas e subdependencias depreciadas; `pnpm audit --prod` esta verde com overrides, mas o peso deve ser observado nos builds de distribuicao.</p>
+          <h4>Coverage formal warning-only</h4>
+          <p>O repo ainda não gera `coverage/lcov.info`; ratchet segue sem cobertura real por linha alterada.</p>
 
-        </article><article class="report-card" data-search-item data-status="info">
-          <div class="chip-row"><span class="status-pill status-info">info</span></div>
-          <h4>Entrada Excel ainda nao implementada</h4>
-          <p>O corte entrega saida Excel. Entrada `.xlsx` continua fora do escopo e a UI permanece clara sobre CSV como entrada.</p>
+        </article><article class="report-card" data-search-item data-status="partial">
+          <div class="chip-row"><span class="status-pill status-partial">parcial</span></div>
+          <h4>Review remoto pendente</h4>
+          <p>Review independente local fechou o finding funcional e apontou somente alinhamento documental final; PR remoto/checks ainda serão abertos e acompanhados.</p>
 
         </article></div></div>
   </section></div>

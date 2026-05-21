@@ -56,6 +56,17 @@ describe("loadProviderConfig", () => {
     expect(result).toBe("mock");
   });
 
+  it("returns base-publica-local from config file when valid", () => {
+    mockFs.existsSync.mockReturnValue(true);
+    mockFs.readFileSync.mockReturnValue(
+      JSON.stringify({ provider: "base-publica-local" }),
+    );
+
+    const result = loadProviderConfig();
+
+    expect(result).toBe("base-publica-local");
+  });
+
   it("falls back to env var when config file does not exist", () => {
     mockFs.existsSync.mockReturnValue(false);
     process.env.SIMPLES_PROVIDER = "cnpja-open";

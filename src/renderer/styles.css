@@ -456,6 +456,38 @@ button {
   cursor: help;
 }
 
+.field__note {
+  color: var(--semantic-muted);
+  font-size: var(--font-size-xs);
+  line-height: 1.45;
+}
+
+.notice-check {
+  display: flex;
+  gap: var(--spacing-3);
+  padding: var(--spacing-4);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  background: var(--bg-elevated);
+  color: var(--semantic-text);
+  font-size: var(--font-size-sm);
+  line-height: 1.45;
+}
+
+.notice-check input {
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+}
+
+.notice-check small {
+  display: block;
+  margin-top: var(--spacing-1);
+  color: var(--semantic-muted);
+  font-size: var(--font-size-xs);
+}
+
 .field--inline .field__label {
   min-width: 120px;
 }

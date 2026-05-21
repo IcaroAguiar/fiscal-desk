@@ -1,7 +1,8 @@
 import { contextBridge, ipcRenderer } from "electron";
 
-import type { SimplesProviderName } from "../core/simples/simples-provider.factory";
+import type { SimplesProviderName } from "../core/simples/simples-provider.names";
 import type {
+  LocalPublicBaseStatus,
   LookupProgress,
   ProcessCsvDeliveryFormat,
   ProcessCsvExecution,
@@ -18,6 +19,7 @@ type PickCsvResult = {
 };
 
 type ProcessCsvInput = {
+  acceptedLocalPublicBaseNotice?: boolean;
   content: string;
   deliveryFormat?: ProcessCsvDeliveryFormat;
   provider: SimplesProviderName;
@@ -37,6 +39,7 @@ type ProcessCsvResult = {
 };
 
 type AppDefaults = {
+  localPublicBaseStatus: LocalPublicBaseStatus;
   provider: SimplesProviderName;
   receitaWebAvailable: boolean;
 };
@@ -103,8 +106,12 @@ contextBridge.exposeInMainWorld("appBridge", {
   resumeExecution: (
     ledgerKey: string,
     deliveryFormat?: ProcessCsvDeliveryFormat,
+    acceptedLocalPublicBaseNotice?: boolean,
   ): Promise<ProcessCsvResult> => {
     return ipcRenderer.invoke("csv:resume-execution", {
+      ...(acceptedLocalPublicBaseNotice
+        ? { acceptedLocalPublicBaseNotice }
+        : {}),
       ...(deliveryFormat ? { deliveryFormat } : {}),
       ledgerKey,
     });

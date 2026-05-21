@@ -19,6 +19,7 @@ describe("renderer operational copy", () => {
 
   it("formats the provider mode label", () => {
     expect(formatProviderMode("mock")).toBe("Simulação local");
+    expect(formatProviderMode("base-publica-local")).toBe("Base Pública Local");
     expect(formatProviderMode("cnpja-open")).toBe("CNPJá Open");
     expect(formatProviderMode("receita-web")).toBe("Receita Web assistida");
   });
@@ -41,6 +42,9 @@ describe("renderer operational copy", () => {
     );
     expect(formatProviderHint("clientes.csv", "mock")).toBe(
       "Provedor selecionado: Simulação local",
+    );
+    expect(formatProviderHint("clientes.csv", "base-publica-local")).toBe(
+      "Base Pública Local usa Data da Base e não consulta online por item",
     );
     expect(formatProviderHint("clientes.csv", "receita-web")).toBe(
       "Receita Web exige navegador visível e supervisão humana",

@@ -14,10 +14,15 @@ import {
   FISCAL_DESK_USER_DATA_DIR_ENV,
 } from "../src/main/runtime-env";
 import type { ProcessExecutionHistoryItem } from "../src/main/types";
+import {
+  SIMPLES_PROVIDER,
+  type SimplesProviderName,
+} from "../src/core/simples/simples-provider.names";
 
 const fixturePath = fileURLToPath(
   new URL("../test/fixtures/smoke/cnpjs-publicos-reais.csv", import.meta.url),
 );
+const smokeProvider = resolveSmokeProvider(process.env.FISCAL_DESK_SMOKE_PROVIDER);
 const tempDir = await mkdtemp(join(tmpdir(), "fiscal-desk-electron-smoke-"));
 const userDataDir = join(tempDir, "user-data");
 const sourceFilePath = join(tempDir, "entrada.csv");
@@ -53,12 +58,31 @@ try {
 
   const page = await electronApp.firstWindow();
   await page.waitForSelector("text=Fiscal Desk", { timeout: 20_000 });
-  await page.selectOption('[data-field="provider"]', "mock");
+  if (smokeProvider !== SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL) {
+    await page.selectOption('[data-field="provider"]', smokeProvider);
+  }
   await page.selectOption('[data-field="delivery-format"]', "xlsx");
   await page.waitForSelector('[data-action="resume-execution"]', {
     timeout: 20_000,
   });
   await page.click('[data-action="resume-execution"]');
+  if (smokeProvider === SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL) {
+    await page.waitForFunction(() => {
+      const provider = document.querySelector<HTMLSelectElement>(
+        '[data-field="provider"]',
+      );
+      const notice = document.querySelector<HTMLElement>(
+        '[data-slot="local-public-base-notice-panel"]',
+      );
+      return (
+        provider?.value === "base-publica-local" &&
+        notice !== null &&
+        notice.style.display !== "none"
+      );
+    });
+    await page.check('[data-field="local-public-base-notice"]');
+    await page.click('[data-action="resume-execution"]');
+  }
   await page.waitForFunction(() =>
     document
       .querySelector('[data-slot="execution-resume"]')
@@ -81,7 +105,7 @@ try {
       {
         status: "pass",
         app: "electron",
-        provider: "mock",
+        provider: smokeProvider,
         deliveryFormat: "xlsx",
         sourceFilePath,
         savedPath: latestHistory.outputPath,
@@ -160,7 +184,7 @@ async function seedInterruptedExecution(): Promise<void> {
   const run = await ledger.startRun({
     cnpjColumn: "cnpj",
     inputCsv: fixtureCsv,
-    providerName: "mock",
+    providerName: smokeProvider,
     sourceFilePath,
   });
 
@@ -169,7 +193,7 @@ async function seedInterruptedExecution(): Promise<void> {
     cnpj: "00000000000191",
     simplesNacional: true,
     simei: false,
-    source: "mock",
+    source: smokeProvider,
     status: "SUCCESS",
   });
   await run.finish({
@@ -177,4 +201,12 @@ async function seedInterruptedExecution(): Promise<void> {
     outputPath: null,
     summary: null,
   });
+}
+
+function resolveSmokeProvider(value: string | undefined): SimplesProviderName {
+  if (value === SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL) {
+    return SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL;
+  }
+
+  return SIMPLES_PROVIDER.MOCK;
 }

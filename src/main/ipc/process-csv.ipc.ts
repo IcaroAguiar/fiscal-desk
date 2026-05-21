@@ -1,4 +1,4 @@
-import { readFile, writeFile } from "node:fs/promises";
+import { readFile } from "node:fs/promises";
 import path from "node:path";
 import {
   app,
@@ -8,24 +8,30 @@ import {
   ipcMain,
   powerSaveBlocker,
 } from "electron";
-import type {
-  ProcessCsvDeliveryFormat,
-  ProcessCsvOutputDelivery,
-} from "../../core/app/process-csv.types";
 import { processCsv } from "../../core/app/process-csv.use-case";
 import { parseProcessCsvDeliveryFormat } from "../../core/app/process-csv-delivery";
+import { getLocalPublicBaseStatus } from "../../core/public-base/local-public-base.index";
 import { resolvePackagedWindowsBrowserPath } from "../../core/simples/adapters/receita-web/receita-browser-path";
 import { loadProviderConfig } from "../../core/simples/simples-provider.config";
-import type { SimplesProviderName } from "../../core/simples/simples-provider.factory";
-import { createSimplesLookupProvider } from "../../core/simples/simples-provider.factory";
+import {
+  createSimplesLookupProvider,
+  type SimplesProviderName,
+} from "../../core/simples/simples-provider.factory";
+import { SIMPLES_PROVIDER } from "../../core/simples/simples-provider.names";
 import {
   createInputFingerprint,
   FileProcessExecutionLedger,
   type FileProcessExecutionSession,
 } from "../execution/file-process-execution-ledger";
 import { FISCAL_DESK_DISABLE_COMPLETION_DIALOG_ENV } from "../runtime-env";
+import {
+  attemptAutoSave,
+  getAutoSaveOutputPath,
+  writeOutputFile,
+} from "./process-csv-output-files";
 
 type ProcessCsvInput = {
+  acceptedLocalPublicBaseNotice?: boolean;
   content: string;
   deliveryFormat?: unknown;
   provider: SimplesProviderName;
@@ -35,14 +41,9 @@ type ProcessCsvInput = {
 };
 
 type ResumeProcessExecutionInput = {
+  acceptedLocalPublicBaseNotice?: boolean;
   deliveryFormat?: unknown;
   ledgerKey: string;
-};
-
-type ProcessCsvOutput = {
-  delivery: ProcessCsvOutputDelivery;
-  outputCsv: string;
-  outputXlsx: Uint8Array | null;
 };
 
 type SaveOutputInput = {
@@ -72,6 +73,7 @@ export function registerCsvIpc(): void {
     const provider = resolveDefaultProvider();
 
     return {
+      localPublicBaseStatus: getLocalPublicBaseStatus(),
       provider,
       receitaWebAvailable: isReceitaWebAvailable(),
     };
@@ -128,6 +130,15 @@ export function registerCsvIpc(): void {
         );
       }
 
+      if (
+        execution.providerName === SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL &&
+        input.acceptedLocalPublicBaseNotice !== true
+      ) {
+        throw new Error(
+          "Confirme o aviso de Data da Base antes de retomar com a Base Pública Local.",
+        );
+      }
+
       if (!execution.sourceFilePath) {
         throw new Error(
           "Esta execução não registra o caminho do CSV original. Selecione o arquivo novamente para reexecutar.",
@@ -154,6 +165,12 @@ export function registerCsvIpc(): void {
 
       return processCsvWithLedger(event, {
         content,
+        ...(input.acceptedLocalPublicBaseNotice !== undefined
+          ? {
+              acceptedLocalPublicBaseNotice:
+                input.acceptedLocalPublicBaseNotice,
+            }
+          : {}),
         deliveryFormat,
         provider: execution.providerName,
         ...(execution.cnpjColumn ? { cnpjColumn: execution.cnpjColumn } : {}),
@@ -212,7 +229,7 @@ export function registerCsvIpc(): void {
     ): Promise<string> => {
       const outputPath = getAutoSaveOutputPath(input.sourceFilePath, "csv");
 
-      await writeFile(outputPath, input.content, "utf8");
+      await writeOutputFile(outputPath, "csv", input.content);
 
       return outputPath;
     },
@@ -256,7 +273,19 @@ async function processCsvWithLedger(
     throw new Error("Ja existe um processamento em andamento.");
   }
 
-  if (input.provider === "receita-web" && !isReceitaWebAvailable()) {
+  if (
+    input.provider === SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL &&
+    input.acceptedLocalPublicBaseNotice !== true
+  ) {
+    throw new Error(
+      "Confirme o aviso de Data da Base antes de usar a Base Pública Local.",
+    );
+  }
+
+  if (
+    input.provider === SIMPLES_PROVIDER.RECEITA_WEB &&
+    !isReceitaWebAvailable()
+  ) {
     throw new Error(
       "O provider assistido da Receita nesta release está disponível apenas no Windows. " +
         "Use 'mock' para testes locais ou 'cnpja-open' para o fluxo principal.",
@@ -395,15 +424,21 @@ function createExecutionLedger(): FileProcessExecutionLedger {
 }
 
 function normalizeProvider(value: string | undefined): SimplesProviderName {
-  if (value === "cnpja-open") {
-    return "cnpja-open";
+  if (value === SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL) {
+    return SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL;
   }
 
-  if (value === "receita-web") {
-    return isReceitaWebAvailable() ? "receita-web" : "mock";
+  if (value === SIMPLES_PROVIDER.CNPJA_OPEN) {
+    return SIMPLES_PROVIDER.CNPJA_OPEN;
   }
 
-  return "mock";
+  if (value === SIMPLES_PROVIDER.RECEITA_WEB) {
+    return isReceitaWebAvailable()
+      ? SIMPLES_PROVIDER.RECEITA_WEB
+      : SIMPLES_PROVIDER.MOCK;
+  }
+
+  return SIMPLES_PROVIDER.MOCK;
 }
 
 function isReceitaWebAvailable(): boolean {
@@ -422,77 +457,4 @@ function notifyProcessingCompleted(): void {
   for (const listener of completionListeners) {
     listener();
   }
-}
-
-async function attemptAutoSave(
-  sourceFilePath: string | null,
-  output: ProcessCsvOutput,
-): Promise<{ savedPath: string | null; warningMessage: string | null }> {
-  if (!sourceFilePath) {
-    return {
-      savedPath: null,
-      warningMessage: null,
-    };
-  }
-
-  try {
-    const content =
-      output.delivery.format === "xlsx" ? output.outputXlsx : output.outputCsv;
-
-    if (!content) {
-      throw new Error("Entrega XLSX não foi gerada.");
-    }
-
-    const savedPath = await autoSaveOutputFile(
-      sourceFilePath,
-      output.delivery.format,
-      content,
-    );
-
-    return {
-      savedPath,
-      warningMessage: null,
-    };
-  } catch (error) {
-    return {
-      savedPath: null,
-      warningMessage:
-        error instanceof Error && error.message.trim()
-          ? `Processamento concluído, mas o auto-save falhou: ${error.message}`
-          : "Processamento concluído, mas o auto-save falhou.",
-    };
-  }
-}
-
-async function autoSaveOutputFile(
-  sourceFilePath: string,
-  format: ProcessCsvDeliveryFormat,
-  content: string | Uint8Array,
-): Promise<string> {
-  const outputPath = getAutoSaveOutputPath(sourceFilePath, format);
-
-  await writeOutputFile(outputPath, format, content);
-
-  return outputPath;
-}
-
-function getAutoSaveOutputPath(
-  sourceFilePath: string,
-  format: ProcessCsvDeliveryFormat,
-): string {
-  const parsedPath = path.parse(sourceFilePath);
-  return path.join(parsedPath.dir, `${parsedPath.name}-processado.${format}`);
-}
-
-async function writeOutputFile(
-  filePath: string,
-  format: ProcessCsvDeliveryFormat,
-  content: string | number[] | Uint8Array,
-): Promise<void> {
-  if (format === "xlsx") {
-    await writeFile(filePath, Buffer.from(content as number[] | Uint8Array));
-    return;
-  }
-
-  await writeFile(filePath, String(content), "utf8");
 }

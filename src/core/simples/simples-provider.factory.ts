@@ -1,18 +1,27 @@
 import { CnpjaOpenSimplesLookupAdapter } from "./adapters/cnpja-open-simples-lookup.adapter";
+import { LocalPublicBaseSimplesLookupAdapter } from "./adapters/local-public-base-simples-lookup.adapter";
 import { MockSimplesLookupAdapter } from "./adapters/mock-simples-lookup.adapter";
 import { ReceitaConsultaOptantesAdapter } from "./adapters/receita-web/receita-consulta-optantes.adapter";
 import type { SimplesLookupPort } from "./simples-lookup.port";
+import {
+  SIMPLES_PROVIDER,
+  type SimplesProviderName,
+} from "./simples-provider.names";
 
-export type SimplesProviderName = "mock" | "cnpja-open" | "receita-web";
+export { SIMPLES_PROVIDER, type SimplesProviderName };
 
 export function createSimplesLookupProvider(
   providerName: SimplesProviderName,
 ): SimplesLookupPort {
-  if (providerName === "cnpja-open") {
+  if (providerName === SIMPLES_PROVIDER.CNPJA_OPEN) {
     return new CnpjaOpenSimplesLookupAdapter();
   }
 
-  if (providerName === "receita-web") {
+  if (providerName === SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL) {
+    return new LocalPublicBaseSimplesLookupAdapter();
+  }
+
+  if (providerName === SIMPLES_PROVIDER.RECEITA_WEB) {
     return new ReceitaConsultaOptantesAdapter();
   }
 

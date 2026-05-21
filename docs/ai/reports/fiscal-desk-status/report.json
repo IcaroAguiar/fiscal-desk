@@ -1,37 +1,37 @@
 {
   "kitVersion": "0.1.0",
   "preset": "implementation",
-  "title": "Fiscal Desk: entrega Excel operacional",
-  "subtitle": "Corte vertical na branch feat/fiscal-desk-xlsx-delivery: Planilha de Resultado .xlsx com abas, seleção de entrega na UI, auto-save Electron real, regressão CSV, audit de dependência e perf proporcional.",
+  "title": "Fiscal Desk: Base Pública Local",
+  "subtitle": "Corte vertical em feat/fiscal-desk-local-public-base: provider local com Data da Base, consentimento explícito, status de preparo, smoke Electron real, perf XLSX e ratchet preservado.",
   "language": "pt-BR",
-  "updatedAt": "2026-05-20T23:09:07-03:00",
+  "updatedAt": "2026-05-21T01:41:29-03:00",
   "status": "partial",
   "source": "consulta-simples-csv / Fiscal Desk",
   "eyebrow": "Fiscal Desk",
   "metrics": [
     {
-      "value": "PR #4",
-      "label": "aberta com checks verdes",
-      "status": "done"
+      "value": "PR #5",
+      "label": "em preparação",
+      "status": "partial"
     },
     {
-      "value": "171",
+      "value": "182",
       "label": "testes automatizados passando",
       "status": "done"
     },
     {
-      "value": "XLSX",
-      "label": "entrega Excel real",
+      "value": "Local",
+      "label": "consulta sem rede por item",
       "status": "done"
     },
     {
-      "value": "13k/s",
-      "label": "linhas por segundo no perf XLSX",
+      "value": "22.8k/s",
+      "label": "linhas por segundo no perf XLSX local",
       "status": "done"
     },
     {
-      "value": "0",
-      "label": "vulnerabilidades conhecidas no audit prod",
+      "value": "2",
+      "label": "arquivos grandes preservados no ratchet",
       "status": "done"
     }
   ],
@@ -39,13 +39,13 @@
     {
       "id": "mudancas",
       "title": "O que o corte entrega",
-      "kicker": "Implementacao",
+      "kicker": "Implementação",
       "status": "done",
-      "body": "Este corte transforma a entrega Excel em funcionalidade real sem remover o CSV compatível.\n\n- `exceljs` gera `.xlsx` nativo com abas Resumo, Resultados, Falhas, Divergencias e Auditoria.\n- `processCsv` mantém `outputCsv` por compatibilidade e adiciona `outputXlsx` quando `deliveryFormat` é `xlsx`.\n- IPC/preload salvam CSV ou XLSX usando o formato escolhido, com auto-save ao lado do arquivo original.\n- UI ganhou seletor de Entrega com opção `CSV compatível` ou `Excel com abas`.\n- Smoke Electron real seleciona Excel, retoma execução pelo histórico e valida assinatura XLSX do arquivo salvo.\n- Overrides do pnpm corrigem `brace-expansion` transitivo trazido pelo `exceljs`."
+      "body": "Este corte torna a Base Pública Local uma opção operacional real sem baixar base externa nesta etapa.\n\n- Novo módulo `src/core/public-base` com fixture pequena, status de preparo, Data da Base e índice por CNPJ.\n- Novo provider `base-publica-local` implementa `SimplesLookupPort`, sem acoplar Receita Web nem depender de consulta online por item.\n- `app:get-defaults` expõe status da base local para o renderer.\n- `csv:process` e `csv:resume-execution` exigem consentimento explícito de Data da Base antes de efeitos de processamento.\n- UI mostra provider, aviso de defasagem e checkbox de aceite; iniciar fica bloqueado enquanto o aviso não for aceito.\n- Scripts de smoke/perf aceitam `base-publica-local` para validar CLI, Electron real e carga local."
     },
     {
       "id": "evidencias",
-      "title": "Evidencias de validacao",
+      "title": "Evidências de validação",
       "kicker": "Checks locais",
       "component": "evidence-table",
       "status": "done",
@@ -53,7 +53,7 @@
         {
           "title": "Lint",
           "source": "pnpm lint",
-          "result": "Biome sem erros em 77 arquivos",
+          "result": "Biome sem erros em 86 arquivos",
           "status": "pass"
         },
         {
@@ -65,62 +65,43 @@
         {
           "title": "Suite automatizada",
           "source": "pnpm test",
-          "result": "27 arquivos / 171 testes passando, incluindo writer XLSX, use-case, IPC, UI e rejeicao de formato invalido no boundary",
+          "result": "29 arquivos / 182 testes passando, incluindo índice local, adapter, config, IPC, UI, retomada com aceite e use-case",
           "status": "pass"
         },
         {
           "title": "Build",
           "source": "pnpm build",
-          "result": "Renderer e main Electron gerados com sucesso",
+          "result": "Renderer e main Electron gerados; boundary corrigido para o renderer não importar adapters Node",
           "status": "pass"
         },
         {
-          "title": "Smoke CSV real",
-          "source": "pnpm smoke:real-csv",
-          "result": "Compatibilidade CSV preservada com fixture publica e provider mock",
+          "title": "Smoke CLI Base Pública Local",
+          "source": "SMOKE_PROVIDER=base-publica-local pnpm smoke:real-csv",
+          "result": "Fixture pública pequena, provider local, 5 linhas, 3 CNPJs únicos, 1 erro esperado por linha inválida",
           "status": "pass"
         },
         {
           "title": "Smoke Electron real",
-          "source": "pnpm smoke:electron-ui",
-          "result": "App Electron abriu, selecionou Excel, retomou checkpoint e salvou `entrada-processado.xlsx` com assinatura ZIP/XLSX valida",
+          "source": "FISCAL_DESK_SMOKE_PROVIDER=base-publica-local pnpm smoke:electron-ui",
+          "result": "App Electron real selecionou Base Pública Local, marcou consentimento, retomou checkpoint e salvou XLSX",
           "status": "pass"
         },
         {
           "title": "Smoke visual",
           "source": "pnpm smoke:visual",
-          "result": "Desktop 1440x1000 e mobile 390x900 sem overflow nem botoes cortados",
+          "result": "Desktop 1440x1000 e mobile 390x900 sem overflow nem botões cortados",
           "status": "pass"
         },
         {
-          "title": "Perf CSV",
-          "source": "pnpm perf:local-csv",
-          "result": "5.000 linhas: 38 ms, 131.113 linhas/s",
-          "status": "pass"
-        },
-        {
-          "title": "Perf XLSX",
-          "source": "FISCAL_DESK_PERF_DELIVERY_FORMAT=xlsx pnpm perf:local-csv",
-          "result": "5.000 linhas: 514 ms, 9.724 linhas/s, 334.156 bytes",
-          "status": "pass"
-        },
-        {
-          "title": "Checks remotos da PR #4",
-          "source": "GitHub Actions / GitGuardian",
-          "href": "https://github.com/IcaroAguiar/consulta-simples-csv/pull/4",
-          "result": "quality-gate e GitGuardian passaram no head atual da PR #4",
-          "status": "pass"
-        },
-        {
-          "title": "Review independente",
-          "source": "agentic-code-review",
-          "result": "Finding medio de validacao runtime de `deliveryFormat` corrigido; follow-up independente sem novos bloqueantes",
+          "title": "Perf local XLSX",
+          "source": "FISCAL_DESK_PERF_PROVIDER=base-publica-local FISCAL_DESK_PERF_DELIVERY_FORMAT=xlsx pnpm perf:local-csv",
+          "result": "5.000 linhas: 219 ms, 22.846 linhas/s, 235.671 bytes",
           "status": "pass"
         },
         {
           "title": "Dependency audit",
           "source": "pnpm audit --prod",
-          "result": "Sem vulnerabilidades conhecidas depois dos overrides de `brace-expansion`",
+          "result": "Sem vulnerabilidades conhecidas",
           "status": "pass"
         },
         {
@@ -132,59 +113,59 @@
         {
           "title": "Quality ratchet",
           "source": "node docs/ai/quality-gate/check-ratchet.mjs",
-          "result": "PASS; large files permanecem em 2, com warnings esperados de coverage e review nao enforceado em CI",
+          "result": "PASS; large files preservados em 2, com warnings esperados de coverage e review não enforceado em CI",
           "status": "pass"
         }
       ]
     },
     {
       "id": "decisoes",
-      "title": "Decisoes do corte",
+      "title": "Decisões do corte",
       "kicker": "Racional",
       "component": "decision-log",
       "status": "done",
       "items": [
         {
-          "title": "ExcelJS como dependencia",
-          "description": "`exceljs` foi escolhido por gerar workbook nativo com multiplas abas e estilos simples, evitando ZIP/XML manual no app Electron.",
+          "title": "Sem download real neste corte",
+          "description": "O packet proíbe baixar base real sem decisão explícita; a entrega usa fixture local pequena e contrato preparado.",
           "status": "done"
         },
         {
-          "title": "CSV continua contrato base",
-          "description": "`outputCsv` continua sempre disponivel; XLSX e gerado apenas quando a entrega escolhida e `xlsx`.",
+          "title": "Provider local por porta existente",
+          "description": "`base-publica-local` implementa `SimplesLookupPort`; regras de base ficam em `src/core/public-base` e não vazam para adapters existentes.",
           "status": "done"
         },
         {
-          "title": "Planilha nao muda provider",
-          "description": "A escolha de entrega fica no use-case/IPC/UI e nao altera adapters nem regras especificas de provider.",
+          "title": "Consentimento antes de efeitos",
+          "description": "IPC rejeita processar ou retomar com Base Pública Local sem aceite de Data da Base antes de ledger, leitura do CSV ou provider.",
           "status": "done"
         },
         {
-          "title": "Audit transitive corrigido",
-          "description": "O `pnpm audit --prod` inicialmente apontou `brace-expansion`; overrides travam as versoes corrigidas no lockfile.",
+          "title": "Base desatualizada não bloqueia",
+          "description": "A UI trata defasagem como aviso explícito, não como bloqueio automático depois do aceite do usuário.",
           "status": "done"
         },
         {
-          "title": "Formato de entrega validado no boundary",
-          "description": "`csv:process`, `csv:resume-execution` e `csv:save-output-file` rejeitam formatos fora de `csv` e `xlsx` antes de executar efeitos.",
+          "title": "Ratchet preservado",
+          "description": "A extração de sync do renderer e escrita de saída do IPC evitou aumentar a contagem de arquivos grandes.",
           "status": "done"
         }
       ]
     },
     {
       "id": "plano",
-      "title": "Estado e proximo passo",
-      "kicker": "Execucao",
+      "title": "Estado e próximo passo",
+      "kicker": "Execução",
       "component": "kanban",
       "status": "partial",
       "items": [
         {
-          "title": "Agora",
+          "title": "Feito localmente",
           "status": "done",
           "cards": [
             {
-              "title": "Entrega Excel implementada",
-              "body": "Planilha de Resultado `.xlsx` com abas operacionais e auto-save pelo app Electron.",
+              "title": "Base Pública Local operacional",
+              "body": "Provider local, status de preparo, Data da Base, índice e consentimento estão implementados.",
               "status": "done",
               "tag": "produto"
             },
@@ -192,7 +173,7 @@
               "title": "Gates locais completos",
               "body": "Lint, typecheck, testes, build, smokes reais, perf, audit, gitleaks e ratchet passaram localmente.",
               "status": "done",
-              "tag": "evidencia"
+              "tag": "evidência"
             }
           ]
         },
@@ -202,21 +183,21 @@
           "cards": [
             {
               "title": "Review independente",
-              "body": "Reviewer independente confirmou que o finding de boundary foi resolvido e nao encontrou novos bloqueantes.",
-              "status": "done",
+              "body": "Reviewer independente fechou o finding funcional; follow-up pediu apenas alinhamento final do report.",
+              "status": "partial",
               "tag": "review"
             },
             {
-              "title": "PR e CI remoto",
-              "body": "PR #4 aberta; GitHub Actions quality-gate e GitGuardian passaram no head inicial.",
-              "status": "done",
-              "tag": "CI"
+              "title": "Abrir PR #5",
+              "body": "Depois do reviewer, abrir PR com evidência de gates e acompanhar checks remotos.",
+              "status": "info",
+              "tag": "PR"
             },
             {
-              "title": "Merge somente autorizado",
-              "body": "Nao fazer merge sem autorizacao explicita do usuario para esta PR.",
+              "title": "Merge autorizado após gates",
+              "body": "Pela autorização operacional do usuário, merge pode seguir quando PR, review, checks e smoke estiverem verdes.",
               "status": "info",
-              "tag": "guardrail"
+              "tag": "merge"
             }
           ]
         },
@@ -225,16 +206,16 @@
           "status": "info",
           "cards": [
             {
-              "title": "Base publica local",
-              "body": "Proximo corte recomendado: contrato e fixture de Base Publica Local com consentimento e aviso de frescor.",
+              "title": "Preparo real da base",
+              "body": "Próximo corte natural: preparar armazenamento local real, progresso e retomada de preparo sem download oculto.",
               "status": "info",
               "tag": "volume"
             },
             {
-              "title": "Customizacao de entrega",
-              "body": "Depois do XLSX base, evoluir presets de colunas/abas sem prometer entrada Excel ainda.",
+              "title": "Catálogo de provedores",
+              "body": "Evoluir a tela para explicar custo, frescor e recomendação por provider.",
               "status": "info",
-              "tag": "entrega"
+              "tag": "UX"
             }
           ]
         }
@@ -244,74 +225,74 @@
   "diagrams": [
     {
       "type": "native-flow",
-      "title": "Fluxo de entrega",
-      "caption": "A consulta permanece unica; a entrega escolhe CSV ou Excel no fim do processamento.",
+      "title": "Fluxo Base Pública Local",
+      "caption": "A execução continua usando a porta de consulta; a base local entra como provider explícito com aceite de Data da Base.",
       "nodes": [
         {
           "id": "csv",
-          "label": "CSV local",
+          "label": "Entrada CSV",
           "tone": "blue"
         },
         {
-          "id": "lookup",
-          "label": "Consulta",
-          "tone": "blue"
-        },
-        {
-          "id": "rows",
-          "label": "Linhas enriquecidas",
+          "id": "consent",
+          "label": "Aceite Data da Base",
           "tone": "amber"
         },
         {
-          "id": "csvout",
-          "label": "CSV",
+          "id": "index",
+          "label": "Índice local",
+          "tone": "blue"
+        },
+        {
+          "id": "result",
+          "label": "Resultado Simples",
           "tone": "green"
         },
         {
           "id": "xlsx",
-          "label": "Excel com abas",
+          "label": "XLSX/CSV",
           "tone": "green"
         }
       ],
       "edges": [
         {
           "from": "csv",
-          "to": "lookup",
-          "label": "entrada"
+          "to": "consent",
+          "label": "usuário escolhe provider"
         },
         {
-          "from": "lookup",
-          "to": "rows",
-          "label": "resultado simples"
+          "from": "consent",
+          "to": "index",
+          "label": "sem rede por item"
         },
         {
-          "from": "rows",
-          "to": "csvout",
-          "label": "compatibilidade"
+          "from": "index",
+          "to": "result",
+          "label": "consulta local"
         },
         {
-          "from": "rows",
+          "from": "result",
           "to": "xlsx",
-          "label": "planilha"
+          "label": "entrega"
         }
       ]
     }
   ],
   "risks": [
     {
+      "title": "Fixture pequena, não base pública completa",
+      "description": "O corte valida contrato e UX sem baixar base real. Volume público real ainda depende de preparo e armazenamento futuros.",
+      "status": "partial"
+    },
+    {
       "title": "Coverage formal warning-only",
-      "description": "O repo ainda nao gera `coverage/lcov.info`; ratchet segue sem cobertura real por linha alterada.",
+      "description": "O repo ainda não gera `coverage/lcov.info`; ratchet segue sem cobertura real por linha alterada.",
       "status": "partial"
     },
     {
-      "title": "Dependencia nova aumenta superficie",
-      "description": "`exceljs` trouxe dependencias transitivas e subdependencias depreciadas; `pnpm audit --prod` esta verde com overrides, mas o peso deve ser observado nos builds de distribuicao.",
+      "title": "Review remoto pendente",
+      "description": "Review independente local fechou o finding funcional e apontou somente alinhamento documental final; PR remoto/checks ainda serão abertos e acompanhados.",
       "status": "partial"
-    },
-    {
-      "title": "Entrada Excel ainda nao implementada",
-      "description": "O corte entrega saida Excel. Entrada `.xlsx` continua fora do escopo e a UI permanece clara sobre CSV como entrada.",
-      "status": "info"
     }
   ]
 }
