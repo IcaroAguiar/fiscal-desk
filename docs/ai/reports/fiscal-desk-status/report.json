@@ -108,7 +108,7 @@
           "title": "Checks remotos da PR #4",
           "source": "GitHub Actions / GitGuardian",
           "href": "https://github.com/IcaroAguiar/consulta-simples-csv/pull/4",
-          "result": "quality-gate e GitGuardian passaram no head bba5088",
+          "result": "quality-gate e GitGuardian passaram no head atual da PR #4",
           "status": "pass"
         },
         {
