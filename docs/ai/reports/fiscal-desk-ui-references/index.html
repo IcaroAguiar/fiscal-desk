@@ -738,6 +738,59 @@
         gap: 16px;
       }
 
+      .variant-grid {
+        display: grid;
+        gap: 18px;
+      }
+
+      .variant-option {
+        display: grid;
+        grid-template-columns: 0.72fr 1.28fr;
+        gap: 18px;
+        padding: 18px;
+        border: 1px solid var(--line);
+        border-radius: 24px;
+        background: rgba(255, 253, 248, 0.78);
+      }
+
+      .variant-copy {
+        display: grid;
+        align-content: start;
+        gap: 12px;
+      }
+
+      .variant-copy h3 {
+        font-family: var(--serif);
+        font-size: 2rem;
+        line-height: 1;
+      }
+
+      .variant-copy p {
+        color: var(--muted);
+        line-height: 1.55;
+      }
+
+      .variant-shots {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 150px;
+        gap: 12px;
+        align-items: start;
+      }
+
+      .variant-shot {
+        overflow: hidden;
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        background: var(--surface);
+        box-shadow: 0 14px 40px rgba(38, 35, 31, 0.05);
+      }
+
+      .variant-shot img {
+        display: block;
+        width: 100%;
+        height: auto;
+      }
+
       .decision {
         padding: 22px;
         border: 1px solid var(--line);
@@ -767,6 +820,7 @@
         .premium-grid,
         .current-proof,
         .reference-card,
+        .variant-option,
         .compare-grid {
           grid-template-columns: 1fr;
         }
@@ -807,7 +861,8 @@
         .field-row,
         .side-context,
         .drop-area,
-        .open-upload {
+        .open-upload,
+        .variant-shots {
           grid-template-columns: 1fr;
         }
 
@@ -846,19 +901,20 @@
           <a href="#baseline">Tela atual</a>
           <a href="#conservadora">Versão conservadora</a>
           <a href="#premium">Versão premium avançada</a>
+          <a href="#variantes">Novas variações</a>
           <a href="#decisao">Recomendação</a>
         </nav>
         <p class="nav-note">
-          Pacote gerado a partir do relatório LazyWeb + GPT Taste. Foco: menos caixas, mais fluxo assistido, menos linguagem técnica.
+          Pacote gerado a partir do relatório LazyWeb + GPT Taste. Foco: telas de app, menos caixas e linguagem mais curta.
         </p>
       </aside>
 
       <main class="main">
         <section class="hero">
           <p class="eyebrow">Direção visual</p>
-          <h1>De dashboard técnico para console fiscal assistido.</h1>
+          <h1>Escolha uma direção para a tela do app.</h1>
           <p class="lead">
-            As telas atuais já estão funcionais, mas ainda carregam aparência de template operacional. Estas referências mostram duas alternativas mais maduras: uma evolução conservadora e uma versão premium avançada para aprovação.
+            As telas atuais já estão funcionais, mas ainda carregam aparência de template operacional. Este pacote compara o estado atual com opções de interface mais maduras, sem linguagem de landing page.
           </p>
           <div class="pill-row">
             <span class="pill">Sem cards sob cards</span>
@@ -1008,7 +1064,7 @@
         <section class="section" id="premium">
           <div class="section-head">
             <h2>Referência 2: premium avançada</h2>
-            <p>Reestrutura a tela como console assistido. Menos containers, mais narrativa, detalhes técnicos recolhidos.</p>
+            <p>Reestrutura a tela como um produto de trabalho. Menos containers, menos ruído e detalhes técnicos recolhidos.</p>
           </div>
           <div class="mock premium">
             <div class="mock-toolbar">
@@ -1026,8 +1082,8 @@
               <div class="premium-grid">
                 <section class="premium-main">
                   <p class="eyebrow">Console fiscal assistido</p>
-                  <h3>Consulte CNPJs sem transformar a rotina em operação técnica.</h3>
-                  <p class="subcopy">Escolha uma planilha, confirme como ela deve ser lida e gere uma saída pronta para compartilhar. Detalhes como provedor, ledger e checkpoint ficam disponíveis quando forem necessários.</p>
+                  <h3>Nova consulta</h3>
+                  <p class="subcopy">Escolha uma planilha, confirme a leitura e gere uma saída compatível. Provedor, ledger e checkpoint ficam disponíveis quando forem necessários.</p>
                   <div class="flow-line">
                     <span>1 · escolher arquivo</span>
                     <span>2 · revisar leitura</span>
@@ -1037,8 +1093,8 @@
                   <div class="open-upload">
                     <div class="upload-copy">
                       <div>
-                        <h4>Solte aqui o CSV de clientes ou selecione no computador.</h4>
-                        <p>Vamos detectar a coluna de CNPJ e mostrar uma prévia antes de iniciar. Nenhum detalhe técnico aparece antes da hora.</p>
+                        <h4>Escolha o CSV para consulta.</h4>
+                        <p>O app detecta a coluna de CNPJ e mostra uma prévia antes de iniciar.</p>
                       </div>
                       <div class="upload-actions">
                         <span class="button primary">Selecionar CSV</span>
@@ -1074,6 +1130,51 @@
                 </aside>
               </div>
             </div>
+          </div>
+        </section>
+
+        <section class="section" id="variantes">
+          <div class="section-head">
+            <h2>Novas imagens para aprovação</h2>
+            <p>Três caminhos premium avançados em formato de tela de app. A copy foi reduzida para comandos, estados e ajuda contextual curta.</p>
+          </div>
+          <div class="variant-grid">
+            <article class="variant-option">
+              <div class="variant-copy">
+                <p class="eyebrow">Opção A</p>
+                <h3>Command Console</h3>
+                <p>Melhor candidata para a primeira tela. Foco em uma ação principal, rail técnico lateral e decisões simples abaixo do upload.</p>
+                <div class="pill-row"><span class="pill">Mais premium</span><span class="pill">Menos dashboard</span><span class="pill">Boa para onboarding</span></div>
+              </div>
+              <div class="variant-shots">
+                <a class="variant-shot" href="variants/variant-a.png"><img src="variants/variant-a.png" alt="Opção A desktop" /></a>
+                <a class="variant-shot" href="variants/variant-a-mobile.png"><img src="variants/variant-a-mobile.png" alt="Opção A mobile" /></a>
+              </div>
+            </article>
+            <article class="variant-option">
+              <div class="variant-copy">
+                <p class="eyebrow">Opção B</p>
+                <h3>Review Sheet</h3>
+                <p>Mais produtiva e menos editorial. Boa quando a tela central precisa mostrar leitura, linhas e revisão antes da execução.</p>
+                <div class="pill-row"><span class="pill">Mais operacional</span><span class="pill">Boa para revisão</span><span class="pill">Tabela controlada</span></div>
+              </div>
+              <div class="variant-shots">
+                <a class="variant-shot" href="variants/variant-b.png"><img src="variants/variant-b.png" alt="Opção B desktop" /></a>
+                <a class="variant-shot" href="variants/variant-b-mobile.png"><img src="variants/variant-b-mobile.png" alt="Opção B mobile" /></a>
+              </div>
+            </article>
+            <article class="variant-option">
+              <div class="variant-copy">
+                <p class="eyebrow">Opção C</p>
+                <h3>Execution Timeline</h3>
+                <p>Boa como modelo de fluxo e retomada. Visualmente é a menos forte para a tela inicial, mas ajuda a desenhar execução e histórico.</p>
+                <div class="pill-row"><span class="pill">Fluxo claro</span><span class="pill">Retomada</span><span class="pill">Mais estado</span></div>
+              </div>
+              <div class="variant-shots">
+                <a class="variant-shot" href="variants/variant-c.png"><img src="variants/variant-c.png" alt="Opção C desktop" /></a>
+                <a class="variant-shot" href="variants/variant-c-mobile.png"><img src="variants/variant-c-mobile.png" alt="Opção C mobile" /></a>
+              </div>
+            </article>
           </div>
         </section>
 
