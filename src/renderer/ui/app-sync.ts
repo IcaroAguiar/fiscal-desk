@@ -8,8 +8,11 @@ import {
 import { syncReceitaWebAvailability } from "./app-provider";
 import {
   getCurrentCnpjLabel,
+  getDeliveryFormatLabel,
   getProgressLineLabel,
   getProgressPercent,
+  getProviderStatusLabel,
+  getProviderStatusVariant,
   renderExecutionHistory,
 } from "./app-view";
 import {
@@ -27,6 +30,7 @@ type AppRefs = {
   commandSummary: HTMLElement | null;
   currentCnpj: HTMLElement | null;
   dedupeLabel: HTMLElement | null;
+  deliveryFormatBadge: HTMLElement | null;
   deliverySelect: HTMLSelectElement | null;
   executionCheckpoint: HTMLElement | null;
   executionHistory: HTMLElement | null;
@@ -47,12 +51,21 @@ type AppRefs = {
   outputStatus: HTMLElement | null;
   outputPreview: HTMLElement | null;
   outputSavePath: HTMLElement | null;
+  kpiErrors: HTMLElement | null;
+  kpiPending: HTMLElement | null;
+  kpiProcessed: HTMLElement | null;
+  kpiTotalLines: HTMLElement | null;
   pickButton: HTMLButtonElement | null;
   processButton: HTMLButtonElement | null;
   progressBar: HTMLElement | null;
   progressLine: HTMLElement | null;
   progressSection: HTMLElement | null;
   providerSelect: HTMLSelectElement | null;
+  providerStatus: HTMLElement | null;
+  queueActiveHint: HTMLElement | null;
+  queueActiveName: HTMLElement | null;
+  queueActiveStatus: HTMLElement | null;
+  queueCount: HTMLElement | null;
   saveButton: HTMLButtonElement | null;
   saveInfo: HTMLElement | null;
   summary: HTMLElement | null;
@@ -143,8 +156,82 @@ export function syncUi(refs: AppRefs, state: UiState): void {
     renderSummaryInto(refs.summary, state.summary);
   }
 
+  syncCockpitRefs(refs, state);
   syncExecutionRefs(refs, state);
   syncButtons(refs, state);
+}
+
+function syncCockpitRefs(refs: AppRefs, state: UiState): void {
+  const pendingLookups = state.progress
+    ? Math.max(
+        0,
+        state.progress.totalUniqueLookups -
+          state.progress.completedUniqueLookups,
+      )
+    : 0;
+
+  if (refs.kpiTotalLines) {
+    refs.kpiTotalLines.textContent = String(state.summary?.totalLinhas ?? 0);
+  }
+
+  if (refs.kpiProcessed) {
+    refs.kpiProcessed.textContent = String(
+      state.summary?.totalCnpjsUnicosConsultados ??
+        state.progress?.completedUniqueLookups ??
+        0,
+    );
+  }
+
+  if (refs.kpiPending) {
+    refs.kpiPending.textContent = String(state.summary ? 0 : pendingLookups);
+  }
+
+  if (refs.kpiErrors) {
+    refs.kpiErrors.textContent = String(state.summary?.totalErros ?? 0);
+  }
+
+  if (refs.providerStatus) {
+    refs.providerStatus.textContent = getProviderStatusLabel(state);
+    refs.providerStatus.className = [
+      "status-token",
+      getProviderStatusVariant(state),
+    ].join(" ");
+  }
+
+  if (refs.deliveryFormatBadge) {
+    refs.deliveryFormatBadge.textContent = getDeliveryFormatLabel(
+      state.deliveryFormat,
+    );
+  }
+
+  if (refs.queueCount) {
+    refs.queueCount.textContent = state.fileName ? "1 item" : "0 itens";
+  }
+
+  if (refs.queueActiveName) {
+    refs.queueActiveName.textContent =
+      state.fileName ?? "Nenhum lote em preparação";
+  }
+
+  if (refs.queueActiveHint) {
+    refs.queueActiveHint.textContent = state.summary
+      ? "Execução concluída"
+      : state.fileName
+        ? "Pronto para execução"
+        : "Selecione um CSV para iniciar";
+  }
+
+  if (refs.queueActiveStatus) {
+    refs.queueActiveStatus.textContent = state.summary
+      ? "concluído"
+      : state.fileName
+        ? "revisão"
+        : "vazio";
+    refs.queueActiveStatus.className = [
+      "status-token",
+      state.summary ? "status-token--success" : "status-token--warning",
+    ].join(" ");
+  }
 }
 
 function syncLocalPublicBaseNotice(refs: AppRefs, state: UiState): void {

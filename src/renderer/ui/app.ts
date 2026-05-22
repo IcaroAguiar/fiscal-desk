@@ -104,6 +104,30 @@ export function mountApp(root: HTMLDivElement | null): void {
     outputStatus: appRoot.querySelector<HTMLElement>(
       '[data-slot="output-status"]',
     ),
+    deliveryFormatBadge: appRoot.querySelector<HTMLElement>(
+      '[data-slot="delivery-format-badge"]',
+    ),
+    providerStatus: appRoot.querySelector<HTMLElement>(
+      '[data-slot="provider-status"]',
+    ),
+    kpiTotalLines: appRoot.querySelector<HTMLElement>(
+      '[data-slot="kpi-total-lines"]',
+    ),
+    kpiProcessed: appRoot.querySelector<HTMLElement>(
+      '[data-slot="kpi-processed"]',
+    ),
+    kpiPending: appRoot.querySelector<HTMLElement>('[data-slot="kpi-pending"]'),
+    kpiErrors: appRoot.querySelector<HTMLElement>('[data-slot="kpi-errors"]'),
+    queueActiveName: appRoot.querySelector<HTMLElement>(
+      '[data-slot="queue-active-name"]',
+    ),
+    queueActiveHint: appRoot.querySelector<HTMLElement>(
+      '[data-slot="queue-active-hint"]',
+    ),
+    queueActiveStatus: appRoot.querySelector<HTMLElement>(
+      '[data-slot="queue-active-status"]',
+    ),
+    queueCount: appRoot.querySelector<HTMLElement>('[data-slot="queue-count"]'),
     dedupeLabel: appRoot.querySelector<HTMLElement>(
       '[data-slot="dedupe-label"]',
     ),
