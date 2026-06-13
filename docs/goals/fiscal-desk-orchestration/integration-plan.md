@@ -1138,3 +1138,29 @@ The judge dispatched the executable validation window selected above:
 
 This thread may generate ignored transient validation artifacts in its isolated
 worktree, but the only persistent accepted output is its result receipt.
+
+## Post P3 Integrated First Release Validation Judge Decision As Of 2026-06-13 19:04
+
+Receipt:
+`results/post-p3-validation-docs-rebaseline-integrated-first-release-validation-judge-decision-2026-06-13.md`.
+
+The executable validation worker
+`019ec2fa-65ee-7380-b705-d7ee0000a93b` returned `needs_rework`. The judge
+accepted the functional evidence but did not approve the window.
+
+This means the orchestration is no longer in a documentation phase. The docs
+rebaseline is closed. The active blocker is a quality-gate/structural ratchet:
+the integrated package increased large files from baseline 2 to current 4.
+
+Accepted executable evidence includes lint, typecheck, full tests,
+`test:coverage`, CSV smoke, Electron UI smoke with provider `mock`, Electron UI
+smoke with provider `base-publica-local`, visual smoke, build and gitleaks.
+
+The worker failed the default ratchet, and the judge also re-ran
+`QUALITY_GATE_DIFF_MODE=worktree node docs/ai/quality-gate/check-ratchet.mjs`.
+The scoped mode also failed with `code.large-file-ratchet`, so this is not only
+historical `origin/main...HEAD` noise.
+
+Material feature work remains blocked. The next owner window is a narrow
+quality-gate rework to reduce or explicitly justify the new large-file count,
+followed by independent review before integration.
