@@ -156,7 +156,7 @@ selection is completed and judged.
 
 | Phase | Thread | Worktree | Scope |
 |---|---|---|---|
-| `post_p3_rebaseline_next_owner_window_selection` | pending | pending | Read-only next owner-window selection after post-P3 docs rebaseline; no material worker released |
+| `post_p3_rebaseline_next_owner_window_selection` | `019ec2d6-1d14-7791-97ed-1eea833a6e89` | `/Users/icaroaguiar/.codex/worktrees/d1be/consulta-simples-csv` | Read-only next owner-window selection after post-P3 docs rebaseline; no material worker released |
 
 `post_local_base_regate_csv_input_intake_hardening` was integrated and validated
 at `2026-06-13 17:20:37 -03`. The read-only scope-selection gate
@@ -197,7 +197,8 @@ the canonical worktree at `2026-06-13 18:10:46 -03`.
 Material work remains blocked. The next safe step is a fresh read-only
 owner-window selection after this rebaseline. That selection dispatch was
 prepared at `2026-06-13 18:12:56 -03`; no material worker is released by this
-dispatch.
+dispatch. The Codex App selection thread was observed active at
+`2026-06-13 18:14:49 -03`.
 
 Judge decision:
 `results/post-local-base-regate-csv-input-intake-hardening-judge-decision-2026-06-13.md`.
