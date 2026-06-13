@@ -641,3 +641,23 @@ windows are:
 They may be dispatched concurrently only while their allowed write scopes remain
 disjoint. Integration and acceptance remain serial and judge-gated in the final
 branch.
+
+## First Release Rework Owner Windows Dispatch As Of 2026-06-13 15:13
+
+Receipt:
+`results/first-release-rework-owner-windows-dispatch-2026-06-13.md`.
+
+The judge opened two rework owner windows selected by the judged
+release/security gate:
+
+- `first_release_local_privacy_hardening`, thread
+  `019ec230-33f3-7d63-87ee-85e957bce7c4`, worktree
+  `/Users/icaroaguiar/.codex/worktrees/15ad/consulta-simples-csv`;
+- `first_release_package_identity_and_publish_safety`, thread
+  `019ec230-9f62-7cb0-bc46-8d107a055d4b`, worktree
+  `/Users/icaroaguiar/.codex/worktrees/98af/consulta-simples-csv`.
+
+These are not new feature windows. They are first-release rework required before
+release/security can be treated as ready. They may run concurrently because
+their allowed write scopes are disjoint, but final integration remains serial
+and judge-gated.

@@ -604,9 +604,9 @@ monitoring:
   observe_threads_frequently: true
   heartbeat_automation_id: fiscal-desk-f0-monitor
   heartbeat_interval_minutes: 30
-  last_observation_at: "2026-06-13 15:09:40 -03"
-  last_observation_file: results/first-release-candidate-release-security-review-judge-decision-2026-06-13.md
-  last_observation_status: first_release_candidate_release_security_review_judged_needs_rework
+  last_observation_at: "2026-06-13 15:13:55 -03"
+  last_observation_file: results/first-release-rework-owner-windows-dispatch-2026-06-13.md
+  last_observation_status: first_release_rework_owner_windows_dispatched_active
   f0_thread_status: self_approval_blocker_resolved_by_judge
   final_integration_review_status: approved_by_judge
   final_integration_review_thread_id: 019ec005-f849-7b53-ae0f-ae7c02df4f63
@@ -630,7 +630,7 @@ monitoring:
   staging_versioning_closeout_dispatch_file: results/staging-versioning-closeout-dispatch-2026-06-13.md
   staging_versioning_closeout_file: results/staging-versioning-closeout.md
   staging_versioning_closeout_judge_decision_file: results/staging-versioning-closeout-judge-decision.md
-  next_material_worker_status: blocked_by_first_release_candidate_release_security_review_needs_rework
+  next_material_worker_status: first_release_rework_owner_windows_dispatched
   last_thread_observation:
     testing_infra_coverage_gate_worker: idle_completed
     testing_infra_coverage_gate_independent_review: idle_completed_approved_candidate
@@ -642,7 +642,49 @@ monitoring:
     post_f6e2c_first_release_status_rebaseline: idle_completed_approved_docs_rebaseline_judged
     first_release_candidate_release_review: idle_completed_needs_rework_judged
     first_release_candidate_security_review: idle_completed_needs_rework_judged
-    material_worker_released: false
+    first_release_local_privacy_hardening: active
+    first_release_package_identity_and_publish_safety: active
+    material_worker_released: first_release_rework_only
+  active_first_release_rework_owner_windows:
+    status: active
+    dispatch_file: results/first-release-rework-owner-windows-dispatch-2026-06-13.md
+    dispatched_at: "2026-06-13 15:13:55 -03"
+    depends_on_judge_decision: results/first-release-candidate-release-security-review-judge-decision-2026-06-13.md
+    feature_work_released: false
+    material_rework_released: true
+    windows:
+      local_privacy_hardening:
+        slug: first_release_local_privacy_hardening
+        status: active
+        thread_id: 019ec230-33f3-7d63-87ee-85e957bce7c4
+        thread_title: Fortalece privacidade Fiscal Desk
+        pending_worktree_id: local:523a66bb-2e9f-4161-bae8-87400f4398e1
+        worktree: /Users/icaroaguiar/.codex/worktrees/15ad/consulta-simples-csv
+        model: gpt-5.5
+        reasoning: medium
+        result_file: results/first-release-local-privacy-hardening-2026-06-13.md
+        allowed_write:
+          - src/main/ipc/process-csv.ipc.ts
+          - src/main/execution/file-process-execution-ledger.ts
+          - test/unit/main/file-process-execution-ledger.test.ts
+          - test/unit/process-csv.ipc.test.ts
+          - test/unit/process-csv.ipc.delivery.test.ts
+          - docs/goals/fiscal-desk-orchestration/results/first-release-local-privacy-hardening-2026-06-13.md
+      package_identity_and_publish_safety:
+        slug: first_release_package_identity_and_publish_safety
+        status: active
+        thread_id: 019ec230-9f62-7cb0-bc46-8d107a055d4b
+        thread_title: Ajustar identidade e publish safety
+        pending_worktree_id: local:5c0c2e4d-3fe2-4997-a76e-c2d82feec9d6
+        worktree: /Users/icaroaguiar/.codex/worktrees/98af/consulta-simples-csv
+        model: gpt-5.5
+        reasoning: medium
+        result_file: results/first-release-package-identity-and-publish-safety-2026-06-13.md
+        allowed_write:
+          - package.json
+          - electron-builder.yml
+          - .github/workflows/pr-quality-gate.yml
+          - docs/goals/fiscal-desk-orchestration/results/first-release-package-identity-and-publish-safety-2026-06-13.md
   active_read_only_release_security_gate:
     slug: first_release_candidate_release_security_review
     status: judged_needs_rework
