@@ -156,7 +156,7 @@ selection is completed and judged.
 
 | Phase | Thread | Worktree | Scope |
 |---|---|---|---|
-| None | - | - | No active worker after post-P3 docs rebaseline was judged |
+| `post_p3_rebaseline_next_owner_window_selection` | pending | pending | Read-only next owner-window selection after post-P3 docs rebaseline; no material worker released |
 
 `post_local_base_regate_csv_input_intake_hardening` was integrated and validated
 at `2026-06-13 17:20:37 -03`. The read-only scope-selection gate
@@ -195,7 +195,9 @@ missing docs unless they disappear locally. The thread completed as
 the canonical worktree at `2026-06-13 18:10:46 -03`.
 
 Material work remains blocked. The next safe step is a fresh read-only
-owner-window selection after this rebaseline.
+owner-window selection after this rebaseline. That selection dispatch was
+prepared at `2026-06-13 18:12:56 -03`; no material worker is released by this
+dispatch.
 
 Judge decision:
 `results/post-local-base-regate-csv-input-intake-hardening-judge-decision-2026-06-13.md`.
@@ -259,6 +261,9 @@ Post-P3 first release/status rebaseline result:
 
 Post-P3 first release/status rebaseline judge decision:
 `results/post-p3-first-release-status-rebaseline-judge-decision-2026-06-13.md`.
+
+Post-P3 rebaseline next owner-window selection dispatch:
+`results/post-p3-rebaseline-next-owner-window-selection-dispatch-2026-06-13.md`.
 
 Independent review threads for the coverage gate:
 `019ec1d0-a1f5-7601-97ef-b91f46e0d00c` and canonical follow-up
