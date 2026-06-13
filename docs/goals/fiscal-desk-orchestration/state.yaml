@@ -1395,18 +1395,22 @@ monitoring:
       - docs/goals/fiscal-desk-orchestration/results/post-p3-operational-panel-next-owner-window-selection-2026-06-13.md
   approved_material_owner_window_after_operational_panel:
     slug: post_p3_legacy_resume_copy_harness_polish
-    status: pending_worktree_creation
+    status: active
     classification: material_single_writer_renderer_copy_harness
     source_selection_thread_id: 019ec34e-024e-7040-846d-9ec73093c156
     source_selection_result_file: results/post-p3-operational-panel-next-owner-window-selection-2026-06-13.md
     source_selection_judge_decision_file: results/post-p3-operational-panel-next-owner-window-selection-judge-decision-2026-06-13.md
     approved_at: "2026-06-13 20:29:55 -03"
     prepared_at: "2026-06-13 20:32:00 -03"
-    target_min_commit: e88f013
+    target_min_commit: 60e4195
     canonical_dispatch_commit: 60e4195
     dispatch_file: results/post-p3-legacy-resume-copy-harness-polish-dispatch-2026-06-13.md
     pending_worktree_id: local:6be9c7f0-6b93-4837-9f32-68bc85c0e2e6
+    thread_id: 019ec355-e935-7263-b4b3-2c808b58469d
+    thread_title: Corrigir resumo legado de retomada
+    worktree: /Users/icaroaguiar/.codex/worktrees/08af/consulta-simples-csv
     dispatched_at: "2026-06-13 20:34:00 -03"
+    observed_active_at: "2026-06-13 20:35:08 -03"
     material_worker_released: true
     requires_independent_review_before_integration: true
     allowed_write:

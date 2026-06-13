@@ -145,7 +145,7 @@ Nenhuma thread individual pode substituir o review da branch final integrada.
 
 | Phase | Judge status | Integration release |
 |---|---|---|
-| post_p3_legacy_resume_copy_harness_polish | pending_worktree_creation | Codex App pending worktree `local:6be9c7f0-6b93-4837-9f32-68bc85c0e2e6` |
+| post_p3_legacy_resume_copy_harness_polish | active | thread `019ec355-e935-7263-b4b3-2c808b58469d`, worktree `/Users/icaroaguiar/.codex/worktrees/08af/consulta-simples-csv` |
 
 F8B1 was dispatched, independently reviewed and selectively integrated in Wave
 13. P3 renderer was integrated and validated after CSV input intake hardening.
@@ -173,10 +173,11 @@ The dispatch file
 `results/post-p3-legacy-resume-copy-harness-polish-dispatch-2026-06-13.md`
 was prepared at `2026-06-13 20:32:00 -03`.
 
-The Codex App worker was requested at `2026-06-13 20:34:00 -03` and returned
-pending worktree `local:6be9c7f0-6b93-4837-9f32-68bc85c0e2e6`. The thread id
-has not appeared in `list_threads` yet. When it materializes, the orchestrator
-must record the `thread_id`/worktree and observe it through completion.
+The Codex App worker was requested at `2026-06-13 20:34:00 -03`, returned
+pending worktree `local:6be9c7f0-6b93-4837-9f32-68bc85c0e2e6`, and materialized
+as thread `019ec355-e935-7263-b4b3-2c808b58469d` in worktree
+`/Users/icaroaguiar/.codex/worktrees/08af/consulta-simples-csv`. It was observed
+active at `2026-06-13 20:35:08 -03`.
 
 The worker must run in an isolated Codex App thread with `/goal`, `gpt-5.5`,
 reasoning `medium`, explicit allowed writes, real Electron smoke evidence and
