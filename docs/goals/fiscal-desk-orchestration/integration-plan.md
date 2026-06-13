@@ -462,3 +462,23 @@ post-rebaseline owner-window selection. The recommended next material owner
 window is `f6e2c_renderer_delivery_selection_ui`; it still requires a fresh
 `/goal`, explicit allowed writes, smoke Electron obligations, visual smoke,
 tests and independent review before it can be considered accepted.
+
+## Phase 6E2C Dispatch As Of 2026-06-13 14:26
+
+Receipt:
+`results/phase-6e2c-renderer-delivery-selection-ui-dispatch-2026-06-13.md`.
+
+The judge opened the next material owner window
+`f6e2c_renderer_delivery_selection_ui` in thread
+`019ec204-2c67-7f92-84d6-c9433bd84a0c`, worktree
+`/Users/icaroaguiar/.codex/worktrees/634f/consulta-simples-csv`.
+
+This worker must audit first because the current renderer already exposes a
+delivery format select and the Electron smoke already exercises XLSX. If no
+gap remains, the correct result is a no-code candidate with evidence. If a real
+gap remains, the allowed writes are limited to renderer UI/sync/types, focused
+renderer tests and the F6E2C receipt.
+
+No source outside renderer UI/tests may be touched. Acceptance still requires
+judge review, qualitative Electron smoke, visual smoke and independent review
+if material code changed.
