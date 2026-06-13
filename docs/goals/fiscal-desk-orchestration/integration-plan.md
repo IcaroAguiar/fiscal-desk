@@ -431,3 +431,9 @@ worker is selected.
 
 No material worker is released while this docs-only owner window is active. The
 next material owner window requires the rebaseline result to be read and judged.
+
+The first worker pass hit the known local-doc bootstrap issue because
+`CONTEXT.md`, `docs/fiscal-desk/**` and `docs/adr/**` were not present in the
+new worktree. The judge copied those local required docs into the worker
+worktree and sent a rework instruction at `2026-06-13 14:08:36 -03`. This is a
+worktree-preparation fix, not an acceptance of the worker result.

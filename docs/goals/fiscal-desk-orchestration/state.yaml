@@ -638,12 +638,18 @@ monitoring:
     material_worker_released: false
   active_docs_only_owner_window:
     slug: first_release_rebaseline_after_integrated_fiscal_desk
-    status: dispatched_waiting_result
+    status: rework_requested_after_missing_docs_bootstrap
     thread_id: 019ec1f1-82b7-77d0-93ba-a85c07efacd8
     pending_worktree_id: local:4a4e90ae-c20e-4f13-b274-03331dcb8a0b
     worktree: /Users/icaroaguiar/.codex/worktrees/8bf3/consulta-simples-csv
     dispatch_file: results/first-release-rebaseline-dispatch-2026-06-13.md
     dispatched_at: "2026-06-13 14:06:11 -03"
+    missing_docs_blocker_resolved_at: "2026-06-13 14:08:36 -03"
+    rework_requested_at: "2026-06-13 14:08:36 -03"
+    bootstrap_copied_into_worker:
+      - CONTEXT.md
+      - docs/fiscal-desk/**
+      - docs/adr/**
     material_worker_released: false
     blocks_material_workers_until_judged: true
   testing_infra_coverage_gate_status: integrated_validated_pass_with_risk
