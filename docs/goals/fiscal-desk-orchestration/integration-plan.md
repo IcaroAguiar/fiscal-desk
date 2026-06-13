@@ -154,12 +154,14 @@ F8B1 was dispatched, independently reviewed and selectively integrated in Wave
 
 | Phase | Thread | Worktree | Scope |
 |---|---|---|---|
-| `post_csv_input_intake_next_owner_window_selection` | `019ec2ab-1703-7453-8e1d-9b570d471122` | `/Users/icaroaguiar/.codex/worktrees/fc09/consulta-simples-csv` | Read-only next owner-window selection after `post_local_base_regate_csv_input_intake_hardening`; no material worker released |
+| None | - | - | No active material owner window; next material worker is approved for dispatch but not yet released |
 
 No active material owner window exists. `post_local_base_regate_csv_input_intake_hardening`
-was integrated and validated at `2026-06-13 17:20:37 -03`; the only active
-work is a read-only scope-selection gate dispatched at `2026-06-13 17:26:55 -03`
-and observed active at `2026-06-13 17:29:28 -03`.
+was integrated and validated at `2026-06-13 17:20:37 -03`. The read-only
+scope-selection gate `post_csv_input_intake_next_owner_window_selection` was
+dispatched at `2026-06-13 17:26:55 -03`, observed active at
+`2026-06-13 17:29:28 -03` and approved by the judge at
+`2026-06-13 17:31:33 -03`.
 
 Judge decision:
 `results/post-local-base-regate-csv-input-intake-hardening-judge-decision-2026-06-13.md`.
@@ -178,6 +180,15 @@ Integration judge decision:
 
 Next owner-window selection dispatch:
 `results/post-csv-input-intake-next-owner-window-selection-dispatch-2026-06-13.md`.
+
+Next owner-window selection result:
+`results/post-csv-input-intake-next-owner-window-selection-2026-06-13.md`.
+
+Next owner-window selection judge decision:
+`results/post-csv-input-intake-next-owner-window-selection-judge-decision-2026-06-13.md`.
+
+Approved next material owner window:
+`p3_renderer_missing_column_normalizer_can_hide_new_core_guidance`.
 
 Independent review threads for the coverage gate:
 `019ec1d0-a1f5-7601-97ef-b91f46e0d00c` and canonical follow-up
