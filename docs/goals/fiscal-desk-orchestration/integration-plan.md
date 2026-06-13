@@ -1285,3 +1285,16 @@ This does not release material feature work. It authorizes a final readiness
 review after the large-file ratchet rework, writing only its receipt, to decide
 whether the roadmap can return to material work or whether a concrete blocker
 remains.
+
+## Post P3 Large File Rework Final Readiness Review Dispatch As Of 2026-06-13 19:34
+
+Receipt:
+`results/post-p3-large-file-ratchet-rework-final-readiness-review-dispatch-2026-06-13.md`.
+
+The judge prepared the selected read-only review:
+`post_p3_large_file_ratchet_rework_final_readiness_review`.
+
+Allowed write:
+`results/post-p3-large-file-ratchet-rework-final-readiness-review-2026-06-13.md`.
+
+No material worker is released by this dispatch.
