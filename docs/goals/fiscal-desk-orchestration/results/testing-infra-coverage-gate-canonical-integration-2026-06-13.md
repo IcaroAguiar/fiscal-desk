@@ -69,7 +69,7 @@ Coverage summary for `src/**`:
 - lines: 69.24%
 - statements: 69.24%
 - functions: 86.82%
-- branches: 75.34%
+- branches: 75.32%
 
 ## Dependency Warning
 

@@ -104,7 +104,7 @@ Evidencia atual:
 
 - `pnpm test`: 40 arquivos e 256 testes passando;
 - `pnpm test:coverage`: 40 arquivos e 256 testes passando; coverage de `src/**`
-  em 69.24% linhas/statements, 86.82% funcoes e 75.34% branches;
+  em 69.24% linhas/statements, 86.82% funcoes e 75.32% branches;
 - `QUALITY_GATE_DIFF_MODE=worktree node docs/ai/quality-gate/check-ratchet.mjs`:
   pass para o recorte local do worker, preservando o modo default PR/CI;
 - `pnpm smoke:electron-ui`: app Electron real, provider `mock`, retomada,
@@ -437,3 +437,28 @@ The first worker pass hit the known local-doc bootstrap issue because
 new worktree. The judge copied those local required docs into the worker
 worktree and sent a rework instruction at `2026-06-13 14:08:36 -03`. This is a
 worktree-preparation fix, not an acceptance of the worker result.
+
+## First Release Rebaseline Judge Decision As Of 2026-06-13 14:21
+
+Receipt:
+`results/first-release-rebaseline-judge-decision-2026-06-13.md`.
+
+The docs-only owner window
+`first_release_rebaseline_after_integrated_fiscal_desk` was accepted after one
+factual rework requested by the judge. The worker corrected the Wave 13 receipt
+path to `results/integration-wave-13-f8b1-renderer-blocked-state.md` and aligned
+coverage branches to `75.32%` from the judge's fresh `pnpm test:coverage` run.
+
+The accepted worker result is:
+`results/first-release-rebaseline-2026-06-13.md`.
+
+The canonical worktree was updated with the rebaselined local docs under
+`docs/fiscal-desk/**`, but that folder remains ignored by `.git/info/exclude`
+and was not force-added to Git. The versioned orchestration record is the
+worker receipt plus this judge decision.
+
+No material worker was released by this acceptance. The current phase is now
+post-rebaseline owner-window selection. The recommended next material owner
+window is `f6e2c_renderer_delivery_selection_ui`; it still requires a fresh
+`/goal`, explicit allowed writes, smoke Electron obligations, visual smoke,
+tests and independent review before it can be considered accepted.

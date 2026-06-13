@@ -494,7 +494,7 @@ staging_execution:
     lines_pct: 69.24
     statements_pct: 69.24
     functions_pct: 86.82
-    branches_pct: 75.34
+    branches_pct: 75.32
     dependency_file_change_warning:
       status: justified_expected
       files:
@@ -629,7 +629,7 @@ monitoring:
   staging_versioning_closeout_dispatch_file: results/staging-versioning-closeout-dispatch-2026-06-13.md
   staging_versioning_closeout_file: results/staging-versioning-closeout.md
   staging_versioning_closeout_judge_decision_file: results/staging-versioning-closeout-judge-decision.md
-  next_material_worker_status: ready_for_fresh_owner_window_selection
+  next_material_worker_status: ready_for_fresh_owner_window_selection_after_rebaseline_acceptance
   last_thread_observation:
     testing_infra_coverage_gate_worker: idle_completed
     testing_infra_coverage_gate_independent_review: idle_completed_approved_candidate
@@ -638,7 +638,7 @@ monitoring:
     material_worker_released: false
   active_docs_only_owner_window:
     slug: first_release_rebaseline_after_integrated_fiscal_desk
-    status: rework_requested_after_missing_docs_bootstrap
+    status: approved_by_judge_integrated_to_canonical_worktree
     thread_id: 019ec1f1-82b7-77d0-93ba-a85c07efacd8
     pending_worktree_id: local:4a4e90ae-c20e-4f13-b274-03331dcb8a0b
     worktree: /Users/icaroaguiar/.codex/worktrees/8bf3/consulta-simples-csv
@@ -646,12 +646,30 @@ monitoring:
     dispatched_at: "2026-06-13 14:06:11 -03"
     missing_docs_blocker_resolved_at: "2026-06-13 14:08:36 -03"
     rework_requested_at: "2026-06-13 14:08:36 -03"
+    completed_at: "2026-06-13 14:16:29 -03"
+    judge_factual_rework_requested_at: "2026-06-13 14:18:26 -03"
+    judge_factual_rework_completed_at: "2026-06-13 14:19:33 -03"
+    judged_at: "2026-06-13 14:21:16 -03"
+    result_file: results/first-release-rebaseline-2026-06-13.md
+    judge_decision_file: results/first-release-rebaseline-judge-decision-2026-06-13.md
+    worker_result_status: ready_for_judge_review
+    judge_decision: approved_after_factual_rework
+    canonical_local_docs_updated:
+      - docs/fiscal-desk/first-release.md
+      - docs/fiscal-desk/status.md
+      - docs/fiscal-desk/roadmap.md
+      - docs/fiscal-desk/product-spec.md
+      - docs/fiscal-desk/implementation-plan.md
+      - docs/fiscal-desk/quality-gates.md
+      - docs/fiscal-desk/executor-packets/013-first-release-cut.md
+    versioning_note: docs_fiscal_desk_remains_local_ignored_not_force_added
+    recommended_next_material_owner_window: f6e2c_renderer_delivery_selection_ui
     bootstrap_copied_into_worker:
       - CONTEXT.md
       - docs/fiscal-desk/**
       - docs/adr/**
     material_worker_released: false
-    blocks_material_workers_until_judged: true
+    blocks_material_workers_until_judged: false
   testing_infra_coverage_gate_status: integrated_validated_pass_with_risk
   testing_infra_coverage_gate_thread_id: 019ec1c2-abc1-7ce2-8b68-212c2e152a19
   testing_infra_coverage_gate_thread_title: Adicionar coverage no Vitest
