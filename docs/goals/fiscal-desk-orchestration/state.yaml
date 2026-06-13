@@ -454,8 +454,9 @@ versioning_decisions:
       - skills/electron-ui-evidence-capture/references/electron-ui-evidence-capture.md
       - skills/electron-ui-evidence-capture/scripts/run-electron-evidence-capture.sh
 next_judge_action:
-  - dispatch_post_rework_release_security_regate_read_only
-  - keep_material_feature_work_blocked_until_post_rework_gate_judged
+  - monitor_local_public_base_log_privacy_hardening_until_materialized
+  - judge_local_public_base_log_privacy_hardening_before_any_material_worker
+  - repeat_or_close_post_rework_security_gate_after_local_base_rework
   - keep_runtime_update_diagnostic_telemetry_license_release_blocked_until_fresh_scope
   - keep_f0_blocker_resolution_observed
   - keep_final_validation_in_single_worktree
@@ -604,9 +605,9 @@ monitoring:
   observe_threads_frequently: true
   heartbeat_automation_id: fiscal-desk-f0-monitor
   heartbeat_interval_minutes: 30
-  last_observation_at: "2026-06-13 15:55:30 -03"
+  last_observation_at: "2026-06-13 16:05:00 -03"
   last_observation_file: docs/goals/fiscal-desk-orchestration/integration-plan.md
-  last_observation_status: post_rework_security_gate_found_local_public_base_log_privacy_blocker
+  last_observation_status: local_public_base_log_privacy_rework_recreated_pending_worktree
   f0_thread_status: self_approval_blocker_resolved_by_judge
   final_integration_review_status: approved_by_judge
   final_integration_review_thread_id: 019ec005-f849-7b53-ae0f-ae7c02df4f63
@@ -644,9 +645,9 @@ monitoring:
     first_release_candidate_security_review: idle_completed_needs_rework_judged
     first_release_local_privacy_hardening: idle_completed_rework_approved_integrated
     first_release_package_identity_and_publish_safety: idle_completed_rework_approved_integrated
-    first_release_post_rework_release_review: active
-    first_release_post_rework_security_review: active
-    first_release_local_public_base_log_privacy_hardening: pending_worktree
+    first_release_post_rework_release_review: idle_completed_approved_candidate_receipt_created
+    first_release_post_rework_security_review: idle_completed_approved_candidate_with_blocker_followup
+    first_release_local_public_base_log_privacy_hardening: pending_worktree_recreated
     material_worker_released: local_public_base_log_privacy_rework_only
   active_first_release_rework_owner_windows:
     status: approved_by_judge_integrated_validated
@@ -754,7 +755,8 @@ monitoring:
     blocker:
       slug: first_release_local_public_base_log_privacy_hardening
       status: dispatched_pending_worktree
-      pending_worktree_id: local:44d7a4bb-ee11-450d-ab76-44706463f61c
+      previous_pending_worktree_id: local:44d7a4bb-ee11-450d-ab76-44706463f61c
+      pending_worktree_id: local:7e3204d0-6f81-4075-974c-30e1443d541a
       found_by_thread_id: 019ec250-ce73-78c3-9660-a7e5122b3417
       evidence:
         - src/core/public-base/local-public-base.store.ts_logs_indexPath_absolute
@@ -766,7 +768,7 @@ monitoring:
     gates:
       release_review:
         slug: first_release_post_rework_release_review
-        status: active
+        status: completed_approved_candidate
         thread_id: 019ec250-960e-77a0-a7f0-e9334ea21646
         thread_title: Revisar release do Fiscal Desk
         pending_worktree_id: local:f523764a-7b64-432f-8d4d-9afa62614651
@@ -778,7 +780,7 @@ monitoring:
           - docs/goals/fiscal-desk-orchestration/results/first-release-post-rework-release-review-2026-06-13.md
       security_review:
         slug: first_release_post_rework_security_review
-        status: active
+        status: completed_approved_candidate_with_blocker_followup
         thread_id: 019ec250-ce73-78c3-9660-a7e5122b3417
         thread_title: First Release Post-Rework Security Review
         pending_worktree_id: local:522d2e1a-3d83-4911-912d-c74c0aa8c33c

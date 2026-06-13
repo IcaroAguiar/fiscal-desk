@@ -757,11 +757,21 @@ a supported first-release flow, no material feature work is released. The judge
 opened a narrow rework owner window:
 
 - slug: `first_release_local_public_base_log_privacy_hardening`;
-- pending worktree: `local:44d7a4bb-ee11-450d-ab76-44706463f61c`;
+- pending worktree: `local:7e3204d0-6f81-4075-974c-30e1443d541a`;
 - model: GPT-5.5, reasoning medium;
 - allowed write: `src/core/public-base/local-public-base.store.ts`,
   `test/unit/local-public-base.test.ts`, and
   `results/first-release-local-public-base-log-privacy-hardening-2026-06-13.md`.
+
+As of 2026-06-13 16:05 -03, the first pending worktree
+`local:44d7a4bb-ee11-450d-ab76-44706463f61c` had not materialized in the
+Codex App thread/worktree list. The judge recreated the same narrow owner
+window as `local:7e3204d0-6f81-4075-974c-30e1443d541a`. The release reviewer
+receipt is now available as
+`results/first-release-post-rework-release-review-2026-06-13.md`; the security
+reviewer receipt is captured as
+`results/first-release-post-rework-security-review-2026-06-13.md`. Both are gate
+inputs only. They do not release material feature work.
 
 After that rework is accepted and integrated, the orchestrator must repeat or
 complete the security gate before selecting the next material phase.
