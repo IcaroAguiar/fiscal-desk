@@ -154,7 +154,7 @@ F8B1 was dispatched, independently reviewed and selectively integrated in Wave
 
 | Phase | Thread | Worktree | Scope |
 |---|---|---|---|
-| None | - | - | Post-local-base security re-gate closed by judge; next material work still requires fresh judge-selected owner window |
+| `post_local_base_regate_next_owner_window_selection` | pending `local:26d41e08-de37-4ece-a73e-09feb7380a34` | pending | Read-only/docs-only selection of the next owner window after the local-base security re-gate closeout |
 
 Independent review threads for the coverage gate:
 `019ec1d0-a1f5-7601-97ef-b91f46e0d00c` and canonical follow-up
@@ -257,8 +257,14 @@ Effect on execution:
 
 - the specific Base Publica Local warning-log blocker is closed;
 - no material feature worker was released automatically;
-- the queue is not in broad documentation execution anymore, but the next
-  material phase remains blocked until the judge selects a fresh owner window.
+- a follow-up read-only/docs-only owner-window selection was dispatched as
+  `post_local_base_regate_next_owner_window_selection`;
+- the next material phase remains blocked until that selection is completed and
+  judged.
+
+Dispatch receipt:
+
+- `results/post-local-base-regate-next-owner-window-selection-dispatch-2026-06-13.md`
 
 Wave 13 closed F8B1 with selective integration. Its local ignored docs were
 copied into the worker worktree immediately after creation to avoid the known

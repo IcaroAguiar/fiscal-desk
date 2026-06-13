@@ -454,7 +454,8 @@ versioning_decisions:
       - skills/electron-ui-evidence-capture/references/electron-ui-evidence-capture.md
       - skills/electron-ui-evidence-capture/scripts/run-electron-evidence-capture.sh
 next_judge_action:
-  - select_fresh_owner_window_before_any_material_worker
+  - monitor_post_local_base_regate_next_owner_window_selection
+  - judge_post_local_base_regate_next_owner_window_selection_before_any_material_worker
   - keep_runtime_update_diagnostic_telemetry_license_release_blocked_until_fresh_scope
   - keep_f0_blocker_resolution_observed
   - keep_final_validation_in_single_worktree
@@ -603,9 +604,9 @@ monitoring:
   observe_threads_frequently: true
   heartbeat_automation_id: fiscal-desk-f0-monitor
   heartbeat_interval_minutes: 30
-  last_observation_at: "2026-06-13 16:20:59 -03"
+  last_observation_at: "2026-06-13 16:27:02 -03"
   last_observation_file: docs/goals/fiscal-desk-orchestration/integration-plan.md
-  last_observation_status: post_local_base_rework_security_regate_approved_by_judge_gate_closed
+  last_observation_status: post_local_base_regate_next_owner_window_selection_dispatched
   f0_thread_status: self_approval_blocker_resolved_by_judge
   final_integration_review_status: approved_by_judge
   final_integration_review_thread_id: 019ec005-f849-7b53-ae0f-ae7c02df4f63
@@ -629,7 +630,7 @@ monitoring:
   staging_versioning_closeout_dispatch_file: results/staging-versioning-closeout-dispatch-2026-06-13.md
   staging_versioning_closeout_file: results/staging-versioning-closeout.md
   staging_versioning_closeout_judge_decision_file: results/staging-versioning-closeout-judge-decision.md
-  next_material_worker_status: blocked_until_fresh_scope_selected_by_judge
+  next_material_worker_status: blocked_pending_post_local_base_regate_next_owner_window_selection
   last_thread_observation:
     testing_infra_coverage_gate_worker: idle_completed
     testing_infra_coverage_gate_independent_review: idle_completed_approved_candidate
@@ -648,7 +649,24 @@ monitoring:
     first_release_local_public_base_log_privacy_hardening: idle_completed_approved_integrated_with_validation_limits
     first_release_local_public_base_log_privacy_hardening_review: idle_completed_approved_candidate
     first_release_post_local_base_rework_security_regate: idle_completed_approved_candidate_judged_gate_closed
+    post_local_base_regate_next_owner_window_selection: dispatched_pending_worktree
     material_worker_released: local_public_base_log_privacy_rework_only
+  active_docs_only_scope_review_after_post_local_base_regate:
+    slug: post_local_base_regate_next_owner_window_selection
+    status: dispatched_pending_worktree
+    pending_worktree_id: local:26d41e08-de37-4ece-a73e-09feb7380a34
+    model: gpt-5.5
+    reasoning: medium
+    branch: feat/fiscal-desk-local-base-prep
+    target_min_commit: c8386bc
+    dispatch_file: results/post-local-base-regate-next-owner-window-selection-dispatch-2026-06-13.md
+    result_file: results/post-local-base-regate-next-owner-window-selection-2026-06-13.md
+    dispatched_at: "2026-06-13 16:27:02 -03"
+    classification: read_only_docs_only_scope_selection
+    material_worker_released: false
+    blocks_material_workers_until_judged: true
+    allowed_write:
+      - docs/goals/fiscal-desk-orchestration/results/post-local-base-regate-next-owner-window-selection-2026-06-13.md
   active_first_release_rework_owner_windows:
     status: approved_by_judge_integrated_validated
     dispatch_file: results/first-release-rework-owner-windows-dispatch-2026-06-13.md
