@@ -630,7 +630,7 @@ monitoring:
   staging_versioning_closeout_dispatch_file: results/staging-versioning-closeout-dispatch-2026-06-13.md
   staging_versioning_closeout_file: results/staging-versioning-closeout.md
   staging_versioning_closeout_judge_decision_file: results/staging-versioning-closeout-judge-decision.md
-  next_material_worker_status: waiting_for_next_owner_window_selection_after_post_p3_legacy_resume_copy_harness_polish
+  next_material_worker_status: blocked_pending_post_p3_legacy_polish_next_owner_window_selection
   last_thread_observation:
     testing_infra_coverage_gate_worker: idle_completed
     testing_infra_coverage_gate_independent_review: idle_completed_approved_candidate
@@ -677,6 +677,7 @@ monitoring:
     post_p3_legacy_resume_copy_harness_polish: idle_completed_ready_for_judge_review_integrated_validated
     post_p3_legacy_resume_copy_harness_polish_review: idle_completed_approved_candidate
     post_p3_legacy_resume_copy_harness_polish_judge: integrated_validated
+    post_p3_legacy_polish_next_owner_window_selection: dispatch_prepared_not_started
     material_worker_released: none_pending_next_owner_window_selection
   active_material_owner_window_after_post_local_base_regate:
     slug: post_local_base_regate_csv_input_intake_hardening
@@ -1502,6 +1503,22 @@ monitoring:
       - release_update_dist_publish_signing_notarization
       - pdf_word_ocr
       - receita_web_live_massiva
+  active_read_only_owner_window_selection_after_legacy_polish:
+    slug: post_p3_legacy_polish_next_owner_window_selection
+    status: dispatch_prepared
+    model: gpt-5.5
+    reasoning: medium
+    branch: feat/fiscal-desk-local-base-prep
+    target_min_commit: 9946551
+    canonical_dispatch_commit: pending
+    prepared_at: "2026-06-13 20:54:22 -03"
+    dispatch_file: results/post-p3-legacy-polish-next-owner-window-selection-dispatch-2026-06-13.md
+    result_file: results/post-p3-legacy-polish-next-owner-window-selection-2026-06-13.md
+    classification: read_only_owner_window_selection
+    material_worker_released: false
+    blocks_material_workers_until_judged: true
+    allowed_write:
+      - docs/goals/fiscal-desk-orchestration/results/post-p3-legacy-polish-next-owner-window-selection-2026-06-13.md
   active_read_only_owner_window_selection_after_post_local_base_regate:
     slug: post_local_base_regate_material_owner_window_selection
     status: approved_by_judge_scope_candidate

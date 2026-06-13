@@ -207,6 +207,10 @@ visual smoke, build and diff check.
 No material worker remains active after this integration. The next safe step is
 a fresh read-only owner-window selection before releasing any new material work.
 
+That read-only selection dispatch was prepared at `2026-06-13 20:54:22 -03`:
+`results/post-p3-legacy-polish-next-owner-window-selection-dispatch-2026-06-13.md`.
+No material worker is released by this dispatch.
+
 `post_local_base_regate_csv_input_intake_hardening` was integrated and validated
 at `2026-06-13 17:20:37 -03`. The read-only scope-selection gate
 `post_csv_input_intake_next_owner_window_selection` was dispatched at
