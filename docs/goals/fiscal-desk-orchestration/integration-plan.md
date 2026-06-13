@@ -1523,3 +1523,28 @@ Residual risks accepted for this integration:
 - legacy `uiResumeText: "1 CNPJs retomados"` remains in the smoke-bound legacy
   activity slot; the new panel uses singular copy correctly and a legacy-harness
   copy fix requires its own owner window.
+
+## Post P3 Operational Panel Next Owner Window Selection Dispatch As Of 2026-06-13 20:23
+
+Receipt:
+`results/post-p3-operational-panel-next-owner-window-selection-dispatch-2026-06-13.md`.
+
+The judge prepared a read-only owner-window selection after the operational
+panel integration. No material worker is released by this dispatch.
+
+Current state:
+
+- F0 remains a historical sentinel, not an active technical blocker;
+- the operational panel owner window is integrated and validated;
+- the material queue is empty;
+- the next action is a read-only scoping thread that must recommend exactly one
+  next owner window or keep the queue blocked with concrete evidence.
+
+The selection thread may write only:
+
+- `results/post-p3-operational-panel-next-owner-window-selection-2026-06-13.md`.
+
+Material work remains blocked until the selector result is judged. Release,
+update real, diagnostics sending, telemetry, license/account, storage/network,
+templates/models, PDF/Word/OCR and Receita Web live/massiva remain blocked
+until explicit owner windows.
