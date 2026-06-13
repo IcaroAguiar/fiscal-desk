@@ -1207,3 +1207,11 @@ against baseline 2. The default quality gate still reports only the contextual
 `origin/main...HEAD` git diff failure.
 
 Material feature work remains blocked until review and judge integration.
+
+As of 2026-06-13 19:14 -03, the review thread is active:
+
+- pending worktree: `local:9b5ed722-561f-41e9-a703-543a4b7cacd5`;
+- thread: `019ec30c-f33a-7700-999c-10e6944757fb`;
+- title: `Review rework large files`;
+- worktree: `/Users/icaroaguiar/.codex/worktrees/65fa/consulta-simples-csv`;
+- target dispatch commit: `9386bb2`.

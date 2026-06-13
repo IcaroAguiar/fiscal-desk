@@ -1133,7 +1133,13 @@ monitoring:
     result_status: ready_for_judge_review
     worker_receipt_file: results/post-p3-integrated-validation-large-file-ratchet-rework-2026-06-13.md
     independent_review_required: true
-    independent_review_status: prepared_for_dispatch
+    independent_review_status: active
+    independent_review_pending_worktree_id: local:9b5ed722-561f-41e9-a703-543a4b7cacd5
+    independent_review_thread_id: 019ec30c-f33a-7700-999c-10e6944757fb
+    independent_review_thread_title: Review rework large files
+    independent_review_worktree: /Users/icaroaguiar/.codex/worktrees/65fa/consulta-simples-csv
+    independent_review_dispatched_at: "2026-06-13 19:14:00 -03"
+    independent_review_observed_active_at: "2026-06-13 19:14:00 -03"
     independent_review_dispatch_file: results/post-p3-integrated-validation-large-file-ratchet-rework-review-dispatch-2026-06-13.md
     worker_evidence:
       focused_tests: pass_5_files_56_tests
