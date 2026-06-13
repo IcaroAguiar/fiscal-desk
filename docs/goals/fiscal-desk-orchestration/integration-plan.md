@@ -1098,3 +1098,27 @@ As of 2026-06-13 18:47 -03, the selection is active:
 - title: `Selecionar próxima janela de owner`;
 - worktree: `/Users/icaroaguiar/.codex/worktrees/c7cb/consulta-simples-csv`;
 - target dispatch commit: `38e7657`.
+
+## Post P3 Validation Docs Rebaseline Next Owner Window Selection Judge Decision As Of 2026-06-13 18:50
+
+Receipt:
+`results/post-p3-validation-docs-rebaseline-next-owner-window-selection-judge-decision-2026-06-13.md`.
+
+The read-only selection thread `019ec2f3-4573-7462-9125-2e2103845da3` returned
+`approved_scope_candidate` and selected:
+
+`post_p3_validation_docs_rebaseline_integrated_first_release_validation`.
+
+The judge accepts this as an executable validation window, not a feature window
+and not a release/distribution window. Its purpose is to run fresh local
+evidence on the integrated first-release candidate after the public validation
+doc was rebaselined.
+
+Persistent writes for the next thread are limited to its result receipt.
+Generated outputs such as `coverage/**`, `dist/**`, `dist-electron/**`, `.vite/**`
+and `/private/tmp/**` are allowed only as transient validation artifacts in the
+isolated worktree; they must not be staged or integrated.
+
+Material feature work, release/public distribution, updater, telemetry,
+diagnostic sending, license/account, templates/models, PDF/Word/OCR and Receita
+Web live/massiva remain blocked.
