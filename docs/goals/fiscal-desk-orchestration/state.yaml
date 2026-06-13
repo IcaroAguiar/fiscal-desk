@@ -454,7 +454,7 @@ versioning_decisions:
       - skills/electron-ui-evidence-capture/references/electron-ui-evidence-capture.md
       - skills/electron-ui-evidence-capture/scripts/run-electron-evidence-capture.sh
 next_judge_action:
-  - dispatch_post_p3_validation_docs_rebaseline_next_owner_window_selection_thread
+  - observe_post_p3_validation_docs_rebaseline_next_owner_window_selection_thread
   - judge_next_owner_window_selection_before_material_worker_release
   - keep_runtime_update_diagnostic_telemetry_license_release_blocked_until_fresh_scope
   - keep_f0_blocker_resolution_observed
@@ -604,9 +604,9 @@ monitoring:
   observe_threads_frequently: true
   heartbeat_automation_id: fiscal-desk-f0-monitor
   heartbeat_interval_minutes: 30
-  last_observation_at: "2026-06-13 18:44:50 -03"
+  last_observation_at: "2026-06-13 18:47:02 -03"
   last_observation_file: docs/goals/fiscal-desk-orchestration/integration-plan.md
-  last_observation_status: post_p3_validation_docs_rebaseline_next_owner_window_selection_prepared
+  last_observation_status: post_p3_validation_docs_rebaseline_next_owner_window_selection_active
   f0_thread_status: self_approval_blocker_resolved_by_judge
   final_integration_review_status: approved_by_judge
   final_integration_review_thread_id: 019ec005-f849-7b53-ae0f-ae7c02df4f63
@@ -663,7 +663,7 @@ monitoring:
     post_p3_rebaseline_first_release_readiness_review: idle_completed_approved_candidate_judged
     post_p3_rebaseline_readiness_next_owner_window_selection: idle_completed_approved_scope_candidate_judged
     post_p3_readiness_first_release_validation_docs_rebaseline: idle_completed_approved_docs_only_judged
-    post_p3_validation_docs_rebaseline_next_owner_window_selection: prepared_for_dispatch
+    post_p3_validation_docs_rebaseline_next_owner_window_selection: active_read_only_scope_selection
     material_worker_released: none_after_p3_renderer_missing_column_normalizer_integration
   active_material_owner_window_after_post_local_base_regate:
     slug: post_local_base_regate_csv_input_intake_hardening
@@ -1019,12 +1019,21 @@ monitoring:
       - docs/goals/fiscal-desk-orchestration/results/post-p3-readiness-first-release-validation-docs-rebaseline-2026-06-13.md
   active_read_only_owner_window_selection_after_post_p3_validation_docs_rebaseline:
     slug: post_p3_validation_docs_rebaseline_next_owner_window_selection
-    status: prepared_for_dispatch
+    status: active_read_only_scope_selection
+    pending_worktree_id: local:ec8e0abd-9322-4bb2-955e-a57bd81ae1d4
+    thread_id: 019ec2f3-4573-7462-9125-2e2103845da3
+    thread_title: Selecionar próxima janela de owner
+    worktree: /Users/icaroaguiar/.codex/worktrees/c7cb/consulta-simples-csv
+    model: gpt-5.5
+    reasoning: medium
     branch: feat/fiscal-desk-local-base-prep
     target_min_commit: aea3596
+    canonical_dispatch_commit: 38e7657
     dispatch_file: results/post-p3-validation-docs-rebaseline-next-owner-window-selection-dispatch-2026-06-13.md
     result_file: results/post-p3-validation-docs-rebaseline-next-owner-window-selection-2026-06-13.md
     prepared_at: "2026-06-13 18:44:50 -03"
+    dispatched_at: "2026-06-13 18:46:23 -03"
+    observed_active_at: "2026-06-13 18:47:02 -03"
     classification: read_only_owner_window_selection
     material_worker_released: false
     blocks_material_workers_until_judged: true

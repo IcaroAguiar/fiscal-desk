@@ -1090,3 +1090,11 @@ toward a material executable window if no concrete docs/gate blocker remains.
 
 Material feature work remains blocked until this read-only selection returns a
 candidate receipt and the judge accepts it.
+
+As of 2026-06-13 18:47 -03, the selection is active:
+
+- pending worktree: `local:ec8e0abd-9322-4bb2-955e-a57bd81ae1d4`;
+- thread: `019ec2f3-4573-7462-9125-2e2103845da3`;
+- title: `Selecionar próxima janela de owner`;
+- worktree: `/Users/icaroaguiar/.codex/worktrees/c7cb/consulta-simples-csv`;
+- target dispatch commit: `38e7657`.
