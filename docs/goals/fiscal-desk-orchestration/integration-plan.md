@@ -612,3 +612,32 @@ The judge opened the accepted read-only gate
 The split is safe because both threads are read-only and write distinct result
 receipts. No material worker is released. Material work remains blocked until
 both receipts are complete and judged.
+
+## First Release Candidate Release/Security Review Judge Decision As Of 2026-06-13 15:09
+
+Receipts:
+
+- `results/first-release-candidate-release-review-2026-06-13.md`;
+- `results/first-release-candidate-security-review-2026-06-13.md`;
+- `results/first-release-candidate-release-security-review-judge-decision-2026-06-13.md`.
+
+Both read-only gates completed and were accepted as valid evidence. The judge
+decision is `needs_rework_blocker_formal`.
+
+The release review passed bootstrap/typecheck/lint/test/build but found first
+release gaps in package identity, publish safety for `dist:mac`, and CI
+coverage/smoke Electron policy.
+
+The security review passed bootstrap plus focused security/privacy tests and
+found first release privacy gaps in runtime logs, execution ledger checkpoints,
+provider `raw` persistence and local storage policy.
+
+No material worker is released by this decision. The next selected owner
+windows are:
+
+- `first_release_local_privacy_hardening`;
+- `first_release_package_identity_and_publish_safety`.
+
+They may be dispatched concurrently only while their allowed write scopes remain
+disjoint. Integration and acceptance remain serial and judge-gated in the final
+branch.
