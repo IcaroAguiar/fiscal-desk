@@ -454,7 +454,9 @@ versioning_decisions:
       - skills/electron-ui-evidence-capture/references/electron-ui-evidence-capture.md
       - skills/electron-ui-evidence-capture/scripts/run-electron-evidence-capture.sh
 next_judge_action:
-  - dispatch_fresh_read_only_owner_window_selection_after_large_file_rework
+  - create_post_p3_large_file_rework_next_owner_window_selection_thread
+  - observe_post_p3_large_file_rework_next_owner_window_selection_thread
+  - judge_post_p3_large_file_rework_next_owner_window_selection_receipt
   - keep_large_file_rework_closed_as_integrated_validated
   - keep_runtime_update_diagnostic_telemetry_license_release_blocked_until_fresh_scope
   - keep_f0_blocker_resolution_observed
@@ -1190,6 +1192,20 @@ monitoring:
       - dist-electron/**
       - .vite/**
       - /private/tmp/**
+  active_read_only_owner_window_selection_after_large_file_rework:
+    slug: post_p3_large_file_ratchet_rework_next_owner_window_selection
+    status: prepared_for_codex_app_thread
+    model: gpt-5.5
+    reasoning: medium
+    branch: feat/fiscal-desk-local-base-prep
+    target_min_commit: e05a85b
+    dispatch_file: results/post-p3-large-file-ratchet-rework-next-owner-window-selection-dispatch-2026-06-13.md
+    prepared_at: "2026-06-13 19:24:00 -03"
+    classification: read_only_owner_window_selection
+    material_worker_released: false
+    blocks_material_workers_until_judged: true
+    allowed_write:
+      - docs/goals/fiscal-desk-orchestration/results/post-p3-large-file-ratchet-rework-next-owner-window-selection-2026-06-13.md
   active_read_only_owner_window_selection_after_post_local_base_regate:
     slug: post_local_base_regate_material_owner_window_selection
     status: approved_by_judge_scope_candidate

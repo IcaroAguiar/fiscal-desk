@@ -1243,3 +1243,19 @@ Canonical evidence:
 This closes the structural large-file blocker. The project is not in a
 documentation phase now, but material feature work remains blocked until the
 judge dispatches and accepts a fresh read-only owner-window selection.
+
+## Post P3 Large File Rework Next Owner Window Selection Dispatch As Of 2026-06-13 19:24
+
+Receipt:
+`results/post-p3-large-file-ratchet-rework-next-owner-window-selection-dispatch-2026-06-13.md`.
+
+The next action is a read-only owner-window selection:
+`post_p3_large_file_ratchet_rework_next_owner_window_selection`.
+
+This selection must decide the next safe recorte after the docs rebaseline,
+integrated executable validation and large-file ratchet rework are all closed.
+It may write only its receipt. It cannot edit code, tests, configs, package,
+lockfile, release/update/diagnostic/telemetry/license surfaces, renderer, IPC,
+preload, providers or local ignored `docs/fiscal-desk/**`.
+
+No material worker is released by preparing this dispatch.
