@@ -1194,13 +1194,20 @@ monitoring:
       - /private/tmp/**
   active_read_only_owner_window_selection_after_large_file_rework:
     slug: post_p3_large_file_ratchet_rework_next_owner_window_selection
-    status: prepared_for_codex_app_thread
+    status: active
+    pending_worktree_id: local:dd4c01d5-1bd2-4f41-8fec-6348729d09da
+    thread_id: 019ec317-9bd7-7fa3-82b3-7c5f431e5a26
+    thread_title: Selecionar owner pos ratchet
+    worktree: /Users/icaroaguiar/.codex/worktrees/029c/consulta-simples-csv
     model: gpt-5.5
     reasoning: medium
     branch: feat/fiscal-desk-local-base-prep
     target_min_commit: e05a85b
+    canonical_dispatch_commit: 55145bd
     dispatch_file: results/post-p3-large-file-ratchet-rework-next-owner-window-selection-dispatch-2026-06-13.md
     prepared_at: "2026-06-13 19:24:00 -03"
+    dispatched_at: "2026-06-13 19:26:00 -03"
+    observed_active_at: "2026-06-13 19:26:00 -03"
     classification: read_only_owner_window_selection
     material_worker_released: false
     blocks_material_workers_until_judged: true

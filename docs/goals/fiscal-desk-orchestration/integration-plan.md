@@ -1259,3 +1259,11 @@ lockfile, release/update/diagnostic/telemetry/license surfaces, renderer, IPC,
 preload, providers or local ignored `docs/fiscal-desk/**`.
 
 No material worker is released by preparing this dispatch.
+
+As of 2026-06-13 19:26 -03, the selection thread is active:
+
+- pending worktree: `local:dd4c01d5-1bd2-4f41-8fec-6348729d09da`;
+- thread: `019ec317-9bd7-7fa3-82b3-7c5f431e5a26`;
+- title: `Selecionar owner pos ratchet`;
+- worktree: `/Users/icaroaguiar/.codex/worktrees/029c/consulta-simples-csv`;
+- canonical dispatch commit: `55145bd`.
