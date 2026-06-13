@@ -604,9 +604,9 @@ monitoring:
   observe_threads_frequently: true
   heartbeat_automation_id: fiscal-desk-f0-monitor
   heartbeat_interval_minutes: 30
-  last_observation_at: "2026-06-13 17:11:41 -03"
+  last_observation_at: "2026-06-13 17:14:57 -03"
   last_observation_file: docs/goals/fiscal-desk-orchestration/integration-plan.md
-  last_observation_status: post_local_base_regate_csv_input_intake_hardening_rework_dispatched
+  last_observation_status: post_local_base_regate_csv_input_intake_hardening_rework_ready_re_review_dispatched
   f0_thread_status: self_approval_blocker_resolved_by_judge
   final_integration_review_status: approved_by_judge
   final_integration_review_thread_id: 019ec005-f849-7b53-ae0f-ae7c02df4f63
@@ -630,7 +630,7 @@ monitoring:
   staging_versioning_closeout_dispatch_file: results/staging-versioning-closeout-dispatch-2026-06-13.md
   staging_versioning_closeout_file: results/staging-versioning-closeout.md
   staging_versioning_closeout_judge_decision_file: results/staging-versioning-closeout-judge-decision.md
-  next_material_worker_status: active_post_local_base_regate_csv_input_intake_hardening_rework_in_progress
+  next_material_worker_status: active_post_local_base_regate_csv_input_intake_hardening_rework_ready_pending_re_review
   last_thread_observation:
     testing_infra_coverage_gate_worker: idle_completed
     testing_infra_coverage_gate_independent_review: idle_completed_approved_candidate
@@ -652,12 +652,12 @@ monitoring:
     post_local_base_regate_next_owner_window_selection: idle_completed_approved_scope_candidate_judged
     post_local_base_regate_first_release_status_rebaseline: idle_completed_approved_docs_only_judged
     post_local_base_regate_material_owner_window_selection: idle_completed_approved_scope_candidate_judged
-    post_local_base_regate_csv_input_intake_hardening: worker_rework_dispatched
-    post_local_base_regate_csv_input_intake_hardening_review: idle_completed_needs_rework
+    post_local_base_regate_csv_input_intake_hardening: idle_completed_ready_for_judge_review_after_rework
+    post_local_base_regate_csv_input_intake_hardening_review: re_review_dispatched_after_rework
     material_worker_released: post_local_base_regate_csv_input_intake_hardening_only
   active_material_owner_window_after_post_local_base_regate:
     slug: post_local_base_regate_csv_input_intake_hardening
-    status: rework_dispatched
+    status: ready_for_judge_review_after_rework_pending_independent_re_review
     pending_worktree_id: local:54c32872-df4a-4cd9-8e26-5f592283c7a1
     thread_id: 019ec28a-ddee-7582-9b44-8298dd89f582
     thread_title: Fortalece ingestão CSV/CNPJ
@@ -668,7 +668,7 @@ monitoring:
     target_min_commit: 6810b70
     dispatch_file: results/post-local-base-regate-csv-input-intake-hardening-dispatch-2026-06-13.md
     result_file: results/post-local-base-regate-csv-input-intake-hardening-2026-06-13.md
-    result_status: ready_for_judge_review
+    result_status: ready_for_judge_review_after_rework
     dispatched_at: "2026-06-13 16:52:27 -03"
     candidate_observed_at: "2026-06-13 17:03:35 -03"
     judge_pre_review_validation:
@@ -689,8 +689,20 @@ monitoring:
     judge_decision_status: needs_rework
     rework_requested_at: "2026-06-13 17:10:06 -03"
     rework_dispatched_at: "2026-06-13 17:11:41 -03"
+    rework_completed_at: "2026-06-13 17:14:57 -03"
     rework_required_findings:
       - p2_duplicate_message_lost_when_reused_lookup_result_has_message
+    rework_worker_reported_checks:
+      focused_tests: pass_3_files_26_tests
+      typecheck: pass
+      lint: pass
+      full_test: pass_40_files_263_tests
+      smoke_real_csv_mock: pass
+      smoke_electron_ui_mock: pass
+      diff_check: pass
+    re_review_dispatch_file: results/post-local-base-regate-csv-input-intake-hardening-review-after-rework-dispatch-2026-06-13.md
+    re_review_result_file: results/post-local-base-regate-csv-input-intake-hardening-review-after-rework-2026-06-13.md
+    re_review_dispatched_at: "2026-06-13 17:14:57 -03"
     residual_risks:
       - p3_renderer_missing_column_normalizer_can_hide_new_core_guidance
     classification: material_single_writer

@@ -154,13 +154,16 @@ F8B1 was dispatched, independently reviewed and selectively integrated in Wave
 
 | Phase | Thread | Worktree | Scope |
 |---|---|---|---|
-| `post_local_base_regate_csv_input_intake_hardening` | worker `019ec28a-ddee-7582-9b44-8298dd89f582`; review `019ec296-2ca5-73b0-b984-6379c1be7d78` | worker `/Users/icaroaguiar/.codex/worktrees/a185/consulta-simples-csv`; review `/Users/icaroaguiar/.codex/worktrees/8fda/consulta-simples-csv` | Independent review returned `needs_rework`; judge did not release integration; rework was dispatched to the worker at `2026-06-13 17:11:41 -03` to fix duplicate-message visibility before new review |
+| `post_local_base_regate_csv_input_intake_hardening` | worker `019ec28a-ddee-7582-9b44-8298dd89f582`; review `019ec296-2ca5-73b0-b984-6379c1be7d78` | worker `/Users/icaroaguiar/.codex/worktrees/a185/consulta-simples-csv`; review `/Users/icaroaguiar/.codex/worktrees/8fda/consulta-simples-csv` | Worker rework is `ready_for_judge_review_after_rework`; reported focused tests/typecheck/lint/full test/smoke CSV/smoke Electron/diff-check passed; re-review dispatched and integration remains blocked until reviewer and judge approve |
 
 Judge decision:
 `results/post-local-base-regate-csv-input-intake-hardening-judge-decision-2026-06-13.md`.
 
 Independent review:
 `results/post-local-base-regate-csv-input-intake-hardening-review-2026-06-13.md`.
+
+Re-review dispatch:
+`results/post-local-base-regate-csv-input-intake-hardening-review-after-rework-dispatch-2026-06-13.md`.
 
 Independent review threads for the coverage gate:
 `019ec1d0-a1f5-7601-97ef-b91f46e0d00c` and canonical follow-up
