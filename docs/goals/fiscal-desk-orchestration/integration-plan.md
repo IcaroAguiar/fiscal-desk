@@ -1380,3 +1380,9 @@ As of this dispatch, the material worker thread is active:
 - title: `Implementa painel de sugestões`;
 - worktree: `/Users/icaroaguiar/.codex/worktrees/abce/consulta-simples-csv`;
 - canonical dispatch commit: `eb20ec3`.
+
+The worker reported that `CONTEXT.md`, packet `010` and `.visual-fidelity`
+references are absent from its worktree because they are local-only/ignored in
+the canonical checkout. The judge sent a follow-up instruction allowing
+read-only canonical absolute fallback for those paths without copying, editing
+or expanding allowed writes.

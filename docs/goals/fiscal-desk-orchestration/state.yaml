@@ -1261,6 +1261,12 @@ monitoring:
     branch: feat/fiscal-desk-local-base-prep
     target_min_commit: 231686b
     canonical_dispatch_commit: eb20ec3
+    context_fallback_clarification_sent: true
+    context_fallback_paths:
+      - CONTEXT.md
+      - docs/fiscal-desk/executor-packets/010-execution-dashboard-notifications.md
+      - .visual-fidelity/visual-spec.md
+      - .visual-fidelity/component-map.json
     classification: material_renderer_worker
     dispatch_file: results/post-p3-operational-execution-panel-suggestions-dispatch-2026-06-13.md
     result_file: results/post-p3-operational-execution-panel-suggestions-2026-06-13.md

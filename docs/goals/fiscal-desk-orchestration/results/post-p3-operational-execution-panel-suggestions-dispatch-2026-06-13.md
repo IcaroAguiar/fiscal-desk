@@ -63,6 +63,22 @@ Read before editing:
 - `src/renderer/ui/operational-copy.ts`
 - `src/renderer/ui/app-view-lists.ts`
 
+## Local-Only Context Fallback
+
+Some required context files are intentionally local-only or ignored in worker
+worktrees. If any of the following paths are absent from the worker worktree,
+read them read-only from the canonical checkout at
+`/Users/icaroaguiar/dev/pessoal/consulta-simples-csv/`:
+
+- `CONTEXT.md`
+- `docs/fiscal-desk/executor-packets/010-execution-dashboard-notifications.md`
+- `.visual-fidelity/visual-spec.md`
+- `.visual-fidelity/component-map.json`
+
+Do not copy, edit, stage or version these local-only files. Record in the
+receipt which required files were read through the canonical absolute fallback.
+This fallback does not expand the allowed write set.
+
 ## Allowed Writes
 
 Only these paths:
