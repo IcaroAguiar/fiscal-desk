@@ -604,9 +604,9 @@ monitoring:
   observe_threads_frequently: true
   heartbeat_automation_id: fiscal-desk-f0-monitor
   heartbeat_interval_minutes: 30
-  last_observation_at: "2026-06-13 15:49:17 -03"
-  last_observation_file: results/first-release-post-rework-release-security-review-dispatch-2026-06-13.md
-  last_observation_status: post_rework_release_security_regate_dispatched
+  last_observation_at: "2026-06-13 15:55:30 -03"
+  last_observation_file: docs/goals/fiscal-desk-orchestration/integration-plan.md
+  last_observation_status: post_rework_security_gate_found_local_public_base_log_privacy_blocker
   f0_thread_status: self_approval_blocker_resolved_by_judge
   final_integration_review_status: approved_by_judge
   final_integration_review_thread_id: 019ec005-f849-7b53-ae0f-ae7c02df4f63
@@ -630,7 +630,7 @@ monitoring:
   staging_versioning_closeout_dispatch_file: results/staging-versioning-closeout-dispatch-2026-06-13.md
   staging_versioning_closeout_file: results/staging-versioning-closeout.md
   staging_versioning_closeout_judge_decision_file: results/staging-versioning-closeout-judge-decision.md
-  next_material_worker_status: blocked_pending_post_rework_release_security_regate_judgment
+  next_material_worker_status: blocked_pending_local_public_base_log_privacy_rework
   last_thread_observation:
     testing_infra_coverage_gate_worker: idle_completed
     testing_infra_coverage_gate_independent_review: idle_completed_approved_candidate
@@ -646,7 +646,8 @@ monitoring:
     first_release_package_identity_and_publish_safety: idle_completed_rework_approved_integrated
     first_release_post_rework_release_review: active
     first_release_post_rework_security_review: active
-    material_worker_released: no_new_material_worker_released_post_rework_regate_only
+    first_release_local_public_base_log_privacy_hardening: pending_worktree
+    material_worker_released: local_public_base_log_privacy_rework_only
   active_first_release_rework_owner_windows:
     status: approved_by_judge_integrated_validated
     dispatch_file: results/first-release-rework-owner-windows-dispatch-2026-06-13.md
@@ -742,7 +743,7 @@ monitoring:
           - docs/goals/fiscal-desk-orchestration/results/first-release-package-identity-and-publish-safety-2026-06-13.md
   active_post_rework_release_security_gate:
     slug: first_release_post_rework_release_security_review
-    status: active_read_only_gate
+    status: needs_rework_blocker_formal
     dispatch_file: results/first-release-post-rework-release-security-review-dispatch-2026-06-13.md
     dispatched_at: "2026-06-13 15:49:17 -03"
     source_integration_decision_file: results/first-release-rework-integration-judge-decision-2026-06-13.md
@@ -750,6 +751,18 @@ monitoring:
     source_commit: dd64d86
     material_worker_released: false
     blocks_material_workers_until_judged: true
+    blocker:
+      slug: first_release_local_public_base_log_privacy_hardening
+      status: dispatched_pending_worktree
+      pending_worktree_id: local:44d7a4bb-ee11-450d-ab76-44706463f61c
+      found_by_thread_id: 019ec250-ce73-78c3-9660-a7e5122b3417
+      evidence:
+        - src/core/public-base/local-public-base.store.ts_logs_indexPath_absolute
+        - src/core/public-base/local-public-base.store.ts_logs_raw_error_message
+      allowed_write:
+        - src/core/public-base/local-public-base.store.ts
+        - test/unit/local-public-base.test.ts
+        - docs/goals/fiscal-desk-orchestration/results/first-release-local-public-base-log-privacy-hardening-2026-06-13.md
     gates:
       release_review:
         slug: first_release_post_rework_release_review

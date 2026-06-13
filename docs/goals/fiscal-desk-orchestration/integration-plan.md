@@ -744,3 +744,24 @@ The judge opened the post-rework read-only gate as two independent threads:
 Both threads use GPT-5.5 with medium reasoning and can run concurrently because
 they are read-only and write distinct receipts. No material feature work is
 released until both receipts are complete and judged.
+
+## Post-Rework Gate Blocker: Local Public Base Logs As Of 2026-06-13 15:55
+
+During the post-rework security review, the reviewer surfaced a real privacy
+gap outside the earlier ledger/IPC rework boundary:
+`src/core/public-base/local-public-base.store.ts` still logs the local
+`indexPath` and raw `error.message` in Base Publica Local warnings.
+
+The judge confirmed this in the canonical branch. Because Base Publica Local is
+a supported first-release flow, no material feature work is released. The judge
+opened a narrow rework owner window:
+
+- slug: `first_release_local_public_base_log_privacy_hardening`;
+- pending worktree: `local:44d7a4bb-ee11-450d-ab76-44706463f61c`;
+- model: GPT-5.5, reasoning medium;
+- allowed write: `src/core/public-base/local-public-base.store.ts`,
+  `test/unit/local-public-base.test.ts`, and
+  `results/first-release-local-public-base-log-privacy-hardening-2026-06-13.md`.
+
+After that rework is accepted and integrated, the orchestrator must repeat or
+complete the security gate before selecting the next material phase.
