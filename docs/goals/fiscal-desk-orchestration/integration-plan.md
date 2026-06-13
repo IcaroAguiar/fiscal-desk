@@ -1372,3 +1372,11 @@ scope.
 The result remains candidate-only. It requires judge inspection, canonical
 verification where feasible and independent review before any material
 integration is accepted.
+
+As of this dispatch, the material worker thread is active:
+
+- pending worktree: `local:69ad988e-c8ab-4e83-8643-1cb1098394d9`;
+- thread: `019ec327-63be-7143-97ec-84bf9bd7bfd0`;
+- title: `Implementa painel de sugestões`;
+- worktree: `/Users/icaroaguiar/.codex/worktrees/abce/consulta-simples-csv`;
+- canonical dispatch commit: `eb20ec3`.

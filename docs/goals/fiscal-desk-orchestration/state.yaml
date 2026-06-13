@@ -606,7 +606,7 @@ monitoring:
   heartbeat_interval_minutes: 30
   last_observation_at: "2026-06-13 19:47:00 -03"
   last_observation_file: docs/goals/fiscal-desk-orchestration/integration-plan.md
-  last_observation_status: post_p3_operational_execution_panel_suggestions_prepared_for_dispatch
+  last_observation_status: post_p3_operational_execution_panel_suggestions_active_material_worker
   f0_thread_status: self_approval_blocker_resolved_by_judge
   final_integration_review_status: approved_by_judge
   final_integration_review_thread_id: 019ec005-f849-7b53-ae0f-ae7c02df4f63
@@ -630,7 +630,7 @@ monitoring:
   staging_versioning_closeout_dispatch_file: results/staging-versioning-closeout-dispatch-2026-06-13.md
   staging_versioning_closeout_file: results/staging-versioning-closeout.md
   staging_versioning_closeout_judge_decision_file: results/staging-versioning-closeout-judge-decision.md
-  next_material_worker_status: prepared_for_dispatch_post_p3_operational_execution_panel_suggestions
+  next_material_worker_status: active_post_p3_operational_execution_panel_suggestions
   last_thread_observation:
     testing_infra_coverage_gate_worker: idle_completed
     testing_infra_coverage_gate_independent_review: idle_completed_approved_candidate
@@ -669,8 +669,8 @@ monitoring:
     post_p3_integrated_validation_large_file_ratchet_rework_review: idle_completed_approved_candidate_judged
     post_p3_large_file_ratchet_rework_next_owner_window_selection: idle_completed_approved_scope_candidate_judged
     post_p3_large_file_ratchet_rework_final_readiness_review: idle_completed_approved_candidate_judged
-    post_p3_operational_execution_panel_suggestions: prepared_for_codex_app_thread
-    material_worker_released: none_after_p3_renderer_missing_column_normalizer_integration
+    post_p3_operational_execution_panel_suggestions: active_material_worker_dispatched
+    material_worker_released: post_p3_operational_execution_panel_suggestions
   active_material_owner_window_after_post_local_base_regate:
     slug: post_local_base_regate_csv_input_intake_hardening
     status: approved_by_judge_integrated_validated
@@ -1251,15 +1251,16 @@ monitoring:
       - docs/goals/fiscal-desk-orchestration/results/post-p3-large-file-ratchet-rework-final-readiness-review-2026-06-13.md
   active_material_owner_window_after_post_p3_readiness:
     slug: post_p3_operational_execution_panel_suggestions
-    status: prepared_for_codex_app_thread
-    pending_worktree_id: pending
-    thread_id: pending
-    thread_title: pending
-    worktree: pending
+    status: active_material_worker_dispatched
+    pending_worktree_id: local:69ad988e-c8ab-4e83-8643-1cb1098394d9
+    thread_id: 019ec327-63be-7143-97ec-84bf9bd7bfd0
+    thread_title: "Implementa painel de sugestões"
+    worktree: /Users/icaroaguiar/.codex/worktrees/abce/consulta-simples-csv
     model: gpt-5.5
     reasoning: medium
     branch: feat/fiscal-desk-local-base-prep
     target_min_commit: 231686b
+    canonical_dispatch_commit: eb20ec3
     classification: material_renderer_worker
     dispatch_file: results/post-p3-operational-execution-panel-suggestions-dispatch-2026-06-13.md
     result_file: results/post-p3-operational-execution-panel-suggestions-2026-06-13.md
