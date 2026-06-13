@@ -726,3 +726,21 @@ No new feature worker is released by this decision. The next step is a fresh
 read-only post-rework release/security gate against the canonical branch. Only
 after that gate is complete and judged can the orchestrator select the next
 material owner window.
+
+## First Release Post-Rework Release/Security Review Dispatch As Of 2026-06-13 15:49
+
+Receipt:
+`results/first-release-post-rework-release-security-review-dispatch-2026-06-13.md`.
+
+The judge opened the post-rework read-only gate as two independent threads:
+
+- release review:
+  `019ec250-960e-77a0-a7f0-e9334ea21646`, worktree
+  `/Users/icaroaguiar/.codex/worktrees/aea7/consulta-simples-csv`;
+- security review:
+  `019ec250-ce73-78c3-9660-a7e5122b3417`, worktree
+  `/Users/icaroaguiar/.codex/worktrees/d0d5/consulta-simples-csv`.
+
+Both threads use GPT-5.5 with medium reasoning and can run concurrently because
+they are read-only and write distinct receipts. No material feature work is
+released until both receipts are complete and judged.
