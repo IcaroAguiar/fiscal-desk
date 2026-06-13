@@ -8,6 +8,7 @@ import {
   ipcMain,
   powerSaveBlocker,
 } from "electron";
+import { PROCESS_CSV_IPC_CHANNEL } from "../../core/app/process-csv.types";
 import { processCsv } from "../../core/app/process-csv.use-case";
 import { parseProcessCsvDeliveryFormat } from "../../core/app/process-csv-delivery";
 import { resolvePackagedWindowsBrowserPath } from "../../core/simples/adapters/receita-web/receita-browser-path";
@@ -30,6 +31,7 @@ import {
   createLocalPublicBaseStore,
   registerLocalPublicBaseIpc,
 } from "./local-public-base.ipc";
+import { resolveIpcDeliverySelection } from "./process-csv-delivery-selection";
 import {
   attemptAutoSave,
   getAutoSaveOutputPath,
@@ -40,6 +42,7 @@ type ProcessCsvInput = {
   acceptedLocalPublicBaseNotice?: boolean;
   content: string;
   deliveryFormat?: unknown;
+  deliveryOptionId?: unknown;
   provider: SimplesProviderName;
   cnpjColumn?: string;
   providerConfigVersion?: string;
@@ -49,6 +52,7 @@ type ProcessCsvInput = {
 type ResumeProcessExecutionInput = {
   acceptedLocalPublicBaseNotice?: boolean;
   deliveryFormat?: unknown;
+  deliveryOptionId?: unknown;
   ledgerKey: string;
 };
 
@@ -85,7 +89,7 @@ export function registerCsvIpc(): void {
     };
   });
 
-  ipcMain.handle("csv:pick-input-file", async () => {
+  ipcMain.handle(PROCESS_CSV_IPC_CHANNEL.PICK_INPUT_FILE, async () => {
     const result = await dialog.showOpenDialog({
       title: "Selecionar CSV",
       properties: ["openFile"],
@@ -109,22 +113,23 @@ export function registerCsvIpc(): void {
     };
   });
 
-  ipcMain.handle("csv:process", async (event, input: ProcessCsvInput) => {
-    return processCsvWithLedger(event, input);
-  });
+  ipcMain.handle(
+    PROCESS_CSV_IPC_CHANNEL.PROCESS,
+    async (event, input: ProcessCsvInput) => {
+      return processCsvWithLedger(event, input);
+    },
+  );
 
   registerLocalPublicBaseIpc();
 
-  ipcMain.handle("csv:list-executions", async () => {
+  ipcMain.handle(PROCESS_CSV_IPC_CHANNEL.LIST_EXECUTIONS, async () => {
     return createExecutionLedger().listRuns({ limit: 8 });
   });
 
   ipcMain.handle(
-    "csv:resume-execution",
+    PROCESS_CSV_IPC_CHANNEL.RESUME_EXECUTION,
     async (event, input: ResumeProcessExecutionInput) => {
-      const deliveryFormat = parseProcessCsvDeliveryFormat(
-        input.deliveryFormat,
-      );
+      const deliverySelection = resolveIpcDeliverySelection(input);
       const execution = await createExecutionLedger().getRun(input.ledgerKey);
 
       if (!execution) {
@@ -181,7 +186,7 @@ export function registerCsvIpc(): void {
                 input.acceptedLocalPublicBaseNotice,
             }
           : {}),
-        deliveryFormat,
+        ...deliverySelection,
         provider: execution.providerName,
         ...(execution.cnpjColumn ? { cnpjColumn: execution.cnpjColumn } : {}),
         providerConfigVersion: execution.providerConfigVersion,
@@ -190,7 +195,7 @@ export function registerCsvIpc(): void {
     },
   );
 
-  ipcMain.handle("csv:cancel-processing", () => {
+  ipcMain.handle(PROCESS_CSV_IPC_CHANNEL.CANCEL_PROCESSING, () => {
     if (!activeProcessingSession) {
       return false;
     }
@@ -204,7 +209,7 @@ export function registerCsvIpc(): void {
   });
 
   ipcMain.handle(
-    "csv:save-output-file",
+    PROCESS_CSV_IPC_CHANNEL.SAVE_OUTPUT_FILE,
     async (_event, input: SaveOutputInput): Promise<string | null> => {
       const format = parseProcessCsvDeliveryFormat(input.format);
       const extension = format === "xlsx" ? "xlsx" : "csv";
@@ -232,7 +237,7 @@ export function registerCsvIpc(): void {
   );
 
   ipcMain.handle(
-    "csv:auto-save-output-file",
+    PROCESS_CSV_IPC_CHANNEL.AUTO_SAVE_OUTPUT_FILE,
     async (
       _event,
       input: { content: string; sourceFilePath: string },
@@ -277,7 +282,7 @@ async function processCsvWithLedger(
   event: IpcMainInvokeEvent,
   input: ProcessCsvInput,
 ) {
-  const deliveryFormat = parseProcessCsvDeliveryFormat(input.deliveryFormat);
+  const deliverySelection = resolveIpcDeliverySelection(input);
 
   if (activeProcessingSession) {
     throw new Error("Ja existe um processamento em andamento.");
@@ -337,11 +342,11 @@ async function processCsvWithLedger(
 
     const result = await processCsv(input.content, provider, {
       ...(options ? { cnpjColumn: options } : {}),
-      deliveryFormat,
+      ...deliverySelection,
       executionLedger: executionSession,
       signal: controller.signal,
       onLookupProgress(progress) {
-        event.sender.send("csv:lookup-progress", progress);
+        event.sender.send(PROCESS_CSV_IPC_CHANNEL.LOOKUP_PROGRESS, progress);
         const shouldLog =
           progress.completedUniqueLookups === 1 ||
           progress.completedUniqueLookups === progress.totalUniqueLookups ||

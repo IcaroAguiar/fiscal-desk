@@ -2,6 +2,7 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { app, dialog, ipcMain } from "electron";
 import { LocalPublicBaseStore } from "../../core/public-base/local-public-base.store";
+import type { LocalPublicBasePreparationConsent } from "../../core/public-base/local-public-base.types";
 import { LocalPublicBaseSimplesLookupAdapter } from "../../core/simples/adapters/local-public-base-simples-lookup.adapter";
 import type { SimplesLookupPort } from "../../core/simples/simples-lookup.port";
 import type { SimplesProviderName } from "../../core/simples/simples-provider.names";
@@ -9,6 +10,7 @@ import { SIMPLES_PROVIDER } from "../../core/simples/simples-provider.names";
 
 type PrepareLocalPublicBaseInput = {
   content: string;
+  consent?: LocalPublicBasePreparationConsent;
   sourceFileName: string;
   sourceFilePath: string;
 };
@@ -54,6 +56,7 @@ export function registerLocalPublicBaseIpc(): void {
 
       const preparation = createLocalPublicBaseStore().prepareFromCsv({
         content: input.content,
+        ...(input.consent ? { consent: input.consent } : {}),
         sourceFileName: input.sourceFileName,
         sourceFilePath: input.sourceFilePath,
       });

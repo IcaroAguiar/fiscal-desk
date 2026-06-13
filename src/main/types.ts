@@ -1,13 +1,37 @@
 export type {
   LookupProgress,
+  ProcessCsvBridgeEvent,
   ProcessCsvDeliveryFormat,
+  ProcessCsvDeliveryOptionId,
+  ProcessCsvDomainEvent,
+  ProcessCsvEventKind,
   ProcessCsvExecution,
+  ProcessCsvExecutionBoundary,
+  ProcessCsvExecutionErrorReportedEvent,
+  ProcessCsvExecutionStateChangedEvent,
+  ProcessCsvExecutionStatus,
+  ProcessCsvIpcChannel,
+  ProcessCsvLookupProgressBridgeEvent,
+  ProcessCsvLookupProgressReportedEvent,
   ProcessCsvOutputDelivery,
+  ProcessCsvOutputDeliveryReadyEvent,
   ProcessCsvRunStatus,
   ProcessCsvSummary,
+  ProcessCsvTerminalExecutionStatus,
   ProcessExecutionHistoryItem,
 } from "../core/app/process-csv.types";
+export {
+  PROCESS_CSV_DELIVERY_FORMAT,
+  PROCESS_CSV_DELIVERY_OPTION_ID,
+  PROCESS_CSV_EVENT_KIND,
+  PROCESS_CSV_EXECUTION_BOUNDARIES,
+  PROCESS_CSV_EXECUTION_STATUS,
+  PROCESS_CSV_IPC_CHANNEL,
+  PROCESS_CSV_RUN_STATUS,
+  PROCESS_CSV_TERMINAL_EXECUTION_STATUSES,
+} from "../core/app/process-csv.types";
 export type {
+  LocalPublicBasePreparationConsent,
   LocalPublicBasePrepareResult,
   LocalPublicBaseStatus,
 } from "../core/public-base/local-public-base.types";

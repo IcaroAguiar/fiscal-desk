@@ -4,6 +4,10 @@ import { MockSimplesLookupAdapter } from "./adapters/mock-simples-lookup.adapter
 import { ReceitaConsultaOptantesAdapter } from "./adapters/receita-web/receita-consulta-optantes.adapter";
 import type { SimplesLookupPort } from "./simples-lookup.port";
 import {
+  SimplesFallbackLookupAdapter,
+  type SimplesFallbackLookupOptions,
+} from "./simples-provider.fallback";
+import {
   SIMPLES_PROVIDER,
   type SimplesProviderName,
 } from "./simples-provider.names";
@@ -26,4 +30,25 @@ export function createSimplesLookupProvider(
   }
 
   return new MockSimplesLookupAdapter();
+}
+
+export function createFallbackSimplesLookupProvider(
+  providerName: SimplesProviderName,
+  options: SimplesFallbackLookupOptions = {},
+): SimplesLookupPort {
+  return new SimplesFallbackLookupAdapter(
+    providerName,
+    createSingleAttemptSimplesLookupProvider,
+    options,
+  );
+}
+
+function createSingleAttemptSimplesLookupProvider(
+  providerName: SimplesProviderName,
+): SimplesLookupPort {
+  if (providerName === SIMPLES_PROVIDER.CNPJA_OPEN) {
+    return new CnpjaOpenSimplesLookupAdapter(undefined, undefined, 1);
+  }
+
+  return createSimplesLookupProvider(providerName);
 }

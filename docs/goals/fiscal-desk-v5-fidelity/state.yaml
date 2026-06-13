@@ -1,0 +1,28 @@
+status: active
+created_at: "2026-05-22T00:00:00-03:00"
+branch: feat/fiscal-desk-local-base-prep
+current_phase: complete
+completed_at: "2026-05-22T01:17:00-03:00"
+goldens:
+  - docs/ai/reports/fiscal-desk-ui-references/operations-v5/v5-a.png
+  - docs/ai/reports/fiscal-desk-ui-references/operations-v5/v5-a-mobile.png
+required_gates:
+  - visual_fidelity_contract
+  - closed_executor_packets
+  - screenshot_dom_aria_runs
+  - fraud_proof_closeout
+  - smoke_visual
+  - lint
+  - typecheck
+  - test
+  - build
+  - smoke_electron_ui
+latest_evidence:
+  visual_smoke: pass
+  lint: pass
+  typecheck: pass
+  unit_integration_tests: pass
+  build: pass
+  electron_smoke: pass
+  independent_review: blocker_found_and_fixed
+  reviewer_recheck: pass

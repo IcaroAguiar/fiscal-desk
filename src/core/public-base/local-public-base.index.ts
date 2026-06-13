@@ -6,6 +6,7 @@ import {
   LOCAL_PUBLIC_BASE_STATUS,
 } from "./local-public-base.fixture";
 import type {
+  LocalPublicBasePreparationConsent,
   LocalPublicBasePrepareInput,
   LocalPublicBasePrepareResult,
   LocalPublicBaseRecord,
@@ -42,6 +43,8 @@ export function createLocalPublicBaseIndexFromRecords(
 export function prepareLocalPublicBaseFromCsv(
   input: LocalPublicBasePrepareInput,
 ): LocalPublicBasePrepareResult & { records: LocalPublicBaseRecord[] } {
+  assertLocalPublicBasePreparationConsent(input.consent);
+
   const { headers, rows } = readCsv(input.content);
   const columns = resolveLocalPublicBaseColumns(headers);
   const records = new Map<string, LocalPublicBaseRecord>();
@@ -146,6 +149,22 @@ export function createLocalPublicBaseStatus(input: {
 
 export function getLocalPublicBaseStatus(): LocalPublicBaseStatus {
   return LOCAL_PUBLIC_BASE_STATUS;
+}
+
+export function assertLocalPublicBasePreparationConsent(
+  consent: LocalPublicBasePreparationConsent | undefined,
+): void {
+  if (
+    consent === undefined ||
+    consent.accepted !== true ||
+    !normalizeText(consent.acceptedAt) ||
+    !normalizeText(consent.baseDateAcknowledged) ||
+    !normalizeText(consent.stalenessWarningAcknowledged)
+  ) {
+    throw new Error(
+      "Consentimento explícito é obrigatório antes de preparar a Base Pública Local.",
+    );
+  }
 }
 
 function resolveLocalPublicBaseColumns(headers: string[]): {

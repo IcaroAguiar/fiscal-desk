@@ -1,3 +1,5 @@
+import { normalizeCnpj } from "../../cnpj/normalize-cnpj";
+import { validateCnpj } from "../../cnpj/validate-cnpj";
 import { LOCAL_PUBLIC_BASE_SOURCE } from "../../public-base/local-public-base.fixture";
 import {
   createLocalPublicBaseIndex,
@@ -15,12 +17,28 @@ export class LocalPublicBaseSimplesLookupAdapter implements SimplesLookupPort {
   ) {}
 
   async lookup(cnpj: string): Promise<SimplesLookupResult> {
-    const record = this.index.findByCnpj(cnpj);
+    const normalizedCnpj = normalizeCnpj(cnpj);
     const baseDate = this.status.baseDate ?? "data não informada";
+
+    if (!validateCnpj(normalizedCnpj)) {
+      return {
+        cnpj: normalizedCnpj,
+        simplesNacional: null,
+        simei: null,
+        source: LOCAL_PUBLIC_BASE_SOURCE,
+        status: "INVALID_CNPJ",
+        message: "CNPJ inválido para consulta na Base Pública Local.",
+        raw: {
+          baseDate,
+        },
+      };
+    }
+
+    const record = this.index.findByCnpj(normalizedCnpj);
 
     if (!record) {
       return {
-        cnpj,
+        cnpj: normalizedCnpj,
         simplesNacional: null,
         simei: null,
         source: LOCAL_PUBLIC_BASE_SOURCE,
@@ -33,7 +51,7 @@ export class LocalPublicBaseSimplesLookupAdapter implements SimplesLookupPort {
     }
 
     return {
-      cnpj,
+      cnpj: normalizedCnpj,
       simplesNacional: record.simplesNacional,
       simei: record.simei,
       source: LOCAL_PUBLIC_BASE_SOURCE,

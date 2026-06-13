@@ -67,6 +67,13 @@ try {
       async ({ content, sourceFilePath }) => {
         const result = await window.appBridge.prepareLocalPublicBase({
           content,
+          consent: {
+            accepted: true,
+            acceptedAt: new Date().toISOString(),
+            baseDateAcknowledged: "2026-05-20",
+            stalenessWarningAcknowledged:
+              "Fixture local de smoke com Data da Base 2026-05-20.",
+          },
           sourceFileName: "base-publica-local.csv",
           sourceFilePath,
         });
@@ -82,6 +89,7 @@ try {
     await page.selectOption('[data-field="provider"]', smokeProvider);
   }
   await page.selectOption('[data-field="delivery-format"]', "xlsx");
+  await page.click('[data-view="historico"]');
   await page.waitForSelector('[data-action="resume-execution"]', {
     timeout: 20_000,
   });
@@ -100,13 +108,15 @@ try {
         notice.style.display !== "none"
       );
     });
+    await page.click('[data-view="painel"]');
     await page.check('[data-field="local-public-base-notice"]');
+    await page.click('[data-view="historico"]');
     await page.click('[data-action="resume-execution"]');
   }
   await page.waitForFunction(() =>
     document
       .querySelector('[data-slot="execution-resume"]')
-      ?.textContent?.includes("1 retomadas"),
+      ?.textContent?.includes("1 CNPJs retomados"),
   );
   const history = await page.evaluate(() => window.appBridge.listExecutions());
   const latestHistory = history[0];

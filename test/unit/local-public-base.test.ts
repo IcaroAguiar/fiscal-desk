@@ -1,9 +1,10 @@
-import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 
 import {
+  assertLocalPublicBasePreparationConsent,
   createLocalPublicBaseIndex,
   createLocalPublicBaseIndexFromRecords,
   getLocalPublicBaseStatus,
@@ -13,6 +14,13 @@ import { LocalPublicBaseStore } from "../../src/core/public-base/local-public-ba
 import { LocalPublicBaseSimplesLookupAdapter } from "../../src/core/simples/adapters/local-public-base-simples-lookup.adapter";
 
 const tempDirs: string[] = [];
+const fixturePath = resolve("test/fixtures/smoke/base-publica-local.csv");
+const acceptedConsent = {
+  accepted: true,
+  acceptedAt: "2026-06-13T00:00:00.000Z",
+  baseDateAcknowledged: "2026-05-20",
+  stalenessWarningAcknowledged: "A Base Pública Local pode estar defasada.",
+} as const;
 
 afterEach(async () => {
   await Promise.all(
@@ -54,6 +62,7 @@ describe("Base Pública Local", () => {
         "cnpj;razao_social;simples_nacional;simei;data_base",
         "00000000000191;Banco do Brasil S.A.;sim;nao;2026-05-20",
       ].join("\n"),
+      consent: acceptedConsent,
       sourceFileName: "base.csv",
       sourceFilePath: "/tmp/base.csv",
     });
@@ -63,13 +72,24 @@ describe("Base Pública Local", () => {
       prepared.status,
     );
 
-    await expect(adapter.lookup("00000000000191")).resolves.toMatchObject({
+    await expect(adapter.lookup("00.000.000/0001-91")).resolves.toMatchObject({
       cnpj: "00000000000191",
       simplesNacional: true,
       simei: false,
       source: "base-publica-local",
       status: "SUCCESS",
       message: expect.stringContaining("2026-05-20"),
+      raw: {
+        baseDate: "2026-05-20",
+      },
+    });
+
+    await expect(adapter.lookup("invalido")).resolves.toMatchObject({
+      cnpj: "",
+      simplesNacional: null,
+      simei: null,
+      source: "base-publica-local",
+      status: "INVALID_CNPJ",
       raw: {
         baseDate: "2026-05-20",
       },
@@ -88,6 +108,52 @@ describe("Base Pública Local", () => {
     });
   });
 
+  it("validates the offline fixture used for local prepare/index/lookup", async () => {
+    const content = await readFile(fixturePath, "utf8");
+    const prepared = prepareLocalPublicBaseFromCsv({
+      content,
+      consent: acceptedConsent,
+      sourceFileName: "base-publica-local.csv",
+      sourceFilePath: fixturePath,
+    });
+    const adapter = new LocalPublicBaseSimplesLookupAdapter(
+      createLocalPublicBaseIndexFromRecords(prepared.records),
+      prepared.status,
+    );
+
+    expect(prepared).toMatchObject({
+      acceptedRows: 3,
+      rejectedRows: 0,
+      status: {
+        baseDate: "2026-05-20",
+        preparedRows: 3,
+        state: "ready",
+      },
+    });
+    expect(prepared.status.freshnessWarning).toContain("defasada");
+    await expect(adapter.lookup("33000167000101")).resolves.toMatchObject({
+      simplesNacional: false,
+      simei: false,
+      source: "base-publica-local",
+      status: "SUCCESS",
+      raw: {
+        baseDate: "2026-05-20",
+        razaoSocial: "Petróleo Brasileiro S.A. Petrobras",
+      },
+    });
+  });
+
+  it("rejects malformed explicit local preparation consent", () => {
+    expect(() =>
+      assertLocalPublicBasePreparationConsent({
+        accepted: false,
+        acceptedAt: "",
+        baseDateAcknowledged: null,
+        stalenessWarningAcknowledged: "",
+      } as never),
+    ).toThrow("Consentimento explícito");
+  });
+
   it("prepares a deduplicated local index from a CSV source", () => {
     const prepared = prepareLocalPublicBaseFromCsv({
       content: [
@@ -96,6 +162,7 @@ describe("Base Pública Local", () => {
         "33.000.167/0001-01;Petrobras;nao;nao;2026-05-20",
         "invalido;Linha invalida;sim;nao;2026-05-20",
       ].join("\n"),
+      consent: acceptedConsent,
       sourceFileName: "base-publica.csv",
       sourceFilePath: "/tmp/base-publica.csv",
     });
@@ -124,6 +191,7 @@ describe("Base Pública Local", () => {
         "cnpj;razao_social;simples_nacional;simei;data_base",
         "00000000000191;Banco do Brasil S.A.;sim;nao;2026-05-20",
       ].join("\n"),
+      consent: acceptedConsent,
       sourceFileName: "base.csv",
       sourceFilePath: join(directory, "base.csv"),
     });
@@ -152,6 +220,7 @@ describe("Base Pública Local", () => {
         "cnpj;razao_social;simples_nacional;simei;data_base",
         "00000000000191;Banco do Brasil S.A.;sim;nao;2026-05-20",
       ].join("\n"),
+      consent: acceptedConsent,
       sourceFileName: "base-valida.csv",
       sourceFilePath: join(directory, "base-valida.csv"),
     });
@@ -161,6 +230,10 @@ describe("Base Pública Local", () => {
         "cnpj;razao_social;simples_nacional;simei;data_base",
         "invalido;Linha invalida;sim;nao;2026-05-21",
       ].join("\n"),
+      consent: {
+        ...acceptedConsent,
+        baseDateAcknowledged: "2026-05-21",
+      },
       sourceFileName: "base-invalida.csv",
       sourceFilePath: join(directory, "base-invalida.csv"),
     });
@@ -175,6 +248,27 @@ describe("Base Pública Local", () => {
     });
     await expect(store.loadIndex()).resolves.toBeNull();
     await expect(store.loadPreparedBase()).resolves.toBeNull();
+  });
+
+  it("rejects preparation without consent before persisting a local index", async () => {
+    const directory = await mkdtemp(join(tmpdir(), "public-base-test-"));
+    tempDirs.push(directory);
+    const store = new LocalPublicBaseStore(directory);
+
+    await expect(
+      store.prepareFromCsv({
+        content: [
+          "cnpj;razao_social;simples_nacional;simei;data_base",
+          "00000000000191;Banco do Brasil S.A.;sim;nao;2026-05-20",
+        ].join("\n"),
+        sourceFileName: "base-sem-consentimento.csv",
+        sourceFilePath: join(directory, "base-sem-consentimento.csv"),
+      }),
+    ).rejects.toThrow("Consentimento explícito");
+    await expect(store.getStatus()).resolves.toMatchObject({
+      state: "not-prepared",
+    });
+    await expect(store.loadIndex()).resolves.toBeNull();
   });
 
   it("discards persisted indexes with malformed records", async () => {

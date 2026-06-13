@@ -35,21 +35,21 @@ export function formatProviderMode(provider: SimplesProviderName): string {
   }
 
   if (provider === SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL) {
-    return "Base Pública Local";
+    return "Base local";
   }
 
   if (provider === SIMPLES_PROVIDER.RECEITA_WEB) {
-    return "Receita Web assistida";
+    return "Receita Web manual";
   }
 
-  return "Simulação local";
+  return "Simulação";
 }
 
 export function formatCommandBarSummary(
   fileName: string | null,
   provider: SimplesProviderName,
 ): string {
-  const label = fileName ?? "Nenhum CSV carregado";
+  const label = fileName ?? "Nenhum CSV selecionado";
 
   return `${label} • ${formatProviderMode(provider)}`;
 }
@@ -63,14 +63,14 @@ export function formatProviderHint(
   }
 
   if (provider === SIMPLES_PROVIDER.RECEITA_WEB) {
-    return "Receita Web exige navegador visível e supervisão humana";
+    return "A Receita Web abre o navegador e precisa de acompanhamento.";
   }
 
   if (provider === SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL) {
-    return "Base Pública Local usa Data da Base e não consulta online por item";
+    return "A Base local usa a data do arquivo preparado neste computador.";
   }
 
-  return `Provedor selecionado: ${formatProviderMode(provider)}`;
+  return `Consulta configurada em ${formatProviderMode(provider)}.`;
 }
 
 export function buildDedupeLabel(source: DedupeSource): string {
@@ -79,7 +79,7 @@ export function buildDedupeLabel(source: DedupeSource): string {
     source.totalCnpjsEncontrados - source.totalCnpjsUnicosConsultados,
   );
 
-  return `${duplicates} duplicados removidos`;
+  return `${duplicates} CNPJs repetidos ignorados`;
 }
 
 export function previewAutoSavePath(
@@ -93,10 +93,10 @@ export function previewAutoSavePath(
 
 export function formatProgressLine(progress: LookupProgress | null): string {
   if (!progress) {
-    return "Aguardando arquivo para iniciar as consultas únicas.";
+    return "Aguardando arquivo para iniciar.";
   }
 
-  return `${progress.completedUniqueLookups}/${progress.totalUniqueLookups} consultas únicas • ${formatDuration(progress.elapsedMs)} em execução • ETA ${formatDuration(progress.estimatedRemainingMs)} • atual ${progress.currentCnpj}`;
+  return `${progress.completedUniqueLookups}/${progress.totalUniqueLookups} CNPJs consultados • ${formatDuration(progress.elapsedMs)} em andamento • falta ${formatDuration(progress.estimatedRemainingMs)} • atual ${progress.currentCnpj}`;
 }
 
 export function countdownRemainingMs(

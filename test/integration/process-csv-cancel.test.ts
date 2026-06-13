@@ -50,6 +50,7 @@ describe("processCsv cancellation", () => {
     });
 
     expect(result.runStatus).toBe("CANCELLED");
+    expect(result.summary.totalCnpjsValidos).toBe(3);
     expect(result.summary.totalCnpjsUnicosConsultados).toBe(1);
     expect(result.summary.totalErros).toBe(0);
     expect(adapter.calls).toHaveLength(1);

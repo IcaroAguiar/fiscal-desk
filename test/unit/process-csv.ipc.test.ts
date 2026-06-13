@@ -91,6 +91,7 @@ vi.mock(
   }),
 );
 
+import { PROCESS_CSV_DELIVERY_OPTION_ID } from "../../src/core/app/process-csv.types";
 import { processCsv } from "../../src/core/app/process-csv.use-case";
 import { resolvePackagedWindowsBrowserPath } from "../../src/core/simples/adapters/receita-web/receita-browser-path";
 import { loadProviderConfig } from "../../src/core/simples/simples-provider.config";
@@ -230,24 +231,6 @@ describe("process-csv IPC", () => {
     ).rejects.toThrow("disponível apenas no Windows");
   });
 
-  it("rejects invalid delivery formats before starting processing", async () => {
-    const handler = handlers.get("csv:process");
-
-    await expect(
-      handler?.(
-        { sender: { send: vi.fn() } },
-        {
-          content: "cnpj\n00000000000191",
-          deliveryFormat: "pdf",
-          provider: "mock",
-        },
-      ),
-    ).rejects.toThrow("Formato de entrega invalido");
-
-    expect(ledgerMocks.startRun).not.toHaveBeenCalled();
-    expect(processCsv).not.toHaveBeenCalled();
-  });
-
   it("rejects Base Pública Local before ledger side effects without consent or prepared base", async () => {
     const handler = handlers.get("csv:process");
 
@@ -274,39 +257,6 @@ describe("process-csv IPC", () => {
 
     expect(ledgerMocks.startRun).not.toHaveBeenCalled();
     expect(processCsv).not.toHaveBeenCalled();
-  });
-
-  it("rejects invalid delivery formats before resolving resume history", async () => {
-    const handler = handlers.get("csv:resume-execution");
-
-    await expect(
-      handler?.(
-        { sender: { send: vi.fn() } },
-        {
-          deliveryFormat: "pdf",
-          ledgerKey: "mock-0123456789abcdef01234567.json",
-        },
-      ),
-    ).rejects.toThrow("Formato de entrega invalido");
-
-    expect(ledgerMocks.getRun).not.toHaveBeenCalled();
-  });
-
-  it("rejects invalid delivery formats before opening the save dialog", async () => {
-    const handler = handlers.get("csv:save-output-file");
-
-    await expect(
-      handler?.(
-        {},
-        {
-          content: "cnpj;status\n00000000000191;SUCCESS",
-          defaultName: "saida.pdf",
-          format: "pdf",
-        },
-      ),
-    ).rejects.toThrow("Formato de entrega invalido");
-
-    expect(electronMocks.dialog.showSaveDialog).not.toHaveBeenCalled();
   });
 
   it("reserves the active processing slot before ledger initialization finishes", async () => {
@@ -429,6 +379,44 @@ describe("process-csv IPC", () => {
       expect.any(Object),
       expect.objectContaining({
         cnpjColumn: "cnpj",
+        executionLedger: ledgerMocks.session,
+      }),
+    );
+  });
+
+  it("resumes an eligible execution with a current delivery option id", async () => {
+    const handler = handlers.get("csv:resume-execution");
+    const sender = { send: vi.fn() };
+    const sourceFilePath = "/tmp/fiscal-desk-test/entrada.csv";
+    const content = "cnpj\n00000000000191";
+    const { readFile } = await import("node:fs/promises");
+    vi.mocked(readFile).mockResolvedValueOnce(content);
+    ledgerMocks.getRun.mockResolvedValueOnce({
+      canResume: true,
+      cnpjColumn: "cnpj",
+      ledgerKey: "mock-0123456789abcdef01234567.json",
+      providerConfigVersion: "provider-config-v1",
+      providerName: "mock",
+      sourceFilePath,
+      status: "CANCELLED",
+    });
+
+    await expect(
+      handler?.(sender, {
+        deliveryOptionId:
+          PROCESS_CSV_DELIVERY_OPTION_ID.CURRENT_RESULT_WORKBOOK,
+        ledgerKey: "mock-0123456789abcdef01234567.json",
+      }),
+    ).resolves.toMatchObject({
+      runStatus: "SUCCESS",
+    });
+
+    expect(processCsv).toHaveBeenCalledWith(
+      content,
+      expect.any(Object),
+      expect.objectContaining({
+        deliveryOptionId:
+          PROCESS_CSV_DELIVERY_OPTION_ID.CURRENT_RESULT_WORKBOOK,
         executionLedger: ledgerMocks.session,
       }),
     );

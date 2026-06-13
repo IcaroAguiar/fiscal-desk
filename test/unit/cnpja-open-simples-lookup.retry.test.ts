@@ -54,4 +54,32 @@ describe("CnpjaOpenSimplesLookupAdapter retry", () => {
       source: "cnpja-open",
     });
   });
+
+  it("can run as a single-attempt provider for centralized fallback budget", async () => {
+    const adapter = new CnpjaOpenSimplesLookupAdapter(
+      new SequentialHttpClient([
+        {
+          status: 429,
+          json: async () => ({}),
+        },
+        {
+          status: 200,
+          json: async () => ({
+            taxId: "03426484000123",
+            company: {
+              simples: { optant: false, since: null },
+              simei: { optant: false, since: null },
+            },
+          }),
+        },
+      ]),
+      new FakeRateLimiter(),
+      1,
+    );
+
+    await expect(adapter.lookup("03426484000123")).resolves.toMatchObject({
+      status: "TEMPORARY_ERROR",
+      source: "cnpja-open",
+    });
+  });
 });

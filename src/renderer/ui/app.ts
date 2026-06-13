@@ -2,7 +2,12 @@ import {
   SIMPLES_PROVIDER,
   type SimplesProviderName,
 } from "../../core/simples/simples-provider.names";
-import { initialState, type PickCsvResult, type UiState } from "./app.types";
+import {
+  initialState,
+  type PickCsvResult,
+  type UiState,
+  type VisualFixture,
+} from "./app.types";
 import {
   applyProcessResult,
   getDefaultOutputFileName,
@@ -15,6 +20,7 @@ import {
   refreshLocalPublicBaseStatus,
 } from "./app-local-public-base";
 import { prepareLocalPublicBaseResume } from "./app-provider";
+import { collectAppRefs } from "./app-refs";
 import { syncUi as syncUiRefs } from "./app-sync";
 import { renderShell } from "./app-view";
 
@@ -24,138 +30,13 @@ export function mountApp(root: HTMLDivElement | null): void {
   }
 
   const appRoot = root;
-  const state: UiState = { ...initialState };
+  const state: UiState = {
+    ...initialState,
+    visualFixture: getDevVisualFixture(),
+  };
   appRoot.innerHTML = renderShell(state);
 
-  const refs = {
-    pickButton: appRoot.querySelector<HTMLButtonElement>(
-      '[data-action="pick-file"]',
-    ),
-    processButton: appRoot.querySelector<HTMLButtonElement>(
-      '[data-action="process-file"]',
-    ),
-    saveButton: appRoot.querySelector<HTMLButtonElement>(
-      '[data-action="save-file"]',
-    ),
-    cancelButton: appRoot.querySelector<HTMLButtonElement>(
-      '[data-action="cancel-processing"]',
-    ),
-    providerSelect: appRoot.querySelector<HTMLSelectElement>(
-      '[data-field="provider"]',
-    ),
-    columnInput: appRoot.querySelector<HTMLInputElement>(
-      '[data-field="cnpj-column"]',
-    ),
-    deliverySelect: appRoot.querySelector<HTMLSelectElement>(
-      '[data-field="delivery-format"]',
-    ),
-    localPublicBaseNotice: appRoot.querySelector<HTMLInputElement>(
-      '[data-field="local-public-base-notice"]',
-    ),
-    localPublicBaseNoticePanel: appRoot.querySelector<HTMLElement>(
-      '[data-slot="local-public-base-notice-panel"]',
-    ),
-    localPublicBaseDate: appRoot.querySelector<HTMLElement>(
-      '[data-slot="local-public-base-date"]',
-    ),
-    localPublicBaseWarning: appRoot.querySelector<HTMLElement>(
-      '[data-slot="local-public-base-warning"]',
-    ),
-    localPublicBaseStatusLine: appRoot.querySelector<HTMLElement>(
-      '[data-slot="local-public-base-status-line"]',
-    ),
-    localPublicBasePrepareButton: appRoot.querySelector<HTMLButtonElement>(
-      '[data-action="prepare-local-public-base"]',
-    ),
-    localPublicBasePrepPanel: appRoot.querySelector<HTMLElement>(
-      '[data-slot="local-public-base-prep-panel"]',
-    ),
-    message: appRoot.querySelector<HTMLElement>('[data-slot="message"]'),
-    commandSummary: appRoot.querySelector<HTMLElement>(
-      '[data-slot="command-summary"]',
-    ),
-    commandHint: appRoot.querySelector<HTMLElement>(
-      '[data-slot="command-hint"]',
-    ),
-    fileBadge: appRoot.querySelector<HTMLElement>('[data-slot="file-badge"]'),
-    fileDropzoneTitle: appRoot.querySelector<HTMLElement>(
-      '[data-slot="file-dropzone-title"]',
-    ),
-    fileDropzoneHint: appRoot.querySelector<HTMLElement>(
-      '[data-slot="file-dropzone-hint"]',
-    ),
-    outputPreview: appRoot.querySelector<HTMLElement>(
-      '[data-slot="output-preview"]',
-    ),
-    outputSavePath: appRoot.querySelector<HTMLElement>(
-      '[data-slot="output-save-path"]',
-    ),
-    saveInfo: appRoot.querySelector<HTMLElement>('[data-slot="save-info"]'),
-    topStatusPill: appRoot.querySelector<HTMLElement>(
-      '[data-slot="top-status-pill"]',
-    ),
-    runStatusPill: appRoot.querySelector<HTMLElement>(
-      '[data-slot="run-status-pill"]',
-    ),
-    progressSection: appRoot.querySelector<HTMLElement>(
-      '[data-slot="progress-section"]',
-    ),
-    summary: appRoot.querySelector<HTMLElement>('[data-slot="summary"]'),
-    outputStatus: appRoot.querySelector<HTMLElement>(
-      '[data-slot="output-status"]',
-    ),
-    deliveryFormatBadge: appRoot.querySelector<HTMLElement>(
-      '[data-slot="delivery-format-badge"]',
-    ),
-    providerStatus: appRoot.querySelector<HTMLElement>(
-      '[data-slot="provider-status"]',
-    ),
-    kpiTotalLines: appRoot.querySelector<HTMLElement>(
-      '[data-slot="kpi-total-lines"]',
-    ),
-    kpiProcessed: appRoot.querySelector<HTMLElement>(
-      '[data-slot="kpi-processed"]',
-    ),
-    kpiPending: appRoot.querySelector<HTMLElement>('[data-slot="kpi-pending"]'),
-    kpiErrors: appRoot.querySelector<HTMLElement>('[data-slot="kpi-errors"]'),
-    queueActiveName: appRoot.querySelector<HTMLElement>(
-      '[data-slot="queue-active-name"]',
-    ),
-    queueActiveHint: appRoot.querySelector<HTMLElement>(
-      '[data-slot="queue-active-hint"]',
-    ),
-    queueActiveStatus: appRoot.querySelector<HTMLElement>(
-      '[data-slot="queue-active-status"]',
-    ),
-    queueCount: appRoot.querySelector<HTMLElement>('[data-slot="queue-count"]'),
-    dedupeLabel: appRoot.querySelector<HTMLElement>(
-      '[data-slot="dedupe-label"]',
-    ),
-    progressLine: appRoot.querySelector<HTMLElement>(
-      '[data-slot="progress-line"]',
-    ),
-    progressBar: appRoot.querySelector<HTMLElement>(
-      '[data-slot="progress-bar"]',
-    ),
-    currentCnpj: appRoot.querySelector<HTMLElement>(
-      '[data-slot="current-cnpj"]',
-    ),
-    executionStatus: appRoot.querySelector<HTMLElement>(
-      '[data-slot="execution-status"]',
-    ),
-    executionRunId: appRoot.querySelector<HTMLElement>(
-      '[data-slot="execution-run-id"]',
-    ),
-    executionResume: appRoot.querySelector<HTMLElement>(
-      '[data-slot="execution-resume"]',
-    ),
-    executionCheckpoint: appRoot.querySelector<HTMLElement>(
-      '[data-slot="execution-checkpoint"]',
-    ),
-    executionHistory: appRoot.querySelector<HTMLElement>(
-      '[data-slot="execution-history"]',
-    ),
-  };
+  const refs = collectAppRefs(appRoot);
 
   void initializeDefaults();
   void refreshExecutionHistory();
@@ -252,6 +133,25 @@ export function mountApp(root: HTMLDivElement | null): void {
       }
     });
 
+    appRoot.addEventListener("click", (event) => {
+      const target = event.target as HTMLElement;
+      const viewLink = target.closest<HTMLElement>("[data-view]");
+
+      if (!viewLink) {
+        return;
+      }
+
+      const nextView = viewLink.dataset.view;
+
+      if (!isUiView(nextView)) {
+        return;
+      }
+
+      event.preventDefault();
+      state.activeView = nextView;
+      syncUi();
+    });
+
     refs.providerSelect?.addEventListener("change", (event) => {
       state.provider = (event.currentTarget as HTMLSelectElement)
         .value as SimplesProviderName;
@@ -283,6 +183,7 @@ export function mountApp(root: HTMLDivElement | null): void {
   async function handlePickFile(): Promise<void> {
     state.status = "loading";
     state.message = "Abrindo seletor de arquivo...";
+    state.activeView = "painel";
     syncUi();
 
     try {
@@ -316,7 +217,8 @@ export function mountApp(root: HTMLDivElement | null): void {
     state.progressObservedAt = null;
     state.now = Date.now();
     state.status = "idle";
-    state.message = `Arquivo "${result.fileName}" pronto. Revise provedor e coluna antes de iniciar.`;
+    state.activeView = "fila";
+    state.message = `Arquivo "${result.fileName}" pronto. Revise a base de consulta e a coluna antes de iniciar.`;
     syncUi();
   }
 
@@ -330,6 +232,7 @@ export function mountApp(root: HTMLDivElement | null): void {
 
     state.status = "processing";
     state.message = "Iniciando processamento...";
+    state.activeView = "atividade";
     resetOutputState(state);
     state.progress = null;
     state.progressObservedAt = null;
@@ -355,11 +258,13 @@ export function mountApp(root: HTMLDivElement | null): void {
       });
 
       applyProcessResult(state, result);
+      state.activeView = "resultados";
       state.message = buildCompletionMessage(result);
       await refreshExecutionHistory();
       syncUi();
     } catch (error) {
       state.status = "error";
+      state.activeView = "atividade";
       state.message = extractMessage(error, "Falha ao processar o CSV.");
       await refreshExecutionHistory();
       syncUi();
@@ -379,12 +284,14 @@ export function mountApp(root: HTMLDivElement | null): void {
     }
 
     if (!prepareLocalPublicBaseResume(state, historyItem)) {
+      state.activeView = "painel";
       syncUi();
       return;
     }
 
     state.status = "processing";
     state.message = "Retomando execução a partir do histórico local...";
+    state.activeView = "atividade";
     resetOutputState(state);
     state.progress = null;
     state.progressObservedAt = null;
@@ -406,11 +313,13 @@ export function mountApp(root: HTMLDivElement | null): void {
       state.provider = historyItem.providerName;
       state.cnpjColumn = historyItem.cnpjColumn ?? "";
       applyProcessResult(state, result);
+      state.activeView = "resultados";
       state.message = buildCompletionMessage(result);
       await refreshExecutionHistory();
       syncUi();
     } catch (error) {
       state.status = "error";
+      state.activeView = "atividade";
       state.message = extractMessage(error, "Falha ao retomar a execução.");
       await refreshExecutionHistory();
       syncUi();
@@ -489,4 +398,26 @@ export function mountApp(root: HTMLDivElement | null): void {
   function syncUi(): void {
     syncUiRefs(refs, state);
   }
+}
+
+function isUiView(value: string | undefined): value is UiState["activeView"] {
+  return (
+    value === "painel" ||
+    value === "fila" ||
+    value === "resultados" ||
+    value === "atividade" ||
+    value === "historico"
+  );
+}
+
+function getDevVisualFixture(): VisualFixture | null {
+  if (!import.meta.env.DEV) {
+    return null;
+  }
+
+  const candidate = (
+    window as Window & { __FISCAL_DESK_VISUAL_FIXTURE__?: VisualFixture }
+  ).__FISCAL_DESK_VISUAL_FIXTURE__;
+
+  return candidate?.scenario === "reference-v5-a" ? candidate : null;
 }

@@ -32,13 +32,14 @@ export class CnpjaOpenSimplesLookupAdapter implements SimplesLookupPort {
     private readonly rateLimiter: WaitTurnPort = new RateLimiter(
       CNPJA_OPEN_RATE_LIMIT_INTERVAL_MS,
     ),
+    private readonly maxAttempts = 2,
   ) {}
 
   async lookup(
     cnpj: string,
     options: SimplesLookupOptions = {},
   ): Promise<SimplesLookupResult> {
-    for (let attempt = 0; attempt < 2; attempt += 1) {
+    for (let attempt = 0; attempt < this.maxAttempts; attempt += 1) {
       await this.rateLimiter.waitTurn(options.signal);
 
       if (options.signal?.aborted) {
@@ -53,7 +54,10 @@ export class CnpjaOpenSimplesLookupAdapter implements SimplesLookupPort {
         if (response.status >= 400) {
           const errorResult = mapCnpjaResponseError(cnpj, response.status);
 
-          if (errorResult.status === "TEMPORARY_ERROR" && attempt < 1) {
+          if (
+            errorResult.status === "TEMPORARY_ERROR" &&
+            attempt < this.maxAttempts - 1
+          ) {
             continue;
           }
 
@@ -67,7 +71,7 @@ export class CnpjaOpenSimplesLookupAdapter implements SimplesLookupPort {
           throw error;
         }
 
-        if (attempt < 1) {
+        if (attempt < this.maxAttempts - 1) {
           continue;
         }
 
@@ -77,7 +81,7 @@ export class CnpjaOpenSimplesLookupAdapter implements SimplesLookupPort {
           simei: null,
           source: "cnpja-open",
           status: "TEMPORARY_ERROR",
-          message: error instanceof Error ? error.message : "Falha na consulta",
+          message: "Falha temporaria do provider",
         };
       }
     }

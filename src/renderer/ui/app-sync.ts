@@ -5,7 +5,12 @@ import {
   renderStatusLabel,
   renderStatusText,
 } from "./app-helpers";
+import { renderExecutionHistory } from "./app-history-view";
+import { formatLocalPublicBaseStatusLine } from "./app-local-public-base-copy";
 import { syncReceitaWebAvailability } from "./app-provider";
+import type { AppRefs } from "./app-refs";
+import { syncReferenceV5A } from "./app-sync-reference";
+import { shouldDisableLocalPublicBasePrepareButton } from "./app-sync-rules";
 import {
   getCurrentCnpjLabel,
   getDeliveryFormatLabel,
@@ -13,67 +18,23 @@ import {
   getProgressPercent,
   getProviderStatusLabel,
   getProviderStatusVariant,
-  renderExecutionHistory,
+  isReferenceV5A,
 } from "./app-view";
 import {
   buildDedupeLabel,
   formatCommandBarSummary,
   formatProviderHint,
+  formatProviderMode,
   previewAutoSavePath,
 } from "./operational-copy";
 import { renderSummaryInto } from "./render-summary";
 
-type AppRefs = {
-  cancelButton: HTMLButtonElement | null;
-  columnInput: HTMLInputElement | null;
-  commandHint: HTMLElement | null;
-  commandSummary: HTMLElement | null;
-  currentCnpj: HTMLElement | null;
-  dedupeLabel: HTMLElement | null;
-  deliveryFormatBadge: HTMLElement | null;
-  deliverySelect: HTMLSelectElement | null;
-  executionCheckpoint: HTMLElement | null;
-  executionHistory: HTMLElement | null;
-  executionResume: HTMLElement | null;
-  executionRunId: HTMLElement | null;
-  executionStatus: HTMLElement | null;
-  fileBadge: HTMLElement | null;
-  fileDropzoneHint: HTMLElement | null;
-  fileDropzoneTitle: HTMLElement | null;
-  localPublicBaseDate: HTMLElement | null;
-  localPublicBaseNotice: HTMLInputElement | null;
-  localPublicBaseNoticePanel: HTMLElement | null;
-  localPublicBasePrepareButton: HTMLButtonElement | null;
-  localPublicBasePrepPanel: HTMLElement | null;
-  localPublicBaseStatusLine: HTMLElement | null;
-  localPublicBaseWarning: HTMLElement | null;
-  message: HTMLElement | null;
-  outputStatus: HTMLElement | null;
-  outputPreview: HTMLElement | null;
-  outputSavePath: HTMLElement | null;
-  kpiErrors: HTMLElement | null;
-  kpiPending: HTMLElement | null;
-  kpiProcessed: HTMLElement | null;
-  kpiTotalLines: HTMLElement | null;
-  pickButton: HTMLButtonElement | null;
-  processButton: HTMLButtonElement | null;
-  progressBar: HTMLElement | null;
-  progressLine: HTMLElement | null;
-  progressSection: HTMLElement | null;
-  providerSelect: HTMLSelectElement | null;
-  providerStatus: HTMLElement | null;
-  queueActiveHint: HTMLElement | null;
-  queueActiveName: HTMLElement | null;
-  queueActiveStatus: HTMLElement | null;
-  queueCount: HTMLElement | null;
-  saveButton: HTMLButtonElement | null;
-  saveInfo: HTMLElement | null;
-  summary: HTMLElement | null;
-  topStatusPill: HTMLElement | null;
-  runStatusPill: HTMLElement | null;
-};
-
 export function syncUi(refs: AppRefs, state: UiState): void {
+  if (isReferenceV5A(state)) {
+    syncReferenceV5A(refs, state, syncLocalPublicBaseNotice, syncActiveView);
+    return;
+  }
+
   if (refs.message) {
     refs.message.textContent = state.message;
   }
@@ -115,18 +76,17 @@ export function syncUi(refs: AppRefs, state: UiState): void {
   }
 
   if (refs.fileBadge) {
-    refs.fileBadge.textContent = state.fileName ?? "Nenhum arquivo";
+    refs.fileBadge.textContent = state.fileName ?? "aguardando arquivo";
   }
 
   if (refs.fileDropzoneTitle) {
-    refs.fileDropzoneTitle.textContent =
-      state.fileName ?? "Escolha o CSV de entrada";
+    refs.fileDropzoneTitle.textContent = state.fileName ?? "Arquivo CSV";
   }
 
   if (refs.fileDropzoneHint) {
     refs.fileDropzoneHint.textContent = state.fileName
       ? formatProviderHint(state.fileName, state.provider)
-      : "Leitura local, detecção de coluna e cópia processada ao lado do arquivo original.";
+      : "Selecione uma planilha com CNPJs. O resultado fica ao lado do arquivo original.";
   }
 
   if (refs.dedupeLabel) {
@@ -157,8 +117,101 @@ export function syncUi(refs: AppRefs, state: UiState): void {
   }
 
   syncCockpitRefs(refs, state);
+  syncProtocolRefs(refs, state);
+  syncSessionRefs(refs, state);
   syncExecutionRefs(refs, state);
+  syncActiveView(refs, state);
   syncButtons(refs, state);
+}
+
+function syncProtocolRefs(refs: AppRefs, state: UiState): void {
+  const outputPreview = getOutputPreview(state);
+  const hasCompleted = Boolean(state.summary);
+  const hasFile = Boolean(state.fileName);
+
+  if (refs.protocolStatus) {
+    refs.protocolStatus.textContent = hasCompleted
+      ? "concluído"
+      : hasFile
+        ? "pronto para iniciar"
+        : "aguardando";
+    refs.protocolStatus.className = [
+      "status-token",
+      hasCompleted ? "status-token--success" : "status-token--warning",
+    ].join(" ");
+  }
+
+  if (refs.protocolEntry) {
+    refs.protocolEntry.textContent =
+      state.fileName ?? "Sem arquivo selecionado";
+  }
+
+  if (refs.protocolEntryHint) {
+    refs.protocolEntryHint.textContent = state.fileName
+      ? "Entrada carregada neste computador."
+      : "Selecione um CSV para preparar a consulta.";
+  }
+
+  if (refs.protocolBase) {
+    refs.protocolBase.textContent = formatProviderMode(state.provider);
+  }
+
+  if (refs.protocolBaseHint) {
+    refs.protocolBaseHint.textContent = formatProviderHint(
+      state.fileName,
+      state.provider,
+    );
+  }
+
+  if (refs.protocolOutput) {
+    refs.protocolOutput.textContent =
+      outputPreview ?? getDeliveryFormatLabel(state.deliveryFormat);
+  }
+
+  if (refs.protocolOutputHint) {
+    refs.protocolOutputHint.textContent = outputPreview
+      ? "Nome previsto para o arquivo final."
+      : "O arquivo final fica ao lado da planilha original.";
+  }
+
+  if (refs.protocolResume) {
+    refs.protocolResume.textContent = state.execution
+      ? formatExecutionResume(state)
+      : "Disponível quando houver checkpoint";
+  }
+}
+
+function syncSessionRefs(refs: AppRefs, state: UiState): void {
+  if (refs.sessionState) {
+    refs.sessionState.textContent = state.execution
+      ? formatExecutionStatus(state.execution.status)
+      : "Aguardando";
+  }
+
+  if (refs.sessionEntry) {
+    refs.sessionEntry.textContent = formatCommandBarSummary(
+      state.fileName,
+      state.provider,
+    );
+  }
+
+  if (refs.sessionDedupe) {
+    refs.sessionDedupe.textContent = state.summary
+      ? buildDedupeLabel(state.summary)
+      : "—";
+  }
+
+  if (refs.sessionRun) {
+    refs.sessionRun.textContent = state.execution
+      ? state.execution.runId.slice(0, 8)
+      : "—";
+  }
+
+  if (refs.sessionCheckpoint) {
+    refs.sessionCheckpoint.textContent = state.execution?.checkpointPath
+      ? (state.execution.checkpointPath.split(/[/\\]/).pop() ?? "consulta.json")
+      : "—";
+  }
 }
 
 function syncCockpitRefs(refs: AppRefs, state: UiState): void {
@@ -210,23 +263,23 @@ function syncCockpitRefs(refs: AppRefs, state: UiState): void {
 
   if (refs.queueActiveName) {
     refs.queueActiveName.textContent =
-      state.fileName ?? "Nenhum lote em preparação";
+      state.fileName ?? "Nenhum arquivo selecionado";
   }
 
   if (refs.queueActiveHint) {
     refs.queueActiveHint.textContent = state.summary
-      ? "Execução concluída"
+      ? "Consulta concluída"
       : state.fileName
-        ? "Pronto para execução"
-        : "Selecione um CSV para iniciar";
+        ? "Pronto para consultar"
+        : "Escolha um CSV para iniciar.";
   }
 
   if (refs.queueActiveStatus) {
     refs.queueActiveStatus.textContent = state.summary
       ? "concluído"
       : state.fileName
-        ? "revisão"
-        : "vazio";
+        ? "pronto para iniciar"
+        : "aguardando";
     refs.queueActiveStatus.className = [
       "status-token",
       state.summary ? "status-token--success" : "status-token--warning",
@@ -269,7 +322,7 @@ function syncLocalPublicBaseNotice(refs: AppRefs, state: UiState): void {
 function syncExecutionRefs(refs: AppRefs, state: UiState): void {
   if (refs.executionStatus) {
     refs.executionStatus.textContent = state.execution
-      ? state.execution.status
+      ? formatExecutionStatus(state.execution.status)
       : "Aguardando";
   }
 
@@ -280,19 +333,87 @@ function syncExecutionRefs(refs: AppRefs, state: UiState): void {
   }
 
   if (refs.executionResume) {
-    refs.executionResume.textContent = state.execution
-      ? `${state.execution.resumedUniqueLookups} retomadas de checkpoint`
-      : "Sem retomada ativa";
+    refs.executionResume.textContent = formatExecutionResume(state);
   }
 
   if (refs.executionCheckpoint) {
     refs.executionCheckpoint.textContent = state.execution?.checkpointPath
-      ? (state.execution.checkpointPath.split(/[/\\]/).pop() ?? "ledger.json")
+      ? (state.execution.checkpointPath.split(/[/\\]/).pop() ?? "consulta.json")
       : "—";
   }
 
   if (refs.executionHistory) {
     refs.executionHistory.innerHTML = renderExecutionHistory(state);
+  }
+}
+
+function formatExecutionStatus(status: string): string {
+  if (status === "SUCCESS") return "Concluído";
+  if (status === "ERROR") return "Erro";
+  if (status === "CANCELLED") return "Cancelado";
+  if (status === "PROCESSING") return "Em consulta";
+  return status;
+}
+
+function formatExecutionResume(state: UiState): string {
+  if (!state.execution) {
+    return "Sem consulta em andamento";
+  }
+
+  if (state.execution.resumedUniqueLookups === 0) {
+    return "Retomada não utilizada";
+  }
+
+  return `${state.execution.resumedUniqueLookups} CNPJs retomados`;
+}
+
+function syncActiveView(refs: AppRefs, state: UiState): void {
+  const hasOperationalSignals =
+    Boolean(state.fileName) ||
+    Boolean(state.summary) ||
+    Boolean(state.progress) ||
+    state.status === "processing" ||
+    state.status === "error";
+
+  for (const link of refs.viewLinks) {
+    const isActive = link.dataset.view === state.activeView;
+    const viewSurface = link.dataset.viewSurface;
+    link.classList.toggle(
+      "ops-tabs__item--active",
+      viewSurface === "tab" && isActive,
+    );
+    link.classList.toggle(
+      "sidebar-nav__item--active",
+      viewSurface === "sidebar" && isActive,
+    );
+
+    if (isActive) {
+      link.setAttribute("aria-current", "page");
+    } else {
+      link.removeAttribute("aria-current");
+    }
+  }
+
+  for (const panel of refs.viewPanels) {
+    const view = panel.dataset.viewPanel;
+    const isCurrentView = view === state.activeView;
+    const isProgressivePanel =
+      panel.dataset.progressive === "after-file" && !hasOperationalSignals;
+    const isOpen = isCurrentView && !isProgressivePanel;
+
+    if (isOpen) {
+      if (panel.hidden) {
+        panel.dataset.open = "false";
+        panel.hidden = false;
+        panel.getBoundingClientRect();
+      }
+
+      panel.dataset.open = "true";
+      continue;
+    }
+
+    panel.dataset.open = "false";
+    panel.hidden = true;
   }
 }
 
@@ -312,13 +433,12 @@ function syncButtons(refs: AppRefs, state: UiState): void {
         (!state.localPublicBaseNoticeAccepted ||
           state.localPublicBaseStatus?.state !== "ready"));
     refs.processButton.textContent =
-      state.status === "processing" ? "Processando..." : "Iniciar execução";
+      state.status === "processing" ? "Consultando..." : "Iniciar consulta";
   }
 
   if (refs.localPublicBasePrepareButton) {
     refs.localPublicBasePrepareButton.disabled =
-      state.status === "processing" ||
-      state.localPublicBasePrepareStatus === "loading";
+      shouldDisableLocalPublicBasePrepareButton(state);
     refs.localPublicBasePrepareButton.textContent =
       state.localPublicBasePrepareStatus === "loading"
         ? "Preparando..."
@@ -352,7 +472,8 @@ function syncOutputPreview(refs: AppRefs, state: UiState): void {
   const outputPreview = getOutputPreview(state);
 
   if (refs.outputPreview) {
-    refs.outputPreview.textContent = outputPreview ?? "Aguardando execução";
+    refs.outputPreview.textContent =
+      outputPreview ?? "O arquivo final aparecerá depois da consulta.";
   }
 
   if (refs.outputSavePath) {
@@ -372,25 +493,4 @@ function getOutputPreview(state: UiState): string | null {
       : null;
 
   return path?.split(/[/\\]/).pop() ?? null;
-}
-
-function formatLocalPublicBaseStatusLine(state: UiState): string {
-  const status = state.localPublicBaseStatus;
-
-  if (!status || status.state === "not-prepared") {
-    return "Base ainda não preparada neste perfil.";
-  }
-
-  if (status.state === "error") {
-    return status.errorMessage ?? "Base Pública Local indisponível.";
-  }
-
-  return [
-    `${status.preparedRows} registros preparados`,
-    `${status.rejectedRows} rejeitados`,
-    `Data da Base: ${status.baseDate ?? "não informada"}`,
-    status.sourceFileName ? `Origem: ${status.sourceFileName}` : null,
-  ]
-    .filter(Boolean)
-    .join(" • ");
 }

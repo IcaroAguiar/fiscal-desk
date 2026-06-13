@@ -18,21 +18,21 @@ describe("renderer operational copy", () => {
   });
 
   it("formats the provider mode label", () => {
-    expect(formatProviderMode("mock")).toBe("Simulação local");
-    expect(formatProviderMode("base-publica-local")).toBe("Base Pública Local");
+    expect(formatProviderMode("mock")).toBe("Simulação");
+    expect(formatProviderMode("base-publica-local")).toBe("Base local");
     expect(formatProviderMode("cnpja-open")).toBe("CNPJá Open");
-    expect(formatProviderMode("receita-web")).toBe("Receita Web assistida");
+    expect(formatProviderMode("receita-web")).toBe("Receita Web manual");
   });
 
   it("formats the command bar summary with file and provider", () => {
     expect(formatCommandBarSummary("clientes.csv", "mock")).toBe(
-      "clientes.csv • Simulação local",
+      "clientes.csv • Simulação",
     );
     expect(formatCommandBarSummary(null, "cnpja-open")).toBe(
-      "Nenhum CSV carregado • CNPJá Open",
+      "Nenhum CSV selecionado • CNPJá Open",
     );
     expect(formatCommandBarSummary("clientes.csv", "receita-web")).toBe(
-      "clientes.csv • Receita Web assistida",
+      "clientes.csv • Receita Web manual",
     );
   });
 
@@ -41,13 +41,13 @@ describe("renderer operational copy", () => {
       "Selecione um CSV para continuar",
     );
     expect(formatProviderHint("clientes.csv", "mock")).toBe(
-      "Provedor selecionado: Simulação local",
+      "Consulta configurada em Simulação.",
     );
     expect(formatProviderHint("clientes.csv", "base-publica-local")).toBe(
-      "Base Pública Local usa Data da Base e não consulta online por item",
+      "A Base local usa a data do arquivo preparado neste computador.",
     );
     expect(formatProviderHint("clientes.csv", "receita-web")).toBe(
-      "Receita Web exige navegador visível e supervisão humana",
+      "A Receita Web abre o navegador e precisa de acompanhamento.",
     );
   });
 
@@ -57,7 +57,7 @@ describe("renderer operational copy", () => {
         totalCnpjsEncontrados: 1_000,
         totalCnpjsUnicosConsultados: 742,
       }),
-    ).toBe("258 duplicados removidos");
+    ).toBe("258 CNPJs repetidos ignorados");
   });
 
   it("derives the auto-save path preview next to the source file", () => {

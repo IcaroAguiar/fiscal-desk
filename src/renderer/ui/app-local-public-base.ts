@@ -8,6 +8,14 @@ export async function handlePrepareLocalPublicBase(
   state: UiState,
   syncUi: SyncUi,
 ): Promise<void> {
+  if (!state.localPublicBaseNoticeAccepted) {
+    state.localPublicBasePrepareStatus = "idle";
+    state.message =
+      "Confirme o aviso de Data da Base antes de preparar a Base Pública Local.";
+    syncUi();
+    return;
+  }
+
   state.localPublicBasePrepareStatus = "loading";
   state.message = "Selecione o CSV de origem da Base Pública Local...";
   syncUi();
@@ -27,6 +35,15 @@ export async function handlePrepareLocalPublicBase(
 
     const result = await window.appBridge.prepareLocalPublicBase({
       content: source.content,
+      consent: {
+        accepted: true,
+        acceptedAt: new Date().toISOString(),
+        baseDateAcknowledged:
+          state.localPublicBaseStatus?.baseDate ?? "data não informada",
+        stalenessWarningAcknowledged:
+          state.localPublicBaseStatus?.freshnessWarning ??
+          "Data da Base será lida do CSV selecionado.",
+      },
       sourceFileName: source.fileName,
       sourceFilePath: source.filePath,
     });

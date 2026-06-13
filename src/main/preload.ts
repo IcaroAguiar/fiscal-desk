@@ -1,11 +1,14 @@
 import { contextBridge, ipcRenderer } from "electron";
 
+import { PROCESS_CSV_IPC_CHANNEL } from "../core/app/process-csv.types";
 import type { SimplesProviderName } from "../core/simples/simples-provider.names";
 import type {
+  LocalPublicBasePreparationConsent,
   LocalPublicBasePrepareResult,
   LocalPublicBaseStatus,
   LookupProgress,
   ProcessCsvDeliveryFormat,
+  ProcessCsvDeliveryOptionId,
   ProcessCsvExecution,
   ProcessCsvOutputDelivery,
   ProcessCsvRunStatus,
@@ -25,6 +28,7 @@ type ProcessCsvInput = {
   acceptedLocalPublicBaseNotice?: boolean;
   content: string;
   deliveryFormat?: ProcessCsvDeliveryFormat;
+  deliveryOptionId?: ProcessCsvDeliveryOptionId;
   provider: SimplesProviderName;
   cnpjColumn?: string;
   sourceFilePath?: string;
@@ -49,19 +53,19 @@ type AppDefaults = {
 
 contextBridge.exposeInMainWorld("appBridge", {
   pickCsvFile: (): Promise<PickCsvResult | null> => {
-    return ipcRenderer.invoke("csv:pick-input-file");
+    return ipcRenderer.invoke(PROCESS_CSV_IPC_CHANNEL.PICK_INPUT_FILE);
   },
   processCsv: (input: ProcessCsvInput): Promise<ProcessCsvResult> => {
-    return ipcRenderer.invoke("csv:process", input);
+    return ipcRenderer.invoke(PROCESS_CSV_IPC_CHANNEL.PROCESS, input);
   },
   cancelProcessing: (): Promise<boolean> => {
-    return ipcRenderer.invoke("csv:cancel-processing");
+    return ipcRenderer.invoke(PROCESS_CSV_IPC_CHANNEL.CANCEL_PROCESSING);
   },
   saveCsvFile: (
     defaultName: string,
     content: string,
   ): Promise<string | null> => {
-    return ipcRenderer.invoke("csv:save-output-file", {
+    return ipcRenderer.invoke(PROCESS_CSV_IPC_CHANNEL.SAVE_OUTPUT_FILE, {
       defaultName,
       format: "csv",
       content,
@@ -72,7 +76,7 @@ contextBridge.exposeInMainWorld("appBridge", {
     format: ProcessCsvDeliveryFormat,
     content: string | number[],
   ): Promise<string | null> => {
-    return ipcRenderer.invoke("csv:save-output-file", {
+    return ipcRenderer.invoke(PROCESS_CSV_IPC_CHANNEL.SAVE_OUTPUT_FILE, {
       content,
       defaultName,
       format,
@@ -82,7 +86,7 @@ contextBridge.exposeInMainWorld("appBridge", {
     sourceFilePath: string,
     content: string,
   ): Promise<string> => {
-    return ipcRenderer.invoke("csv:auto-save-output-file", {
+    return ipcRenderer.invoke(PROCESS_CSV_IPC_CHANNEL.AUTO_SAVE_OUTPUT_FILE, {
       sourceFilePath,
       content,
     });
@@ -94,10 +98,10 @@ contextBridge.exposeInMainWorld("appBridge", {
       callback(progress);
     };
 
-    ipcRenderer.on("csv:lookup-progress", listener);
+    ipcRenderer.on(PROCESS_CSV_IPC_CHANNEL.LOOKUP_PROGRESS, listener);
 
     return () => {
-      ipcRenderer.off("csv:lookup-progress", listener);
+      ipcRenderer.off(PROCESS_CSV_IPC_CHANNEL.LOOKUP_PROGRESS, listener);
     };
   },
   getDefaults: (): Promise<AppDefaults> => {
@@ -112,24 +116,27 @@ contextBridge.exposeInMainWorld("appBridge", {
     },
   prepareLocalPublicBase: (input: {
     content: string;
+    consent?: LocalPublicBasePreparationConsent;
     sourceFileName: string;
     sourceFilePath: string;
   }): Promise<LocalPublicBasePrepareResult> => {
     return ipcRenderer.invoke("local-public-base:prepare", input);
   },
   listExecutions: (): Promise<ProcessExecutionHistoryItem[]> => {
-    return ipcRenderer.invoke("csv:list-executions");
+    return ipcRenderer.invoke(PROCESS_CSV_IPC_CHANNEL.LIST_EXECUTIONS);
   },
   resumeExecution: (
     ledgerKey: string,
     deliveryFormat?: ProcessCsvDeliveryFormat,
     acceptedLocalPublicBaseNotice?: boolean,
+    deliveryOptionId?: ProcessCsvDeliveryOptionId,
   ): Promise<ProcessCsvResult> => {
-    return ipcRenderer.invoke("csv:resume-execution", {
+    return ipcRenderer.invoke(PROCESS_CSV_IPC_CHANNEL.RESUME_EXECUTION, {
       ...(acceptedLocalPublicBaseNotice
         ? { acceptedLocalPublicBaseNotice }
         : {}),
       ...(deliveryFormat ? { deliveryFormat } : {}),
+      ...(deliveryOptionId ? { deliveryOptionId } : {}),
       ledgerKey,
     });
   },

@@ -15,6 +15,15 @@ export type ReceitaNavigationResult = {
   error?: string;
 };
 
+const RECEITA_BROWSER_ERROR_MESSAGE = {
+  BROWSER_NOT_CONNECTED: "browser_not_connected",
+  CNPJ_INPUT_NOT_FOUND: "cnpj_input_not_found",
+  NAVIGATION_FAILED: "navigation_failed",
+  FILL_FAILED: "fill_failed",
+  SUBMIT_FAILED: "submit_failed",
+  WAIT_RESULT_FAILED: "wait_result_failed",
+} as const;
+
 function throwIfAborted(signal?: AbortSignal): void {
   if (signal?.aborted) {
     throw new DOMException("Aborted", "AbortError");
@@ -130,7 +139,11 @@ export class ReceitaBrowserClient {
 
   async navigate(signal?: AbortSignal): Promise<ReceitaNavigationResult> {
     if (!this.page) {
-      return { success: false, html: "", error: "Browser not connected" };
+      return {
+        success: false,
+        html: "",
+        error: RECEITA_BROWSER_ERROR_MESSAGE.BROWSER_NOT_CONNECTED,
+      };
     }
 
     throwIfAborted(signal);
@@ -160,9 +173,11 @@ export class ReceitaBrowserClient {
         throw error;
       }
 
-      const message =
-        error instanceof Error ? error.message : "Navigation failed";
-      return { success: false, html: "", error: message };
+      return {
+        success: false,
+        html: "",
+        error: RECEITA_BROWSER_ERROR_MESSAGE.NAVIGATION_FAILED,
+      };
     }
   }
 
@@ -171,7 +186,11 @@ export class ReceitaBrowserClient {
     signal?: AbortSignal,
   ): Promise<ReceitaNavigationResult> {
     if (!this.page) {
-      return { success: false, html: "", error: "Browser not connected" };
+      return {
+        success: false,
+        html: "",
+        error: RECEITA_BROWSER_ERROR_MESSAGE.BROWSER_NOT_CONNECTED,
+      };
     }
 
     throwIfAborted(signal);
@@ -180,7 +199,11 @@ export class ReceitaBrowserClient {
       const cnpjInput = await this.page.$(RECEITA_SELECTORS.cnpjInput);
 
       if (!cnpjInput) {
-        return { success: false, html: "", error: "CNPJ input not found" };
+        return {
+          success: false,
+          html: "",
+          error: RECEITA_BROWSER_ERROR_MESSAGE.CNPJ_INPUT_NOT_FOUND,
+        };
       }
 
       await cnpjInput.fill("");
@@ -195,15 +218,21 @@ export class ReceitaBrowserClient {
         throw error;
       }
 
-      const message =
-        error instanceof Error ? error.message : "Fill CNPJ failed";
-      return { success: false, html: "", error: message };
+      return {
+        success: false,
+        html: "",
+        error: RECEITA_BROWSER_ERROR_MESSAGE.FILL_FAILED,
+      };
     }
   }
 
   async submit(signal?: AbortSignal): Promise<ReceitaNavigationResult> {
     if (!this.page) {
-      return { success: false, html: "", error: "Browser not connected" };
+      return {
+        success: false,
+        html: "",
+        error: RECEITA_BROWSER_ERROR_MESSAGE.BROWSER_NOT_CONNECTED,
+      };
     }
 
     throwIfAborted(signal);
@@ -229,14 +258,21 @@ export class ReceitaBrowserClient {
         throw error;
       }
 
-      const message = error instanceof Error ? error.message : "Submit failed";
-      return { success: false, html: "", error: message };
+      return {
+        success: false,
+        html: "",
+        error: RECEITA_BROWSER_ERROR_MESSAGE.SUBMIT_FAILED,
+      };
     }
   }
 
   async waitResult(signal?: AbortSignal): Promise<ReceitaNavigationResult> {
     if (!this.page) {
-      return { success: false, html: "", error: "Browser not connected" };
+      return {
+        success: false,
+        html: "",
+        error: RECEITA_BROWSER_ERROR_MESSAGE.BROWSER_NOT_CONNECTED,
+      };
     }
 
     throwIfAborted(signal);
@@ -273,9 +309,11 @@ export class ReceitaBrowserClient {
         throw error;
       }
 
-      const message =
-        error instanceof Error ? error.message : "Wait result failed";
-      return { success: false, html: "", error: message };
+      return {
+        success: false,
+        html: "",
+        error: RECEITA_BROWSER_ERROR_MESSAGE.WAIT_RESULT_FAILED,
+      };
     }
   }
 

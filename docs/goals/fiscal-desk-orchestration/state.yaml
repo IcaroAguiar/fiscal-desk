@@ -1,0 +1,1200 @@
+version: 2
+goal:
+  slug: fiscal-desk-orchestration
+  title: Fiscal Desk Orchestration
+  status: orchestrating_active
+  judge_owner: codex_primary
+  canonical_package: docs/goals/fiscal-desk-orchestration
+  canonical_phase_source: docs/fiscal-desk/phase-orchestration.md
+  integration_plan: docs/goals/fiscal-desk-orchestration/integration-plan.md
+  current_branch_context: feat/fiscal-desk-local-base-prep
+  final_integration_branch: feat/fiscal-desk-local-base-prep
+  model_requirement_for_planning_subagents: gpt-5.5
+  reasoning_effort_requirement_for_planning_subagents: medium
+global_rules:
+  f0_blocks_feature_work: true
+  one_active_writer_per_shared_boundary: true
+  scouts_can_parallelize_read_only: true
+  workers_require_judge_release: true
+  spark_cannot_approve_quality: true
+  material_changes_require_independent_review: true
+  no_completion_without_evidence: true
+  final_validation_requires_single_worktree: true
+  final_validation_requires_single_branch: true
+shared_boundaries:
+  - ipc_contracts
+  - preload_bridge
+  - process_csv_contracts
+  - provider_types
+  - export_types
+  - renderer_shell
+  - styles_css
+  - receita_web_adapter_contract
+agents:
+  judge:
+    role: main_codex_or_goal_judge
+    model: gpt-5.5
+    effort: medium_or_higher
+    writes_allowed: false
+    approves_completion: true
+  scout:
+    role: goal-scout_or_explorer
+    model: gpt-5.5_preferred_for_sensitive_planning
+    effort: medium_for_planning
+    writes_allowed: false
+    approves_completion: false
+  worker:
+    role: goal-worker_or_bounded_builder
+    model: phase_specific
+    effort: phase_specific
+    writes_allowed: only_allowed_files
+    approves_completion: false
+  reviewer:
+    role: reviewer_or_security_or_release_reviewer
+    model: gpt-5.5
+    effort: medium_or_higher
+    writes_allowed: false
+    approves_completion: gate_input_only
+phases:
+  f0:
+    slug: fiscal-desk-f0-current-branch-closeout
+    status: approved_by_judge
+    goal_file: phases/phase-0-current-branch-closeout.md
+    thread_id: 019ebf01-8efe-76b2-aaa3-4860b21e3e40
+    thread_title: Fiscal Desk F0 - Current Branch Closeout
+    result_file: results/phase-0-current-branch-closeout.md
+    completion_audit_file: results/phase-0-completion-audit.md
+    stage_set_file: results/phase-0-stage-set.md
+    judge_decision_file: results/phase-0-judge-decision.md
+    evidence:
+      ratchet_status: pass
+      v5_closeout: .visual-fidelity/runs/reference-v5-a/fraud-proof-closeout.json
+      v5_closeout_can_say_done: true
+      local_checks:
+        - git_diff_check
+        - lint
+        - typecheck
+        - test
+        - smoke_real_csv
+        - smoke_visual
+        - smoke_electron_ui
+        - gitleaks
+        - ratchet
+      independent_review: approve_candidate
+    unblocks: [f1, f2, f4, f8_contract_only]
+  f1:
+    slug: fiscal-desk-f1-execution-state-contracts
+    status: approved_by_judge_integrated_validated
+    goal_file: phases/phase-1-execution-state-contracts.md
+    thread_id: 019ebf2a-4246-78f2-ac84-709b0983f9bc
+    thread_title: Fiscal Desk F1 - Execution State Contracts
+    worktree: /Users/icaroaguiar/.codex/worktrees/50f0/consulta-simples-csv
+    result_file: results/phase-1-execution-state-contracts.md
+    judge_decision_file: results/phase-1-judge-decision.md
+    integration_status: integrated_validated
+    evidence:
+      focused_contract_test: pass
+      judge_focused_contract_test: pass
+      diff_check: pass
+      independent_review: approved_candidate_after_rework
+    blocks: [f3, f6_renderer_consumption]
+  f2:
+    slug: fiscal-desk-f2-renderer-surface-v5
+    status: approved_by_judge_integrated_validated
+    goal_file: phases/phase-2-renderer-surface-v5.md
+    thread_id: 019ebf2a-423d-76f1-8241-f5c700129cc7
+    thread_title: Fiscal Desk F2 - Renderer Surface V5
+    worktree: /Users/icaroaguiar/.codex/worktrees/b295/consulta-simples-csv
+    result_file: results/phase-2-renderer-surface-v5.md
+    judge_decision_file: results/phase-2-judge-decision.md
+    integration_status: integrated_validated
+    evidence:
+      focused_renderer_tests: pass
+      judge_focused_renderer_tests: pass
+      smoke_visual: pass
+      smoke_electron_ui: pass
+      diff_check: pass
+      independent_review: approved_candidate_after_rework
+    blocks: [renderer_workers]
+  f3:
+    slug: fiscal-desk-f3-run-ledger-retomada
+    status: approved_by_judge_integrated_validated
+    goal_file: phases/phase-3-run-ledger-retomada.md
+    thread_id: 019ebf3f-ef4c-7982-9866-9d4841170f72
+    thread_title: Fiscal Desk F3 - RunLedger Retomada
+    worktree: /Users/icaroaguiar/.codex/worktrees/c363/consulta-simples-csv
+    result_file: results/phase-3-run-ledger-retomada.md
+    judge_decision_file: results/phase-3-judge-decision.md
+    integration_status: integrated_validated
+    evidence:
+      focused_ledger_resume_tests: pass
+      judge_focused_ledger_resume_tests: pass
+      smoke_electron_ui: pass
+      diff_check: pass
+      integrated_focused_tests: pass
+      integrated_typecheck: pass
+      integrated_lint: pass
+      integrated_test: pass
+      integrated_smoke_electron_ui: pass
+      independent_review: approved_candidate_after_rework
+    owns_while_active:
+      - src/core/app/**
+      - src/main/execution/**
+      - src/main/ipc/process-csv.ipc.ts
+      - src/main/preload.ts
+      - src/main/types.ts
+  f4:
+    slug: fiscal-desk-f4-provider-catalog-health-fallback
+    status: approved_by_judge_integrated_validated
+    goal_file: phases/phase-4-provider-catalog-health-fallback.md
+    thread_id: 019ebf2a-4b59-78c0-85dd-7c93093e8043
+    thread_title: Fiscal Desk F4 - Provider Catalog Health Fallback
+    worktree: /Users/icaroaguiar/.codex/worktrees/2c20/consulta-simples-csv
+    result_file: results/phase-4-provider-catalog-health-fallback.md
+    judge_decision_file: results/phase-4-judge-decision.md
+    integration_status: integrated_validated
+    evidence:
+      focused_provider_tests: pass
+      judge_focused_provider_tests: pass
+      diff_check: pass
+      independent_review: approved_candidate_after_rework
+      security_review: approved_candidate_after_rework
+  f5:
+    slug: fiscal-desk-f5-base-publica-local
+    status: approved_by_judge_integrated_validated
+    goal_file: phases/phase-5-base-publica-local.md
+    thread_id: 019ebf3f-ef3b-73e1-9e43-5580fe18243a
+    thread_title: Fiscal Desk F5 - Base Publica Local Core
+    worktree: /Users/icaroaguiar/.codex/worktrees/609a/consulta-simples-csv
+    result_file: results/phase-5-base-publica-local.md
+    judge_decision_file: results/phase-5-judge-decision.md
+    integration_status: integrated_validated
+    evidence:
+      focused_local_base_tests: pass
+      judge_focused_local_base_tests: pass
+      diff_check: pass
+      integrated_focused_tests: pass
+      integrated_typecheck: pass
+      integrated_lint: pass
+      integrated_test: pass
+      independent_review: approved_candidate_after_rework
+      residual_risk: consent_type_optional_until_ipc_renderer_owner_window
+    allowed_while_f3_active:
+      - src/core/public-base/**
+      - src/core/simples/adapters/local-public-base-simples-lookup.adapter.ts
+      - test/**
+      - test/fixtures/**
+    blocked_while_f3_active:
+      - src/main/**
+      - src/core/app/process-csv*
+      - src/renderer/**
+      - src/core/simples/simples-provider.factory.ts
+  f6:
+    slug: fiscal-desk-f6-ingestao-entrega
+    status: approved_by_judge_integrated_validated
+    goal_file: phases/phase-6-ingestao-entrega.md
+    thread_id: 019ebf50-fbc1-7123-b4b8-929e0f34f2a7
+    thread_title: Fiscal Desk F6A - Ingestao Entrega Contract
+    worktree: /Users/icaroaguiar/.codex/worktrees/11c2/consulta-simples-csv
+    result_file: results/phase-6a-ingestao-entrega-contract.md
+    judge_decision_file: results/phase-6a-judge-decision.md
+    integration_status: integrated_validated
+    scope_note: contract_first_gate_before_f6b_f6c_f6d
+  f6b:
+    slug: fiscal-desk-f6b-ingestion-implementation
+    status: approved_by_judge_integrated_validated
+    goal_file: phases/phase-6-ingestao-entrega.md
+    thread_id: 019ebf60-080b-7621-a161-4bbdf7a5198f
+    thread_title: Fiscal Desk F6B - Ingestion Implementation
+    worktree: /Users/icaroaguiar/.codex/worktrees/a4aa/consulta-simples-csv
+    result_file: results/phase-6b-ingestion-implementation.md
+    judge_decision_file: results/phase-6b-judge-decision.md
+    integration_status: integrated_validated
+    scope_note: ingestion_core_only_not_wired_to_runtime
+  f6c:
+    slug: fiscal-desk-f6c-export-delivery-implementation
+    status: approved_by_judge_integrated_validated
+    goal_file: phases/phase-6-ingestao-entrega.md
+    thread_id: 019ebf60-0810-7333-bcc1-c67f2544f074
+    thread_title: Fiscal Desk F6C - Export Delivery Implementation
+    worktree: /Users/icaroaguiar/.codex/worktrees/d235/consulta-simples-csv
+    result_file: results/phase-6c-export-delivery-implementation.md
+    judge_decision_file: results/phase-6c-judge-decision.md
+    integration_status: integrated_validated
+    scope_note: export_core_only_not_wired_to_runtime
+  f6d_scope_review:
+    slug: fiscal-desk-f6d-runtime-owner-scope-review
+    status: approved_by_judge_docs_only
+    goal_file: phases/phase-6-ingestao-entrega.md
+    thread_id: 019ebf6f-f0c5-7863-a9e0-10a54ead7476
+    thread_title: Revisar escopo F6D runtime owner
+    worktree: /Users/icaroaguiar/.codex/worktrees/f44c/consulta-simples-csv
+    result_file: results/phase-6d-runtime-owner-scope-review.md
+    judge_decision_file: results/phase-6d-scope-review-judge-decision.md
+    integration_status: integrated_docs_only
+    scope_note: recommends_single_owner_runtime_core_wiring_without_templates
+  f6d_runtime_wiring:
+    slug: fiscal-desk-f6d-runtime-wiring
+    status: approved_by_judge_integrated_validated
+    goal_file: phases/phase-6-ingestao-entrega.md
+    thread_id: 019ebf77-c94b-7432-92e1-4d542b696e40
+    thread_title: Executar F6D runtime-core
+    worktree: /Users/icaroaguiar/.codex/worktrees/23e6/consulta-simples-csv
+    reviewer_thread_id: 019ebf7c-0e44-7b13-a523-9ab57e7c25ed
+    result_file: results/phase-6d-runtime-wiring.md
+    judge_decision_file: results/phase-6d-runtime-wiring-judge-decision.md
+    integration_status: integrated_validated
+    scope_note: runtime_core_process_csv_wired_without_templates_ipc_renderer_or_provider_changes
+  f6e_scope_review:
+    slug: fiscal-desk-f6e-output-templates-scope-review
+    status: approved_by_judge_docs_only
+    goal_file: phases/phase-6-ingestao-entrega.md
+    thread_id: 019ebf85-af04-78a1-89b9-e272e32e6b24
+    thread_title: Revisar escopo F6 templates
+    worktree: /Users/icaroaguiar/.codex/worktrees/c18b/consulta-simples-csv
+    result_file: results/phase-6e-output-templates-scope-review.md
+    judge_decision_file: results/phase-6e-output-templates-scope-review-judge-decision.md
+    integration_status: integrated_docs_only
+    scope_note: releases_only_f6e1_export_contract_no_ui_ipc_runtime_templates_persistence
+  f6e1_export_contract:
+    slug: fiscal-desk-f6e1-output-templates-export-contract
+    status: approved_by_judge_integrated_validated
+    goal_file: phases/phase-6-ingestao-entrega.md
+    thread_id: 019ebf8d-d31c-7ac1-8b17-d6529136e631
+    thread_title: Implementar contrato de exportação
+    worktree: /Users/icaroaguiar/.codex/worktrees/5f74/consulta-simples-csv
+    result_file: results/phase-6e-output-templates-implementation.md
+    judge_decision_file: results/phase-6e-output-templates-implementation-judge-decision.md
+    integration_status: integrated_validated
+    scope_note: export_contract_only_no_ui_ipc_runtime_templates_persistence
+  f6e2_delivery_runtime_ui_scope_review:
+    slug: fiscal-desk-f6e2-delivery-runtime-ui-scope-review
+    status: approved_by_judge_docs_only
+    goal_file: phases/phase-6-ingestao-entrega.md
+    thread_id: 019ebfa7-d70f-7283-955a-646d7736735d
+    thread_title: Fiscal Desk F6E2 - Delivery Runtime UI Scope
+    worktree: /Users/icaroaguiar/.codex/worktrees/c6a2/consulta-simples-csv
+    result_file: results/phase-6e2-delivery-runtime-ui-scope-review.md
+    judge_decision_file: results/phase-6e2-delivery-runtime-ui-scope-review-judge-decision.md
+    integration_status: integrated_docs_only
+    scope_note: releases_only_f6e2a_runtime_selection_no_ipc_preload_renderer_or_saved_models
+  f6e2a_delivery_runtime_selection:
+    slug: fiscal-desk-f6e2a-delivery-runtime-selection
+    status: approved_by_judge_integrated_validated
+    goal_file: phases/phase-6-ingestao-entrega.md
+    thread_id: 019ebfb4-9d9c-7740-9225-55c5ebc90bcd
+    pending_worktree_id: local:9562c8bd-05ce-4d0e-b2df-1c85e2ea045f
+    thread_title: Fiscal Desk F6E2A - Delivery Runtime Selection
+    worktree: /Users/icaroaguiar/.codex/worktrees/6582/consulta-simples-csv
+    result_file: results/phase-6e2-delivery-runtime-ui-implementation.md
+    review_file: results/phase-6e2-delivery-runtime-ui-implementation-review.md
+    review_after_rework_file: results/phase-6e2-delivery-runtime-ui-implementation-review-after-rework.md
+    judge_decision_file: results/phase-6e2-delivery-runtime-ui-implementation-judge-decision.md
+    integration_status: integrated_validated
+    scope_note: runtime_only_exact_process_csv_delivery_selection_no_ipc_preload_renderer_or_export_contract_changes
+  f6e2b_delivery_ui_ipc_scope_review:
+    slug: fiscal-desk-f6e2b-delivery-ui-ipc-scope-review
+    status: approved_by_judge_docs_only
+    goal_file: phases/phase-6-ingestao-entrega.md
+    thread_id: 019ebfcf-32e0-79f3-a508-13b7044444e4
+    pending_worktree_id: local:664cff84-cb63-402f-a4ce-48164bddf6f9
+    thread_title: Fiscal Desk F6E2B - Delivery UI Scope
+    worktree: /Users/icaroaguiar/.codex/worktrees/2d55/consulta-simples-csv
+    result_file: results/phase-6e2b-delivery-ui-ipc-scope-review.md
+    judge_decision_file: results/phase-6e2b-delivery-ui-ipc-scope-review-judge-decision.md
+    integration_status: integrated_docs_only
+    scope_note: releases_f6e2b_ipc_preload_types_before_renderer_or_saved_models
+  f6e2b_delivery_ipc_preload_types_worker:
+    slug: fiscal-desk-f6e2b-delivery-ipc-preload-types
+    status: approved_by_judge_integrated_validated
+    goal_file: phases/phase-6-ingestao-entrega.md
+    thread_id: 019ebfd8-ce52-7ae1-bd78-649316867f22
+    pending_worktree_id: local:720942b1-9c6d-45d1-b951-1300deca5c9e
+    thread_title: Fiscal Desk F6E2B - IPC Preload Types
+    worktree: /Users/icaroaguiar/.codex/worktrees/cb3c/consulta-simples-csv
+    result_file: results/phase-6e2b-delivery-ui-ipc-implementation.md
+    review_file: results/phase-6e2b-delivery-ui-ipc-implementation-review.md
+    judge_decision_file: results/phase-6e2b-delivery-ui-ipc-implementation-judge-decision.md
+    integration_status: integrated_validated_selective
+    scope_note: ipc_preload_types_only_no_renderer_f8_update_or_saved_models
+    evidence:
+      independent_review: needs_rework_for_whole_worker_worktree_but_no_narrow_code_findings
+      judge_resolution: selective_integration_of_allowed_f6e2b_files_only
+      focused_ipc_preload_tests: pass
+      focused_integration_use_case_tests: pass
+      typecheck: pass
+      lint: pass
+      full_test: pass
+      build: pass
+      diff_check: pass
+  f7:
+    slug: fiscal-desk-f7-receita-web-assistida
+    status: approved_by_judge_integrated_validated
+    goal_file: phases/phase-7-receita-web-assistida.md
+    thread_id: 019ebf51-5055-7ae3-bce4-0062d8bab4dc
+    thread_title: Fiscal Desk F7A - Receita Web Assisted Contract
+    worktree: /Users/icaroaguiar/.codex/worktrees/a3a8/consulta-simples-csv
+    result_file: results/phase-7a-receita-web-assisted-contract.md
+    judge_decision_file: results/phase-7a-judge-decision.md
+    integration_status: integrated_validated
+    scope_note: contract_and_security_gate_before_backend_implementation
+  f7b_scope_review:
+    slug: fiscal-desk-f7b-receita-web-security-scope-review
+    status: approved_by_judge_docs_only
+    goal_file: phases/phase-7-receita-web-assistida.md
+    thread_id: 019ebf86-14b2-7120-82d0-68ee95c559b9
+    thread_title: Revisar escopo F7B Receita Web
+    worktree: /Users/icaroaguiar/.codex/worktrees/1d37/consulta-simples-csv
+    result_file: results/phase-7b-receita-web-security-scope-review.md
+    judge_decision_file: results/phase-7b-receita-web-security-scope-review-judge-decision.md
+    integration_status: integrated_docs_only
+    scope_note: releases_only_receita_web_adapter_core_hardening_no_ui_factory_fallback_smoke_real
+  f7b_adapter_core_hardening:
+    slug: fiscal-desk-f7b-receita-web-adapter-core-hardening
+    status: approved_by_judge_integrated_validated
+    goal_file: phases/phase-7-receita-web-assistida.md
+    thread_id: 019ebf8e-61a9-7de2-91ff-5f096803c26f
+    thread_title: Fortalece adapter-core Receita Web
+    worktree: /Users/icaroaguiar/.codex/worktrees/5559/consulta-simples-csv
+    result_file: results/phase-7b-receita-web-implementation.md
+    judge_decision_file: results/phase-7b-receita-web-implementation-judge-decision.md
+    integration_status: integrated_validated
+    scope_note: receita_web_adapter_core_only_no_ui_factory_fallback_or_live_smoke
+  f8:
+    slug: fiscal-desk-f8-distribuicao-update-comercial
+    status: approved_by_judge_integrated_docs_only
+    goal_file: phases/phase-8-distribuicao-update-comercial.md
+    thread_id: 019ebf2a-4b51-73f2-989c-5da5a65c69f3
+    thread_title: Fiscal Desk F8 - Distribution Update Commercial Contracts
+    worktree: /Users/icaroaguiar/.codex/worktrees/e929/consulta-simples-csv
+    contract_file: contracts/phase-8-distribuicao-update-comercial-contract.md
+    result_file: results/phase-8-distribuicao-update-comercial.md
+    judge_decision_file: results/phase-8-judge-decision.md
+    integration_status: integrated_docs_only
+  f8a_local_update_diagnostic_contract_scope_review:
+    slug: fiscal-desk-f8a-local-update-diagnostic-contract-scope-review
+    status: approved_by_judge_docs_only
+    goal_file: phases/phase-8-distribuicao-update-comercial.md
+    thread_id: 019ebfa8-32e5-7270-9407-ad7606bea554
+    thread_title: Fiscal Desk F8A - Local Update Contract Scope
+    worktree: /Users/icaroaguiar/.codex/worktrees/194e/consulta-simples-csv
+    result_file: results/phase-8a-local-update-diagnostic-contract-scope-review.md
+    judge_decision_file: results/phase-8a-local-update-diagnostic-contract-scope-review-judge-decision.md
+    integration_status: integrated_docs_only
+    scope_note: releases_only_f8a_core_local_contract_no_network_ui_ipc_or_release_config
+  f8a_local_update_diagnostic_contract_core:
+    slug: fiscal-desk-f8a-local-update-diagnostic-contract-core
+    status: approved_by_judge_integrated_validated
+    goal_file: phases/phase-8-distribuicao-update-comercial.md
+    thread_id: 019ebfb5-1657-7343-941f-d08c74446c11
+    pending_worktree_id: local:15106fae-70e1-4bcb-9f47-c64758ecfed9
+    thread_title: Fiscal Desk F8A - Local Contract Core
+    worktree: /Users/icaroaguiar/.codex/worktrees/fcee/consulta-simples-csv
+    result_file: results/phase-8a-local-update-diagnostic-contract.md
+    security_review_file: results/phase-8a-local-update-diagnostic-contract-security-review.md
+    judge_decision_file: results/phase-8a-local-update-diagnostic-contract-judge-decision.md
+    integration_status: integrated_validated
+    scope_note: core_contract_only_no_network_ui_ipc_release_or_telemetry_transport
+  f8b_local_update_diagnostic_ui_scope_review:
+    slug: fiscal-desk-f8b-local-update-diagnostic-ui-scope-review
+    status: approved_by_judge_docs_only
+    goal_file: phases/phase-8-distribuicao-update-comercial.md
+    thread_id: 019ebfcf-32e0-79f3-a508-13ce650952b1
+    pending_worktree_id: local:daddf81b-ff64-4964-bfb7-04769f35227a
+    thread_title: Fiscal Desk F8B - Update Diagnostic UI Scope
+    worktree: /Users/icaroaguiar/.codex/worktrees/63dc/consulta-simples-csv
+    result_file: results/phase-8b-local-update-diagnostic-ui-scope-review.md
+    judge_decision_file: results/phase-8b-local-update-diagnostic-ui-scope-review-judge-decision.md
+    integration_status: integrated_docs_only
+    scope_note: approves_f8b1_renderer_local_blocked_state_but_queued_after_f6e2b
+  f8b1_local_update_diagnostic_renderer_blocked_state:
+    slug: fiscal-desk-f8b1-local-update-diagnostic-renderer-blocked-state
+    status: approved_by_judge_integrated_validated
+    goal_file: phases/phase-8-distribuicao-update-comercial.md
+    thread_id: 019ebfeb-8dcf-7eb0-87d1-f0bffbb07b45
+    pending_worktree_id: local:1601d398-bf58-45d0-a365-de613a4ed9f3
+    thread_title: Fiscal Desk F8B1 - Renderer Blocked States
+    worktree: /Users/icaroaguiar/.codex/worktrees/41a9/consulta-simples-csv
+    review_thread_id: 019ebff3-ffe2-7d42-84ef-dfb6fbd90771
+    review_pending_worktree_id: local:01a20012-3f5b-449b-bbb9-4c6ec91eaf08
+    review_thread_title: Revisar estados bloqueados F8B1
+    review_worktree: /Users/icaroaguiar/.codex/worktrees/f871/consulta-simples-csv
+    source_scope_review: f8b_local_update_diagnostic_ui_scope_review
+    result_file: results/phase-8b-local-update-diagnostic-ui-implementation.md
+    review_file: results/phase-8b-local-update-diagnostic-ui-implementation-review.md
+    judge_decision_file: results/phase-8b-local-update-diagnostic-ui-implementation-judge-decision.md
+    integration_status: integrated_validated_selective
+    scope_note: renderer_local_blocked_states_only_no_ipc_preload_update_network_release_package
+known_blockers:
+  - dirty_worktree_with_existing_ui_and_test_changes
+  - docs_fiscal_desk_is_ignored_by_git_info_exclude
+  - visual_fidelity_artifacts_ignored_by_gitignore
+versioning_decisions:
+  docs_goals: include_in_f0_pr
+  renderer_vite_env: include_if_required_by_typecheck
+  visual_fidelity:
+    default: keep_ignored
+    optional_force_add:
+      - .visual-fidelity/runs/reference-v5-a/fraud-proof-closeout.json
+      - .visual-fidelity/runs/reference-v5-a/visual-smoke-report.json
+  docs_fiscal_desk:
+    current_state: ignored_by_git_info_exclude
+    decision_needed: judge_should_decide_whether_to_keep_local_only_or_remove_exclude
+  skills:
+    f0_pr: exclude
+    reason: reusable_workflow_bundles_not_required_for_f0_closeout
+    never_stage:
+      - skills/csv-throughput-smoke/.inputs.json
+      - skills/electron-ui-evidence-capture/.inputs.json
+    optional_later_pr:
+      - skills/csv-throughput-smoke/SKILL.md
+      - skills/csv-throughput-smoke/scripts/perf_local_csv.py
+      - skills/csv-throughput-smoke/scripts/perf_local_csv.ts
+      - skills/electron-ui-evidence-capture/SKILL.md
+      - skills/electron-ui-evidence-capture/references/electron-ui-evidence-capture.md
+      - skills/electron-ui-evidence-capture/scripts/run-electron-evidence-capture.sh
+next_judge_action:
+  - select_next_owner_window_after_staging_validation
+  - keep_runtime_update_diagnostic_telemetry_license_release_blocked_until_fresh_scope
+  - keep_f0_blocker_resolution_observed
+  - keep_final_validation_in_single_worktree
+staging_execution:
+  policy: approved_closeout_authorizes_path_explicit_staging_by_orchestrator
+  status: staged_validation_passed
+  authorization_file: results/staging-action-authorization-2026-06-13.md
+  stage_set_file: results/staging-versioning-closeout.md
+  execution_file: results/staging-execution-2026-06-13.md
+  completed_at: "2026-06-13 12:21:56 -03"
+  must_exclude:
+    - skills/**
+    - skills/**/*.inputs.json
+    - .visual-fidelity/**
+    - docs/fiscal-desk/**
+    - dist/**
+    - dist-electron/**
+  validation_required:
+    - git diff --cached --name-only
+    - git diff --cached --check
+    - redacted_secret_scan_or_documented_fallback
+    - pnpm lint
+    - pnpm typecheck
+    - pnpm test
+    - coverage_status_recorded
+    - pnpm build
+    - applicable_behavior_smokes
+  coverage_status:
+    status: unavailable_known_gap
+    attempted_command: pnpm exec vitest run --coverage --coverage.reporter=text-summary --coverage.reporter=json-summary
+    failure: missing_dependency_@vitest/coverage-v8
+    quality_gate_required_check: false
+    next_action: open_testing_infra_owner_window_before_marking_coverage_passed
+  validation_result:
+    cached_diff_check: pass
+    excluded_paths_check: pass
+    secret_scan: pass
+    lint: pass
+    typecheck: pass
+    test: pass_40_files_255_tests
+    build: pass
+    smoke_visual: pass
+    smoke_electron_ui_mock: pass
+    smoke_electron_ui_base_publica_local: pass
+    smoke_real_csv: pass
+    ratchet: pass
+    qualitative_gap_fixed: base_publica_local_preparation_consent_forwarded_through_renderer_preload_ipc_and_syncui_button_disable_rule
+    independent_review_blocker: app_sync_prepare_button_reenabled_without_consent
+    independent_review_blocker_status: fixed_re_review_approved
+monitoring:
+  orchestrator_goal_active: true
+  observe_threads_frequently: true
+  heartbeat_automation_id: fiscal-desk-f0-monitor
+  heartbeat_interval_minutes: 30
+  last_observation_at: "2026-06-13 11:52:58 -03"
+  last_observation_file: results/orchestration-observation-2026-06-13-0524.md
+  f0_thread_status: self_approval_blocker_resolved_by_judge
+  final_integration_review_status: approved_by_judge
+  final_integration_review_thread_id: 019ec005-f849-7b53-ae0f-ae7c02df4f63
+  final_integration_review_thread_title: Revisar integração Fiscal Desk
+  final_integration_review_pending_worktree_id: local:14f999e8-abeb-4b08-bc4b-df4bf0cc056b
+  final_integration_review_worktree: /Users/icaroaguiar/.codex/worktrees/7716/consulta-simples-csv
+  final_integration_review_dispatched_at: "2026-06-13 05:08:08 -03"
+  final_integration_review_completed_at: "2026-06-13 05:12:51 -03"
+  final_integration_review_judged_at: "2026-06-13 05:13:54 -03"
+  final_integration_review_dispatch_file: results/final-integration-review-dispatch-2026-06-13.md
+  final_integration_review_file: results/final-integration-review.md
+  final_integration_review_judge_decision_file: results/final-integration-review-judge-decision.md
+  staging_versioning_closeout_status: approved_by_judge
+  staging_versioning_closeout_thread_id: 019ec00d-c200-7dc0-87fc-c40d141ea7cb
+  staging_versioning_closeout_thread_title: Preparar staging Fiscal Desk
+  staging_versioning_closeout_pending_worktree_id: local:d967fba3-bf05-4915-ba0b-1ec2852de5cd
+  staging_versioning_closeout_worktree: /Users/icaroaguiar/.codex/worktrees/ce1f/consulta-simples-csv
+  staging_versioning_closeout_dispatched_at: "2026-06-13 05:16:30 -03"
+  staging_versioning_closeout_completed_at: "2026-06-13 05:20:19 -03"
+  staging_versioning_closeout_judged_at: "2026-06-13 05:20:52 -03"
+  staging_versioning_closeout_dispatch_file: results/staging-versioning-closeout-dispatch-2026-06-13.md
+  staging_versioning_closeout_file: results/staging-versioning-closeout.md
+  staging_versioning_closeout_judge_decision_file: results/staging-versioning-closeout-judge-decision.md
+  next_material_worker_status: ready_for_fresh_owner_window_selection
+  f3_thread_status: integrated_validated
+  f5_thread_status: integrated_validated
+  f6a_thread_status: integrated_validated
+  f6b_thread_status: integrated_validated
+  f6c_thread_status: integrated_validated
+  f6d_scope_review_thread_status: approved_docs_only
+  f6d_runtime_wiring_thread_status: integrated_validated
+  f6e_templates_scope_review_thread_status: integrated_docs_only
+  f7a_thread_status: integrated_validated
+  f7b_security_scope_review_thread_status: integrated_docs_only
+  f6e1_export_contract_thread_status: approved_by_judge_integrated_validated
+  f7b_adapter_core_hardening_thread_status: approved_by_judge_integrated_validated
+  f6e2_delivery_runtime_ui_scope_review_thread_status: approved_docs_only
+  f8a_local_update_diagnostic_contract_scope_review_thread_status: approved_docs_only
+  f6e2a_delivery_runtime_selection_thread_status: approved_by_judge_integrated_validated
+  f8a_local_update_diagnostic_contract_core_thread_status: approved_by_judge_integrated_validated
+  f6e2b_delivery_ui_ipc_scope_review_thread_status: approved_by_judge_integrated_docs_only
+  f6e2b_delivery_ipc_preload_types_worker_thread_status: approved_by_judge_integrated_validated
+  f8b_local_update_diagnostic_ui_scope_review_thread_status: approved_by_judge_integrated_docs_only
+  f8b1_local_update_diagnostic_renderer_blocked_state_thread_status: approved_by_judge_integrated_validated
+  next_wave_policy: concurrent_only_when_write_scopes_do_not_collide
+integration_queue:
+  integrated:
+    - phase: f1
+      status: integrated_validated
+      worktree: /Users/icaroaguiar/.codex/worktrees/50f0/consulta-simples-csv
+      include_scope:
+        - src/core/app/process-csv.types.ts
+        - src/main/types.ts
+        - test/unit/process-csv-contracts.test.ts
+        - docs/goals/fiscal-desk-orchestration/results/phase-1-execution-state-contracts.md
+        - docs/goals/fiscal-desk-orchestration/results/phase-1-judge-decision.md
+    - phase: f2
+      status: integrated_validated
+      worktree: /Users/icaroaguiar/.codex/worktrees/b295/consulta-simples-csv
+      include_scope:
+        - scripts/smoke-electron-ui.ts
+        - scripts/smoke-visual-ui.ts
+        - scripts/visual-smoke-checks.ts
+        - scripts/visual-smoke-fixture.ts
+        - src/renderer/styles.css
+        - src/renderer/ui/**
+        - src/renderer/vite-env.d.ts
+        - test/unit/app-view.test.ts
+        - test/unit/renderer-operational-copy.test.ts
+        - docs/goals/fiscal-desk-orchestration/results/phase-2-renderer-surface-v5.md
+        - docs/goals/fiscal-desk-orchestration/results/phase-2-judge-decision.md
+      exclude_scope:
+        - skills/**
+        - docs/goals/fiscal-desk-orchestration/state.yaml
+        - docs/goals/fiscal-desk-v5-fidelity/state.yaml
+    - phase: f4
+      status: integrated_validated
+      worktree: /Users/icaroaguiar/.codex/worktrees/2c20/consulta-simples-csv
+      include_scope:
+        - src/core/simples/**
+        - test/unit/simples-provider.catalog.test.ts
+        - test/unit/simples-provider.fallback.test.ts
+        - test/unit/simples-provider.health.test.ts
+        - test/unit/cnpja-open-simples-lookup.retry.test.ts
+    - phase: f3
+      status: integrated_validated
+      worktree: /Users/icaroaguiar/.codex/worktrees/c363/consulta-simples-csv
+      include_scope:
+        - src/core/app/process-csv.use-case.ts
+        - src/core/app/process-csv.types.ts
+        - src/main/ipc/process-csv.ipc.ts
+        - src/main/preload.ts
+        - src/main/types.ts
+        - test/integration/process-csv-cancel.test.ts
+        - test/unit/process-csv-contracts.test.ts
+        - scripts/smoke-electron-ui.ts
+        - docs/goals/fiscal-desk-orchestration/results/phase-3-run-ledger-retomada.md
+        - docs/goals/fiscal-desk-orchestration/results/phase-3-judge-decision.md
+    - phase: f5
+      status: integrated_validated
+      worktree: /Users/icaroaguiar/.codex/worktrees/609a/consulta-simples-csv
+      include_scope:
+        - src/core/public-base/local-public-base.types.ts
+        - src/core/public-base/local-public-base.index.ts
+        - src/core/simples/adapters/local-public-base-simples-lookup.adapter.ts
+        - test/unit/local-public-base.test.ts
+        - test/integration/process-csv.use-case.test.ts
+        - docs/goals/fiscal-desk-orchestration/results/phase-5-base-publica-local.md
+        - docs/goals/fiscal-desk-orchestration/results/phase-5-judge-decision.md
+      exclude_scope:
+        - src/renderer/**
+        - scripts/**
+        - skills/**
+        - docs/goals/fiscal-desk-orchestration/state.yaml
+    - phase: f6a
+      status: integrated_validated
+      worktree: /Users/icaroaguiar/.codex/worktrees/11c2/consulta-simples-csv
+      include_scope:
+        - src/core/ingestion/ingestion-contract.ts
+        - src/core/export/export-contract.ts
+        - test/unit/fiscal-desk-phase-6-contracts.test.ts
+        - docs/goals/fiscal-desk-orchestration/results/phase-6a-ingestao-entrega-contract.md
+        - docs/goals/fiscal-desk-orchestration/results/phase-6a-judge-decision.md
+    - phase: f7a
+      status: integrated_validated
+      worktree: /Users/icaroaguiar/.codex/worktrees/a3a8/consulta-simples-csv
+      include_scope:
+        - src/core/simples/adapters/receita-web/receita-diagnostics.ts
+        - src/core/simples/adapters/receita-web/index.ts
+        - src/core/simples/adapters/receita-web/receita-consulta-optantes.adapter.ts
+        - src/core/simples/adapters/receita-web/receita-result.parser.ts
+        - test/unit/receita-consulta-optantes.adapter.test.ts
+        - test/unit/receita-result.parser.test.ts
+        - docs/goals/fiscal-desk-orchestration/results/phase-7a-receita-web-assisted-contract.md
+        - docs/goals/fiscal-desk-orchestration/results/phase-7a-judge-decision.md
+    - phase: f6b
+      status: integrated_validated
+      worktree: /Users/icaroaguiar/.codex/worktrees/a4aa/consulta-simples-csv
+      include_scope:
+        - src/core/ingestion/ingestion-contract.ts
+        - src/core/ingestion/fiscal-ingestion.ts
+        - test/unit/fiscal-ingestion.test.ts
+        - docs/goals/fiscal-desk-orchestration/results/phase-6b-ingestion-implementation.md
+        - docs/goals/fiscal-desk-orchestration/results/phase-6b-judge-decision.md
+    - phase: f6c
+      status: integrated_validated
+      worktree: /Users/icaroaguiar/.codex/worktrees/d235/consulta-simples-csv
+      include_scope:
+        - src/core/export/export-artifacts.ts
+        - test/unit/fiscal-export-artifacts.test.ts
+        - docs/goals/fiscal-desk-orchestration/results/phase-6c-export-delivery-implementation.md
+        - docs/goals/fiscal-desk-orchestration/results/phase-6c-judge-decision.md
+    - phase: f6d_scope_review
+      status: integrated_docs_only
+      worktree: /Users/icaroaguiar/.codex/worktrees/f44c/consulta-simples-csv
+      include_scope:
+        - docs/goals/fiscal-desk-orchestration/results/phase-6d-runtime-owner-scope-review.md
+        - docs/goals/fiscal-desk-orchestration/results/phase-6d-scope-review-judge-decision.md
+    - phase: f6d_runtime_wiring
+      status: integrated_validated
+      worktree: /Users/icaroaguiar/.codex/worktrees/23e6/consulta-simples-csv
+      include_scope:
+        - src/core/app/process-csv.use-case.ts
+        - src/core/app/process-csv-delivery.ts
+        - test/integration/process-csv.use-case.test.ts
+        - test/unit/process-csv-contracts.test.ts
+        - docs/goals/fiscal-desk-orchestration/results/phase-6d-runtime-wiring.md
+        - docs/goals/fiscal-desk-orchestration/results/phase-6d-runtime-wiring-judge-decision.md
+    - phase: f6e1_export_contract
+      status: integrated_validated
+      worktree: /Users/icaroaguiar/.codex/worktrees/5f74/consulta-simples-csv
+      include_scope:
+        - src/core/export/export-contract.ts
+        - src/core/export/export-artifacts.ts
+        - test/unit/fiscal-export-artifacts.test.ts
+        - test/unit/fiscal-desk-phase-6-contracts.test.ts
+        - docs/goals/fiscal-desk-orchestration/results/phase-6e-output-templates-implementation.md
+        - docs/goals/fiscal-desk-orchestration/results/phase-6e-output-templates-implementation-judge-decision.md
+    - phase: f7b_adapter_core_hardening
+      status: integrated_validated
+      worktree: /Users/icaroaguiar/.codex/worktrees/5559/consulta-simples-csv
+      include_scope:
+        - src/core/simples/adapters/receita-web/receita-browser.client.ts
+        - src/core/simples/adapters/receita-web/receita-consulta-optantes.adapter.ts
+        - src/core/simples/adapters/receita-web/receita-result.parser.ts
+        - test/unit/receita-browser.client.test.ts
+        - test/unit/receita-consulta-optantes.adapter.test.ts
+        - test/unit/receita-result.parser.test.ts
+        - docs/goals/fiscal-desk-orchestration/results/phase-7b-receita-web-implementation.md
+        - docs/goals/fiscal-desk-orchestration/results/phase-7b-receita-web-implementation-judge-decision.md
+    - phase: f6e2_delivery_runtime_ui_scope_review
+      status: integrated_docs_only
+      worktree: /Users/icaroaguiar/.codex/worktrees/c6a2/consulta-simples-csv
+      include_scope:
+        - docs/goals/fiscal-desk-orchestration/results/phase-6e2-delivery-runtime-ui-scope-review.md
+        - docs/goals/fiscal-desk-orchestration/results/phase-6e2-delivery-runtime-ui-scope-review-judge-decision.md
+    - phase: f8a_local_update_diagnostic_contract_scope_review
+      status: integrated_docs_only
+      worktree: /Users/icaroaguiar/.codex/worktrees/194e/consulta-simples-csv
+      include_scope:
+        - docs/goals/fiscal-desk-orchestration/results/phase-8a-local-update-diagnostic-contract-scope-review.md
+        - docs/goals/fiscal-desk-orchestration/results/phase-8a-local-update-diagnostic-contract-scope-review-judge-decision.md
+    - phase: f6e2a_delivery_runtime_selection
+      status: integrated_validated
+      worktree: /Users/icaroaguiar/.codex/worktrees/6582/consulta-simples-csv
+      include_scope:
+        - src/core/app/process-csv.use-case.ts
+        - src/core/app/process-csv-delivery.ts
+        - test/integration/process-csv.use-case.test.ts
+        - test/unit/process-csv-contracts.test.ts
+        - docs/goals/fiscal-desk-orchestration/results/phase-6e2-delivery-runtime-ui-implementation.md
+        - docs/goals/fiscal-desk-orchestration/results/phase-6e2-delivery-runtime-ui-implementation-review.md
+        - docs/goals/fiscal-desk-orchestration/results/phase-6e2-delivery-runtime-ui-implementation-review-after-rework.md
+        - docs/goals/fiscal-desk-orchestration/results/phase-6e2-delivery-runtime-ui-implementation-judge-decision.md
+    - phase: f8a_local_update_diagnostic_contract_core
+      status: integrated_validated
+      worktree: /Users/icaroaguiar/.codex/worktrees/fcee/consulta-simples-csv
+      include_scope:
+        - src/core/app/fiscal-desk-local-contract.ts
+        - test/unit/fiscal-desk-local-contract.test.ts
+        - docs/goals/fiscal-desk-orchestration/results/phase-8a-local-update-diagnostic-contract.md
+        - docs/goals/fiscal-desk-orchestration/results/phase-8a-local-update-diagnostic-contract-security-review.md
+        - docs/goals/fiscal-desk-orchestration/results/phase-8a-local-update-diagnostic-contract-judge-decision.md
+    - phase: f6e2b_delivery_ui_ipc_scope_review
+      status: integrated_docs_only
+      worktree: /Users/icaroaguiar/.codex/worktrees/2d55/consulta-simples-csv
+      include_scope:
+        - docs/goals/fiscal-desk-orchestration/results/phase-6e2b-delivery-ui-ipc-scope-review.md
+        - docs/goals/fiscal-desk-orchestration/results/phase-6e2b-delivery-ui-ipc-scope-review-judge-decision.md
+    - phase: f8b_local_update_diagnostic_ui_scope_review
+      status: integrated_docs_only_queued_for_material_worker
+      worktree: /Users/icaroaguiar/.codex/worktrees/63dc/consulta-simples-csv
+      include_scope:
+        - docs/goals/fiscal-desk-orchestration/results/phase-8b-local-update-diagnostic-ui-scope-review.md
+        - docs/goals/fiscal-desk-orchestration/results/phase-8b-local-update-diagnostic-ui-scope-review-judge-decision.md
+    - phase: f6e2b_delivery_ipc_preload_types_worker
+      status: integrated_validated_selective
+      source_scope_review: f6e2b_delivery_ui_ipc_scope_review
+      thread_id: 019ebfd8-ce52-7ae1-bd78-649316867f22
+      pending_worktree_id: local:720942b1-9c6d-45d1-b951-1300deca5c9e
+      worktree: /Users/icaroaguiar/.codex/worktrees/cb3c/consulta-simples-csv
+      include_scope:
+        - src/main/ipc/process-csv.ipc.ts
+        - src/main/preload.ts
+        - src/main/types.ts
+        - src/core/app/process-csv.types.ts
+        - test/unit/process-csv.ipc.test.ts
+        - test/unit/preload.test.ts
+        - test/unit/process-csv-contracts.test.ts
+        - docs/goals/fiscal-desk-orchestration/results/phase-6e2b-delivery-ui-ipc-implementation.md
+        - docs/goals/fiscal-desk-orchestration/results/phase-6e2b-delivery-ui-ipc-implementation-review.md
+        - docs/goals/fiscal-desk-orchestration/results/phase-6e2b-delivery-ui-ipc-implementation-judge-decision.md
+    - phase: f8b1_local_update_diagnostic_renderer_blocked_state
+      status: integrated_validated_selective
+      source_scope_review: f8b_local_update_diagnostic_ui_scope_review
+      thread_id: 019ebfeb-8dcf-7eb0-87d1-f0bffbb07b45
+      pending_worktree_id: local:1601d398-bf58-45d0-a365-de613a4ed9f3
+      worktree: /Users/icaroaguiar/.codex/worktrees/41a9/consulta-simples-csv
+      review_thread_id: 019ebff3-ffe2-7d42-84ef-dfb6fbd90771
+      review_pending_worktree_id: local:01a20012-3f5b-449b-bbb9-4c6ec91eaf08
+      review_worktree: /Users/icaroaguiar/.codex/worktrees/f871/consulta-simples-csv
+      include_scope:
+        - src/renderer/ui/app-view.ts
+        - test/unit/app-view.test.ts
+        - docs/goals/fiscal-desk-orchestration/results/phase-8b-local-update-diagnostic-ui-implementation.md
+        - docs/goals/fiscal-desk-orchestration/results/phase-8b-local-update-diagnostic-ui-implementation-review.md
+        - docs/goals/fiscal-desk-orchestration/results/phase-8b-local-update-diagnostic-ui-implementation-judge-decision.md
+        - docs/goals/fiscal-desk-orchestration/results/integration-wave-13-f8b1-renderer-blocked-state.md
+  pending: []
+wave_1_integration:
+  status: integrated_validated
+  result_file: results/integration-wave-1-f1-f2-f4.md
+  checks:
+    focused_tests: pass
+    typecheck: pass
+    lint: pass
+    diff_check: pass
+    test: pass
+    ratchet: pass
+    smoke_visual: pass
+    smoke_electron_ui: pass
+active_wave_2:
+  status: integrated_validated
+  started_at: 2026-06-13
+  completed_at: 2026-06-13
+  result_file: results/integration-wave-2-f3-f5.md
+  phases:
+    - f3
+    - f5
+  thread_ids:
+    f3: 019ebf3f-ef4c-7982-9866-9d4841170f72
+    f5: 019ebf3f-ef3b-73e1-9e43-5580fe18243a
+  concurrency_decision:
+    f3_owns_execution_boundaries: true
+    f5_core_only_to_avoid_collision: true
+    f6_blocked_by_f3: false
+    f7_blocked_by_provider_factory_owner_window: false
+  checks:
+    focused_tests: pass
+    typecheck: pass
+    lint: pass
+    test: pass
+    smoke_electron_ui: pass
+    smoke_visual: pass
+    diff_check: pass
+    ratchet: pass
+active_wave_3:
+  status: integrated_validated
+  started_at: 2026-06-13
+  completed_at: 2026-06-13
+  result_file: results/integration-wave-3-f6a-f7a.md
+  phases:
+    - f6a
+    - f7a
+  thread_ids:
+    f6a: 019ebf50-fbc1-7123-b4b8-929e0f34f2a7
+    f7a: 019ebf51-5055-7ae3-bce4-0062d8bab4dc
+  worktrees:
+    f6a: /Users/icaroaguiar/.codex/worktrees/11c2/consulta-simples-csv
+    f7a: /Users/icaroaguiar/.codex/worktrees/a3a8/consulta-simples-csv
+  concurrency_decision:
+    f6a_contract_only: true
+    f7a_contract_security_only: true
+    write_scope_collision: false
+    implementation_requires_judge_gate: true
+  checks:
+    focused_tests: pass
+    typecheck: pass
+    lint: pass
+    test: pass
+    smoke_electron_ui: pass
+    smoke_visual: pass
+    diff_check: pass
+    ratchet: pass
+active_wave_4:
+  status: integrated_validated
+  started_at: 2026-06-13
+  completed_at: 2026-06-13
+  result_file: results/integration-wave-4-f6b-f6c.md
+  phases:
+    - f6b
+    - f6c
+  thread_ids:
+    f6b: 019ebf60-080b-7621-a161-4bbdf7a5198f
+    f6c: 019ebf60-0810-7333-bcc1-c67f2544f074
+  worktrees:
+    f6b: /Users/icaroaguiar/.codex/worktrees/a4aa/consulta-simples-csv
+    f6c: /Users/icaroaguiar/.codex/worktrees/d235/consulta-simples-csv
+  concurrency_decision:
+    f6b_owns_ingestion: true
+    f6c_owns_export: true
+    write_scope_collision: false
+    renderer_ipc_runledger_blocked: true
+  checks:
+    focused_tests: pass
+    typecheck: pass
+    lint: pass
+    test: pass
+    diff_check: pass
+    ratchet: pass
+    smoke_electron_ui: skipped_no_runtime_ui_surface_touched
+    smoke_visual: skipped_no_runtime_ui_surface_touched
+active_wave_5:
+  status: approved_docs_only
+  started_at: 2026-06-13
+  completed_at: 2026-06-13
+  result_file: results/phase-6d-runtime-owner-scope-review.md
+  phases:
+    - f6d_scope_review
+  thread_ids:
+    f6d_scope_review: 019ebf6f-f0c5-7863-a9e0-10a54ead7476
+  worktrees:
+    f6d_scope_review: /Users/icaroaguiar/.codex/worktrees/f44c/consulta-simples-csv
+  concurrency_decision:
+    docs_only_scope_review: true
+    implementation_writer_released: true
+    f7b_held_to_avoid_renderer_or_provider_collision: true
+    runtime_owner_window_required_before_code: true
+  checks:
+    receipt_created: pass
+    diff_check: pass
+    state_yaml: pass
+active_wave_6:
+  status: integrated_validated
+  started_at: 2026-06-13
+  completed_at: 2026-06-13
+  result_file: results/integration-wave-6-f6d-runtime-wiring.md
+  phases:
+    - f6d_runtime_wiring
+  thread_ids:
+    f6d_runtime_wiring: 019ebf77-c94b-7432-92e1-4d542b696e40
+  worktrees:
+    f6d_runtime_wiring: /Users/icaroaguiar/.codex/worktrees/23e6/consulta-simples-csv
+  concurrency_decision:
+    single_writer: true
+    owns_src_core_app: true
+    templates_blocked: true
+    f7b_blocked: true
+    ipc_preload_renderer_blocked: true
+  checks:
+    focused_tests: pass
+    progress_cancel_resume_tests: pass
+    typecheck: pass
+    lint: pass
+    test: pass
+    smoke_real_csv: pass
+    smoke_electron_ui: pass
+    smoke_visual: pass
+    diff_check: pass
+    ratchet: pass_with_existing_warnings
+active_wave_7:
+  status: integrated_docs_only
+  started_at: 2026-06-13
+  completed_at: 2026-06-13
+  result_file: results/integration-wave-7-scope-reviews.md
+  phases:
+    - f6e_templates_scope_review
+    - f7b_security_scope_review
+  pending_worktree_ids:
+    f6e_templates_scope_review: local:f0b63090-9254-47b4-813e-3748a1e27f4b
+    f7b_security_scope_review: local:396cd775-1632-414e-bef7-43770b0e7052
+  thread_ids:
+    f6e_templates_scope_review: 019ebf85-af04-78a1-89b9-e272e32e6b24
+    f7b_security_scope_review: 019ebf86-14b2-7120-82d0-68ee95c559b9
+  worktrees:
+    f6e_templates_scope_review: /Users/icaroaguiar/.codex/worktrees/c18b/consulta-simples-csv
+    f7b_security_scope_review: /Users/icaroaguiar/.codex/worktrees/1d37/consulta-simples-csv
+  concurrency_decision:
+    docs_only_scope_reviews: true
+    distinct_receipt_files: true
+    implementation_blocked_until_judge_accepts_scope_review: true
+    f6e_must_not_touch_receita_web: true
+    f7b_must_not_touch_templates_or_renderer_ui: true
+  checks:
+    f6e_receipt_diff_check: pass
+    f7b_receipt_diff_check: pass
+    state_yaml: pass
+    code_tests: skipped_docs_only
+active_wave_8:
+  status: integrated_validated
+  started_at: 2026-06-13
+  completed_at: 2026-06-13
+  result_file: results/integration-wave-8-f6e1-f7b.md
+  partial_result_file: results/integration-wave-8-f6e1-export-contract.md
+  phases:
+    - f6e1_export_contract
+    - f7b_adapter_core_hardening
+  pending_worktree_ids:
+    f6e1_export_contract: local:1adc7e12-149e-4408-af60-ef49abf6358c
+    f7b_adapter_core_hardening: local:84f3b264-d8d7-401d-9be7-052c7a78cadd
+  thread_ids:
+    f6e1_export_contract: 019ebf8d-d31c-7ac1-8b17-d6529136e631
+    f7b_adapter_core_hardening: 019ebf8e-61a9-7de2-91ff-5f096803c26f
+  worktrees:
+    f6e1_export_contract: /Users/icaroaguiar/.codex/worktrees/5f74/consulta-simples-csv
+    f7b_adapter_core_hardening: /Users/icaroaguiar/.codex/worktrees/5559/consulta-simples-csv
+  blocker_recovery:
+    missing_local_docs_detected: true
+    f6e1_blocked_turns_before_recovery: 3
+    f7b_blocked_turns_before_recovery: 3
+    docs_context_copied_to_worktrees: true
+    recovery_action: resume_threads_with_original_scope_and_read_only_docs_context
+  partial_integration:
+    f6e1_export_contract: integrated_validated
+    f7b_adapter_core_hardening: integrated_validated
+  concurrency_decision:
+    f6e1_owns_core_export_only: true
+    f7b_owns_receita_web_adapter_only: true
+    write_scope_collision: false
+    local_docs_context_must_be_copied_to_worktrees: true
+    implementation_receipts_required_before_judge_acceptance: true
+  checks:
+    f6e1_focused_tests: pass
+    f6e1_typecheck: pass
+    f6e1_lint: pass
+    f6e1_diff_check: pass
+    f7b_focused_tests: pass
+    f7b_provider_regression_tests: pass
+    f7b_sensitive_scan: pass
+    focused_tests: pass
+    typecheck: pass
+    lint: pass
+    test: pass
+    diff_check: pass
+    smoke_electron_ui: skipped_no_runtime_ui_surface_touched_by_wave_8
+    smoke_visual: skipped_no_visual_surface_touched_by_wave_8
+active_wave_9:
+  status: integrated_docs_only
+  started_at: 2026-06-13
+  completed_at: 2026-06-13
+  result_file: results/integration-wave-9-scope-reviews.md
+  phases:
+    - f6e2_delivery_runtime_ui_scope_review
+    - f8a_local_update_diagnostic_contract_scope_review
+  pending_worktree_ids:
+    f6e2_delivery_runtime_ui_scope_review: local:84c736f7-8176-4bc7-b9b2-9fa28c3e1215
+    f8a_local_update_diagnostic_contract_scope_review: local:bf12779a-917b-464b-a703-f7fef5e053b1
+  thread_ids:
+    f6e2_delivery_runtime_ui_scope_review: 019ebfa7-d70f-7283-955a-646d7736735d
+    f8a_local_update_diagnostic_contract_scope_review: 019ebfa8-32e5-7270-9407-ad7606bea554
+  worktrees:
+    f6e2_delivery_runtime_ui_scope_review: /Users/icaroaguiar/.codex/worktrees/c6a2/consulta-simples-csv
+    f8a_local_update_diagnostic_contract_scope_review: /Users/icaroaguiar/.codex/worktrees/194e/consulta-simples-csv
+  blocker_recovery:
+    missing_local_docs_detected: true
+    docs_context_copied_to_worktrees: true
+    recovery_action: resume_threads_with_original_scope_and_read_only_docs_context
+  concurrency_decision:
+    docs_only_scope_reviews: true
+    write_scope_collision: false
+    next_code_workers_released_with_exact_file_scopes: true
+    f6e2_must_not_touch_f8_update_release_or_provider_boundaries: true
+    f8a_must_not_touch_f6_delivery_runtime_or_provider_boundaries: true
+    future_wave_10_can_parallelize_if_exact_scopes_hold: true
+  checks:
+    docs_context_presence: pass
+    f6e2_receipt_diff_check: pass
+    f8a_receipt_diff_check: pass
+    state_yaml: pass
+    diff_check: pass
+    code_tests: skipped_docs_only
+active_wave_12:
+  status: integrated_validated
+  started_at: 2026-06-13
+  completed_at: 2026-06-13
+  result_file: results/integration-wave-12-f6e2b-delivery-ipc-preload.md
+  phases:
+    - f6e2b_delivery_ipc_preload_types_worker
+  pending_worktree_ids:
+    f6e2b_delivery_ipc_preload_types_worker: local:720942b1-9c6d-45d1-b951-1300deca5c9e
+  thread_ids:
+    f6e2b_delivery_ipc_preload_types_worker: 019ebfd8-ce52-7ae1-bd78-649316867f22
+  worktrees:
+    f6e2b_delivery_ipc_preload_types_worker: /Users/icaroaguiar/.codex/worktrees/cb3c/consulta-simples-csv
+  source_scope_review: f6e2b_delivery_ui_ipc_scope_review
+  docs_context_presence:
+    f6e2b: pass_after_manual_copy
+  concurrency_decision:
+    single_material_worker: true
+    owns_ipc_preload_types: true
+    f8b1_queued: true
+    renderer_update_network_release_package_surfaces_blocked: true
+  checks:
+    worker_receipt: pass
+    independent_review: needs_rework_for_whole_worker_worktree_but_no_narrow_code_findings
+    judge_selective_integration: pass
+    focused_ipc_preload_tests: pass
+    focused_integration_use_case_tests: pass
+    typecheck: pass
+    lint: pass
+    full_test: pass
+    build: pass
+    diff_check: pass
+active_wave_13:
+  status: integrated_validated_selective
+  started_at: 2026-06-13
+  completed_at: 2026-06-13
+  phases:
+    - f8b1_local_update_diagnostic_renderer_blocked_state
+  pending_worktree_ids:
+    f8b1_local_update_diagnostic_renderer_blocked_state: local:1601d398-bf58-45d0-a365-de613a4ed9f3
+  review_pending_worktree_ids:
+    f8b1_local_update_diagnostic_renderer_blocked_state: local:01a20012-3f5b-449b-bbb9-4c6ec91eaf08
+  thread_ids:
+    f8b1_local_update_diagnostic_renderer_blocked_state: 019ebfeb-8dcf-7eb0-87d1-f0bffbb07b45
+  review_thread_ids:
+    f8b1_local_update_diagnostic_renderer_blocked_state: 019ebff3-ffe2-7d42-84ef-dfb6fbd90771
+  worktrees:
+    f8b1_local_update_diagnostic_renderer_blocked_state: /Users/icaroaguiar/.codex/worktrees/41a9/consulta-simples-csv
+  review_worktrees:
+    f8b1_local_update_diagnostic_renderer_blocked_state: /Users/icaroaguiar/.codex/worktrees/f871/consulta-simples-csv
+  source_scope_review: f8b_local_update_diagnostic_ui_scope_review
+  docs_context_presence:
+    f8b1: pass_after_manual_copy
+  concurrency_decision:
+    single_material_worker: true
+    owns_renderer_local_surface: true
+    ipc_preload_main_update_network_release_package_blocked: true
+    css_conditional_only: true
+  checks:
+    worker_receipt: ready_for_judge_review
+    independent_review: approved_candidate
+    judge_selective_integration: pass
+    focused_renderer_contract_tests: pass
+    typecheck: pass
+    lint: pass
+    build: pass
+    full_test: pass
+    smoke_visual: pass
+    smoke_electron_ui: pass
+    updater_scan: pass_no_code_occurrences
+    network_telemetry_scan: pass_no_code_occurrences
+    sensitive_scan: pass_existing_renderer_test_references_only
+    diff_check: pass
+    integration_validation: pass
+  receipt_file: results/integration-wave-13-f8b1-renderer-blocked-state.md
+  residual_risks:
+    - canonical_worktree_has_broad_integrated_local_package_diff
+    - harness_magic_string_boundary_warning_reviewed_contract_consumed_from_f8a
+    - harness_visual_surface_warning_mitigated_by_visual_and_electron_smokes
+    - runtime_update_diagnostic_telemetry_license_release_remain_blocked_future_splits
+active_wave_10:
+  status: integrated_validated
+  started_at: 2026-06-13
+  completed_at: 2026-06-13
+  result_file: results/integration-wave-10-f6e2a-f8a.md
+  phases:
+    - f6e2a_delivery_runtime_selection
+    - f8a_local_update_diagnostic_contract_core
+  pending_worktree_ids:
+    f6e2a_delivery_runtime_selection: local:9562c8bd-05ce-4d0e-b2df-1c85e2ea045f
+    f8a_local_update_diagnostic_contract_core: local:15106fae-70e1-4bcb-9f47-c64758ecfed9
+  thread_ids:
+    f6e2a_delivery_runtime_selection: 019ebfb4-9d9c-7740-9225-55c5ebc90bcd
+    f8a_local_update_diagnostic_contract_core: 019ebfb5-1657-7343-941f-d08c74446c11
+  worktrees:
+    f6e2a_delivery_runtime_selection: /Users/icaroaguiar/.codex/worktrees/6582/consulta-simples-csv
+    f8a_local_update_diagnostic_contract_core: /Users/icaroaguiar/.codex/worktrees/fcee/consulta-simples-csv
+  blocker_recovery:
+    missing_local_docs_detected: true
+    docs_context_copied_to_worktrees: true
+    f6e2a_stale_blocker_revalidated_by_worker: true
+    f8a_revalidation_requested_after_docs_copy: true
+    recovery_action: resume_or_revalidate_threads_with_original_scope_and_read_only_docs_context
+  concurrency_decision:
+    exact_file_scopes_required: true
+    f6e2a_owns_process_csv_runtime_files_only: true
+    f8a_owns_new_local_contract_file_only: true
+    write_scope_collision_allowed: false
+    shared_ipc_preload_renderer_blocked: true
+    providers_export_ingestion_release_update_blocked: true
+  checks:
+    docs_context_presence:
+      f6e2a: pass
+      f8a: pass
+    f6e2a_primary_tests: pass
+    f6e2a_cancel_resume_tests: pass
+    f8a_contract_tests: pass
+    typecheck: pass
+    lint: pass
+    f8a_updater_scan: pass_no_occurrences
+    f8a_network_scan: pass_only_preexisting_outside_f8a
+    f8a_sensitive_field_scan: pass_only_forbidden_classes_and_rejection_fixtures
+    state_yaml: pass
+    diff_check: pass
+active_wave_11:
+  status: integrated_docs_only
+  started_at: 2026-06-13
+  completed_at: 2026-06-13
+  result_file: results/integration-wave-11-scope-reviews.md
+  phases:
+    - f6e2b_delivery_ui_ipc_scope_review
+    - f8b_local_update_diagnostic_ui_scope_review
+  pending_worktree_ids:
+    f6e2b_delivery_ui_ipc_scope_review: local:664cff84-cb63-402f-a4ce-48164bddf6f9
+    f8b_local_update_diagnostic_ui_scope_review: local:daddf81b-ff64-4964-bfb7-04769f35227a
+  thread_ids:
+    f6e2b_delivery_ui_ipc_scope_review: 019ebfcf-32e0-79f3-a508-13b7044444e4
+    f8b_local_update_diagnostic_ui_scope_review: 019ebfcf-32e0-79f3-a508-13ce650952b1
+  worktrees:
+    f6e2b_delivery_ui_ipc_scope_review: /Users/icaroaguiar/.codex/worktrees/2d55/consulta-simples-csv
+    f8b_local_update_diagnostic_ui_scope_review: /Users/icaroaguiar/.codex/worktrees/63dc/consulta-simples-csv
+  docs_context_presence:
+    f6e2b: pass
+    f8b: pass
+  blocker_recovery:
+    missing_local_docs_detected: true
+    docs_context_copied_to_worktrees: true
+    f6e2b_revalidation_requested_after_docs_copy: true
+    f8b_revalidation_requested_after_docs_copy: true
+    recovery_action: resume_scope_review_threads_with_original_scope_and_read_only_docs_context
+  concurrency_decision:
+    docs_only_scope_reviews: true
+    write_scope_collision: false
+    no_material_worker_released_during_scope_review: true
+    f6e2b_and_f8b_may_compete_for_ui_ipc_preload_renderer_owner_window: true
+    f6e2b_material_worker_released_first: true
+    f8b1_material_worker_queued_after_f6e2b: true
+    update_network_release_package_surfaces_remain_blocked: true
+  checks:
+    f6e2b_scope_receipt_reviewed_by_judge: pass
+    f8b_scope_receipt_reviewed_by_judge: pass
+    f6e2b_missing_docs_recovery: pass
+    f8b_missing_docs_recovery: pass
+    state_yaml: pass
+    diff_check: pass
+    code_tests: skipped_docs_only

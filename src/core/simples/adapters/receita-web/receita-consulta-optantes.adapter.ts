@@ -4,7 +4,25 @@ import type {
 } from "../../simples-lookup.port";
 import type { SimplesLookupResult } from "../../simples-lookup.types";
 import { ReceitaBrowserClient } from "./receita-browser.client";
+import {
+  createReceitaWebDiagnostic,
+  createReceitaWebResult,
+  RECEITA_WEB_DIAGNOSTIC_CODE,
+} from "./receita-diagnostics";
 import { parseReceitaResult } from "./receita-result.parser";
+
+function isBrowserUnavailableError(error: unknown): boolean {
+  if (!(error instanceof Error)) {
+    return false;
+  }
+
+  return [
+    "Executable doesn't exist",
+    "browserType.launch",
+    "Failed to launch",
+    "spawn",
+  ].some((indicator) => error.message.includes(indicator));
+}
 
 export class ReceitaConsultaOptantesAdapter implements SimplesLookupPort {
   async lookup(
@@ -18,50 +36,50 @@ export class ReceitaConsultaOptantesAdapter implements SimplesLookupPort {
 
       const navigateResult = await client.navigate(options?.signal);
       if (!navigateResult.success) {
-        return {
+        return createReceitaWebResult({
           cnpj,
-          simplesNacional: null,
-          simei: null,
-          source: "receita-web",
           status: "TEMPORARY_ERROR",
-          message: navigateResult.error ?? "Falha ao navegar para página",
-        };
+          message: "Falha ao navegar para a página da Receita Web assistida",
+          diagnostic: createReceitaWebDiagnostic({
+            code: RECEITA_WEB_DIAGNOSTIC_CODE.NAVIGATION_FAILED,
+          }),
+        });
       }
 
       const fillResult = await client.fillCnpj(cnpj, options?.signal);
       if (!fillResult.success) {
-        return {
+        return createReceitaWebResult({
           cnpj,
-          simplesNacional: null,
-          simei: null,
-          source: "receita-web",
           status: "TEMPORARY_ERROR",
-          message: fillResult.error ?? "Falha ao preencher CNPJ",
-        };
+          message: "Falha ao preencher o CNPJ no navegador assistido",
+          diagnostic: createReceitaWebDiagnostic({
+            code: RECEITA_WEB_DIAGNOSTIC_CODE.FILL_FAILED,
+          }),
+        });
       }
 
       const submitResult = await client.submit(options?.signal);
       if (!submitResult.success) {
-        return {
+        return createReceitaWebResult({
           cnpj,
-          simplesNacional: null,
-          simei: null,
-          source: "receita-web",
           status: "TEMPORARY_ERROR",
-          message: submitResult.error ?? "Falha ao submeter formulário",
-        };
+          message: "Falha ao submeter a consulta no navegador assistido",
+          diagnostic: createReceitaWebDiagnostic({
+            code: RECEITA_WEB_DIAGNOSTIC_CODE.SUBMIT_FAILED,
+          }),
+        });
       }
 
       const waitResult = await client.waitResult(options?.signal);
       if (!waitResult.success) {
-        return {
+        return createReceitaWebResult({
           cnpj,
-          simplesNacional: null,
-          simei: null,
-          source: "receita-web",
           status: "TEMPORARY_ERROR",
-          message: waitResult.error ?? "Falha ao aguardar resultado",
-        };
+          message: "Falha ao aguardar o resultado da Receita Web assistida",
+          diagnostic: createReceitaWebDiagnostic({
+            code: RECEITA_WEB_DIAGNOSTIC_CODE.WAIT_RESULT_FAILED,
+          }),
+        });
       }
 
       const hasCaptcha = await client.hasCaptcha(options?.signal);
@@ -87,19 +105,16 @@ export class ReceitaConsultaOptantesAdapter implements SimplesLookupPort {
         };
       }
 
-      if (
-        error instanceof Error &&
-        error.message.includes("Executable doesn't exist")
-      ) {
-        return {
+      if (isBrowserUnavailableError(error)) {
+        return createReceitaWebResult({
           cnpj,
-          simplesNacional: null,
-          simei: null,
-          source: "receita-web",
           status: "TEMPORARY_ERROR",
           message:
             "Não foi possível abrir o navegador assistido. Instale Google Chrome ou Microsoft Edge nesta máquina e tente novamente.",
-        };
+          diagnostic: createReceitaWebDiagnostic({
+            code: RECEITA_WEB_DIAGNOSTIC_CODE.BROWSER_UNAVAILABLE,
+          }),
+        });
       }
 
       throw error;

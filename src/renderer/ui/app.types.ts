@@ -1,5 +1,6 @@
 import type { SimplesProviderName } from "../../core/simples/simples-provider.names";
 import type {
+  LocalPublicBasePreparationConsent,
   LocalPublicBasePrepareResult,
   LocalPublicBaseStatus,
   LookupProgress,
@@ -56,6 +57,7 @@ export type AppBridge = {
   pickLocalPublicBaseSourceFile(): Promise<PickCsvResult | null>;
   prepareLocalPublicBase(input: {
     content: string;
+    consent?: LocalPublicBasePreparationConsent;
     sourceFileName: string;
     sourceFilePath: string;
   }): Promise<LocalPublicBasePrepareResult>;
@@ -81,7 +83,46 @@ export type UiStatus =
   | "cancelled"
   | "error";
 
+export type UiView =
+  | "painel"
+  | "fila"
+  | "resultados"
+  | "atividade"
+  | "historico";
+
+export type VisualFixture = {
+  scenario: "reference-v5-a";
+  providerPrimaryStatus: string;
+  providerSecondaryStatus: string;
+  fileStatus: string;
+  entryTitle: string;
+  entryHint: string;
+  queueCount: string;
+  queueRows: Array<{
+    fileName: string;
+    statusHint: string;
+    status: string;
+  }>;
+  kpis: Array<{
+    label: string;
+    value: string;
+    detail: string;
+  }>;
+  historyRows: Array<{
+    fileName: string;
+    status: string;
+    rowCount: number;
+    provider: string;
+    resultStatus: string;
+  }>;
+  logs: string[];
+  outputText: string;
+  outputFormat: string;
+};
+
 export type UiState = {
+  visualFixture: VisualFixture | null;
+  activeView: UiView;
   fileName: string | null;
   filePath: string | null;
   content: string | null;
@@ -108,6 +149,8 @@ export type UiState = {
 };
 
 export const initialState: UiState = {
+  visualFixture: null,
+  activeView: "painel",
   fileName: null,
   filePath: null,
   content: null,
@@ -119,7 +162,7 @@ export const initialState: UiState = {
   receitaWebAvailable: false,
   cnpjColumn: "",
   status: "idle",
-  message: "Selecione um CSV para iniciar uma execução local.",
+  message: "Selecione um CSV para iniciar a consulta.",
   outputCsv: null,
   outputXlsx: null,
   outputDelivery: null,

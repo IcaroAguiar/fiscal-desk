@@ -1,10 +1,12 @@
 import { normalizeCnpj } from "../cnpj/normalize-cnpj";
 import { validateCnpj } from "../cnpj/validate-cnpj";
 import { writeCsv } from "../export/csv-writer";
+import type { FiscalExportDeliveryOptionId } from "../export/export-contract";
 import { writeXlsxWorkbook } from "../export/xlsx-writer";
 import { AbortError } from "../infra/rate-limiter";
 import { readCsv } from "../ingestion/csv-reader";
 import { detectCnpjColumn } from "../ingestion/detect-cnpj-column";
+import { ingestFiscalCsv } from "../ingestion/fiscal-ingestion";
 import type { SimplesLookupPort } from "../simples/simples-lookup.port";
 import type { SimplesLookupResult } from "../simples/simples-lookup.types";
 import { estimateObservedRemainingMs } from "./eta";
@@ -16,15 +18,13 @@ import type {
   ProcessCsvRunStatus,
   ProcessCsvSummary,
 } from "./process-csv.types";
-import {
-  getProcessCsvOutputDelivery,
-  parseProcessCsvDeliveryFormat,
-} from "./process-csv-delivery";
+import { resolveProcessCsvOutputDelivery } from "./process-csv-delivery";
 import type { ProcessExecutionLedgerSession } from "./process-execution-ledger.port";
 
 type ProcessCsvOptions = {
   cnpjColumn?: string;
   deliveryFormat?: ProcessCsvDeliveryFormat;
+  deliveryOptionId?: FiscalExportDeliveryOptionId;
   executionLedger?: ProcessExecutionLedgerSession;
   onLookupProgress?: (progress: LookupProgress) => void;
   signal?: AbortSignal;
@@ -60,6 +60,14 @@ export async function processCsv(
   provider: SimplesLookupPort,
   options: ProcessCsvOptions = {},
 ): Promise<ProcessCsvResult> {
+  const delivery = resolveProcessCsvOutputDelivery({
+    ...(options.deliveryFormat
+      ? { deliveryFormat: options.deliveryFormat }
+      : {}),
+    ...(Object.hasOwn(options, "deliveryOptionId")
+      ? { deliveryOptionId: options.deliveryOptionId }
+      : {}),
+  });
   const { delimiter, headers, rowLineNumbers, rows } = readCsv(inputCsv);
   const cnpjColumn = detectCnpjColumn(
     headers,
@@ -70,7 +78,12 @@ export async function processCsv(
     throw new Error("Nenhuma coluna de CNPJ suportada foi encontrada");
   }
 
-  const uniqueValidCnpjs = collectUniqueValidCnpjs(rows, cnpjColumn);
+  const ingestionBatch = ingestFiscalCsv(inputCsv, {
+    ...(options.cnpjColumn ? { cnpjColumn: options.cnpjColumn } : {}),
+  });
+  const uniqueValidCnpjs = ingestionBatch.entries.map(
+    (entry) => entry.cnpjNormalizado,
+  );
   await options.executionLedger?.setTotalUniqueLookups(uniqueValidCnpjs.length);
 
   const lookupCache = await restoreLookupCache(
@@ -111,6 +124,10 @@ export async function processCsv(
       totalCnpjsEncontrados += 1;
     }
 
+    if (cnpjValido) {
+      totalCnpjsValidos += 1;
+    }
+
     let lookupResult: SimplesLookupResult;
 
     if (!cnpjValido) {
@@ -133,8 +150,6 @@ export async function processCsv(
         message: "Processamento cancelado antes desta consulta",
       };
     } else {
-      totalCnpjsValidos += 1;
-
       const cachedResult = lookupCache.get(cnpjNormalizado);
       if (cachedResult) {
         lookupResult = cachedResult;
@@ -219,9 +234,8 @@ export async function processCsv(
     ).length,
   };
   const outputCsv = writeCsv(outputRows, delimiter, outputColumns);
-  const deliveryFormat = parseProcessCsvDeliveryFormat(options.deliveryFormat);
   const outputXlsx =
-    deliveryFormat === "xlsx"
+    delivery.format === "xlsx"
       ? await writeXlsxWorkbook({
           columns: outputColumns,
           rows: outputRows,
@@ -230,7 +244,7 @@ export async function processCsv(
       : null;
 
   return {
-    delivery: getProcessCsvOutputDelivery(deliveryFormat),
+    delivery,
     outputCsv,
     outputXlsx,
     summary,
@@ -254,24 +268,6 @@ function toCsvValue(value: boolean | null): string {
   }
 
   return String(value);
-}
-
-function collectUniqueValidCnpjs(
-  rows: Array<Record<string, string>>,
-  cnpjColumn: string,
-): string[] {
-  const uniqueValid = new Set<string>();
-
-  for (const row of rows) {
-    const cnpjOriginal = row[cnpjColumn] ?? "";
-    const cnpjNormalizado = normalizeCnpj(cnpjOriginal);
-
-    if (validateCnpj(cnpjNormalizado)) {
-      uniqueValid.add(cnpjNormalizado);
-    }
-  }
-
-  return Array.from(uniqueValid);
 }
 
 function isCancellationBoundary(signal?: AbortSignal): boolean {

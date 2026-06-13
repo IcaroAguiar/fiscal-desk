@@ -1,5 +1,5 @@
 import { SIMPLES_PROVIDER } from "../../core/simples/simples-provider.names";
-import type { UiState } from "./app.types";
+import type { UiState, UiView } from "./app.types";
 import {
   escapeHtml,
   getLiveProgress,
@@ -8,16 +8,26 @@ import {
   renderStatusText,
   renderSummary,
 } from "./app-helpers";
+import { renderExecutionHistory } from "./app-history-view";
+import { renderLocalTrustGrid } from "./app-local-trust-view";
+
+export { renderExecutionHistory } from "./app-history-view";
+
+import { formatLocalPublicBaseStatusLine } from "./app-local-public-base-copy";
+import { renderLogList, renderQueueItems } from "./app-view-lists";
 import { button, statusPill } from "./components";
 import {
   buildDedupeLabel,
   formatCommandBarSummary,
   formatProgressLine,
   formatProviderHint,
+  formatProviderMode,
   previewAutoSavePath,
 } from "./operational-copy";
 
 export function renderShell(state: UiState): string {
+  const referenceMode = isReferenceV5A(state);
+  const visualFixture = state.visualFixture;
   const autoSavePreview = state.savedPath
     ? state.savedPath.split(/[/\\]/).pop()
     : state.filePath
@@ -27,25 +37,79 @@ export function renderShell(state: UiState): string {
       : null;
 
   const statusLabel = renderStatusLabel(state.status);
-  const activeQueueLabel = state.fileName ?? "Nenhum lote em preparação";
-  const activeQueueHint = state.summary
-    ? "Execução concluída"
+  const entryFileBadge = referenceMode
+    ? (visualFixture?.fileStatus ?? "aguardando arquivo")
+    : (state.fileName ?? "aguardando arquivo");
+  const entryTitle = referenceMode
+    ? (visualFixture?.entryTitle ?? "Arquivo de CNPJs")
     : state.fileName
-      ? "Pronto para execução"
-      : "Selecione um CSV para iniciar";
+      ? state.fileName
+      : "Arquivo CSV";
+  const entryHint = referenceMode
+    ? (visualFixture?.entryHint ?? "Arraste aqui ou selecione no computador.")
+    : state.fileName
+      ? formatProviderHint(state.fileName, state.provider)
+      : "Selecione uma planilha com CNPJs. O resultado fica ao lado do arquivo original.";
+  const outputStatus = referenceMode
+    ? (visualFixture?.outputText ??
+      "O arquivo final aparece após uma consulta concluída.")
+    : renderStatusText(state);
+  const outputFormatLabel = referenceMode
+    ? (visualFixture?.outputFormat ?? "csv")
+    : getDeliveryFormatLabel(state.deliveryFormat);
+  const activeQueueLabel = state.fileName ?? "Nenhum arquivo selecionado";
+  const activeQueueHint = state.summary
+    ? "Consulta concluída"
+    : state.fileName
+      ? "Pronto para consultar"
+      : "Escolha um CSV para iniciar.";
   const activeQueueStatus = state.summary
     ? "concluído"
     : state.fileName
-      ? "revisão"
-      : "vazio";
+      ? "pronto para iniciar"
+      : "aguardando";
+  const protocolStatus = referenceMode
+    ? (visualFixture?.fileStatus ?? activeQueueStatus)
+    : activeQueueStatus;
+  const protocolEntry = referenceMode
+    ? (visualFixture?.entryTitle ?? "Arquivo de CNPJs")
+    : (state.fileName ?? "Sem arquivo selecionado");
+  const protocolEntryHint = referenceMode
+    ? (visualFixture?.entryHint ?? "Arquivo aguardando seleção.")
+    : state.fileName
+      ? "Entrada carregada neste computador."
+      : "Selecione um CSV para preparar a consulta.";
+  const protocolBase = referenceMode
+    ? (visualFixture?.providerPrimaryStatus ??
+      formatProviderMode(state.provider))
+    : formatProviderMode(state.provider);
+  const protocolBaseHint = referenceMode
+    ? (visualFixture?.providerSecondaryStatus ?? "Modo informado.")
+    : formatProviderHint(state.fileName, state.provider);
+  const protocolOutput = referenceMode
+    ? (visualFixture?.outputFormat ?? "CSV")
+    : (autoSavePreview ?? getDeliveryFormatLabel(state.deliveryFormat));
+  const protocolOutputHint = referenceMode
+    ? (visualFixture?.outputText ?? "Arquivo final após conclusão.")
+    : autoSavePreview
+      ? "Nome previsto para o arquivo final."
+      : "O arquivo final fica ao lado da planilha original.";
+  const protocolResume = state.execution
+    ? formatResumeLabel(state)
+    : "Disponível quando houver checkpoint";
+  const sessionRun = state.execution?.runId.slice(0, 8) ?? "—";
+  const sessionCheckpoint = state.execution?.checkpointPath
+    ? (state.execution.checkpointPath.split(/[/\\]/).pop() ?? "consulta.json")
+    : "—";
+  const hasOperationalSignals =
+    Boolean(state.fileName) ||
+    Boolean(state.summary) ||
+    Boolean(state.progress) ||
+    state.status === "processing" ||
+    state.status === "error";
 
   return `
     <main class="app-shell workbench-shell workbench-v5">
-      <div class="window-chrome" aria-hidden="true">
-        <span></span><span></span><span></span>
-        <strong>A · COCKPIT BORDERLESS</strong>
-        <em>LINES ONLY</em>
-      </div>
       <aside class="sidebar" aria-label="Navegação principal">
         <div>
           <div class="brand-stack">
@@ -53,87 +117,82 @@ export function renderShell(state: UiState): string {
             <strong>Fiscal Desk</strong>
           </div>
           <nav class="sidebar-nav" aria-label="Módulos">
-            <a class="sidebar-nav__item sidebar-nav__item--active" href="#nova-execucao">Execuções <strong>12</strong></a>
-            <a class="sidebar-nav__item" href="#nova-execucao">Nova consulta</a>
-            <a class="sidebar-nav__item" href="#base-local">Bases locais</a>
-            <a class="sidebar-nav__item" href="#provedores">Provedores</a>
-            <span class="sidebar-nav__item sidebar-nav__item--disabled" aria-disabled="true">Entregas</span>
-            <span class="sidebar-nav__item sidebar-nav__item--disabled" aria-disabled="true">Configurações</span>
+            ${renderViewLink("Consulta", "painel", state.activeView, "sidebar-nav__item", "sidebar")}
+            ${renderViewLink("Histórico", "historico", state.activeView, "sidebar-nav__item", "sidebar")}
           </nav>
         </div>
         <div class="sidebar-footer">
-          <span class="status-token status-token--success">offline pronto</span>
-          <span>Base pública: ${escapeHtml(state.localPublicBaseStatus?.baseDate ?? "não preparada")}</span>
+          <span class="status-token status-token--success">Pronto neste computador</span>
+          <span>Base local: ${escapeHtml(state.localPublicBaseStatus?.baseDate ?? "pendente")}</span>
         </div>
       </aside>
 
       <section class="workbench-main" aria-label="Workbench Fiscal Desk">
         <header class="ops-topbar">
           <div class="ops-topbar__main">
-            <h1>Operação fiscal</h1>
+            <h1>Consulta fiscal</h1>
             <nav class="ops-tabs" aria-label="Visões">
-              <span class="ops-tabs__item ops-tabs__item--active">Painel</span>
-              <span class="ops-tabs__item">Fila</span>
-              <span class="ops-tabs__item">Resultados</span>
-              <span class="ops-tabs__item">Logs</span>
+              ${renderViewLink("Painel", "painel", state.activeView, "ops-tabs__item", "tab")}
+              ${renderViewLink("Arquivo", "fila", state.activeView, "ops-tabs__item", "tab")}
+              ${renderViewLink("Resultado", "resultados", state.activeView, "ops-tabs__item", "tab")}
+              ${renderViewLink("Atividade", "atividade", state.activeView, "ops-tabs__item", "tab")}
             </nav>
           </div>
           <div class="ops-topbar__status">
             <span class="status-token ${getProviderStatusVariant(state)}" data-slot="provider-status">${escapeHtml(getProviderStatusLabel(state))}</span>
-            <span class="status-token status-token--info">Receita Web assistida</span>
-            ${statusPill({ variant: getStatusPillVariant(state.status), children: statusLabel, dataSlot: "top-status-pill" })}
-            <span class="sync-only" data-slot="run-status-pill">${escapeHtml(statusLabel)}</span>
-            ${button({ variant: "primary", "data-action": "process-file", children: state.status === "processing" ? "Processando..." : "Nova execução", disabled: state.status === "processing" || state.localPublicBasePrepareStatus === "loading" || !state.content || (state.provider === SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL && (!state.localPublicBaseNoticeAccepted || state.localPublicBaseStatus?.state !== "ready")) })}
+            ${referenceMode ? "" : statusPill({ variant: getStatusPillVariant(state.status), children: statusLabel, dataSlot: "top-status-pill" })}
+            <span class="sync-only" data-slot="run-status-pill" aria-hidden="true">${escapeHtml(statusLabel)}</span>
+            ${button({ variant: "primary", "data-action": "process-file", children: state.status === "processing" ? "Consultando..." : "Iniciar consulta", disabled: state.status === "processing" || state.localPublicBasePrepareStatus === "loading" || !state.content || (state.provider === SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL && (!state.localPublicBaseNoticeAccepted || state.localPublicBaseStatus?.state !== "ready")) })}
           </div>
         </header>
 
         <section class="operations-grid" id="nova-execucao">
-          <section class="entry-zone">
+          <section class="entry-zone t-panel-slide" data-view-panel="painel" data-open="${state.activeView === "painel" ? "true" : "false"}">
             <div class="zone-head">
               <div>
-                <h2>Entrada</h2>
-                <p class="body">CSV, coluna e provider antes da consulta.</p>
+                <h2>Arquivo de entrada ${renderHelp("Como funciona", "Use uma planilha CSV com uma coluna de CNPJ. O app identifica a coluna quando possível.")}</h2>
+                <p class="body">Selecione a planilha que será consultada.</p>
               </div>
-              <span class="status-token status-token--warning" data-slot="file-badge">${escapeHtml(state.fileName ?? "aguardando arquivo")}</span>
+              <span class="status-token status-token--warning" data-slot="file-badge">${escapeHtml(entryFileBadge)}</span>
             </div>
 
             <div class="file-dropzone">
               <span class="file-dropzone__icon" aria-hidden="true">CSV</span>
               <div>
-                <strong data-slot="file-dropzone-title">${state.fileName ? escapeHtml(state.fileName) : "Arquivo de CNPJs"}</strong>
-                <span data-slot="file-dropzone-hint">${state.fileName ? escapeHtml(formatProviderHint(state.fileName, state.provider)) : "Arraste aqui ou selecione no computador."}</span>
+                <strong data-slot="file-dropzone-title">${escapeHtml(entryTitle)}</strong>
+                <span data-slot="file-dropzone-hint">${escapeHtml(entryHint)}</span>
               </div>
-              ${button({ variant: "secondary", "data-action": "pick-file", children: state.fileName ? "Trocar CSV" : "Selecionar" })}
+              ${button({ variant: "secondary", "data-action": "pick-file", children: state.fileName && !referenceMode ? "Trocar CSV" : "Selecionar CSV" })}
             </div>
           </section>
 
-          <section class="config-zone" aria-label="Configuração">
-            <h2>Configuração</h2>
+          <section class="config-zone t-panel-slide" aria-label="Configuração" data-view-panel="painel" data-open="${state.activeView === "painel" ? "true" : "false"}">
+            <h2>Ajustes ${renderHelp("Como escolher", "Comece com Simulação. A Base local consulta dados preparados neste computador; Receita Web exige acompanhamento manual.")}</h2>
             <div class="config-grid">
               <label class="field" for="provider">
-                <span class="field__label">Provider</span>
+                <span class="field__label">Base de consulta</span>
                 <select id="provider" data-field="provider">
-                  <option value="${SIMPLES_PROVIDER.MOCK}" ${state.provider === SIMPLES_PROVIDER.MOCK ? "selected" : ""}>mock</option>
-                  <option value="${SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL}" ${state.provider === SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL ? "selected" : ""}>base local</option>
-                  <option value="${SIMPLES_PROVIDER.CNPJA_OPEN}" ${state.provider === SIMPLES_PROVIDER.CNPJA_OPEN ? "selected" : ""}>cnpja open</option>
-                  <option value="${SIMPLES_PROVIDER.RECEITA_WEB}" ${state.provider === SIMPLES_PROVIDER.RECEITA_WEB ? "selected" : ""}>receita web</option>
+                  <option value="${SIMPLES_PROVIDER.MOCK}" ${state.provider === SIMPLES_PROVIDER.MOCK ? "selected" : ""}>Simulação</option>
+                  <option value="${SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL}" ${state.provider === SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL ? "selected" : ""}>Base local</option>
+                  <option value="${SIMPLES_PROVIDER.CNPJA_OPEN}" ${state.provider === SIMPLES_PROVIDER.CNPJA_OPEN ? "selected" : ""}>CNPJá Open</option>
+                  <option value="${SIMPLES_PROVIDER.RECEITA_WEB}" ${state.provider === SIMPLES_PROVIDER.RECEITA_WEB ? "selected" : ""}>Receita Web</option>
                 </select>
               </label>
               <label class="field" for="cnpj-column">
-                <span class="field__label">Coluna</span>
+                <span class="field__label">Coluna de CNPJ</span>
                 <input id="cnpj-column" data-field="cnpj-column" type="text" placeholder="auto" value="${escapeHtml(state.cnpjColumn)}" />
               </label>
               <label class="field" for="delivery-format">
-                <span class="field__label">Saída</span>
+                <span class="field__label">Arquivo final</span>
                 <select id="delivery-format" data-field="delivery-format">
-                  <option value="csv" ${state.deliveryFormat === "csv" ? "selected" : ""}>CSV compatível</option>
+                  <option value="csv" ${state.deliveryFormat === "csv" ? "selected" : ""}>CSV</option>
                   <option value="xlsx" ${state.deliveryFormat === "xlsx" ? "selected" : ""}>Excel com abas</option>
                 </select>
-                <span class="field__note">Planilha de Resultado: Resumo, Resultados, Falhas, Divergências e Auditoria.</span>
+                <span class="field__note">O Excel separa resumo, resultados, falhas e auditoria em abas.</span>
               </label>
               <div class="field field--readonly">
-                <span class="field__label">Checkpoint</span>
-                <strong>ligado</strong>
+                <span class="field__label">Retomada local</span>
+                <strong>Com checkpoint</strong>
               </div>
             </div>
 
@@ -141,9 +200,9 @@ export function renderShell(state: UiState): string {
               <div>
                 <span class="ops-label">Base Pública Local</span>
                 <strong data-slot="local-public-base-status-line">${escapeHtml(formatLocalPublicBaseStatusLine(state))}</strong>
-                <small>Índice persistido no perfil local do Electron.</small>
+                <small>Preparada neste computador para consultas locais.</small>
               </div>
-              ${button({ variant: "secondary", "data-action": "prepare-local-public-base", children: state.localPublicBasePrepareStatus === "loading" ? "Preparando..." : "Preparar base", disabled: state.status === "processing" || state.localPublicBasePrepareStatus === "loading" })}
+              ${button({ variant: "secondary", "data-action": "prepare-local-public-base", children: state.localPublicBasePrepareStatus === "loading" ? "Preparando..." : "Preparar base", disabled: state.status === "processing" || state.localPublicBasePrepareStatus === "loading" || (state.provider === SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL && !state.localPublicBaseNoticeAccepted) })}
             </div>
 
             <label class="notice-check" for="local-public-base-notice" data-slot="local-public-base-notice-panel" ${state.provider !== SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL ? 'style="display:none"' : ""}>
@@ -159,52 +218,104 @@ export function renderShell(state: UiState): string {
             </div>
           </section>
 
-          <aside class="queue-zone">
+          <section class="protocol-zone t-panel-slide" aria-label="Mesa de consulta" data-view-panel="painel" data-open="${state.activeView === "painel" ? "true" : "false"}">
             <div class="zone-head">
-              <h2>Fila</h2>
-              <span class="status-token" data-slot="queue-count">${state.fileName ? "1 item" : "0 itens"}</span>
-            </div>
-            <div class="queue-item queue-item--active">
               <div>
-                <strong data-slot="queue-active-name">${escapeHtml(activeQueueLabel)}</strong>
-                <p class="body" data-slot="queue-active-hint">${escapeHtml(activeQueueHint)}</p>
+                <h2>Mesa de consulta</h2>
+                <p class="body">Estado local antes da consulta.</p>
               </div>
-              <span class="status-token ${state.summary ? "status-token--success" : "status-token--warning"}" data-slot="queue-active-status">${escapeHtml(activeQueueStatus)}</span>
+              <span class="status-token ${state.summary ? "status-token--success" : "status-token--warning"}" data-slot="protocol-status">${escapeHtml(protocolStatus)}</span>
             </div>
+            <div class="protocol-list">
+              <div class="protocol-item">
+                <span class="ops-label">Entrada</span>
+                <strong data-slot="protocol-entry">${escapeHtml(protocolEntry)}</strong>
+                <p class="body" data-slot="protocol-entry-hint">${escapeHtml(protocolEntryHint)}</p>
+              </div>
+              <div class="protocol-item">
+                <span class="ops-label">Base</span>
+                <strong data-slot="protocol-base">${escapeHtml(protocolBase)}</strong>
+                <p class="body" data-slot="protocol-base-hint">${escapeHtml(protocolBaseHint)}</p>
+              </div>
+              <div class="protocol-item">
+                <span class="ops-label">Saída</span>
+                <strong data-slot="protocol-output">${escapeHtml(protocolOutput)}</strong>
+                <p class="body" data-slot="protocol-output-hint">${escapeHtml(protocolOutputHint)}</p>
+              </div>
+              <div class="protocol-item">
+                <span class="ops-label">Retomada</span>
+                <strong data-slot="protocol-resume">${escapeHtml(protocolResume)}</strong>
+                <p class="body">Aparece apenas quando a consulta gerar checkpoint.</p>
+              </div>
+            </div>
+          </section>
+
+          <aside class="queue-zone t-panel-slide" data-view-panel="fila" data-open="${state.activeView === "fila" ? "true" : "false"}" hidden>
+            <div class="zone-head">
+              <h2>Arquivo selecionado ${renderHelp("Como funciona", "Quando um arquivo é selecionado, ele fica pronto para iniciar a consulta.")}</h2>
+              <span class="status-token" data-slot="queue-count">${referenceMode ? (visualFixture?.queueCount ?? "3 itens") : state.fileName ? "1 item" : "0 itens"}</span>
+            </div>
+            ${renderQueueItems(referenceMode, activeQueueLabel, activeQueueHint, activeQueueStatus, state)}
           </aside>
 
-          <section class="kpi-strip" aria-label="Indicadores do lote">
+          <section class="kpi-strip t-panel-slide" aria-label="Indicadores do lote" data-view-panel="painel" data-progressive="after-file" data-open="${state.activeView === "painel" && hasOperationalSignals ? "true" : "false"}" ${hasOperationalSignals ? "" : "hidden"}>
             <div>
               <span class="ops-label">Hoje</span>
-              <strong data-slot="kpi-total-lines">${state.summary?.totalLinhas ?? 0}</strong>
-              <p class="body">linhas</p>
+              <strong data-slot="kpi-total-lines">${referenceMode ? (visualFixture?.kpis[0]?.value ?? "0") : (state.summary?.totalLinhas ?? 0)}</strong>
+              <p class="body">${referenceMode ? "consultas" : "linhas"}</p>
             </div>
             <div>
               <span class="ops-label">Processados</span>
-              <strong data-slot="kpi-processed">${state.summary?.totalCnpjsUnicosConsultados ?? 0}</strong>
+              <strong data-slot="kpi-processed">${referenceMode ? (visualFixture?.kpis[1]?.value ?? "0") : (state.summary?.totalCnpjsUnicosConsultados ?? 0)}</strong>
               <p class="body">CNPJs</p>
             </div>
             <div>
               <span class="ops-label">Pendentes</span>
-              <strong data-slot="kpi-pending">${state.progress ? Math.max(0, state.progress.totalUniqueLookups - state.progress.completedUniqueLookups) : 0}</strong>
-              <p class="body">fila</p>
+              <strong data-slot="kpi-pending">${referenceMode ? (visualFixture?.kpis[2]?.value ?? "0") : state.progress ? Math.max(0, state.progress.totalUniqueLookups - state.progress.completedUniqueLookups) : 0}</strong>
+              <p class="body">${referenceMode ? "linhas" : "na fila"}</p>
             </div>
             <div>
               <span class="ops-label">Erros</span>
-              <strong data-slot="kpi-errors">${state.summary?.totalErros ?? 0}</strong>
+              <strong data-slot="kpi-errors">${referenceMode ? (visualFixture?.kpis[3]?.value ?? "0") : (state.summary?.totalErros ?? 0)}</strong>
               <p class="body">revisar</p>
             </div>
           </section>
 
-          <section class="history-zone" id="historico">
+          <section class="session-zone t-panel-slide" aria-label="Sessão local" data-view-panel="painel" data-open="${state.activeView === "painel" ? "true" : "false"}">
             <div class="zone-head">
-              <h2>Últimas execuções</h2>
-              <button class="button button--ghost button--compact" type="button" data-action="refresh-history">Histórico</button>
+              <h2>Sessão local</h2>
+              <span class="status-token" data-slot="session-state">${escapeHtml(state.execution?.status ?? "Aguardando")}</span>
+            </div>
+            <div class="session-grid">
+              <div>
+                <span class="ops-label">Arquivo</span>
+                <strong data-slot="session-entry">${escapeHtml(formatCommandBarSummary(state.fileName, state.provider))}</strong>
+              </div>
+              <div>
+                <span class="ops-label">CNPJs repetidos</span>
+                <strong data-slot="session-dedupe">${state.summary ? escapeHtml(buildDedupeLabel(state.summary)) : "—"}</strong>
+              </div>
+              <div>
+                <span class="ops-label">Consulta</span>
+                <strong data-slot="session-run">${escapeHtml(sessionRun)}</strong>
+              </div>
+              <div>
+                <span class="ops-label">Checkpoint</span>
+                <strong data-slot="session-checkpoint">${escapeHtml(sessionCheckpoint)}</strong>
+              </div>
+            </div>
+            ${renderLocalTrustGrid()}
+          </section>
+
+          <section class="history-zone t-panel-slide" id="historico" data-view-panel="historico" data-open="${state.activeView === "historico" ? "true" : "false"}" hidden>
+            <div class="zone-head">
+              <h2>Consultas recentes</h2>
+              <button class="button button--ghost button--compact" type="button" data-action="refresh-history">Atualizar</button>
             </div>
             <div data-slot="execution-history">${renderExecutionHistory(state)}</div>
           </section>
 
-          <section class="run-zone sync-zone">
+          <section class="run-zone t-panel-slide" data-view-panel="atividade" data-open="${state.activeView === "atividade" ? "true" : "false"}" hidden>
             <div class="summary" data-slot="summary">${renderSummary(state.summary)}</div>
             <div class="progress-section" data-slot="progress-section" ${state.status !== "processing" && !state.summary ? 'style="display:none"' : ""}>
               <div class="progress-header">
@@ -218,41 +329,32 @@ export function renderShell(state: UiState): string {
             </div>
           </section>
 
-          <section class="log-zone">
+          <section class="log-zone t-panel-slide" data-view-panel="atividade" data-open="${state.activeView === "atividade" ? "true" : "false"}" hidden>
             <div class="zone-head">
-              <h2>Log</h2>
+              <h2>Atividade</h2>
               <span class="status-token">tempo real</span>
             </div>
-            <div class="log-list">
-              <span>Entrada: <strong data-slot="command-summary">${escapeHtml(formatCommandBarSummary(state.fileName, state.provider))}</strong></span>
-              <span data-slot="command-hint">${escapeHtml(formatProviderHint(state.fileName, state.provider))}</span>
-              <span>Deduplicação: <strong data-slot="dedupe-label">${state.summary ? buildDedupeLabel(state.summary) : "—"}</strong></span>
-              <span>Ledger: <strong data-slot="execution-status">${state.execution?.status ?? "Aguardando"}</strong></span>
-              <span>Run: <strong data-slot="execution-run-id">${state.execution?.runId.slice(0, 8) ?? "—"}</strong></span>
-              <span>Retomada: <strong data-slot="execution-resume">${state.execution ? `${state.execution.resumedUniqueLookups} retomadas de checkpoint` : "Sem retomada ativa"}</strong></span>
-              <span>Checkpoint: <strong data-slot="execution-checkpoint">${state.execution?.checkpointPath ? escapeHtml(state.execution.checkpointPath.split(/[/\\]/).pop() ?? "ledger.json") : "—"}</strong></span>
-            </div>
+            ${renderLogList(state)}
           </section>
 
-          <section class="output-zone">
+          <section class="output-zone t-panel-slide" data-view-panel="resultados" data-open="${state.activeView === "resultados" ? "true" : "false"}" hidden>
             <div class="zone-head">
-              <h2>Saída</h2>
-              <span class="status-token" data-slot="delivery-format-badge">${escapeHtml(getDeliveryFormatLabel(state.deliveryFormat))}</span>
+              <h2>Resultado</h2>
+              <span class="status-token" data-slot="delivery-format-badge">${escapeHtml(outputFormatLabel)}</span>
             </div>
-            <p class="body" data-slot="output-status">${escapeHtml(renderStatusText(state))}</p>
-            <p class="body" data-slot="output-preview">${autoSavePreview ? escapeHtml(autoSavePreview) : "Aguardando execução"}</p>
+            <p class="body" data-slot="output-status">${escapeHtml(outputStatus)}</p>
+            <p class="body" data-slot="output-preview">${referenceMode ? "" : autoSavePreview ? escapeHtml(autoSavePreview) : "O arquivo final aparecerá depois da consulta."}</p>
             <div class="save-info" data-slot="save-info" ${!autoSavePreview ? 'style="display:none"' : ""}>
               <span class="ops-label">Arquivo de saída</span>
               <span class="save-path" data-slot="output-save-path">${escapeHtml(autoSavePreview ?? "")}</span>
             </div>
             <div class="output-actions">
-              <button class="button button--secondary" type="button" disabled>Pasta</button>
-              ${button({ variant: "danger", "data-action": "cancel-processing", children: "Cancelar", disabled: state.status !== "processing" })}
-              ${button({ variant: "secondary", "data-action": "save-file", children: "Exportar", disabled: !state.outputDelivery })}
+              ${referenceMode ? "" : button({ variant: "danger", "data-action": "cancel-processing", children: "Cancelar", disabled: state.status !== "processing" })}
+              ${button({ variant: "secondary", "data-action": "save-file", children: "Exportar", disabled: !referenceMode && !state.outputDelivery })}
             </div>
           </section>
 
-          <section class="provider-zone sync-zone" id="provedores">
+          <section class="provider-zone sync-zone" id="provedores" aria-hidden="true">
             <div class="zone-head"><h2>Provedores</h2><button class="button button--ghost button--compact" type="button" disabled>Testar</button></div>
             <div class="provider-list">
               <div><strong>Base local</strong><span class="status-token status-token--success">Preparável</span></div>
@@ -265,6 +367,49 @@ export function renderShell(state: UiState): string {
       </section>
     </main>
   `;
+}
+
+export function isReferenceV5A(state: UiState): boolean {
+  return state.visualFixture?.scenario === "reference-v5-a";
+}
+
+function renderHelp(label: string, text?: string): string {
+  const triggerLabel = text ? label : "Ajuda";
+  const helpText = text ?? label;
+
+  return `
+    <span class="help">
+      <button class="help__trigger" type="button" aria-label="${escapeHtml(`${triggerLabel}: ${helpText}`)}">${escapeHtml(triggerLabel)}</button>
+      <span class="help__popover" role="tooltip">${escapeHtml(helpText)}</span>
+    </span>
+  `;
+}
+
+function renderViewLink(
+  label: string,
+  view: UiView,
+  activeView: UiView,
+  className: string,
+  kind: "sidebar" | "tab",
+): string {
+  const active = view === activeView;
+  const activeClass = active ? ` ${className}--active` : "";
+  const href = view === "historico" ? "#historico" : "#nova-execucao";
+  const aria = active ? ' aria-current="page"' : "";
+
+  return `<a class="${className}${activeClass}" href="${href}" data-view="${view}" data-view-surface="${kind}"${aria}>${escapeHtml(label)}</a>`;
+}
+
+function formatResumeLabel(state: UiState): string {
+  if (!state.execution) {
+    return "Sem consulta em andamento";
+  }
+
+  if (state.execution.resumedUniqueLookups === 0) {
+    return "Retomada não utilizada";
+  }
+
+  return `${state.execution.resumedUniqueLookups} CNPJs retomados`;
 }
 
 export function getProgressPercent(state: UiState): number {
@@ -306,18 +451,18 @@ export function getCurrentCnpjLabel(state: UiState): string {
 export function getDeliveryFormatLabel(
   deliveryFormat: UiState["deliveryFormat"],
 ): string {
-  return deliveryFormat === "xlsx" ? "Excel com abas" : "CSV compatível";
+  return deliveryFormat === "xlsx" ? "Excel com abas" : "CSV";
 }
 
 export function getProviderStatusLabel(state: UiState): string {
   if (state.provider === SIMPLES_PROVIDER.MOCK) {
-    return "mock ativo";
+    return "Simulação";
   }
 
   if (state.provider === SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL) {
     return state.localPublicBaseStatus?.state === "ready"
-      ? "base local pronta"
-      : "base local pendente";
+      ? "Base local pronta"
+      : "Base local pendente";
   }
 
   if (state.provider === SIMPLES_PROVIDER.CNPJA_OPEN) {
@@ -347,78 +492,4 @@ export function getProviderStatusVariant(state: UiState): string {
   return state.receitaWebAvailable
     ? "status-token--warning"
     : "status-token--danger";
-}
-
-export function renderExecutionHistory(state: UiState): string {
-  if (state.historyStatus === "loading") {
-    return '<p class="history-empty">Carregando histórico local...</p>';
-  }
-
-  if (state.historyStatus === "error") {
-    return '<p class="history-empty">Não foi possível carregar o histórico local.</p>';
-  }
-
-  if (state.executionHistory.length === 0) {
-    return '<p class="history-empty">Nenhuma execução registrada neste perfil.</p>';
-  }
-
-  return `
-    <ol class="history-list">
-      ${state.executionHistory
-        .map((item) => {
-          const sourceName = item.sourceFileName ?? "CSV sem caminho";
-          const updatedAt = formatHistoryDate(item.updatedAt);
-          const checkpointLabel = `${item.checkpointedUniqueLookups}/${item.totalUniqueLookups || "?"} checkpoints`;
-          const resumeButton = item.canResume
-            ? `<button class="button button--secondary button--compact" type="button" data-action="resume-execution" data-ledger-key="${escapeHtml(item.ledgerKey)}" ${state.status === "processing" ? "disabled" : ""}>Retomar</button>`
-            : `<span class="history-list__blocked">${escapeHtml(item.resumeBlockedReason ?? "Histórico")}</span>`;
-
-          return `
-            <li class="history-list__item">
-              <div class="history-list__main">
-                <strong>${escapeHtml(sourceName)}</strong>
-                <span>${escapeHtml(item.providerName)} • ${escapeHtml(item.status)} • ${escapeHtml(updatedAt)}</span>
-                <span>${escapeHtml(checkpointLabel)}</span>
-              </div>
-              ${resumeButton}
-            </li>
-          `;
-        })
-        .join("")}
-    </ol>
-  `;
-}
-
-function formatHistoryDate(value: string): string {
-  const timestamp = Date.parse(value);
-
-  if (Number.isNaN(timestamp)) {
-    return value;
-  }
-
-  return new Intl.DateTimeFormat("pt-BR", {
-    dateStyle: "short",
-    timeStyle: "short",
-  }).format(timestamp);
-}
-
-function formatLocalPublicBaseStatusLine(state: UiState): string {
-  const status = state.localPublicBaseStatus;
-
-  if (!status || status.state === "not-prepared") {
-    return "Base ainda não preparada neste perfil.";
-  }
-
-  if (status.state === "error") {
-    return status.errorMessage ?? "Base Pública Local indisponível.";
-  }
-
-  return [
-    `${status.preparedRows} registros preparados`,
-    `${status.rejectedRows} rejeitados`,
-    `Data da Base: ${status.baseDate ?? "não informada"}`,
-    status.sourceFileName ? `Origem: ${status.sourceFileName}` : null,
-  ]
-    .filter(Boolean)
-    .join(" • ");
 }

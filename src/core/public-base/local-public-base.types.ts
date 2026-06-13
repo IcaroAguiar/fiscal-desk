@@ -21,8 +21,16 @@ export type LocalPublicBaseStatus = {
   errorMessage: string | null;
 };
 
+export type LocalPublicBasePreparationConsent = {
+  accepted: true;
+  acceptedAt: string;
+  baseDateAcknowledged: string | null;
+  stalenessWarningAcknowledged: string;
+};
+
 export type LocalPublicBasePrepareInput = {
   content: string;
+  consent?: LocalPublicBasePreparationConsent;
   sourceFileName: string;
   sourceFilePath: string;
 };
