@@ -145,16 +145,18 @@ Nenhuma thread individual pode substituir o review da branch final integrada.
 
 | Phase | Judge status | Integration release |
 |---|---|---|
-| None | - | No approved queue remains after Wave 13 closeout |
+| `post_p3_first_release_status_rebaseline` | `approved_by_judge_docs_only_scope_candidate` | Pending docs-only dispatch |
 
 F8B1 was dispatched, independently reviewed and selectively integrated in Wave
-13. New material work requires a fresh judge-selected scope.
+13. P3 renderer was integrated and validated after CSV input intake hardening.
+New material work remains blocked until the post-P3 docs-only rebaseline is
+completed and judged.
 
 ## Active Queue As Of 2026-06-13
 
 | Phase | Thread | Worktree | Scope |
 |---|---|---|---|
-| `post_p3_renderer_next_owner_window_selection` | `019ec2c1-e7d7-7da3-8c18-874987ff83fc` | `/Users/icaroaguiar/.codex/worktrees/bea2/consulta-simples-csv` | Read-only next owner-window selection after P3 renderer integration; no material worker released |
+| None | - | - | No active worker after post-P3 owner-window selection was judged |
 
 `post_local_base_regate_csv_input_intake_hardening` was integrated and validated
 at `2026-06-13 17:20:37 -03`. The read-only scope-selection gate
@@ -173,10 +175,16 @@ reviewer was observed active at `2026-06-13 17:42:13 -03`. The review returned
 `approved_candidate`; the judge integrated and validated the patch at
 `2026-06-13 17:47:02 -03`.
 
-No material worker is active after the P3 integration. The next read-only
-scope-selection gate was prepared at `2026-06-13 17:50:31 -03`; material work
-remains blocked until this selection is completed and judged. The Codex App
-selection thread was observed active at `2026-06-13 17:53:12 -03`.
+No material worker is active after the P3 integration. The read-only
+scope-selection gate was prepared at `2026-06-13 17:50:31 -03`, observed active
+at `2026-06-13 17:53:12 -03`, completed as `approved_scope_candidate`, and was
+approved by the judge at `2026-06-13 17:59:46 -03`.
+
+The next authorized window is docs-only:
+`post_p3_first_release_status_rebaseline`. Because `docs/fiscal-desk/**` is
+local and ignored by `.git/info/exclude`, the orchestrator must provide an
+editable copy to the worker worktree before requiring execution. No material
+feature work is released by this approval.
 
 Judge decision:
 `results/post-local-base-regate-csv-input-intake-hardening-judge-decision-2026-06-13.md`.
@@ -225,6 +233,12 @@ P3 renderer owner-window integration judge decision:
 
 Post-P3 next owner-window selection dispatch:
 `results/post-p3-renderer-next-owner-window-selection-dispatch-2026-06-13.md`.
+
+Post-P3 next owner-window selection result:
+`results/post-p3-renderer-next-owner-window-selection-2026-06-13.md`.
+
+Post-P3 next owner-window selection judge decision:
+`results/post-p3-renderer-next-owner-window-selection-judge-decision-2026-06-13.md`.
 
 Independent review threads for the coverage gate:
 `019ec1d0-a1f5-7601-97ef-b91f46e0d00c` and canonical follow-up
