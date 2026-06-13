@@ -145,7 +145,7 @@ Nenhuma thread individual pode substituir o review da branch final integrada.
 
 | Phase | Judge status | Integration release |
 |---|---|---|
-| `post_p3_readiness_first_release_validation_docs_rebaseline` | `dispatch_prepared_pending_thread` | Pending Codex App docs-only thread creation |
+| `post_p3_readiness_first_release_validation_docs_rebaseline` | `active_docs_only_rebaseline` | Codex App docs-only thread active |
 
 F8B1 was dispatched, independently reviewed and selectively integrated in Wave
 13. P3 renderer was integrated and validated after CSV input intake hardening.
@@ -156,7 +156,7 @@ rebaseline is completed and judged.
 
 | Phase | Thread | Worktree | Scope |
 |---|---|---|---|
-| None | - | - | No active worker; next docs-only validation-doc rebaseline is prepared |
+| `post_p3_readiness_first_release_validation_docs_rebaseline` | `019ec2ec-4d33-7233-9555-d97ec33bb913` | `/Users/icaroaguiar/.codex/worktrees/cf27/consulta-simples-csv` | Docs-only validation-doc rebaseline; no material worker active |
 
 `post_local_base_regate_csv_input_intake_hardening` was integrated and validated
 at `2026-06-13 17:20:37 -03`. The read-only scope-selection gate
@@ -229,6 +229,9 @@ doc matches the integrated coverage gate and post-P3 first-release cut. No
 material feature work, release execution, dist, publish, signing, notarization,
 updater, telemetry, diagnostic sending, license/account or external side effect
 is released by this approval.
+The Codex App docs-only thread `019ec2ec-4d33-7233-9555-d97ec33bb913` was
+observed active at `2026-06-13 18:39:15 -03` in
+`/Users/icaroaguiar/.codex/worktrees/cf27/consulta-simples-csv`.
 
 Judge decision:
 `results/post-local-base-regate-csv-input-intake-hardening-judge-decision-2026-06-13.md`.
