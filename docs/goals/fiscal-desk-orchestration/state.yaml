@@ -603,9 +603,9 @@ monitoring:
   observe_threads_frequently: true
   heartbeat_automation_id: fiscal-desk-f0-monitor
   heartbeat_interval_minutes: 30
-  last_observation_at: "2026-06-13 13:54:00 -03"
-  last_observation_file: results/testing-infra-coverage-gate-post-commit-2026-06-13.md
-  last_observation_status: coverage_gate_committed_ready_for_fresh_owner_window_selection
+  last_observation_at: "2026-06-13 14:00:46 -03"
+  last_observation_file: results/orchestration-observation-2026-06-13-1400.md
+  last_observation_status: monitoring_ok_no_material_worker_released_fresh_scope_required
   f0_thread_status: self_approval_blocker_resolved_by_judge
   final_integration_review_status: approved_by_judge
   final_integration_review_thread_id: 019ec005-f849-7b53-ae0f-ae7c02df4f63
@@ -630,6 +630,12 @@ monitoring:
   staging_versioning_closeout_file: results/staging-versioning-closeout.md
   staging_versioning_closeout_judge_decision_file: results/staging-versioning-closeout-judge-decision.md
   next_material_worker_status: ready_for_fresh_owner_window_selection
+  last_thread_observation:
+    testing_infra_coverage_gate_worker: idle_completed
+    testing_infra_coverage_gate_independent_review: idle_completed_approved_candidate
+    testing_infra_coverage_gate_canonical_review: idle_completed_approved_candidate
+    final_integration_review: idle_completed_approved_candidate_judged
+    material_worker_released: false
   testing_infra_coverage_gate_status: integrated_validated_pass_with_risk
   testing_infra_coverage_gate_thread_id: 019ec1c2-abc1-7ce2-8b68-212c2e152a19
   testing_infra_coverage_gate_thread_title: Adicionar coverage no Vitest
