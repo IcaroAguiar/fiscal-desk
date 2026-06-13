@@ -454,7 +454,7 @@ versioning_decisions:
       - skills/electron-ui-evidence-capture/references/electron-ui-evidence-capture.md
       - skills/electron-ui-evidence-capture/scripts/run-electron-evidence-capture.sh
 next_judge_action:
-  - dispatch_post_p3_first_release_status_rebaseline_docs_only
+  - create_post_p3_first_release_status_rebaseline_thread
   - provide_editable_docs_fiscal_desk_copy_to_docs_only_worker
   - keep_runtime_update_diagnostic_telemetry_license_release_blocked_until_fresh_scope
   - keep_f0_blocker_resolution_observed
@@ -604,9 +604,9 @@ monitoring:
   observe_threads_frequently: true
   heartbeat_automation_id: fiscal-desk-f0-monitor
   heartbeat_interval_minutes: 30
-  last_observation_at: "2026-06-13 17:59:46 -03"
+  last_observation_at: "2026-06-13 18:01:49 -03"
   last_observation_file: docs/goals/fiscal-desk-orchestration/integration-plan.md
-  last_observation_status: post_p3_renderer_next_owner_window_selection_approved_by_judge
+  last_observation_status: post_p3_first_release_status_rebaseline_dispatch_prepared
   f0_thread_status: self_approval_blocker_resolved_by_judge
   final_integration_review_status: approved_by_judge
   final_integration_review_thread_id: 019ec005-f849-7b53-ae0f-ae7c02df4f63
@@ -658,6 +658,7 @@ monitoring:
     p3_renderer_missing_column_normalizer_can_hide_new_core_guidance: idle_completed_approved_integrated_validated
     p3_renderer_missing_column_normalizer_review: idle_completed_approved_candidate
     post_p3_renderer_next_owner_window_selection: idle_completed_approved_scope_candidate_judged
+    post_p3_first_release_status_rebaseline: dispatch_prepared_pending_thread
     material_worker_released: none_after_p3_renderer_missing_column_normalizer_integration
   active_material_owner_window_after_post_local_base_regate:
     slug: post_local_base_regate_csv_input_intake_hardening
@@ -868,6 +869,29 @@ monitoring:
       - docs_only_rebaseline_does_not_release_material_feature_work
     allowed_write:
       - docs/goals/fiscal-desk-orchestration/results/post-p3-renderer-next-owner-window-selection-2026-06-13.md
+  active_docs_only_owner_window_after_p3_renderer:
+    slug: post_p3_first_release_status_rebaseline
+    status: dispatch_prepared_pending_thread
+    model: gpt-5.5
+    reasoning: medium
+    branch: feat/fiscal-desk-local-base-prep
+    target_min_commit: b941a9e
+    dispatch_file: results/post-p3-first-release-status-rebaseline-dispatch-2026-06-13.md
+    result_file: results/post-p3-first-release-status-rebaseline-2026-06-13.md
+    prepared_at: "2026-06-13 18:01:49 -03"
+    classification: docs_only_serial
+    material_worker_released: false
+    blocks_material_workers_until_judged: true
+    docs_fiscal_desk_copy_required_for_worker: true
+    docs_fiscal_desk_source: /Users/icaroaguiar/dev/pessoal/consulta-simples-csv/docs/fiscal-desk
+    allowed_write:
+      - docs/fiscal-desk/first-release.md
+      - docs/fiscal-desk/status.md
+      - docs/fiscal-desk/product-spec.md
+      - docs/fiscal-desk/roadmap.md
+      - docs/fiscal-desk/quality-gates.md
+      - docs/fiscal-desk/executor-packets/013-first-release-cut.md
+      - docs/goals/fiscal-desk-orchestration/results/post-p3-first-release-status-rebaseline-2026-06-13.md
   active_read_only_owner_window_selection_after_post_local_base_regate:
     slug: post_local_base_regate_material_owner_window_selection
     status: approved_by_judge_scope_candidate

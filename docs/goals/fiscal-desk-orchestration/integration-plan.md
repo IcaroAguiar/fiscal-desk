@@ -145,7 +145,7 @@ Nenhuma thread individual pode substituir o review da branch final integrada.
 
 | Phase | Judge status | Integration release |
 |---|---|---|
-| `post_p3_first_release_status_rebaseline` | `approved_by_judge_docs_only_scope_candidate` | Pending docs-only dispatch |
+| `post_p3_first_release_status_rebaseline` | `dispatch_prepared_pending_thread` | Pending Codex App thread creation |
 
 F8B1 was dispatched, independently reviewed and selectively integrated in Wave
 13. P3 renderer was integrated and validated after CSV input intake hardening.
@@ -185,6 +185,8 @@ The next authorized window is docs-only:
 local and ignored by `.git/info/exclude`, the orchestrator must provide an
 editable copy to the worker worktree before requiring execution. No material
 feature work is released by this approval.
+
+The docs-only dispatch was prepared at `2026-06-13 18:01:49 -03`.
 
 Judge decision:
 `results/post-local-base-regate-csv-input-intake-hardening-judge-decision-2026-06-13.md`.
@@ -239,6 +241,9 @@ Post-P3 next owner-window selection result:
 
 Post-P3 next owner-window selection judge decision:
 `results/post-p3-renderer-next-owner-window-selection-judge-decision-2026-06-13.md`.
+
+Post-P3 first release/status rebaseline dispatch:
+`results/post-p3-first-release-status-rebaseline-dispatch-2026-06-13.md`.
 
 Independent review threads for the coverage gate:
 `019ec1d0-a1f5-7601-97ef-b91f46e0d00c` and canonical follow-up
