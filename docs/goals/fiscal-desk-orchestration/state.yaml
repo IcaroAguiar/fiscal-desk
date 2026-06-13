@@ -454,7 +454,7 @@ versioning_decisions:
       - skills/electron-ui-evidence-capture/references/electron-ui-evidence-capture.md
       - skills/electron-ui-evidence-capture/scripts/run-electron-evidence-capture.sh
 next_judge_action:
-  - dispatch_large_file_ratchet_rework_thread
+  - create_large_file_ratchet_rework_thread
   - observe_large_file_ratchet_rework_thread
   - judge_large_file_ratchet_rework_receipt
   - keep_runtime_update_diagnostic_telemetry_license_release_blocked_until_fresh_scope
@@ -1089,6 +1089,40 @@ monitoring:
       failure: code.large-file-ratchet
       note: scoped_mode_also_fails_so_blocker_is_not_only_origin_main_head_noise
     next_material_worker_status_after_judgment: blocked_pending_large_file_ratchet_rework
+  active_quality_gate_rework_after_post_p3_integrated_validation:
+    slug: post_p3_integrated_validation_large_file_ratchet_rework
+    status: prepared_for_dispatch
+    model: gpt-5.5
+    reasoning: medium
+    branch: feat/fiscal-desk-local-base-prep
+    target_min_commit: f58284d
+    dispatch_file: results/post-p3-integrated-validation-large-file-ratchet-rework-dispatch-2026-06-13.md
+    result_file: results/post-p3-integrated-validation-large-file-ratchet-rework-2026-06-13.md
+    prepared_at: "2026-06-13 19:08:00 -03"
+    classification: quality_gate_rework_non_feature_material
+    material_worker_released: false
+    allowed_write:
+      - src/main/execution/file-process-execution-ledger.ts
+      - src/main/execution/file-process-execution-ledger*.ts
+      - test/unit/process-csv.ipc.test.ts
+      - test/unit/process-csv.ipc*.test.ts
+      - test/unit/receita-browser.client.test.ts
+      - test/unit/receita-browser.client*.test.ts
+      - docs/goals/fiscal-desk-orchestration/results/post-p3-integrated-validation-large-file-ratchet-rework-2026-06-13.md
+    forbidden_write:
+      - docs/ai/quality-gate/baseline.json
+      - docs/ai/quality-gate/quality-gate.config.json
+      - src/renderer/**
+      - src/main/ipc/**
+      - src/core/**
+      - docs/fiscal-desk/**
+      - docs/qa/**
+      - package.json
+      - pnpm-lock.yaml
+    required_gate:
+      scoped_quality_gate: QUALITY_GATE_DIFF_MODE=worktree node docs/ai/quality-gate/check-ratchet.mjs
+      default_quality_gate: node docs/ai/quality-gate/check-ratchet.mjs
+    next_material_worker_status_after_dispatch: blocked_pending_large_file_ratchet_rework
     blocks_material_workers_until_judged: true
     allowed_persistent_write:
       - docs/goals/fiscal-desk-orchestration/results/post-p3-validation-docs-rebaseline-integrated-first-release-validation-2026-06-13.md

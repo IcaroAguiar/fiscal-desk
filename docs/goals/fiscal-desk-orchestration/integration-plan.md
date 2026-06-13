@@ -1164,3 +1164,23 @@ historical `origin/main...HEAD` noise.
 Material feature work remains blocked. The next owner window is a narrow
 quality-gate rework to reduce or explicitly justify the new large-file count,
 followed by independent review before integration.
+
+## Post P3 Large File Ratchet Rework Dispatch As Of 2026-06-13 19:08
+
+Receipt:
+`results/post-p3-integrated-validation-large-file-ratchet-rework-dispatch-2026-06-13.md`.
+
+The judge prepared a non-feature material rework window:
+`post_p3_integrated_validation_large_file_ratchet_rework`.
+
+This is not a documentation phase and not a feature phase. It is a quality-gate
+rework required before the integrated candidate can be considered closed.
+
+The allowed write set is limited to splitting/refactoring the current large
+files and writing the worker receipt. Updating
+`docs/ai/quality-gate/baseline.json` or
+`docs/ai/quality-gate/quality-gate.config.json` is explicitly forbidden in this
+window.
+
+Material feature work remains blocked until the rework is returned, reviewed
+independently and judged.
