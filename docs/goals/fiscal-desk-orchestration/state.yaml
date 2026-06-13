@@ -454,9 +454,8 @@ versioning_decisions:
       - skills/electron-ui-evidence-capture/references/electron-ui-evidence-capture.md
       - skills/electron-ui-evidence-capture/scripts/run-electron-evidence-capture.sh
 next_judge_action:
-  - create_large_file_ratchet_rework_thread
-  - observe_large_file_ratchet_rework_thread
-  - judge_large_file_ratchet_rework_receipt
+  - dispatch_fresh_read_only_owner_window_selection_after_large_file_rework
+  - keep_large_file_rework_closed_as_integrated_validated
   - keep_runtime_update_diagnostic_telemetry_license_release_blocked_until_fresh_scope
   - keep_f0_blocker_resolution_observed
   - keep_final_validation_in_single_worktree
@@ -605,9 +604,9 @@ monitoring:
   observe_threads_frequently: true
   heartbeat_automation_id: fiscal-desk-f0-monitor
   heartbeat_interval_minutes: 30
-  last_observation_at: "2026-06-13 19:04:00 -03"
+  last_observation_at: "2026-06-13 19:22:00 -03"
   last_observation_file: docs/goals/fiscal-desk-orchestration/integration-plan.md
-  last_observation_status: post_p3_validation_docs_rebaseline_integrated_first_release_validation_needs_rework_quality_gate
+  last_observation_status: post_p3_large_file_ratchet_rework_integrated_validated
   f0_thread_status: self_approval_blocker_resolved_by_judge
   final_integration_review_status: approved_by_judge
   final_integration_review_thread_id: 019ec005-f849-7b53-ae0f-ae7c02df4f63
@@ -631,7 +630,7 @@ monitoring:
   staging_versioning_closeout_dispatch_file: results/staging-versioning-closeout-dispatch-2026-06-13.md
   staging_versioning_closeout_file: results/staging-versioning-closeout.md
   staging_versioning_closeout_judge_decision_file: results/staging-versioning-closeout-judge-decision.md
-  next_material_worker_status: blocked_pending_large_file_ratchet_rework
+  next_material_worker_status: blocked_until_fresh_owner_window_selection
   last_thread_observation:
     testing_infra_coverage_gate_worker: idle_completed
     testing_infra_coverage_gate_independent_review: idle_completed_approved_candidate
@@ -666,6 +665,8 @@ monitoring:
     post_p3_readiness_first_release_validation_docs_rebaseline: idle_completed_approved_docs_only_judged
     post_p3_validation_docs_rebaseline_next_owner_window_selection: idle_completed_approved_scope_candidate_judged
     post_p3_validation_docs_rebaseline_integrated_first_release_validation: idle_completed_needs_rework_judged_quality_gate
+    post_p3_integrated_validation_large_file_ratchet_rework: idle_completed_integrated_validated
+    post_p3_integrated_validation_large_file_ratchet_rework_review: idle_completed_approved_candidate_judged
     material_worker_released: none_after_p3_renderer_missing_column_normalizer_integration
   active_material_owner_window_after_post_local_base_regate:
     slug: post_local_base_regate_csv_input_intake_hardening
@@ -819,7 +820,7 @@ monitoring:
     review_status: approved_candidate
     integrated_at: "2026-06-13 17:47:02 -03"
     first_blocker: blocked_missing_docs_fiscal_desk_from_over_strict_delegation
-    result_status: ready_for_judge_review
+    result_status: ready_for_judge_review_integrated_by_judge
     worker_reported_checks:
       install_frozen_lockfile: pass
       focused_app_helpers_test: pass_1_file_6_tests
@@ -1091,7 +1092,7 @@ monitoring:
     next_material_worker_status_after_judgment: blocked_pending_large_file_ratchet_rework
   active_quality_gate_rework_after_post_p3_integrated_validation:
     slug: post_p3_integrated_validation_large_file_ratchet_rework
-    status: ready_for_judge_review_pending_independent_review
+    status: approved_by_judge_integrated_validated
     pending_worktree_id: local:52527a7b-2ace-4877-8c13-31dc07e0089c
     thread_id: 019ec305-fa0a-7562-8be4-117cb42ce33d
     thread_title: Rework ratchet large files
@@ -1133,14 +1134,19 @@ monitoring:
     result_status: ready_for_judge_review
     worker_receipt_file: results/post-p3-integrated-validation-large-file-ratchet-rework-2026-06-13.md
     independent_review_required: true
-    independent_review_status: active
+    independent_review_status: approved_candidate
     independent_review_pending_worktree_id: local:9b5ed722-561f-41e9-a703-543a4b7cacd5
     independent_review_thread_id: 019ec30c-f33a-7700-999c-10e6944757fb
     independent_review_thread_title: Review rework large files
     independent_review_worktree: /Users/icaroaguiar/.codex/worktrees/65fa/consulta-simples-csv
     independent_review_dispatched_at: "2026-06-13 19:14:00 -03"
     independent_review_observed_active_at: "2026-06-13 19:14:00 -03"
+    independent_review_completed_at: "2026-06-13 19:18:00 -03"
+    independent_review_judged_at: "2026-06-13 19:22:00 -03"
     independent_review_dispatch_file: results/post-p3-integrated-validation-large-file-ratchet-rework-review-dispatch-2026-06-13.md
+    independent_review_result_file: results/post-p3-integrated-validation-large-file-ratchet-rework-review-2026-06-13.md
+    integration_judge_decision_file: results/post-p3-integrated-validation-large-file-ratchet-rework-integration-judge-decision-2026-06-13.md
+    integrated_at: "2026-06-13 19:22:00 -03"
     worker_evidence:
       focused_tests: pass_5_files_56_tests
       lint: pass
@@ -1150,9 +1156,33 @@ monitoring:
       scoped_quality_gate: pass_large_files_1_baseline_2
       default_quality_gate: contextual_fail_origin_main_head_only
     next_material_worker_status_after_worker: blocked_pending_independent_review
+    canonical_validation:
+      focused_tests: pass_5_files_56_tests
+      lint: pass_122_files
+      typecheck: pass
+      test: pass_42_files_264_tests
+      test_coverage: pass_42_files_264_tests_coverage_69_86_lines_87_21_functions_75_79_branches
+      scoped_quality_gate: pass_large_files_1_baseline_2_delta_minus_1
+      default_quality_gate: contextual_fail_origin_main_head_only_no_code_large_file_ratchet
+      diff_check: pass
+      forbidden_surface_diff_check: pass_no_baseline_config_package_lock_changes
+      independent_review: approved_candidate_no_blockers
+    residual_risks:
+      - default_quality_gate_requires_valid_origin_main_head_pr_ci_context
+      - renderer_styles_css_remains_legacy_large_file_exception_until_2026_06_30
+      - magic_string_boundary_warning_only_existing_contract_strings_moved_mechanically
+      - smokes_not_repeated_for_mechanical_split_no_runtime_ui_provider_change
+    next_material_worker_status_after_judgment: blocked_until_fresh_owner_window_selection
     blocks_material_workers_until_judged: true
-    allowed_persistent_write:
-      - docs/goals/fiscal-desk-orchestration/results/post-p3-validation-docs-rebaseline-integrated-first-release-validation-2026-06-13.md
+    canonical_integrated_files:
+      - src/main/execution/file-process-execution-ledger.ts
+      - src/main/execution/file-process-execution-ledger-session.ts
+      - test/unit/process-csv.ipc.test.ts
+      - test/unit/process-csv.ipc-resume-delivery.test.ts
+      - test/unit/receita-browser.client.test.ts
+      - test/unit/receita-browser.client-result-detection.test.ts
+      - docs/goals/fiscal-desk-orchestration/results/post-p3-integrated-validation-large-file-ratchet-rework-review-2026-06-13.md
+      - docs/goals/fiscal-desk-orchestration/results/post-p3-integrated-validation-large-file-ratchet-rework-integration-judge-decision-2026-06-13.md
     allowed_transient_artifacts:
       - node_modules/**
       - coverage/**

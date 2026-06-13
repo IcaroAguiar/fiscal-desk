@@ -6,9 +6,11 @@ import type {
   ProcessCsvSummary,
   ProcessExecutionHistoryItem,
 } from "../../core/app/process-csv.types";
-import type { ProcessExecutionLedgerSession } from "../../core/app/process-execution-ledger.port";
 import type { SimplesLookupResult } from "../../core/simples/simples-lookup.types";
 import type { SimplesProviderName } from "../../core/simples/simples-provider.names";
+import { FileProcessExecutionSession } from "./file-process-execution-ledger-session";
+
+export { FileProcessExecutionSession } from "./file-process-execution-ledger-session";
 
 const LEDGER_VERSION = 1;
 const CHECKPOINT_POLICY_VERSION = "stable-results-v1";
@@ -54,7 +56,7 @@ type LedgerOperationalMetadata = {
   };
 };
 
-type LedgerDocument = {
+export type LedgerDocument = {
   version: typeof LEDGER_VERSION;
   runId: string;
   inputFingerprint: string;
@@ -187,82 +189,6 @@ export class FileProcessExecutionLedger {
   }
 }
 
-export class FileProcessExecutionSession
-  implements ProcessExecutionLedgerSession
-{
-  constructor(
-    private readonly ledgerPath: string,
-    private document: LedgerDocument,
-  ) {}
-
-  get runId(): string {
-    return this.document.runId;
-  }
-
-  get checkpointPath(): string {
-    return this.ledgerPath;
-  }
-
-  async setTotalUniqueLookups(totalUniqueLookups: number): Promise<void> {
-    this.document = {
-      ...this.document,
-      totalUniqueLookups,
-      updatedAt: new Date().toISOString(),
-    };
-    await writeLedgerDocument(this.ledgerPath, this.document);
-  }
-
-  async restoreLookup(cnpj: string): Promise<SimplesLookupResult | null> {
-    const checkpoint = this.document.checkpoints[cnpj];
-
-    if (!checkpoint) {
-      return null;
-    }
-
-    return toSafeLookupCheckpointResult(checkpoint.result);
-  }
-
-  async saveLookup(result: SimplesLookupResult): Promise<void> {
-    const checkpointResult = toSafeLookupCheckpointResult(result);
-    if (!checkpointResult) {
-      return;
-    }
-
-    this.document = {
-      ...this.document,
-      updatedAt: new Date().toISOString(),
-      checkpoints: {
-        ...this.document.checkpoints,
-        [checkpointResult.cnpj]: {
-          completedAt: new Date().toISOString(),
-          result: checkpointResult,
-        },
-      },
-    };
-    await writeLedgerDocument(this.ledgerPath, this.document);
-  }
-
-  async finish(input: FinishProcessExecutionInput): Promise<void> {
-    const now = new Date().toISOString();
-    this.document = {
-      ...this.document,
-      status: input.status,
-      outputPath: input.outputPath,
-      summary: input.summary,
-      updatedAt: now,
-      completedAt: now,
-      operationalMetadata: {
-        ...this.document.operationalMetadata,
-        elapsedMs: Math.max(
-          0,
-          Date.parse(now) - Date.parse(this.document.startedAt),
-        ),
-      },
-    };
-    await writeLedgerDocument(this.ledgerPath, this.document);
-  }
-}
-
 export function createInputFingerprint(
   input: StartProcessExecutionInput,
 ): string {
@@ -313,7 +239,7 @@ async function readLedgerDocument(
   }
 }
 
-async function writeLedgerDocument(
+export async function writeLedgerDocument(
   ledgerPath: string,
   document: LedgerDocument,
 ): Promise<void> {
@@ -354,7 +280,7 @@ function normalizeOptionalText(value: string | undefined): string | null {
   return normalized ? normalized : null;
 }
 
-function toSafeLookupCheckpointResult(
+export function toSafeLookupCheckpointResult(
   result: unknown,
 ): SimplesLookupResult | null {
   if (!isSafeReusableLookupResult(result)) {

@@ -145,7 +145,7 @@ Nenhuma thread individual pode substituir o review da branch final integrada.
 
 | Phase | Judge status | Integration release |
 |---|---|---|
-| `post_p3_readiness_first_release_validation_docs_rebaseline` | `active_docs_only_rebaseline` | Codex App docs-only thread active |
+| none | n/a | no material feature worker released |
 
 F8B1 was dispatched, independently reviewed and selectively integrated in Wave
 13. P3 renderer was integrated and validated after CSV input intake hardening.
@@ -156,7 +156,7 @@ rebaseline is completed and judged.
 
 | Phase | Thread | Worktree | Scope |
 |---|---|---|---|
-| `post_p3_readiness_first_release_validation_docs_rebaseline` | `019ec2ec-4d33-7233-9555-d97ec33bb913` | `/Users/icaroaguiar/.codex/worktrees/cf27/consulta-simples-csv` | Docs-only validation-doc rebaseline; no material worker active |
+| none | n/a | n/a | waiting for fresh read-only owner-window selection |
 
 `post_local_base_regate_csv_input_intake_hardening` was integrated and validated
 at `2026-06-13 17:20:37 -03`. The read-only scope-selection gate
@@ -1215,3 +1215,31 @@ As of 2026-06-13 19:14 -03, the review thread is active:
 - title: `Review rework large files`;
 - worktree: `/Users/icaroaguiar/.codex/worktrees/65fa/consulta-simples-csv`;
 - target dispatch commit: `9386bb2`.
+
+## Post P3 Large File Ratchet Rework Integration Judge Decision As Of 2026-06-13 19:22
+
+Receipt:
+`results/post-p3-integrated-validation-large-file-ratchet-rework-integration-judge-decision-2026-06-13.md`.
+
+The independent review returned `approved_candidate` with no P0/P1/P2/P3
+blockers. The judge integrated the rework into the canonical branch
+`feat/fiscal-desk-local-base-prep` and validated it in the final worktree.
+
+Canonical evidence:
+
+- focused tests: 5 files, 56 tests passing;
+- `pnpm lint`: pass;
+- `pnpm typecheck`: pass;
+- `pnpm test`: 42 files, 264 tests passing;
+- `pnpm test:coverage`: 42 files, 264 tests passing, 69.86% lines/statements,
+  87.21% functions and 75.79% branches;
+- `QUALITY_GATE_DIFF_MODE=worktree node docs/ai/quality-gate/check-ratchet.mjs`:
+  pass, large files 1 against baseline 2;
+- default ratchet: contextual fail only on `origin/main...HEAD`, without
+  `code.large-file-ratchet`;
+- `git diff --check`: pass;
+- no diff in quality-gate baseline/config, package or lockfile.
+
+This closes the structural large-file blocker. The project is not in a
+documentation phase now, but material feature work remains blocked until the
+judge dispatches and accepts a fresh read-only owner-window selection.
