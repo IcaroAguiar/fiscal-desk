@@ -145,7 +145,7 @@ Nenhuma thread individual pode substituir o review da branch final integrada.
 
 | Phase | Judge status | Integration release |
 |---|---|---|
-| `post_p3_rebaseline_first_release_readiness_review` | `dispatch_prepared_pending_thread` | Pending Codex App review thread creation |
+| `post_p3_rebaseline_first_release_readiness_review` | `active_read_only_review` | Codex App review thread active |
 
 F8B1 was dispatched, independently reviewed and selectively integrated in Wave
 13. P3 renderer was integrated and validated after CSV input intake hardening.
@@ -156,7 +156,7 @@ is completed and judged.
 
 | Phase | Thread | Worktree | Scope |
 |---|---|---|---|
-| None | - | - | No active worker after post-P3 rebaseline owner-window selection was judged |
+| `post_p3_rebaseline_first_release_readiness_review` | `019ec2dd-3315-7830-b139-b37cbacd665f` | `/Users/icaroaguiar/.codex/worktrees/b9d7/consulta-simples-csv` | Read-only release/security review; no material worker active |
 
 `post_local_base_regate_csv_input_intake_hardening` was integrated and validated
 at `2026-06-13 17:20:37 -03`. The read-only scope-selection gate
@@ -204,7 +204,10 @@ approved by the judge at `2026-06-13 18:19:33 -03`.
 The next authorized window is
 `post_p3_rebaseline_first_release_readiness_review`, classified as a read-only
 release/security review. No material feature work is released by this approval.
-The review dispatch was prepared at `2026-06-13 18:20:45 -03`.
+The review dispatch was prepared at `2026-06-13 18:20:45 -03`. The Codex App
+review thread `019ec2dd-3315-7830-b139-b37cbacd665f` was observed active at
+`2026-06-13 18:24:17 -03` in
+`/Users/icaroaguiar/.codex/worktrees/b9d7/consulta-simples-csv`.
 
 Judge decision:
 `results/post-local-base-regate-csv-input-intake-hardening-judge-decision-2026-06-13.md`.
