@@ -1395,7 +1395,7 @@ monitoring:
       - docs/goals/fiscal-desk-orchestration/results/post-p3-operational-panel-next-owner-window-selection-2026-06-13.md
   approved_material_owner_window_after_operational_panel:
     slug: post_p3_legacy_resume_copy_harness_polish
-    status: active
+    status: ready_for_judge_review_pending_independent_review
     classification: material_single_writer_renderer_copy_harness
     source_selection_thread_id: 019ec34e-024e-7040-846d-9ec73093c156
     source_selection_result_file: results/post-p3-operational-panel-next-owner-window-selection-2026-06-13.md
@@ -1411,7 +1411,30 @@ monitoring:
     worktree: /Users/icaroaguiar/.codex/worktrees/08af/consulta-simples-csv
     dispatched_at: "2026-06-13 20:34:00 -03"
     observed_active_at: "2026-06-13 20:35:08 -03"
+    completed_at: "2026-06-13 20:39:21 -03"
+    candidate_observed_at: "2026-06-13 20:40:14 -03"
     material_worker_released: true
+    result_status: ready_for_judge_review
+    result_file: results/post-p3-legacy-resume-copy-harness-polish-2026-06-13.md
+    review_dispatch_file: results/post-p3-legacy-resume-copy-harness-polish-review-dispatch-2026-06-13.md
+    review_status: dispatch_prepared
+    review_prepared_at: "2026-06-13 20:40:14 -03"
+    worker_reported_checks:
+      focused_tests: pass_3_files_22_tests
+      smoke_electron_ui_mock: pass_uiResumeText_1_CNPJ_retomado
+      smoke_electron_ui_base_publica_local: pass_after_sandbox_eperm_rerun_outside_sandbox
+      lint: pass_122_files
+      typecheck: pass
+      test: pass_42_files_272_tests
+      test_coverage: pass_42_files_272_tests_global_76_08_pct
+      scoped_ratchet: pass_changed_line_coverage_100_pct
+      build: pass
+      diff_check: pass
+    judge_pre_review_inspection:
+      status: pass
+      worker_status_only_allowed_files: pass
+      worker_diff_check: pass
+      worker_receipt_status: ready_for_judge_review
     requires_independent_review_before_integration: true
     allowed_write:
       - src/renderer/ui/operational-copy.ts

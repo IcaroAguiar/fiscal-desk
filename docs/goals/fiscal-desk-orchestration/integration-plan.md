@@ -145,7 +145,7 @@ Nenhuma thread individual pode substituir o review da branch final integrada.
 
 | Phase | Judge status | Integration release |
 |---|---|---|
-| post_p3_legacy_resume_copy_harness_polish | active | thread `019ec355-e935-7263-b4b3-2c808b58469d`, worktree `/Users/icaroaguiar/.codex/worktrees/08af/consulta-simples-csv` |
+| post_p3_legacy_resume_copy_harness_polish | ready_for_judge_review_pending_independent_review | worker thread `019ec355-e935-7263-b4b3-2c808b58469d`, review dispatch prepared |
 
 F8B1 was dispatched, independently reviewed and selectively integrated in Wave
 13. P3 renderer was integrated and validated after CSV input intake hardening.
@@ -182,6 +182,15 @@ active at `2026-06-13 20:35:08 -03`.
 The worker must run in an isolated Codex App thread with `/goal`, `gpt-5.5`,
 reasoning `medium`, explicit allowed writes, real Electron smoke evidence and
 independent review before integration.
+
+The worker completed as `ready_for_judge_review` at `2026-06-13 20:39:21 -03`.
+The judge inspected the worker worktree at `2026-06-13 20:40:14 -03`: status
+and diff were restricted to the allowed write set, `git diff --check` passed,
+and the receipt was present. Independent review is now required before any
+integration.
+
+Review dispatch prepared:
+`results/post-p3-legacy-resume-copy-harness-polish-review-dispatch-2026-06-13.md`.
 
 `post_local_base_regate_csv_input_intake_hardening` was integrated and validated
 at `2026-06-13 17:20:37 -03`. The read-only scope-selection gate
