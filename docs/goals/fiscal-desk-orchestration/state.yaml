@@ -1395,12 +1395,15 @@ monitoring:
       - docs/goals/fiscal-desk-orchestration/results/post-p3-operational-panel-next-owner-window-selection-2026-06-13.md
   approved_material_owner_window_after_operational_panel:
     slug: post_p3_legacy_resume_copy_harness_polish
-    status: approved_for_dispatch
+    status: dispatch_prepared
     classification: material_single_writer_renderer_copy_harness
     source_selection_thread_id: 019ec34e-024e-7040-846d-9ec73093c156
     source_selection_result_file: results/post-p3-operational-panel-next-owner-window-selection-2026-06-13.md
     source_selection_judge_decision_file: results/post-p3-operational-panel-next-owner-window-selection-judge-decision-2026-06-13.md
     approved_at: "2026-06-13 20:29:55 -03"
+    prepared_at: "2026-06-13 20:32:00 -03"
+    target_min_commit: e88f013
+    dispatch_file: results/post-p3-legacy-resume-copy-harness-polish-dispatch-2026-06-13.md
     material_worker_released: false
     requires_independent_review_before_integration: true
     allowed_write:

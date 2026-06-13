@@ -145,7 +145,7 @@ Nenhuma thread individual pode substituir o review da branch final integrada.
 
 | Phase | Judge status | Integration release |
 |---|---|---|
-| post_p3_legacy_resume_copy_harness_polish | approved_for_dispatch | material worker not dispatched yet |
+| post_p3_legacy_resume_copy_harness_polish | dispatch_prepared | material worker not dispatched yet |
 
 F8B1 was dispatched, independently reviewed and selectively integrated in Wave
 13. P3 renderer was integrated and validated after CSV input intake hardening.
@@ -168,6 +168,10 @@ The next authorized window is material and narrow:
 `uiResumeText`/`execution-resume` copy and align the Electron smoke harness.
 It does not release Excel input, guided delivery/templates, diagnostics,
 telemetry, license/account, release/update, PDF/Word/OCR or Receita Web live.
+
+The dispatch file
+`results/post-p3-legacy-resume-copy-harness-polish-dispatch-2026-06-13.md`
+was prepared at `2026-06-13 20:32:00 -03`.
 
 No material worker has been dispatched yet for this approved window. The worker
 must run in an isolated Codex App thread with `/goal`, `gpt-5.5`, reasoning
