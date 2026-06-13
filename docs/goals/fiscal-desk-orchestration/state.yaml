@@ -488,6 +488,19 @@ staging_execution:
     failure: missing_dependency_@vitest/coverage-v8
     quality_gate_required_check: false
     next_action: open_testing_infra_owner_window_before_marking_coverage_passed
+  qualitative_coverage_status:
+    status: pass_with_risk
+    audit_file: results/testability-coverage-audit-2026-06-13.md
+    full_test: pass_40_files_255_tests
+    smoke_real_csv_base_publica_local: pass_after_consent_harness_fix
+    smoke_electron_ui_mock: pass
+    smoke_electron_ui_base_publica_local: pass
+    smoke_visual: pass
+    residual_risks:
+      - quantitative_coverage_unavailable_until_@vitest/coverage-v8_owner_window
+      - direct_preload_unit_coverage_missing_for_prepareLocalPublicBase
+      - receita_web_live_batch_e2e_not_promised_assisted_experimental
+      - windows_packaging_release_update_diagnostic_telemetry_license_not_in_scope
   validation_result:
     cached_diff_check: pass
     excluded_paths_check: pass
@@ -500,8 +513,10 @@ staging_execution:
     smoke_electron_ui_mock: pass
     smoke_electron_ui_base_publica_local: pass
     smoke_real_csv: pass
+    smoke_real_csv_base_publica_local: pass_after_consent_harness_fix
     ratchet: pass
     qualitative_gap_fixed: base_publica_local_preparation_consent_forwarded_through_renderer_preload_ipc_and_syncui_button_disable_rule
+    qualitative_audit_file: results/testability-coverage-audit-2026-06-13.md
     independent_review_blocker: app_sync_prepare_button_reenabled_without_consent
     independent_review_blocker_status: fixed_re_review_approved
 monitoring:

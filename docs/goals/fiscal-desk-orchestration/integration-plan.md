@@ -89,6 +89,39 @@ Validacao de comportamento real continua obrigatoria por superficie:
 Se o smoke aplicavel nao rodar, a fase nao fecha como validada: ela deve voltar
 para rework ou registrar blocker formal com risco residual aceito pelo judge.
 
+## Qualitative Coverage Audit As Of 2026-06-13
+
+O audit `results/testability-coverage-audit-2026-06-13.md` classifica a
+validacao atual como `PASS_WITH_RISK`: os fluxos reais aprovados foram
+exercitados, mas cobertura quantitativa segue bloqueada.
+
+Evidencia atual:
+
+- `pnpm test`: 40 arquivos e 255 testes passando;
+- `pnpm smoke:electron-ui`: app Electron real, provider `mock`, retomada,
+  historico, checkpoint e XLSX salvos;
+- `FISCAL_DESK_SMOKE_PROVIDER=base-publica-local pnpm smoke:electron-ui`: app
+  Electron real com preparo da Base Publica Local, aceite de Data da Base,
+  retomada, historico, checkpoint e XLSX salvos;
+- `TMPDIR=/private/tmp SMOKE_PROVIDER=base-publica-local pnpm smoke:real-csv`:
+  smoke CLI com fixture real local, corrigido para enviar consentimento;
+- `pnpm smoke:visual`: desktop, tablet e mobile sem overflow, botoes cortados ou
+  sobreposicoes.
+
+Uma lacuna qualitativa foi encontrada e corrigida durante o audit: o smoke CLI
+da Base Publica Local ainda tentava preparar a base sem consentimento explicito.
+O core estava correto ao bloquear; o harness foi ajustado em
+`scripts/smoke-real-csv.ts`.
+
+Riscos residuais aceitos para esta etapa:
+
+- falta `@vitest/coverage-v8`, entao cobertura por linha/branch nao existe;
+- `prepareLocalPublicBase` ainda nao tem unit test direto no preload, embora o
+  fluxo seja exercitado pelo smoke Electron real;
+- Receita Web continua assistido/experimental;
+- release Windows, updater, diagnostico, telemetria e licenca continuam fora de
+  escopo ate novo owner window.
+
 ## Code Review Model
 
 O review acontece em duas camadas:

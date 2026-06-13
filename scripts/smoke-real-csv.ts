@@ -110,6 +110,13 @@ async function createSmokeProvider(
   const content = await readFile(localPublicBaseFixturePath, "utf8");
   const prepareResult = await store.prepareFromCsv({
     content,
+    consent: {
+      accepted: true,
+      acceptedAt: new Date().toISOString(),
+      baseDateAcknowledged: "2026-05-20",
+      stalenessWarningAcknowledged:
+        "Fixture local de smoke com Data da Base 2026-05-20.",
+    },
     sourceFileName: "base-publica-local.csv",
     sourceFilePath: localPublicBaseFixturePath,
   });
