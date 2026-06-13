@@ -482,3 +482,22 @@ renderer tests and the F6E2C receipt.
 No source outside renderer UI/tests may be touched. Acceptance still requires
 judge review, qualitative Electron smoke, visual smoke and independent review
 if material code changed.
+
+## Phase 6E2C Judge Decision As Of 2026-06-13 14:33
+
+Receipt:
+`results/phase-6e2c-renderer-delivery-selection-ui-judge-decision-2026-06-13.md`.
+
+F6E2C was accepted as `approved_by_judge_no_code`. The worker audited the
+renderer and found no remaining gap: the app already exposes the `Arquivo final`
+CSV/XLSX selector, propagates `deliveryFormat` to processing, synchronizes the
+visible state, and the Electron smoke selects `xlsx` and validates a real
+`.xlsx` output with history/checkpoint.
+
+The only integrated artifact is the worker receipt:
+`results/phase-6e2c-renderer-delivery-selection-ui.md`.
+
+No source or test code changed. The judge revalidated with
+`pnpm exec vitest run test/unit/app-view.test.ts` and `pnpm smoke:electron-ui`
+on the canonical branch. The queue is back to fresh owner-window selection;
+no next material worker is released by this acceptance.

@@ -629,7 +629,7 @@ monitoring:
   staging_versioning_closeout_dispatch_file: results/staging-versioning-closeout-dispatch-2026-06-13.md
   staging_versioning_closeout_file: results/staging-versioning-closeout.md
   staging_versioning_closeout_judge_decision_file: results/staging-versioning-closeout-judge-decision.md
-  next_material_worker_status: f6e2c_renderer_delivery_selection_ui_dispatched_pending_result
+  next_material_worker_status: ready_for_fresh_owner_window_selection_after_f6e2c_no_code_acceptance
   last_thread_observation:
     testing_infra_coverage_gate_worker: idle_completed
     testing_infra_coverage_gate_independent_review: idle_completed_approved_candidate
@@ -672,18 +672,29 @@ monitoring:
     blocks_material_workers_until_judged: false
   active_material_owner_window:
     slug: f6e2c_renderer_delivery_selection_ui
-    status: dispatched_pending_result
+    status: approved_by_judge_no_code
     thread_id: 019ec204-2c67-7f92-84d6-c9433bd84a0c
     pending_worktree_id: local:fa0a255b-47ea-43f2-9469-661e95f6b606
     worktree: /Users/icaroaguiar/.codex/worktrees/634f/consulta-simples-csv
     dispatch_file: results/phase-6e2c-renderer-delivery-selection-ui-dispatch-2026-06-13.md
     dispatched_at: "2026-06-13 14:26:56 -03"
+    completed_at: "2026-06-13 14:31:38 -03"
+    judged_at: "2026-06-13 14:33:27 -03"
     model: gpt-5.5
     reasoning: medium
-    expected_result_file: results/phase-6e2c-renderer-delivery-selection-ui.md
+    result_file: results/phase-6e2c-renderer-delivery-selection-ui.md
+    judge_decision_file: results/phase-6e2c-renderer-delivery-selection-ui-judge-decision-2026-06-13.md
+    worker_result_status: no_code_ready_for_judge_review
+    judge_decision: approved_no_code_current_ui_already_satisfies_delivery_selection
     audit_first_no_code_allowed: true
     material_worker_released: true
-    blocks_next_material_workers_until_judged: true
+    code_changed: false
+    integrated_files:
+      - docs/goals/fiscal-desk-orchestration/results/phase-6e2c-renderer-delivery-selection-ui.md
+    judge_revalidation:
+      focused_app_view_test: pass
+      smoke_electron_ui_mock: pass
+    blocks_next_material_workers_until_judged: false
   testing_infra_coverage_gate_status: integrated_validated_pass_with_risk
   testing_infra_coverage_gate_thread_id: 019ec1c2-abc1-7ce2-8b68-212c2e152a19
   testing_infra_coverage_gate_thread_title: Adicionar coverage no Vitest
