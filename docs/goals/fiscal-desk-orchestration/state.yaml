@@ -604,9 +604,9 @@ monitoring:
   observe_threads_frequently: true
   heartbeat_automation_id: fiscal-desk-f0-monitor
   heartbeat_interval_minutes: 30
-  last_observation_at: "2026-06-13 17:40:18 -03"
+  last_observation_at: "2026-06-13 17:42:13 -03"
   last_observation_file: docs/goals/fiscal-desk-orchestration/integration-plan.md
-  last_observation_status: p3_renderer_missing_column_normalizer_candidate_ready_review_dispatched
+  last_observation_status: p3_renderer_missing_column_normalizer_review_thread_active
   f0_thread_status: self_approval_blocker_resolved_by_judge
   final_integration_review_status: approved_by_judge
   final_integration_review_thread_id: 019ec005-f849-7b53-ae0f-ae7c02df4f63
@@ -656,7 +656,7 @@ monitoring:
     post_local_base_regate_csv_input_intake_hardening_review: idle_completed_approved_candidate_after_rework
     post_csv_input_intake_next_owner_window_selection: idle_completed_approved_scope_candidate_judged
     p3_renderer_missing_column_normalizer_can_hide_new_core_guidance: idle_completed_ready_for_judge_review_pending_independent_review
-    p3_renderer_missing_column_normalizer_review: dispatch_prepared_pending_thread
+    p3_renderer_missing_column_normalizer_review: active_pending_receipt
     material_worker_released: p3_renderer_missing_column_normalizer_can_hide_new_core_guidance_only
   active_material_owner_window_after_post_local_base_regate:
     slug: post_local_base_regate_csv_input_intake_hardening
@@ -795,11 +795,16 @@ monitoring:
     rework_dispatch_file: results/p3-renderer-missing-column-normalizer-can-hide-new-core-guidance-rework-dispatch-2026-06-13.md
     review_dispatch_file: results/p3-renderer-missing-column-normalizer-can-hide-new-core-guidance-review-dispatch-2026-06-13.md
     review_result_file: results/p3-renderer-missing-column-normalizer-can-hide-new-core-guidance-review-2026-06-13.md
+    review_pending_worktree_id: local:70aa22b8-28fb-404b-867b-13bfa2c11350
+    review_thread_id: 019ec2b8-2e29-7553-b9f5-ce43946bcf65
+    review_thread_title: Revisar mensagem renderer P3
+    review_worktree: /Users/icaroaguiar/.codex/worktrees/ccc8/consulta-simples-csv
     dispatched_at: "2026-06-13 17:35:09 -03"
     first_blocked_at: "2026-06-13 17:37:10 -03"
     rework_requested_at: "2026-06-13 17:37:10 -03"
     candidate_observed_at: "2026-06-13 17:40:18 -03"
     review_dispatched_at: "2026-06-13 17:40:18 -03"
+    review_observed_active_at: "2026-06-13 17:42:13 -03"
     first_blocker: blocked_missing_docs_fiscal_desk_from_over_strict_delegation
     result_status: ready_for_judge_review
     worker_reported_checks:

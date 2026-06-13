@@ -154,7 +154,7 @@ F8B1 was dispatched, independently reviewed and selectively integrated in Wave
 
 | Phase | Thread | Worktree | Scope |
 |---|---|---|---|
-| `p3_renderer_missing_column_normalizer_can_hide_new_core_guidance` | `019ec2b1-befe-70b3-95ad-61fbda8a089e` | `/Users/icaroaguiar/.codex/worktrees/75bc/consulta-simples-csv` | Material candidate ready for judge review; independent review dispatched before integration |
+| `p3_renderer_missing_column_normalizer_can_hide_new_core_guidance` | worker `019ec2b1-befe-70b3-95ad-61fbda8a089e`; reviewer `019ec2b8-2e29-7553-b9f5-ce43946bcf65` | worker `/Users/icaroaguiar/.codex/worktrees/75bc/consulta-simples-csv`; reviewer `/Users/icaroaguiar/.codex/worktrees/ccc8/consulta-simples-csv` | Material candidate ready; independent review active before integration |
 
 `post_local_base_regate_csv_input_intake_hardening` was integrated and validated
 at `2026-06-13 17:20:37 -03`. The read-only scope-selection gate
@@ -168,7 +168,8 @@ The next material owner window dispatch was prepared at
 `blocked_missing_docs_fiscal_desk`; the judge rejected that as a material blocker
 for this narrow renderer-only slice and sent rework at
 `2026-06-13 17:37:10 -03`. The worker returned `ready_for_judge_review`; the
-independent review dispatch was prepared at `2026-06-13 17:40:18 -03`.
+independent review dispatch was prepared at `2026-06-13 17:40:18 -03` and the
+reviewer was observed active at `2026-06-13 17:42:13 -03`.
 
 Judge decision:
 `results/post-local-base-regate-csv-input-intake-hardening-judge-decision-2026-06-13.md`.
