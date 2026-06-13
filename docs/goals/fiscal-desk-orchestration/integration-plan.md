@@ -556,3 +556,21 @@ language that still recommends F6E2C after F6E2C closed as no-code. It does not
 release material feature work. Material workers remain blocked until that docs
 rebaseline is completed and judged. After that, the recommended gate is split
 read-only release/security review for the first release candidate.
+
+## Post-F6E2C First Release Status Rebaseline Dispatch As Of 2026-06-13 14:49
+
+Receipt:
+`results/post-f6e2c-first-release-status-rebaseline-dispatch-2026-06-13.md`.
+
+The judge opened the accepted docs-only owner window
+`post_f6e2c_first_release_status_rebaseline` in thread
+`019ec21a-b297-7402-96f8-cf3eb791aa93`, title
+`Atualiza status do primeiro release`, worktree
+`/Users/icaroaguiar/.codex/worktrees/2c9e/consulta-simples-csv`.
+
+This window may update local product docs only:
+`docs/fiscal-desk/first-release.md`, `docs/fiscal-desk/status.md`,
+`docs/fiscal-desk/product-spec.md` if needed, and its own result receipt.
+
+No material worker is released. The next gate after this rebaseline, if judged
+accepted, is expected to be read-only first-release release/security review.

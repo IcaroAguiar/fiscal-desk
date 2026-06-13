@@ -454,8 +454,8 @@ versioning_decisions:
       - skills/electron-ui-evidence-capture/references/electron-ui-evidence-capture.md
       - skills/electron-ui-evidence-capture/scripts/run-electron-evidence-capture.sh
 next_judge_action:
-  - dispatch_post_f6e2c_first_release_status_rebaseline_docs_only
-  - keep_material_workers_blocked_until_post_f6e2c_rebaseline_is_judged
+  - monitor_post_f6e2c_first_release_status_rebaseline
+  - judge_docs_rebaseline_before_release_security_review_or_material_work
   - keep_runtime_update_diagnostic_telemetry_license_release_blocked_until_fresh_scope
   - keep_f0_blocker_resolution_observed
   - keep_final_validation_in_single_worktree
@@ -604,9 +604,9 @@ monitoring:
   observe_threads_frequently: true
   heartbeat_automation_id: fiscal-desk-f0-monitor
   heartbeat_interval_minutes: 30
-  last_observation_at: "2026-06-13 14:47:24 -03"
-  last_observation_file: results/post-f6e2c-next-owner-window-selection-judge-decision-2026-06-13.md
-  last_observation_status: post_f6e2c_next_owner_window_selection_approved_docs_only
+  last_observation_at: "2026-06-13 14:49:57 -03"
+  last_observation_file: results/post-f6e2c-first-release-status-rebaseline-dispatch-2026-06-13.md
+  last_observation_status: post_f6e2c_first_release_status_rebaseline_dispatched_docs_only
   f0_thread_status: self_approval_blocker_resolved_by_judge
   final_integration_review_status: approved_by_judge
   final_integration_review_thread_id: 019ec005-f849-7b53-ae0f-ae7c02df4f63
@@ -639,7 +639,27 @@ monitoring:
     first_release_rebaseline: idle_completed_approved_after_factual_rework
     f6e2c_renderer_delivery_selection_ui: idle_completed_approved_no_code_judged
     post_f6e2c_next_owner_window_selection: idle_completed_approved_scope_candidate_judged
+    post_f6e2c_first_release_status_rebaseline: pending_worktree_creation
     material_worker_released: false
+  active_docs_only_owner_window_after_scope_review:
+    slug: post_f6e2c_first_release_status_rebaseline
+    status: active
+    thread_id: 019ec21a-b297-7402-96f8-cf3eb791aa93
+    thread_title: Atualiza status do primeiro release
+    pending_worktree_id: local:0c8fedac-afcc-4bcd-adf9-c52b16048627
+    worktree: /Users/icaroaguiar/.codex/worktrees/2c9e/consulta-simples-csv
+    model: gpt-5.5
+    reasoning: medium
+    dispatch_file: results/post-f6e2c-first-release-status-rebaseline-dispatch-2026-06-13.md
+    dispatched_at: "2026-06-13 14:49:57 -03"
+    result_file: results/post-f6e2c-first-release-status-rebaseline-2026-06-13.md
+    allowed_write:
+      - docs/fiscal-desk/first-release.md
+      - docs/fiscal-desk/status.md
+      - docs/fiscal-desk/product-spec.md
+      - docs/goals/fiscal-desk-orchestration/results/post-f6e2c-first-release-status-rebaseline-2026-06-13.md
+    material_worker_released: false
+    blocks_material_workers_until_judged: true
   active_docs_only_scope_review:
     slug: post_f6e2c_next_owner_window_selection
     status: approved_by_judge_docs_only
