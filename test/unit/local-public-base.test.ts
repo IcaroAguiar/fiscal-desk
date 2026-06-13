@@ -15,12 +15,17 @@ import { LocalPublicBaseSimplesLookupAdapter } from "../../src/core/simples/adap
 
 const tempDirs: string[] = [];
 const fixturePath = resolve("test/fixtures/smoke/base-publica-local.csv");
+const localPublicBaseIndexFileName = "local-public-base-index.json";
 const acceptedConsent = {
   accepted: true,
   acceptedAt: "2026-06-13T00:00:00.000Z",
   baseDateAcknowledged: "2026-05-20",
   stalenessWarningAcknowledged: "A Base Pública Local pode estar defasada.",
 } as const;
+type CapturedWarning = {
+  message: string;
+  metadata: Record<string, unknown>;
+};
 
 afterEach(async () => {
   await Promise.all(
@@ -273,10 +278,11 @@ describe("Base Pública Local", () => {
 
   it("discards persisted indexes with malformed records", async () => {
     const directory = await mkdtemp(join(tmpdir(), "public-base-test-"));
+    const warnings: CapturedWarning[] = [];
     tempDirs.push(directory);
     await mkdir(directory, { recursive: true });
     await writeFile(
-      join(directory, "local-public-base-index.json"),
+      join(directory, localPublicBaseIndexFileName),
       `${JSON.stringify({
         version: 1,
         state: "ready",
@@ -294,11 +300,102 @@ describe("Base Pública Local", () => {
       "utf8",
     );
 
-    const store = new LocalPublicBaseStore(directory, { warn() {} });
+    const store = new LocalPublicBaseStore(directory, {
+      warn(message, metadata) {
+        warnings.push({ message, metadata });
+      },
+    });
 
     await expect(store.getStatus()).resolves.toMatchObject({
       state: "not-prepared",
     });
     await expect(store.loadIndex()).resolves.toBeNull();
+    expect(warnings).toEqual([
+      {
+        message: "[base-publica-local] indice local descartado",
+        metadata: {
+          reason: "incompatible_index_document",
+        },
+      },
+      {
+        message: "[base-publica-local] indice local descartado",
+        metadata: {
+          reason: "incompatible_index_document",
+        },
+      },
+    ]);
+    expect(JSON.stringify(warnings)).not.toContain(directory);
+    expect(JSON.stringify(warnings)).not.toContain(
+      localPublicBaseIndexFileName,
+    );
+    expect(JSON.stringify(warnings)).not.toContain("00000000000191");
+    expect(JSON.stringify(warnings)).not.toContain("malformada.csv");
+  });
+
+  it("sanitizes warning metadata when a persisted index cannot be parsed", async () => {
+    const directory = await mkdtemp(join(tmpdir(), "public-base-test-"));
+    const warnings: CapturedWarning[] = [];
+    tempDirs.push(directory);
+    await mkdir(directory, { recursive: true });
+    await writeFile(
+      join(directory, localPublicBaseIndexFileName),
+      "{ raw payload with CNPJ 00000000000191 and Razao Social }\n",
+      "utf8",
+    );
+
+    const store = new LocalPublicBaseStore(directory, {
+      warn(message, metadata) {
+        warnings.push({ message, metadata });
+      },
+    });
+
+    await expect(store.getStatus()).resolves.toMatchObject({
+      state: "not-prepared",
+    });
+
+    expect(warnings).toEqual([
+      {
+        message: "[base-publica-local] indice local descartado",
+        metadata: {
+          reason: "invalid_json",
+        },
+      },
+    ]);
+    expect(JSON.stringify(warnings)).not.toContain(directory);
+    expect(JSON.stringify(warnings)).not.toContain("raw payload");
+    expect(JSON.stringify(warnings)).not.toContain("00000000000191");
+    expect(JSON.stringify(warnings)).not.toContain("Razao Social");
+  });
+
+  it("sanitizes warning metadata when a persisted index read fails", async () => {
+    const directory = await mkdtemp(join(tmpdir(), "public-base-test-"));
+    const warnings: CapturedWarning[] = [];
+    tempDirs.push(directory);
+    await mkdir(join(directory, localPublicBaseIndexFileName), {
+      recursive: true,
+    });
+
+    const store = new LocalPublicBaseStore(directory, {
+      warn(message, metadata) {
+        warnings.push({ message, metadata });
+      },
+    });
+
+    await expect(store.loadIndex()).resolves.toBeNull();
+
+    expect(warnings).toEqual([
+      {
+        message: "[base-publica-local] indice local indisponivel",
+        metadata: {
+          reason: "read_failed",
+        },
+      },
+    ]);
+    expect(JSON.stringify(warnings)).not.toContain(directory);
+    expect(JSON.stringify(warnings)).not.toContain(
+      localPublicBaseIndexFileName,
+    );
+    expect(JSON.stringify(warnings)).not.toContain("EISDIR");
+    expect(JSON.stringify(warnings)).not.toContain("illegal operation");
   });
 });

@@ -454,9 +454,8 @@ versioning_decisions:
       - skills/electron-ui-evidence-capture/references/electron-ui-evidence-capture.md
       - skills/electron-ui-evidence-capture/scripts/run-electron-evidence-capture.sh
 next_judge_action:
-  - monitor_local_public_base_log_privacy_hardening_until_materialized
-  - judge_local_public_base_log_privacy_hardening_before_any_material_worker
   - repeat_or_close_post_rework_security_gate_after_local_base_rework
+  - keep_material_feature_work_blocked_until_post_rework_security_gate_judged
   - keep_runtime_update_diagnostic_telemetry_license_release_blocked_until_fresh_scope
   - keep_f0_blocker_resolution_observed
   - keep_final_validation_in_single_worktree
@@ -605,9 +604,9 @@ monitoring:
   observe_threads_frequently: true
   heartbeat_automation_id: fiscal-desk-f0-monitor
   heartbeat_interval_minutes: 30
-  last_observation_at: "2026-06-13 16:05:00 -03"
+  last_observation_at: "2026-06-13 16:15:02 -03"
   last_observation_file: docs/goals/fiscal-desk-orchestration/integration-plan.md
-  last_observation_status: local_public_base_log_privacy_rework_recreated_pending_worktree
+  last_observation_status: local_public_base_log_privacy_rework_integrated_pending_security_regate
   f0_thread_status: self_approval_blocker_resolved_by_judge
   final_integration_review_status: approved_by_judge
   final_integration_review_thread_id: 019ec005-f849-7b53-ae0f-ae7c02df4f63
@@ -631,7 +630,7 @@ monitoring:
   staging_versioning_closeout_dispatch_file: results/staging-versioning-closeout-dispatch-2026-06-13.md
   staging_versioning_closeout_file: results/staging-versioning-closeout.md
   staging_versioning_closeout_judge_decision_file: results/staging-versioning-closeout-judge-decision.md
-  next_material_worker_status: blocked_pending_local_public_base_log_privacy_rework
+  next_material_worker_status: blocked_pending_post_rework_security_regate
   last_thread_observation:
     testing_infra_coverage_gate_worker: idle_completed
     testing_infra_coverage_gate_independent_review: idle_completed_approved_candidate
@@ -647,7 +646,8 @@ monitoring:
     first_release_package_identity_and_publish_safety: idle_completed_rework_approved_integrated
     first_release_post_rework_release_review: idle_completed_approved_candidate_receipt_created
     first_release_post_rework_security_review: idle_completed_approved_candidate_with_blocker_followup
-    first_release_local_public_base_log_privacy_hardening: pending_worktree_recreated
+    first_release_local_public_base_log_privacy_hardening: idle_completed_approved_integrated_with_validation_limits
+    first_release_local_public_base_log_privacy_hardening_review: idle_completed_approved_candidate
     material_worker_released: local_public_base_log_privacy_rework_only
   active_first_release_rework_owner_windows:
     status: approved_by_judge_integrated_validated
@@ -744,7 +744,7 @@ monitoring:
           - docs/goals/fiscal-desk-orchestration/results/first-release-package-identity-and-publish-safety-2026-06-13.md
   active_post_rework_release_security_gate:
     slug: first_release_post_rework_release_security_review
-    status: needs_rework_blocker_formal
+    status: pending_security_regate_after_local_base_rework
     dispatch_file: results/first-release-post-rework-release-security-review-dispatch-2026-06-13.md
     dispatched_at: "2026-06-13 15:49:17 -03"
     source_integration_decision_file: results/first-release-rework-integration-judge-decision-2026-06-13.md
@@ -754,13 +754,33 @@ monitoring:
     blocks_material_workers_until_judged: true
     blocker:
       slug: first_release_local_public_base_log_privacy_hardening
-      status: dispatched_pending_worktree
+      status: approved_by_judge_integrated_with_validation_limits
       previous_pending_worktree_id: local:44d7a4bb-ee11-450d-ab76-44706463f61c
       pending_worktree_id: local:7e3204d0-6f81-4075-974c-30e1443d541a
+      thread_id: 019ec25e-b6af-72b2-90be-12401311ced2
+      thread_title: Sanitizar logs da base pública
+      worktree: /Users/icaroaguiar/.codex/worktrees/1333/consulta-simples-csv
       found_by_thread_id: 019ec250-ce73-78c3-9660-a7e5122b3417
+      result_file: results/first-release-local-public-base-log-privacy-hardening-2026-06-13.md
+      independent_review_thread_id: 019ec263-eab5-77f3-aca3-c64d39d684e2
+      independent_review_status: approved_candidate
+      independent_review_file: results/first-release-local-public-base-log-privacy-hardening-review-2026-06-13.md
+      judge_decision_file: results/first-release-local-public-base-log-privacy-hardening-judge-decision-2026-06-13.md
       evidence:
         - src/core/public-base/local-public-base.store.ts_logs_indexPath_absolute
         - src/core/public-base/local-public-base.store.ts_logs_raw_error_message
+      integrated_evidence:
+        - canonical_store_file_byte_identical_to_approved_worker
+        - canonical_test_file_byte_identical_to_approved_worker
+        - canonical_scan_no_indexPath_or_error_message
+        - canonical_diff_check_pass
+        - worker_focused_local_base_tests_pass_12_tests
+        - worker_typecheck_lint_full_test_pass_40_files_261_tests
+      validation_limits:
+        - canonical_node_modules_absent
+        - disk_available_about_275mb
+        - canonical_dependency_backed_tests_not_rerun_after_integration
+      magic_string_boundary_warning: documented_as_local_non_sensitive_warning_reason_literals
       allowed_write:
         - src/core/public-base/local-public-base.store.ts
         - test/unit/local-public-base.test.ts

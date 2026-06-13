@@ -775,3 +775,42 @@ inputs only. They do not release material feature work.
 
 After that rework is accepted and integrated, the orchestrator must repeat or
 complete the security gate before selecting the next material phase.
+
+## Local Public Base Log Privacy Hardening Integration As Of 2026-06-13 16:15
+
+Receipt:
+`results/first-release-local-public-base-log-privacy-hardening-judge-decision-2026-06-13.md`.
+
+The worker `019ec25e-b6af-72b2-90be-12401311ced2` returned
+`ready_for_judge_review` from worktree
+`/Users/icaroaguiar/.codex/worktrees/1333/consulta-simples-csv`. The
+independent reviewer `019ec263-eab5-77f3-aca3-c64d39d684e2` returned
+`approved_candidate`.
+
+The judge integrated the accepted files into the canonical branch:
+
+- `src/core/public-base/local-public-base.store.ts`;
+- `test/unit/local-public-base.test.ts`;
+- `results/first-release-local-public-base-log-privacy-hardening-2026-06-13.md`;
+- `results/first-release-local-public-base-log-privacy-hardening-review-2026-06-13.md`.
+
+Canonical scan confirms that `indexPath: this.indexPath` and `error.message` no
+longer appear in the Base Publica Local warning surface. Only three
+`logger.warn` calls remain, each with non-sensitive categorical `reason`
+metadata.
+
+The harness warning `magic_string_boundary=2` is documented in the judge
+decision. The remaining reason literals are local sanitization categories, not
+boundary-defining auth, tenancy, permission, API, storage isolation, provider,
+or external contract strings.
+
+Canonical dependency-backed tests were not rerun after integration because the
+canonical worktree has no `node_modules` and the volume has only about 275 MB
+available. Worker evidence remains strong for this narrow integration:
+focused local-base tests, `typecheck`, `lint`, and full `pnpm test` all passed
+before integration, and the canonical files are byte-identical to the approved
+worker files.
+
+No material feature work is released. The next required step is to repeat or
+explicitly close the post-rework security gate against the integrated canonical
+branch.

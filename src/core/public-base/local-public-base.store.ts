@@ -37,6 +37,11 @@ type LocalPublicBaseLogger = {
   warn(message: string, metadata: Record<string, unknown>): void;
 };
 
+type LocalPublicBaseWarningReason =
+  | "incompatible_index_document"
+  | "invalid_json"
+  | "read_failed";
+
 export class LocalPublicBaseStore {
   constructor(
     private readonly directory: string,
@@ -128,35 +133,40 @@ export class LocalPublicBaseStore {
   }
 
   private async readDocument(): Promise<LocalPublicBaseIndexDocument | null> {
+    let raw: string;
+
     try {
-      const raw = await readFile(this.indexPath, TEXT_ENCODING);
-
-      if (typeof raw !== "string") {
-        return null;
-      }
-
-      const parsed = JSON.parse(raw) as unknown;
-
-      if (!isIndexDocument(parsed)) {
-        this.logger.warn("[base-publica-local] indice local descartado", {
-          indexPath: this.indexPath,
-          reason: "estrutura ou versao incompatível",
-        });
-        return null;
-      }
-
-      return parsed;
+      raw = await readFile(this.indexPath, TEXT_ENCODING);
     } catch (error) {
       if (isNoEntryError(error)) {
         return null;
       }
 
       this.logger.warn("[base-publica-local] indice local indisponivel", {
-        indexPath: this.indexPath,
-        reason: error instanceof Error ? error.message : "erro desconhecido",
+        reason: classifyIndexReadFailure(error),
       });
       return null;
     }
+
+    let parsed: unknown;
+
+    try {
+      parsed = JSON.parse(raw) as unknown;
+    } catch {
+      this.logger.warn("[base-publica-local] indice local descartado", {
+        reason: "invalid_json",
+      });
+      return null;
+    }
+
+    if (!isIndexDocument(parsed)) {
+      this.logger.warn("[base-publica-local] indice local descartado", {
+        reason: "incompatible_index_document",
+      });
+      return null;
+    }
+
+    return parsed;
   }
 }
 
@@ -254,4 +264,19 @@ function isNoEntryError(error: unknown): boolean {
     "code" in error &&
     error.code === "ENOENT"
   );
+}
+
+function classifyIndexReadFailure(
+  error: unknown,
+): LocalPublicBaseWarningReason {
+  if (
+    error !== null &&
+    typeof error === "object" &&
+    "code" in error &&
+    typeof error.code === "string"
+  ) {
+    return "read_failed";
+  }
+
+  return "read_failed";
 }
