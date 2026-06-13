@@ -154,7 +154,7 @@ F8B1 was dispatched, independently reviewed and selectively integrated in Wave
 
 | Phase | Thread | Worktree | Scope |
 |---|---|---|---|
-| None | - | - | Coverage gate integrated and validated; next material work still requires fresh judge-selected owner window |
+| None | - | - | Post-local-base security re-gate closed by judge; next material work still requires fresh judge-selected owner window |
 
 Independent review threads for the coverage gate:
 `019ec1d0-a1f5-7601-97ef-b91f46e0d00c` and canonical follow-up
@@ -241,6 +241,24 @@ Next integration rule: do not dispatch a new material worker until the next
 scope is explicitly selected by the judge. Runtime update, diagnostic package
 generation, telemetry transport, license/account behavior, IPC/preload/storage
 and release configuration remain blocked for future splits.
+
+## Post Local Base Security Regate Closeout As Of 2026-06-13 16:20
+
+The post-local-base security re-gate completed as `approved_candidate` in thread
+`019ec26a-fc9a-78b0-a632-ecfc9fafe6e3` and was accepted by the judge as
+`approved_by_judge_gate_closed`.
+
+Receipts:
+
+- `results/first-release-post-local-base-rework-security-regate-2026-06-13.md`
+- `results/first-release-post-local-base-rework-security-regate-judge-decision-2026-06-13.md`
+
+Effect on execution:
+
+- the specific Base Publica Local warning-log blocker is closed;
+- no material feature worker was released automatically;
+- the queue is not in broad documentation execution anymore, but the next
+  material phase remains blocked until the judge selects a fresh owner window.
 
 Wave 13 closed F8B1 with selective integration. Its local ignored docs were
 copied into the worker worktree immediately after creation to avoid the known
