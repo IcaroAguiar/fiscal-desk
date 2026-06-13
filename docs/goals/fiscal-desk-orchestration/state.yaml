@@ -604,9 +604,9 @@ monitoring:
   observe_threads_frequently: true
   heartbeat_automation_id: fiscal-desk-f0-monitor
   heartbeat_interval_minutes: 30
-  last_observation_at: "2026-06-13 17:35:09 -03"
+  last_observation_at: "2026-06-13 17:37:10 -03"
   last_observation_file: docs/goals/fiscal-desk-orchestration/integration-plan.md
-  last_observation_status: p3_renderer_missing_column_normalizer_worker_thread_active
+  last_observation_status: p3_renderer_missing_column_normalizer_rework_requested_after_stale_docs_blocker
   f0_thread_status: self_approval_blocker_resolved_by_judge
   final_integration_review_status: approved_by_judge
   final_integration_review_thread_id: 019ec005-f849-7b53-ae0f-ae7c02df4f63
@@ -630,7 +630,7 @@ monitoring:
   staging_versioning_closeout_dispatch_file: results/staging-versioning-closeout-dispatch-2026-06-13.md
   staging_versioning_closeout_file: results/staging-versioning-closeout.md
   staging_versioning_closeout_judge_decision_file: results/staging-versioning-closeout-judge-decision.md
-  next_material_worker_status: p3_renderer_missing_column_normalizer_worker_active_pending_receipt
+  next_material_worker_status: p3_renderer_missing_column_normalizer_worker_rework_pending_receipt
   last_thread_observation:
     testing_infra_coverage_gate_worker: idle_completed
     testing_infra_coverage_gate_independent_review: idle_completed_approved_candidate
@@ -655,7 +655,7 @@ monitoring:
     post_local_base_regate_csv_input_intake_hardening: idle_completed_rework_approved_integrated_validated
     post_local_base_regate_csv_input_intake_hardening_review: idle_completed_approved_candidate_after_rework
     post_csv_input_intake_next_owner_window_selection: idle_completed_approved_scope_candidate_judged
-    p3_renderer_missing_column_normalizer_can_hide_new_core_guidance: active_pending_receipt
+    p3_renderer_missing_column_normalizer_can_hide_new_core_guidance: rework_requested_after_stale_docs_blocker
     material_worker_released: p3_renderer_missing_column_normalizer_can_hide_new_core_guidance_only
   active_material_owner_window_after_post_local_base_regate:
     slug: post_local_base_regate_csv_input_intake_hardening
@@ -779,7 +779,7 @@ monitoring:
       - docs/goals/fiscal-desk-orchestration/results/post-csv-input-intake-next-owner-window-selection-2026-06-13.md
   active_material_owner_window_after_csv_input_intake:
     slug: p3_renderer_missing_column_normalizer_can_hide_new_core_guidance
-    status: active_pending_receipt
+    status: rework_requested_after_stale_docs_blocker
     pending_worktree_id: local:46e57687-1e24-4ef6-8b7f-39028b2018b4
     thread_id: 019ec2b1-befe-70b3-95ad-61fbda8a089e
     thread_title: Corrigir mensagem renderer P3
@@ -791,7 +791,11 @@ monitoring:
     canonical_dispatch_commit: 5807061
     dispatch_file: results/p3-renderer-missing-column-normalizer-can-hide-new-core-guidance-dispatch-2026-06-13.md
     result_file: results/p3-renderer-missing-column-normalizer-can-hide-new-core-guidance-2026-06-13.md
+    rework_dispatch_file: results/p3-renderer-missing-column-normalizer-can-hide-new-core-guidance-rework-dispatch-2026-06-13.md
     dispatched_at: "2026-06-13 17:35:09 -03"
+    first_blocked_at: "2026-06-13 17:37:10 -03"
+    rework_requested_at: "2026-06-13 17:37:10 -03"
+    first_blocker: blocked_missing_docs_fiscal_desk_from_over_strict_delegation
     classification: material_single_writer_renderer_copy
     requires_independent_review_before_integration: true
     material_worker_released: true

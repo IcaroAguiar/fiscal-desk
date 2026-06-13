@@ -154,7 +154,7 @@ F8B1 was dispatched, independently reviewed and selectively integrated in Wave
 
 | Phase | Thread | Worktree | Scope |
 |---|---|---|---|
-| `p3_renderer_missing_column_normalizer_can_hide_new_core_guidance` | `019ec2b1-befe-70b3-95ad-61fbda8a089e` | `/Users/icaroaguiar/.codex/worktrees/75bc/consulta-simples-csv` | Material single-writer renderer-copy owner window active; independent review required before integration |
+| `p3_renderer_missing_column_normalizer_can_hide_new_core_guidance` | `019ec2b1-befe-70b3-95ad-61fbda8a089e` | `/Users/icaroaguiar/.codex/worktrees/75bc/consulta-simples-csv` | Material single-writer renderer-copy owner window in rework after over-strict missing-docs blocker; independent review required before integration |
 
 `post_local_base_regate_csv_input_intake_hardening` was integrated and validated
 at `2026-06-13 17:20:37 -03`. The read-only scope-selection gate
@@ -164,7 +164,10 @@ approved by the judge at `2026-06-13 17:31:33 -03`.
 
 The next material owner window dispatch was prepared at
 `2026-06-13 17:32:52 -03`; the Codex App worker thread was observed active at
-`2026-06-13 17:35:09 -03`.
+`2026-06-13 17:35:09 -03`. The first worker receipt stopped on
+`blocked_missing_docs_fiscal_desk`; the judge rejected that as a material blocker
+for this narrow renderer-only slice and sent rework at
+`2026-06-13 17:37:10 -03`.
 
 Judge decision:
 `results/post-local-base-regate-csv-input-intake-hardening-judge-decision-2026-06-13.md`.
@@ -195,6 +198,9 @@ Approved next material owner window:
 
 P3 renderer owner-window dispatch:
 `results/p3-renderer-missing-column-normalizer-can-hide-new-core-guidance-dispatch-2026-06-13.md`.
+
+P3 renderer owner-window rework dispatch:
+`results/p3-renderer-missing-column-normalizer-can-hide-new-core-guidance-rework-dispatch-2026-06-13.md`.
 
 Independent review threads for the coverage gate:
 `019ec1d0-a1f5-7601-97ef-b91f46e0d00c` and canonical follow-up
