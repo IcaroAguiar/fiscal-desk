@@ -6,7 +6,7 @@ Owner: judge/orchestrator `019ebe5c-3853-79c2-87ad-8ddace386c93`
 Model requirement: `gpt-5.5`
 Reasoning requirement: `medium`
 Branch: `feat/fiscal-desk-local-base-prep`
-Target minimum commit: `51e2aa4`
+Target minimum commit: `e735ed4`
 
 ## Purpose
 
@@ -26,7 +26,7 @@ Use model `gpt-5.5` and reasoning `medium`. Use Portuguese-BR in the receipt.
 
 Canonical branch: `feat/fiscal-desk-local-base-prep`.
 Judge/orchestrator thread: `019ebe5c-3853-79c2-87ad-8ddace386c93`.
-Target minimum commit: `51e2aa4`.
+Target minimum commit: `e735ed4`.
 
 Read first:
 - `AGENTS.md`

@@ -145,7 +145,7 @@ Nenhuma thread individual pode substituir o review da branch final integrada.
 
 | Phase | Judge status | Integration release |
 |---|---|---|
-| `post_p3_rebaseline_readiness_next_owner_window_selection` | `dispatch_prepared_pending_thread` | Pending Codex App selection thread creation |
+| `post_p3_rebaseline_readiness_next_owner_window_selection` | `active_read_only_selection` | Codex App selection thread active |
 
 F8B1 was dispatched, independently reviewed and selectively integrated in Wave
 13. P3 renderer was integrated and validated after CSV input intake hardening.
@@ -156,7 +156,7 @@ is completed, judged, and followed by a fresh owner-window selection.
 
 | Phase | Thread | Worktree | Scope |
 |---|---|---|---|
-| None | - | - | No active worker; next read-only owner-window selection is prepared |
+| `post_p3_rebaseline_readiness_next_owner_window_selection` | `019ec2e3-acd3-7d32-bbde-6c8e2740569f` | `/Users/icaroaguiar/.codex/worktrees/31d4/consulta-simples-csv` | Read-only owner-window selection; no material worker active |
 
 `post_local_base_regate_csv_input_intake_hardening` was integrated and validated
 at `2026-06-13 17:20:37 -03`. The read-only scope-selection gate
@@ -215,7 +215,10 @@ Material work remains blocked. The next safe step is a fresh read-only
 owner-window selection after this readiness gate:
 `post_p3_rebaseline_readiness_next_owner_window_selection`. The dispatch was
 prepared at `2026-06-13 18:27:15 -03`; no material worker is released by this
-dispatch.
+dispatch. The Codex App selection thread
+`019ec2e3-acd3-7d32-bbde-6c8e2740569f` was observed active at
+`2026-06-13 18:29:45 -03` in
+`/Users/icaroaguiar/.codex/worktrees/31d4/consulta-simples-csv`.
 
 Judge decision:
 `results/post-local-base-regate-csv-input-intake-hardening-judge-decision-2026-06-13.md`.
