@@ -154,7 +154,7 @@ F8B1 was dispatched, independently reviewed and selectively integrated in Wave
 
 | Phase | Thread | Worktree | Scope |
 |---|---|---|---|
-| `post_local_base_regate_first_release_status_rebaseline` | not dispatched yet | - | Docs-only rebaseline of local first-release/status docs after release/security + rework + local-base re-gate closeout |
+| `post_local_base_regate_first_release_status_rebaseline` | pending `local:21c1d45f-3421-4a57-aebf-ea483959d8d6` | pending | Docs-only rebaseline of local first-release/status docs after release/security + rework + local-base re-gate closeout |
 
 Independent review threads for the coverage gate:
 `019ec1d0-a1f5-7601-97ef-b91f46e0d00c` and canonical follow-up
@@ -263,6 +263,8 @@ Effect on execution:
   it as `approved_by_judge_docs_only`;
 - the next selected owner window is
   `post_local_base_regate_first_release_status_rebaseline`;
+- that docs-only rebaseline was dispatched and is pending worktree
+  materialization;
 - the next material phase remains blocked until that docs-only rebaseline is
   completed and judged.
 
@@ -274,6 +276,10 @@ Selection receipt:
 
 - `results/post-local-base-regate-next-owner-window-selection-2026-06-13.md`
 - `results/post-local-base-regate-next-owner-window-selection-judge-decision-2026-06-13.md`
+
+Rebaseline dispatch receipt:
+
+- `results/post-local-base-regate-first-release-status-rebaseline-dispatch-2026-06-13.md`
 
 Wave 13 closed F8B1 with selective integration. Its local ignored docs were
 copied into the worker worktree immediately after creation to avoid the known
