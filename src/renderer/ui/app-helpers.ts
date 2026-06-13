@@ -164,7 +164,7 @@ function normalizeUserFacingMessage(
   }
 
   if (message.includes("Nenhuma coluna de CNPJ suportada foi encontrada")) {
-    return "Não foi encontrada uma coluna de CNPJ compatível. Use uma coluna como cnpj, CNPJ, documento, cpf_cnpj ou cnpj_empresa.";
+    return message;
   }
 
   return fallback;

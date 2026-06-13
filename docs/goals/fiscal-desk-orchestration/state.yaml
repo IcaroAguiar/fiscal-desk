@@ -454,8 +454,7 @@ versioning_decisions:
       - skills/electron-ui-evidence-capture/references/electron-ui-evidence-capture.md
       - skills/electron-ui-evidence-capture/scripts/run-electron-evidence-capture.sh
 next_judge_action:
-  - observe_p3_renderer_missing_column_normalizer_review
-  - judge_p3_renderer_missing_column_normalizer_after_review
+  - select_next_owner_window_after_p3_renderer_missing_column_normalizer
   - keep_runtime_update_diagnostic_telemetry_license_release_blocked_until_fresh_scope
   - keep_f0_blocker_resolution_observed
   - keep_final_validation_in_single_worktree
@@ -604,9 +603,9 @@ monitoring:
   observe_threads_frequently: true
   heartbeat_automation_id: fiscal-desk-f0-monitor
   heartbeat_interval_minutes: 30
-  last_observation_at: "2026-06-13 17:42:13 -03"
+  last_observation_at: "2026-06-13 17:47:02 -03"
   last_observation_file: docs/goals/fiscal-desk-orchestration/integration-plan.md
-  last_observation_status: p3_renderer_missing_column_normalizer_review_thread_active
+  last_observation_status: p3_renderer_missing_column_normalizer_integrated_validated
   f0_thread_status: self_approval_blocker_resolved_by_judge
   final_integration_review_status: approved_by_judge
   final_integration_review_thread_id: 019ec005-f849-7b53-ae0f-ae7c02df4f63
@@ -630,7 +629,7 @@ monitoring:
   staging_versioning_closeout_dispatch_file: results/staging-versioning-closeout-dispatch-2026-06-13.md
   staging_versioning_closeout_file: results/staging-versioning-closeout.md
   staging_versioning_closeout_judge_decision_file: results/staging-versioning-closeout-judge-decision.md
-  next_material_worker_status: p3_renderer_missing_column_normalizer_candidate_ready_pending_independent_review
+  next_material_worker_status: none_active_pending_next_owner_window_selection
   last_thread_observation:
     testing_infra_coverage_gate_worker: idle_completed
     testing_infra_coverage_gate_independent_review: idle_completed_approved_candidate
@@ -655,9 +654,9 @@ monitoring:
     post_local_base_regate_csv_input_intake_hardening: idle_completed_rework_approved_integrated_validated
     post_local_base_regate_csv_input_intake_hardening_review: idle_completed_approved_candidate_after_rework
     post_csv_input_intake_next_owner_window_selection: idle_completed_approved_scope_candidate_judged
-    p3_renderer_missing_column_normalizer_can_hide_new_core_guidance: idle_completed_ready_for_judge_review_pending_independent_review
-    p3_renderer_missing_column_normalizer_review: active_pending_receipt
-    material_worker_released: p3_renderer_missing_column_normalizer_can_hide_new_core_guidance_only
+    p3_renderer_missing_column_normalizer_can_hide_new_core_guidance: idle_completed_approved_integrated_validated
+    p3_renderer_missing_column_normalizer_review: idle_completed_approved_candidate
+    material_worker_released: none_after_p3_renderer_missing_column_normalizer_integration
   active_material_owner_window_after_post_local_base_regate:
     slug: post_local_base_regate_csv_input_intake_hardening
     status: approved_by_judge_integrated_validated
@@ -780,7 +779,7 @@ monitoring:
       - docs/goals/fiscal-desk-orchestration/results/post-csv-input-intake-next-owner-window-selection-2026-06-13.md
   active_material_owner_window_after_csv_input_intake:
     slug: p3_renderer_missing_column_normalizer_can_hide_new_core_guidance
-    status: ready_for_judge_review_pending_independent_review
+    status: approved_by_judge_integrated_validated
     pending_worktree_id: local:46e57687-1e24-4ef6-8b7f-39028b2018b4
     thread_id: 019ec2b1-befe-70b3-95ad-61fbda8a089e
     thread_title: Corrigir mensagem renderer P3
@@ -795,6 +794,7 @@ monitoring:
     rework_dispatch_file: results/p3-renderer-missing-column-normalizer-can-hide-new-core-guidance-rework-dispatch-2026-06-13.md
     review_dispatch_file: results/p3-renderer-missing-column-normalizer-can-hide-new-core-guidance-review-dispatch-2026-06-13.md
     review_result_file: results/p3-renderer-missing-column-normalizer-can-hide-new-core-guidance-review-2026-06-13.md
+    integration_judge_decision_file: results/p3-renderer-missing-column-normalizer-can-hide-new-core-guidance-integration-judge-decision-2026-06-13.md
     review_pending_worktree_id: local:70aa22b8-28fb-404b-867b-13bfa2c11350
     review_thread_id: 019ec2b8-2e29-7553-b9f5-ce43946bcf65
     review_thread_title: Revisar mensagem renderer P3
@@ -805,6 +805,9 @@ monitoring:
     candidate_observed_at: "2026-06-13 17:40:18 -03"
     review_dispatched_at: "2026-06-13 17:40:18 -03"
     review_observed_active_at: "2026-06-13 17:42:13 -03"
+    review_completed_at: "2026-06-13 17:47:02 -03"
+    review_status: approved_candidate
+    integrated_at: "2026-06-13 17:47:02 -03"
     first_blocker: blocked_missing_docs_fiscal_desk_from_over_strict_delegation
     result_status: ready_for_judge_review
     worker_reported_checks:
@@ -815,6 +818,14 @@ monitoring:
       full_test: pass_40_files_264_tests
       diff_check: pass
       smoke_visual: pass
+    canonical_validation:
+      focused_app_helpers_test: pass_1_file_6_tests
+      typecheck: pass
+      lint: pass_119_files
+      full_test: pass_40_files_264_tests
+      diff_check: pass
+      smoke_visual: pass
+      smoke_electron_ui_mock: pass
     classification: material_single_writer_renderer_copy
     requires_independent_review_before_integration: true
     material_worker_released: true
