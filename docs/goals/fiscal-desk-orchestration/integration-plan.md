@@ -1473,3 +1473,9 @@ Warn-only harness signals to carry into closeout:
 - `visual_surface_change=1`;
 - legacy smoke text `uiResumeText: "1 CNPJs retomados"` remains a residual
   risk accepted only if the new panel keeps singular copy correct.
+
+As of 2026-06-13 20:06 -03, the judge sent rework instructions back to worker
+thread `019ec327-63be-7143-97ec-84bf9bd7bfd0`.
+
+Rework remains inside the original owner window and allowed write set. No
+material code is integrated in the final branch while this rework is active.
