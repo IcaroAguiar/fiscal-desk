@@ -604,9 +604,9 @@ monitoring:
   observe_threads_frequently: true
   heartbeat_automation_id: fiscal-desk-f0-monitor
   heartbeat_interval_minutes: 30
-  last_observation_at: "2026-06-13 14:49:57 -03"
-  last_observation_file: results/post-f6e2c-first-release-status-rebaseline-dispatch-2026-06-13.md
-  last_observation_status: post_f6e2c_first_release_status_rebaseline_dispatched_docs_only
+  last_observation_at: "2026-06-13 14:55:03 -03"
+  last_observation_file: results/post-f6e2c-first-release-status-rebaseline-judge-decision-2026-06-13.md
+  last_observation_status: post_f6e2c_first_release_status_rebaseline_approved_docs_only
   f0_thread_status: self_approval_blocker_resolved_by_judge
   final_integration_review_status: approved_by_judge
   final_integration_review_thread_id: 019ec005-f849-7b53-ae0f-ae7c02df4f63
@@ -630,7 +630,7 @@ monitoring:
   staging_versioning_closeout_dispatch_file: results/staging-versioning-closeout-dispatch-2026-06-13.md
   staging_versioning_closeout_file: results/staging-versioning-closeout.md
   staging_versioning_closeout_judge_decision_file: results/staging-versioning-closeout-judge-decision.md
-  next_material_worker_status: blocked_until_post_f6e2c_first_release_status_rebaseline_is_judged
+  next_material_worker_status: blocked_until_first_release_candidate_release_security_review_is_judged
   last_thread_observation:
     testing_infra_coverage_gate_worker: idle_completed
     testing_infra_coverage_gate_independent_review: idle_completed_approved_candidate
@@ -639,11 +639,11 @@ monitoring:
     first_release_rebaseline: idle_completed_approved_after_factual_rework
     f6e2c_renderer_delivery_selection_ui: idle_completed_approved_no_code_judged
     post_f6e2c_next_owner_window_selection: idle_completed_approved_scope_candidate_judged
-    post_f6e2c_first_release_status_rebaseline: pending_worktree_creation
+    post_f6e2c_first_release_status_rebaseline: idle_completed_approved_docs_rebaseline_judged
     material_worker_released: false
   active_docs_only_owner_window_after_scope_review:
     slug: post_f6e2c_first_release_status_rebaseline
-    status: active
+    status: approved_by_judge_docs_only
     thread_id: 019ec21a-b297-7402-96f8-cf3eb791aa93
     thread_title: Atualiza status do primeiro release
     pending_worktree_id: local:0c8fedac-afcc-4bcd-adf9-c52b16048627
@@ -652,14 +652,21 @@ monitoring:
     reasoning: medium
     dispatch_file: results/post-f6e2c-first-release-status-rebaseline-dispatch-2026-06-13.md
     dispatched_at: "2026-06-13 14:49:57 -03"
+    completed_at: "2026-06-13 14:55:03 -03"
+    judged_at: "2026-06-13 14:55:03 -03"
     result_file: results/post-f6e2c-first-release-status-rebaseline-2026-06-13.md
+    judge_decision_file: results/post-f6e2c-first-release-status-rebaseline-judge-decision-2026-06-13.md
+    worker_result_status: ready_for_judge_review
+    judge_decision: approved_docs_only_next_release_security_review_required_before_material_work
+    recommended_next_read_only_gate: first_release_candidate_release_security_review
     allowed_write:
       - docs/fiscal-desk/first-release.md
       - docs/fiscal-desk/status.md
       - docs/fiscal-desk/product-spec.md
       - docs/goals/fiscal-desk-orchestration/results/post-f6e2c-first-release-status-rebaseline-2026-06-13.md
     material_worker_released: false
-    blocks_material_workers_until_judged: true
+    blocks_material_workers_until_judged: false
+    current_queue_effect: no_active_material_worker_after_acceptance
   active_docs_only_scope_review:
     slug: post_f6e2c_next_owner_window_selection
     status: approved_by_judge_docs_only

@@ -574,3 +574,22 @@ This window may update local product docs only:
 
 No material worker is released. The next gate after this rebaseline, if judged
 accepted, is expected to be read-only first-release release/security review.
+
+## Post-F6E2C First Release Status Rebaseline Judge Decision As Of 2026-06-13 14:55
+
+Receipts:
+`results/post-f6e2c-first-release-status-rebaseline-2026-06-13.md` and
+`results/post-f6e2c-first-release-status-rebaseline-judge-decision-2026-06-13.md`.
+
+The docs-only rebaseline completed in thread
+`019ec21a-b297-7402-96f8-cf3eb791aa93` with result
+`ready_for_judge_review`. The judge accepts the result as
+`approved_by_judge_docs_only`.
+
+This closes the stale-doc window that still pointed to F6E2C as the next owner
+window after F6E2C was accepted no-code. The canonical local product docs now
+point to `first_release_candidate_release_security_review` as the next
+read-only gate.
+
+No material worker is released by this acceptance. Material work remains
+blocked until the release/security review gate is run and judged.
