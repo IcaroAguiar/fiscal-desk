@@ -166,7 +166,15 @@ export function formatExecutionResume(source: {
     return "Retomada não utilizada";
   }
 
-  return `${source.execution.resumedUniqueLookups} CNPJs retomados`;
+  return formatResumedUniqueLookups(source.execution.resumedUniqueLookups);
+}
+
+function formatResumedUniqueLookups(count: number): string {
+  if (count === 1) {
+    return "1 CNPJ retomado";
+  }
+
+  return `${count} CNPJs retomados`;
 }
 
 export function buildOperationalPanelCopy(

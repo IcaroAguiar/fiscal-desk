@@ -47,6 +47,13 @@ describe("renderer operational copy", () => {
     expect(
       formatExecutionResume({
         execution: {
+          resumedUniqueLookups: 1,
+        },
+      }),
+    ).toBe("1 CNPJ retomado");
+    expect(
+      formatExecutionResume({
+        execution: {
           resumedUniqueLookups: 3,
         },
       }),

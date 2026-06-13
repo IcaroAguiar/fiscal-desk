@@ -145,7 +145,7 @@ Nenhuma thread individual pode substituir o review da branch final integrada.
 
 | Phase | Judge status | Integration release |
 |---|---|---|
-| post_p3_legacy_resume_copy_harness_polish | ready_for_judge_review_pending_independent_review | worker thread `019ec355-e935-7263-b4b3-2c808b58469d`, review dispatch prepared |
+| post_p3_legacy_resume_copy_harness_polish | approved_by_judge_integrated_validated | worker `019ec355-e935-7263-b4b3-2c808b58469d`, review `019ec35d-24c2-7f93-b4cf-a8da8ecadaa1`, judge decision `results/post-p3-legacy-resume-copy-harness-polish-integration-judge-decision-2026-06-13.md` |
 
 F8B1 was dispatched, independently reviewed and selectively integrated in Wave
 13. P3 renderer was integrated and validated after CSV input intake hardening.
@@ -196,6 +196,16 @@ returned pending worktree `local:b9514ee2-a346-4d81-8bb9-61c3873b6003`.
 It materialized as thread `019ec35d-24c2-7f93-b4cf-a8da8ecadaa1` in worktree
 `/Users/icaroaguiar/.codex/worktrees/a105/consulta-simples-csv` and was observed
 active at `2026-06-13 20:42:45 -03`.
+
+The independent review returned `approved_candidate` at
+`2026-06-13 20:44:58 -03`. The judge integrated the approved narrow patch into
+`feat/fiscal-desk-local-base-prep` and validated the canonical branch at
+`2026-06-13 20:51:06 -03` with focused tests, Electron smokes for `mock` and
+`base-publica-local`, lint, typecheck, full test, coverage, scoped ratchet,
+visual smoke, build and diff check.
+
+No material worker remains active after this integration. The next safe step is
+a fresh read-only owner-window selection before releasing any new material work.
 
 `post_local_base_regate_csv_input_intake_hardening` was integrated and validated
 at `2026-06-13 17:20:37 -03`. The read-only scope-selection gate
@@ -430,6 +440,7 @@ worktree.
 | Post Local Base Regate CSV input intake hardening | `integrated_validated` | focused ingestion/process tests, typecheck, lint, full test, smoke CSV mock, smoke Electron UI mock, independent review after rework |
 | P3 Renderer Missing Column Normalizer | `integrated_validated` | focused app-helper test, typecheck, lint, full test, smoke visual, smoke Electron UI, independent review |
 | testing_infra_coverage_gate | `integrated_validated_pass_with_risk` | coverage provider/script, required quality-gate coverage, scoped worktree ratchet, direct preload test, full tests, typecheck, lint, build, CSV/Electron/visual smokes, independent review |
+| Post P3 Legacy Resume Copy Harness Polish | `integrated_validated` | focused renderer tests, Electron smoke UI `mock` and `base-publica-local`, smoke visual, lint, typecheck, full test, coverage, scoped ratchet, build, independent review |
 
 Wave 1 receipt: `results/integration-wave-1-f1-f2-f4.md`.
 Wave 2 receipt: `results/integration-wave-2-f3-f5.md`.

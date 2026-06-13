@@ -116,7 +116,7 @@ try {
   await page.waitForFunction(() =>
     document
       .querySelector('[data-slot="execution-resume"]')
-      ?.textContent?.includes("1 CNPJs retomados"),
+      ?.textContent?.includes("1 CNPJ retomado"),
   );
   const history = await page.evaluate(() => window.appBridge.listExecutions());
   const latestHistory = history[0];

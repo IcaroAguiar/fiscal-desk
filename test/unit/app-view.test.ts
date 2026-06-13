@@ -120,6 +120,25 @@ describe("app view execution history", () => {
     expect(html).not.toContain("ledger.json");
   });
 
+  it("renders singular legacy resume copy for one resumed lookup", () => {
+    const html = renderShell({
+      ...initialState,
+      execution: {
+        checkpointPath: "/tmp/fiscal-desk/ledger.json",
+        completedUniqueLookups: 1,
+        resumedUniqueLookups: 1,
+        runId: "run-technical-id",
+        status: "RUNNING",
+        totalUniqueLookups: 3,
+      },
+      status: "processing",
+    });
+
+    expect(html).toContain('data-slot="execution-resume"');
+    expect(html).toContain("1 CNPJ retomado");
+    expect(html).not.toContain("1 CNPJs retomados");
+  });
+
   it("renders resumable interrupted executions with an action button", () => {
     const state: UiState = {
       ...initialState,

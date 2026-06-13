@@ -3,6 +3,7 @@ import { escapeHtml } from "./app-helpers";
 import {
   buildDedupeLabel,
   formatCommandBarSummary,
+  formatExecutionResume,
   formatProviderHint,
 } from "./operational-copy";
 
@@ -56,7 +57,7 @@ export function renderLogList(state: UiState): string {
       <span>CNPJs repetidos: <strong data-slot="dedupe-label">${state.summary ? buildDedupeLabel(state.summary) : "—"}</strong></span>
       <span>Andamento: <strong data-slot="execution-status">${state.execution?.status ?? "Aguardando"}</strong></span>
       <span>Consulta local: <strong data-slot="execution-run-id">${state.execution ? "registrada" : "não iniciada"}</strong></span>
-      <span>Retomada local: <strong data-slot="execution-resume">${formatResumeLabel(state)}</strong></span>
+      <span>Retomada local: <strong data-slot="execution-resume">${formatExecutionResume(state)}</strong></span>
       <span>Ponto de retomada: <strong data-slot="execution-checkpoint">${state.execution?.checkpointPath ? "disponível" : "—"}</strong></span>
     </div>
   `;
@@ -66,16 +67,4 @@ function getReferenceStatusVariant(status: string): string {
   if (status === "concluído") return "status-token--success";
   if (status === "erro") return "status-token--danger";
   return "status-token--warning";
-}
-
-function formatResumeLabel(state: UiState): string {
-  if (!state.execution) {
-    return "Sem consulta em andamento";
-  }
-
-  if (state.execution.resumedUniqueLookups === 0) {
-    return "Retomada não utilizada";
-  }
-
-  return `${state.execution.resumedUniqueLookups} CNPJs retomados`;
 }
