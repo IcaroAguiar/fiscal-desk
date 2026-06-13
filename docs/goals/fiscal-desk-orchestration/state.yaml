@@ -546,8 +546,9 @@ monitoring:
   observe_threads_frequently: true
   heartbeat_automation_id: fiscal-desk-f0-monitor
   heartbeat_interval_minutes: 30
-  last_observation_at: "2026-06-13 12:43:07 -03"
-  last_observation_file: results/post-commit-closeout-2026-06-13.md
+  last_observation_at: "2026-06-13 12:45:49 -03"
+  last_observation_file: results/orchestration-observation-2026-06-13-1245.md
+  last_observation_status: monitoring_no_new_worker_released
   f0_thread_status: self_approval_blocker_resolved_by_judge
   final_integration_review_status: approved_by_judge
   final_integration_review_thread_id: 019ec005-f849-7b53-ae0f-ae7c02df4f63
