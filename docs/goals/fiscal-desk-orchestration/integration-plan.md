@@ -145,18 +145,18 @@ Nenhuma thread individual pode substituir o review da branch final integrada.
 
 | Phase | Judge status | Integration release |
 |---|---|---|
-| `post_p3_rebaseline_first_release_readiness_review` | `active_read_only_review` | Codex App review thread active |
+| `post_p3_rebaseline_readiness_next_owner_window_selection` | `dispatch_prepared_pending_thread` | Pending Codex App selection thread creation |
 
 F8B1 was dispatched, independently reviewed and selectively integrated in Wave
 13. P3 renderer was integrated and validated after CSV input intake hardening.
 New material work remains blocked until the post-P3-rebaseline readiness review
-is completed and judged.
+is completed, judged, and followed by a fresh owner-window selection.
 
 ## Active Queue As Of 2026-06-13
 
 | Phase | Thread | Worktree | Scope |
 |---|---|---|---|
-| `post_p3_rebaseline_first_release_readiness_review` | `019ec2dd-3315-7830-b139-b37cbacd665f` | `/Users/icaroaguiar/.codex/worktrees/b9d7/consulta-simples-csv` | Read-only release/security review; no material worker active |
+| None | - | - | No active worker; next read-only owner-window selection is prepared |
 
 `post_local_base_regate_csv_input_intake_hardening` was integrated and validated
 at `2026-06-13 17:20:37 -03`. The read-only scope-selection gate
@@ -208,6 +208,14 @@ The review dispatch was prepared at `2026-06-13 18:20:45 -03`. The Codex App
 review thread `019ec2dd-3315-7830-b139-b37cbacd665f` was observed active at
 `2026-06-13 18:24:17 -03` in
 `/Users/icaroaguiar/.codex/worktrees/b9d7/consulta-simples-csv`.
+The reviewer returned `approved_candidate`, and the judge accepted the readiness
+review at `2026-06-13 18:27:15 -03`.
+
+Material work remains blocked. The next safe step is a fresh read-only
+owner-window selection after this readiness gate:
+`post_p3_rebaseline_readiness_next_owner_window_selection`. The dispatch was
+prepared at `2026-06-13 18:27:15 -03`; no material worker is released by this
+dispatch.
 
 Judge decision:
 `results/post-local-base-regate-csv-input-intake-hardening-judge-decision-2026-06-13.md`.
@@ -283,6 +291,15 @@ Post-P3 rebaseline next owner-window selection judge decision:
 
 Post-P3 rebaseline first release readiness review dispatch:
 `results/post-p3-rebaseline-first-release-readiness-review-dispatch-2026-06-13.md`.
+
+Post-P3 rebaseline first release readiness review result:
+`results/post-p3-rebaseline-first-release-readiness-review-2026-06-13.md`.
+
+Post-P3 rebaseline first release readiness review judge decision:
+`results/post-p3-rebaseline-first-release-readiness-review-judge-decision-2026-06-13.md`.
+
+Post-P3 rebaseline readiness next owner-window selection dispatch:
+`results/post-p3-rebaseline-readiness-next-owner-window-selection-dispatch-2026-06-13.md`.
 
 Independent review threads for the coverage gate:
 `019ec1d0-a1f5-7601-97ef-b91f46e0d00c` and canonical follow-up
