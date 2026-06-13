@@ -1122,3 +1122,19 @@ isolated worktree; they must not be staged or integrated.
 Material feature work, release/public distribution, updater, telemetry,
 diagnostic sending, license/account, templates/models, PDF/Word/OCR and Receita
 Web live/massiva remain blocked.
+
+## Post P3 Integrated First Release Validation Thread Active As Of 2026-06-13 18:54
+
+The judge dispatched the executable validation window selected above:
+
+- slug: `post_p3_validation_docs_rebaseline_integrated_first_release_validation`;
+- pending worktree: `local:88943199-03b4-4571-9578-25c72ac84502`;
+- thread: `019ec2fa-65ee-7380-b705-d7ee0000a93b`;
+- title: `Validar candidato release local`;
+- worktree: `/Users/icaroaguiar/.codex/worktrees/ef92/consulta-simples-csv`;
+- prompt target commit: `4d40402`;
+- dispatch file:
+  `results/post-p3-validation-docs-rebaseline-integrated-first-release-validation-dispatch-2026-06-13.md`.
+
+This thread may generate ignored transient validation artifacts in its isolated
+worktree, but the only persistent accepted output is its result receipt.

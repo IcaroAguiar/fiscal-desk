@@ -454,7 +454,7 @@ versioning_decisions:
       - skills/electron-ui-evidence-capture/references/electron-ui-evidence-capture.md
       - skills/electron-ui-evidence-capture/scripts/run-electron-evidence-capture.sh
 next_judge_action:
-  - dispatch_post_p3_validation_docs_rebaseline_integrated_first_release_validation_thread
+  - observe_post_p3_validation_docs_rebaseline_integrated_first_release_validation_thread
   - judge_integrated_first_release_validation_receipt
   - keep_runtime_update_diagnostic_telemetry_license_release_blocked_until_fresh_scope
   - keep_f0_blocker_resolution_observed
@@ -604,9 +604,9 @@ monitoring:
   observe_threads_frequently: true
   heartbeat_automation_id: fiscal-desk-f0-monitor
   heartbeat_interval_minutes: 30
-  last_observation_at: "2026-06-13 18:50:32 -03"
+  last_observation_at: "2026-06-13 18:54:32 -03"
   last_observation_file: docs/goals/fiscal-desk-orchestration/integration-plan.md
-  last_observation_status: post_p3_validation_docs_rebaseline_next_owner_window_selection_approved
+  last_observation_status: post_p3_validation_docs_rebaseline_integrated_first_release_validation_active
   f0_thread_status: self_approval_blocker_resolved_by_judge
   final_integration_review_status: approved_by_judge
   final_integration_review_thread_id: 019ec005-f849-7b53-ae0f-ae7c02df4f63
@@ -664,7 +664,7 @@ monitoring:
     post_p3_rebaseline_readiness_next_owner_window_selection: idle_completed_approved_scope_candidate_judged
     post_p3_readiness_first_release_validation_docs_rebaseline: idle_completed_approved_docs_only_judged
     post_p3_validation_docs_rebaseline_next_owner_window_selection: idle_completed_approved_scope_candidate_judged
-    post_p3_validation_docs_rebaseline_integrated_first_release_validation: prepared_for_dispatch
+    post_p3_validation_docs_rebaseline_integrated_first_release_validation: active_executable_validation
     material_worker_released: none_after_p3_renderer_missing_column_normalizer_integration
   active_material_owner_window_after_post_local_base_regate:
     slug: post_local_base_regate_csv_input_intake_hardening
@@ -1049,12 +1049,21 @@ monitoring:
       - docs/goals/fiscal-desk-orchestration/results/post-p3-validation-docs-rebaseline-next-owner-window-selection-2026-06-13.md
   active_executable_validation_after_post_p3_validation_docs_rebaseline:
     slug: post_p3_validation_docs_rebaseline_integrated_first_release_validation
-    status: prepared_for_dispatch
+    status: active_executable_validation
+    pending_worktree_id: local:88943199-03b4-4571-9578-25c72ac84502
+    thread_id: 019ec2fa-65ee-7380-b705-d7ee0000a93b
+    thread_title: Validar candidato release local
+    worktree: /Users/icaroaguiar/.codex/worktrees/ef92/consulta-simples-csv
+    model: gpt-5.5
+    reasoning: medium
     branch: feat/fiscal-desk-local-base-prep
     target_min_commit: d42e533
+    prompt_target_min_commit: 4d40402
     dispatch_file: results/post-p3-validation-docs-rebaseline-integrated-first-release-validation-dispatch-2026-06-13.md
     result_file: results/post-p3-validation-docs-rebaseline-integrated-first-release-validation-2026-06-13.md
     prepared_at: "2026-06-13 18:50:32 -03"
+    dispatched_at: "2026-06-13 18:54:10 -03"
+    observed_active_at: "2026-06-13 18:54:32 -03"
     classification: executable_validation_non_feature_material
     material_worker_released: false
     blocks_material_workers_until_judged: true
