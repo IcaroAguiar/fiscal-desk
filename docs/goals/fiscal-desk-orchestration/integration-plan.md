@@ -661,3 +661,33 @@ These are not new feature windows. They are first-release rework required before
 release/security can be treated as ready. They may run concurrently because
 their allowed write scopes are disjoint, but final integration remains serial
 and judge-gated.
+
+## First Release Rework Candidates Judge Decision As Of 2026-06-13 15:29
+
+Receipt:
+`results/first-release-rework-candidates-judge-decision-2026-06-13.md`.
+
+The two rework threads returned candidate receipts, but the judge did not
+integrate either candidate.
+
+- `first_release_local_privacy_hardening` stayed inside its allowed write set
+  and passed focused tests/typecheck/diff checks, but independent security
+  review found remaining blocker findings: legacy checkpoint reuse can preserve
+  `raw`, checkpoint `message` can retain provider-derived fiscal data such as
+  `razaoSocial`, and ledger warning `error.message` can still include absolute
+  paths.
+- `first_release_package_identity_and_publish_safety` resolved the direct
+  package identity, `dist:* --publish never`, and PR coverage-gate findings,
+  but independent release review found a broader publish-safety gap in
+  `.github/workflows/windows-exe.yml`, which can still publish GitHub releases
+  and uses a legacy artifact name.
+
+Both threads were resumed with `/goal`, GPT-5.5 and medium reasoning. The
+privacy thread must correct the three security findings in the same runtime
+privacy boundary. The package/release thread is reopened with expanded write
+scope for `.github/workflows/windows-exe.yml`.
+
+No material feature work is released, and no candidate code/config is integrated
+into the canonical branch by this decision. The current phase remains
+first-release blocker rework until both candidates return, are reviewed, and
+are serially integrated into the single final branch.

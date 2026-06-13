@@ -604,9 +604,9 @@ monitoring:
   observe_threads_frequently: true
   heartbeat_automation_id: fiscal-desk-f0-monitor
   heartbeat_interval_minutes: 30
-  last_observation_at: "2026-06-13 15:13:55 -03"
-  last_observation_file: results/first-release-rework-owner-windows-dispatch-2026-06-13.md
-  last_observation_status: first_release_rework_owner_windows_dispatched_active
+  last_observation_at: "2026-06-13 15:29:43 -03"
+  last_observation_file: results/first-release-rework-candidates-judge-decision-2026-06-13.md
+  last_observation_status: first_release_rework_candidates_need_rework_reopened
   f0_thread_status: self_approval_blocker_resolved_by_judge
   final_integration_review_status: approved_by_judge
   final_integration_review_thread_id: 019ec005-f849-7b53-ae0f-ae7c02df4f63
@@ -630,7 +630,7 @@ monitoring:
   staging_versioning_closeout_dispatch_file: results/staging-versioning-closeout-dispatch-2026-06-13.md
   staging_versioning_closeout_file: results/staging-versioning-closeout.md
   staging_versioning_closeout_judge_decision_file: results/staging-versioning-closeout-judge-decision.md
-  next_material_worker_status: first_release_rework_owner_windows_dispatched
+  next_material_worker_status: first_release_rework_reopened_after_independent_review
   last_thread_observation:
     testing_infra_coverage_gate_worker: idle_completed
     testing_infra_coverage_gate_independent_review: idle_completed_approved_candidate
@@ -642,20 +642,28 @@ monitoring:
     post_f6e2c_first_release_status_rebaseline: idle_completed_approved_docs_rebaseline_judged
     first_release_candidate_release_review: idle_completed_needs_rework_judged
     first_release_candidate_security_review: idle_completed_needs_rework_judged
-    first_release_local_privacy_hardening: active
-    first_release_package_identity_and_publish_safety: active
+    first_release_local_privacy_hardening: rework_requested_after_independent_security_review
+    first_release_package_identity_and_publish_safety: rework_requested_after_independent_release_review
     material_worker_released: first_release_rework_only
   active_first_release_rework_owner_windows:
-    status: active
+    status: rework_requested_after_independent_review
     dispatch_file: results/first-release-rework-owner-windows-dispatch-2026-06-13.md
     dispatched_at: "2026-06-13 15:13:55 -03"
+    candidate_judged_at: "2026-06-13 15:29:43 -03"
+    candidate_judge_decision_file: results/first-release-rework-candidates-judge-decision-2026-06-13.md
     depends_on_judge_decision: results/first-release-candidate-release-security-review-judge-decision-2026-06-13.md
     feature_work_released: false
     material_rework_released: true
+    canonical_integration_status: not_integrated_rework_required
+    independent_review:
+      privacy_reviewer_agent_id: 019ec238-e1f7-7eb1-ba09-c631dba472ce
+      privacy_reviewer_status: needs_rework
+      package_reviewer_agent_id: 019ec238-edbb-7112-8e05-1bf8fc9b65cb
+      package_reviewer_status: approved_candidate_with_scope_expansion_required
     windows:
       local_privacy_hardening:
         slug: first_release_local_privacy_hardening
-        status: active
+        status: rework_requested_after_independent_security_review
         thread_id: 019ec230-33f3-7d63-87ee-85e957bce7c4
         thread_title: Fortalece privacidade Fiscal Desk
         pending_worktree_id: local:523a66bb-2e9f-4161-bae8-87400f4398e1
@@ -663,6 +671,13 @@ monitoring:
         model: gpt-5.5
         reasoning: medium
         result_file: results/first-release-local-privacy-hardening-2026-06-13.md
+        candidate_result_status: ready_for_judge_review
+        judge_decision: needs_rework
+        rework_requested_at: "2026-06-13 15:29:43 -03"
+        rework_findings:
+          - legacy_checkpoints_must_be_sanitized_or_discarded
+          - checkpoint_message_must_not_persist_provider_derived_fiscal_data
+          - ledger_warning_reason_must_not_log_raw_error_message_paths
         allowed_write:
           - src/main/ipc/process-csv.ipc.ts
           - src/main/execution/file-process-execution-ledger.ts
@@ -672,7 +687,7 @@ monitoring:
           - docs/goals/fiscal-desk-orchestration/results/first-release-local-privacy-hardening-2026-06-13.md
       package_identity_and_publish_safety:
         slug: first_release_package_identity_and_publish_safety
-        status: active
+        status: rework_requested_after_independent_release_review
         thread_id: 019ec230-9f62-7cb0-bc46-8d107a055d4b
         thread_title: Ajustar identidade e publish safety
         pending_worktree_id: local:5c0c2e4d-3fe2-4997-a76e-c2d82feec9d6
@@ -680,10 +695,18 @@ monitoring:
         model: gpt-5.5
         reasoning: medium
         result_file: results/first-release-package-identity-and-publish-safety-2026-06-13.md
+        candidate_result_status: ready_for_judge_review
+        judge_decision: needs_rework_scope_expansion_required
+        rework_requested_at: "2026-06-13 15:29:43 -03"
+        rework_findings:
+          - windows_exe_workflow_must_not_publish_github_release
+          - windows_artifact_name_must_align_with_fiscal_desk
+          - workflow_permissions_should_be_minimized_for_artifact_only
         allowed_write:
           - package.json
           - electron-builder.yml
           - .github/workflows/pr-quality-gate.yml
+          - .github/workflows/windows-exe.yml
           - docs/goals/fiscal-desk-orchestration/results/first-release-package-identity-and-publish-safety-2026-06-13.md
   active_read_only_release_security_gate:
     slug: first_release_candidate_release_security_review
