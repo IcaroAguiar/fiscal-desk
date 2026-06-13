@@ -1091,14 +1091,20 @@ monitoring:
     next_material_worker_status_after_judgment: blocked_pending_large_file_ratchet_rework
   active_quality_gate_rework_after_post_p3_integrated_validation:
     slug: post_p3_integrated_validation_large_file_ratchet_rework
-    status: prepared_for_dispatch
+    status: active
+    pending_worktree_id: local:52527a7b-2ace-4877-8c13-31dc07e0089c
+    thread_id: 019ec305-fa0a-7562-8be4-117cb42ce33d
+    thread_title: Rework ratchet large files
+    worktree: /Users/icaroaguiar/.codex/worktrees/c980/consulta-simples-csv
     model: gpt-5.5
     reasoning: medium
     branch: feat/fiscal-desk-local-base-prep
     target_min_commit: f58284d
     dispatch_file: results/post-p3-integrated-validation-large-file-ratchet-rework-dispatch-2026-06-13.md
     result_file: results/post-p3-integrated-validation-large-file-ratchet-rework-2026-06-13.md
-    prepared_at: "2026-06-13 19:08:00 -03"
+    prepared_at: "2026-06-13 19:06:00 -03"
+    dispatched_at: "2026-06-13 19:07:00 -03"
+    observed_active_at: "2026-06-13 19:07:00 -03"
     classification: quality_gate_rework_non_feature_material
     material_worker_released: false
     allowed_write:

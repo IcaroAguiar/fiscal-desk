@@ -1165,7 +1165,7 @@ Material feature work remains blocked. The next owner window is a narrow
 quality-gate rework to reduce or explicitly justify the new large-file count,
 followed by independent review before integration.
 
-## Post P3 Large File Ratchet Rework Dispatch As Of 2026-06-13 19:08
+## Post P3 Large File Ratchet Rework Dispatch As Of 2026-06-13 19:06
 
 Receipt:
 `results/post-p3-integrated-validation-large-file-ratchet-rework-dispatch-2026-06-13.md`.
@@ -1184,3 +1184,11 @@ window.
 
 Material feature work remains blocked until the rework is returned, reviewed
 independently and judged.
+
+As of 2026-06-13 19:07 -03, the rework thread is active:
+
+- pending worktree: `local:52527a7b-2ace-4877-8c13-31dc07e0089c`;
+- thread: `019ec305-fa0a-7562-8be4-117cb42ce33d`;
+- title: `Rework ratchet large files`;
+- worktree: `/Users/icaroaguiar/.codex/worktrees/c980/consulta-simples-csv`;
+- target dispatch commit: `63b7d21`.
