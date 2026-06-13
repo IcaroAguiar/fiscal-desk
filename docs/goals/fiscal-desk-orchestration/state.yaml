@@ -1417,8 +1417,10 @@ monitoring:
     result_status: ready_for_judge_review
     result_file: results/post-p3-legacy-resume-copy-harness-polish-2026-06-13.md
     review_dispatch_file: results/post-p3-legacy-resume-copy-harness-polish-review-dispatch-2026-06-13.md
-    review_status: dispatch_prepared
+    review_status: pending_worktree_creation
     review_prepared_at: "2026-06-13 20:40:14 -03"
+    review_pending_worktree_id: local:b9514ee2-a346-4d81-8bb9-61c3873b6003
+    review_dispatched_at: "2026-06-13 20:41:00 -03"
     worker_reported_checks:
       focused_tests: pass_3_files_22_tests
       smoke_electron_ui_mock: pass_uiResumeText_1_CNPJ_retomado

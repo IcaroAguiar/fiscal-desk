@@ -191,6 +191,8 @@ integration.
 
 Review dispatch prepared:
 `results/post-p3-legacy-resume-copy-harness-polish-review-dispatch-2026-06-13.md`.
+The Codex App review thread was requested at `2026-06-13 20:41:00 -03` and
+returned pending worktree `local:b9514ee2-a346-4d81-8bb9-61c3873b6003`.
 
 `post_local_base_regate_csv_input_intake_hardening` was integrated and validated
 at `2026-06-13 17:20:37 -03`. The read-only scope-selection gate
