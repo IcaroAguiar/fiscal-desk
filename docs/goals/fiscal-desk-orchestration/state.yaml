@@ -454,8 +454,8 @@ versioning_decisions:
       - skills/electron-ui-evidence-capture/references/electron-ui-evidence-capture.md
       - skills/electron-ui-evidence-capture/scripts/run-electron-evidence-capture.sh
 next_judge_action:
-  - monitor_post_local_base_regate_first_release_status_rebaseline
-  - judge_post_local_base_regate_first_release_status_rebaseline_before_any_material_worker
+  - dispatch_post_local_base_regate_material_owner_window_selection
+  - judge_post_local_base_regate_material_owner_window_selection_before_any_material_worker
   - keep_runtime_update_diagnostic_telemetry_license_release_blocked_until_fresh_scope
   - keep_f0_blocker_resolution_observed
   - keep_final_validation_in_single_worktree
@@ -604,9 +604,9 @@ monitoring:
   observe_threads_frequently: true
   heartbeat_automation_id: fiscal-desk-f0-monitor
   heartbeat_interval_minutes: 30
-  last_observation_at: "2026-06-13 16:34:15 -03"
+  last_observation_at: "2026-06-13 16:41:21 -03"
   last_observation_file: docs/goals/fiscal-desk-orchestration/integration-plan.md
-  last_observation_status: post_local_base_regate_first_release_status_rebaseline_dispatched
+  last_observation_status: post_local_base_regate_first_release_status_rebaseline_approved_docs_only
   f0_thread_status: self_approval_blocker_resolved_by_judge
   final_integration_review_status: approved_by_judge
   final_integration_review_thread_id: 019ec005-f849-7b53-ae0f-ae7c02df4f63
@@ -630,7 +630,7 @@ monitoring:
   staging_versioning_closeout_dispatch_file: results/staging-versioning-closeout-dispatch-2026-06-13.md
   staging_versioning_closeout_file: results/staging-versioning-closeout.md
   staging_versioning_closeout_judge_decision_file: results/staging-versioning-closeout-judge-decision.md
-  next_material_worker_status: blocked_pending_post_local_base_regate_first_release_status_rebaseline
+  next_material_worker_status: blocked_pending_post_local_base_regate_material_owner_window_selection
   last_thread_observation:
     testing_infra_coverage_gate_worker: idle_completed
     testing_infra_coverage_gate_independent_review: idle_completed_approved_candidate
@@ -650,8 +650,8 @@ monitoring:
     first_release_local_public_base_log_privacy_hardening_review: idle_completed_approved_candidate
     first_release_post_local_base_rework_security_regate: idle_completed_approved_candidate_judged_gate_closed
     post_local_base_regate_next_owner_window_selection: idle_completed_approved_scope_candidate_judged
-    post_local_base_regate_first_release_status_rebaseline: dispatched_pending_worktree
-    material_worker_released: local_public_base_log_privacy_rework_only
+    post_local_base_regate_first_release_status_rebaseline: idle_completed_approved_docs_only_judged
+    material_worker_released: false
   active_docs_only_scope_review_after_post_local_base_regate:
     slug: post_local_base_regate_next_owner_window_selection
     status: approved_by_judge_docs_only
@@ -680,18 +680,29 @@ monitoring:
       - docs/goals/fiscal-desk-orchestration/results/post-local-base-regate-next-owner-window-selection-2026-06-13.md
   active_docs_only_owner_window_after_post_local_base_regate:
     slug: post_local_base_regate_first_release_status_rebaseline
-    status: dispatched_pending_worktree
+    status: approved_by_judge_docs_only
     pending_worktree_id: local:21c1d45f-3421-4a57-aebf-ea483959d8d6
+    thread_id: 019ec27a-38a7-7580-8334-af5924117b3b
+    thread_title: Atualizar docs de rebaseline
+    worktree: /Users/icaroaguiar/.codex/worktrees/644f/consulta-simples-csv
     model: gpt-5.5
     reasoning: medium
     branch: feat/fiscal-desk-local-base-prep
     target_min_commit: ae89dcd
     dispatch_file: results/post-local-base-regate-first-release-status-rebaseline-dispatch-2026-06-13.md
     result_file: results/post-local-base-regate-first-release-status-rebaseline-2026-06-13.md
+    judge_decision_file: results/post-local-base-regate-first-release-status-rebaseline-judge-decision-2026-06-13.md
     dispatched_at: "2026-06-13 16:34:15 -03"
+    completed_at: "2026-06-13 16:38:52 -03"
+    judged_at: "2026-06-13 16:41:21 -03"
     classification: docs_only_serial
     material_worker_released: false
-    blocks_material_workers_until_judged: true
+    blocks_material_workers_until_judged: false
+    blocks_material_workers_after_judgment: true
+    result_status: ready_for_judge_review
+    judge_decision: approved_by_judge_docs_only
+    next_step_after_judgment: post_local_base_regate_material_owner_window_selection
+    next_material_worker_status_after_judgment: blocked_until_fresh_scope_selected_by_judge
     allowed_write:
       - docs/fiscal-desk/first-release.md
       - docs/fiscal-desk/status.md
