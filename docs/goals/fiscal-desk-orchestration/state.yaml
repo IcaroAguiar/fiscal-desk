@@ -1091,7 +1091,7 @@ monitoring:
     next_material_worker_status_after_judgment: blocked_pending_large_file_ratchet_rework
   active_quality_gate_rework_after_post_p3_integrated_validation:
     slug: post_p3_integrated_validation_large_file_ratchet_rework
-    status: active
+    status: ready_for_judge_review_pending_independent_review
     pending_worktree_id: local:52527a7b-2ace-4877-8c13-31dc07e0089c
     thread_id: 019ec305-fa0a-7562-8be4-117cb42ce33d
     thread_title: Rework ratchet large files
@@ -1105,6 +1105,7 @@ monitoring:
     prepared_at: "2026-06-13 19:06:00 -03"
     dispatched_at: "2026-06-13 19:07:00 -03"
     observed_active_at: "2026-06-13 19:07:00 -03"
+    completed_at: "2026-06-13 19:12:07 -03"
     classification: quality_gate_rework_non_feature_material
     material_worker_released: false
     allowed_write:
@@ -1129,6 +1130,20 @@ monitoring:
       scoped_quality_gate: QUALITY_GATE_DIFF_MODE=worktree node docs/ai/quality-gate/check-ratchet.mjs
       default_quality_gate: node docs/ai/quality-gate/check-ratchet.mjs
     next_material_worker_status_after_dispatch: blocked_pending_large_file_ratchet_rework
+    result_status: ready_for_judge_review
+    worker_receipt_file: results/post-p3-integrated-validation-large-file-ratchet-rework-2026-06-13.md
+    independent_review_required: true
+    independent_review_status: prepared_for_dispatch
+    independent_review_dispatch_file: results/post-p3-integrated-validation-large-file-ratchet-rework-review-dispatch-2026-06-13.md
+    worker_evidence:
+      focused_tests: pass_5_files_56_tests
+      lint: pass
+      typecheck: pass
+      test: pass_42_files_264_tests
+      test_coverage: pass_42_files_264_tests
+      scoped_quality_gate: pass_large_files_1_baseline_2
+      default_quality_gate: contextual_fail_origin_main_head_only
+    next_material_worker_status_after_worker: blocked_pending_independent_review
     blocks_material_workers_until_judged: true
     allowed_persistent_write:
       - docs/goals/fiscal-desk-orchestration/results/post-p3-validation-docs-rebaseline-integrated-first-release-validation-2026-06-13.md
