@@ -1267,3 +1267,21 @@ As of 2026-06-13 19:26 -03, the selection thread is active:
 - title: `Selecionar owner pos ratchet`;
 - worktree: `/Users/icaroaguiar/.codex/worktrees/029c/consulta-simples-csv`;
 - canonical dispatch commit: `55145bd`.
+
+## Post P3 Large File Rework Next Owner Window Selection Judge Decision As Of 2026-06-13 19:31
+
+Receipt:
+`results/post-p3-large-file-ratchet-rework-next-owner-window-selection-judge-decision-2026-06-13.md`.
+
+The selection thread `019ec317-9bd7-7fa3-82b3-7c5f431e5a26` completed as
+`approved_scope_candidate`. The judge accepts it.
+
+Next authorized owner window:
+`post_p3_large_file_ratchet_rework_final_readiness_review`.
+
+Classification: `read-only review`.
+
+This does not release material feature work. It authorizes a final readiness
+review after the large-file ratchet rework, writing only its receipt, to decide
+whether the roadmap can return to material work or whether a concrete blocker
+remains.

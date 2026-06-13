@@ -454,9 +454,9 @@ versioning_decisions:
       - skills/electron-ui-evidence-capture/references/electron-ui-evidence-capture.md
       - skills/electron-ui-evidence-capture/scripts/run-electron-evidence-capture.sh
 next_judge_action:
-  - create_post_p3_large_file_rework_next_owner_window_selection_thread
-  - observe_post_p3_large_file_rework_next_owner_window_selection_thread
-  - judge_post_p3_large_file_rework_next_owner_window_selection_receipt
+  - create_post_p3_large_file_rework_final_readiness_review_thread
+  - observe_post_p3_large_file_rework_final_readiness_review_thread
+  - judge_post_p3_large_file_rework_final_readiness_review_receipt
   - keep_large_file_rework_closed_as_integrated_validated
   - keep_runtime_update_diagnostic_telemetry_license_release_blocked_until_fresh_scope
   - keep_f0_blocker_resolution_observed
@@ -1194,7 +1194,7 @@ monitoring:
       - /private/tmp/**
   active_read_only_owner_window_selection_after_large_file_rework:
     slug: post_p3_large_file_ratchet_rework_next_owner_window_selection
-    status: active
+    status: approved_by_judge_scope_candidate
     pending_worktree_id: local:dd4c01d5-1bd2-4f41-8fec-6348729d09da
     thread_id: 019ec317-9bd7-7fa3-82b3-7c5f431e5a26
     thread_title: Selecionar owner pos ratchet
@@ -1208,11 +1208,31 @@ monitoring:
     prepared_at: "2026-06-13 19:24:00 -03"
     dispatched_at: "2026-06-13 19:26:00 -03"
     observed_active_at: "2026-06-13 19:26:00 -03"
+    completed_at: "2026-06-13 19:28:40 -03"
+    judged_at: "2026-06-13 19:31:00 -03"
     classification: read_only_owner_window_selection
     material_worker_released: false
     blocks_material_workers_until_judged: true
+    result_status: approved_scope_candidate
+    result_file: results/post-p3-large-file-ratchet-rework-next-owner-window-selection-2026-06-13.md
+    judge_decision_file: results/post-p3-large-file-ratchet-rework-next-owner-window-selection-judge-decision-2026-06-13.md
+    selected_next_owner_window: post_p3_large_file_ratchet_rework_final_readiness_review
+    selected_next_owner_window_classification: read_only_review
+    next_material_worker_status_after_judgment: blocked_pending_post_p3_large_file_ratchet_rework_final_readiness_review
     allowed_write:
       - docs/goals/fiscal-desk-orchestration/results/post-p3-large-file-ratchet-rework-next-owner-window-selection-2026-06-13.md
+  active_read_only_final_readiness_review_after_large_file_rework:
+    slug: post_p3_large_file_ratchet_rework_final_readiness_review
+    status: approved_for_dispatch
+    model: gpt-5.5
+    reasoning: medium
+    branch: feat/fiscal-desk-local-base-prep
+    target_min_commit: 3a26f7b
+    classification: read_only_review
+    material_worker_released: false
+    blocks_material_workers_until_judged: true
+    allowed_write:
+      - docs/goals/fiscal-desk-orchestration/results/post-p3-large-file-ratchet-rework-final-readiness-review-2026-06-13.md
   active_read_only_owner_window_selection_after_post_local_base_regate:
     slug: post_local_base_regate_material_owner_window_selection
     status: approved_by_judge_scope_candidate
