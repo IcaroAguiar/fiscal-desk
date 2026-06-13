@@ -154,14 +154,17 @@ F8B1 was dispatched, independently reviewed and selectively integrated in Wave
 
 | Phase | Thread | Worktree | Scope |
 |---|---|---|---|
-| None | - | - | No active material owner window; next material worker is approved for dispatch but not yet released |
+| `p3_renderer_missing_column_normalizer_can_hide_new_core_guidance` | pending | pending | Material single-writer renderer-copy owner window prepared for dispatch; independent review required before integration |
 
-No active material owner window exists. `post_local_base_regate_csv_input_intake_hardening`
-was integrated and validated at `2026-06-13 17:20:37 -03`. The read-only
-scope-selection gate `post_csv_input_intake_next_owner_window_selection` was
-dispatched at `2026-06-13 17:26:55 -03`, observed active at
-`2026-06-13 17:29:28 -03` and approved by the judge at
-`2026-06-13 17:31:33 -03`.
+`post_local_base_regate_csv_input_intake_hardening` was integrated and validated
+at `2026-06-13 17:20:37 -03`. The read-only scope-selection gate
+`post_csv_input_intake_next_owner_window_selection` was dispatched at
+`2026-06-13 17:26:55 -03`, observed active at `2026-06-13 17:29:28 -03` and
+approved by the judge at `2026-06-13 17:31:33 -03`.
+
+The next material owner window dispatch was prepared at
+`2026-06-13 17:32:52 -03`, but the Codex App worker thread has not been created
+yet in this record.
 
 Judge decision:
 `results/post-local-base-regate-csv-input-intake-hardening-judge-decision-2026-06-13.md`.
@@ -189,6 +192,9 @@ Next owner-window selection judge decision:
 
 Approved next material owner window:
 `p3_renderer_missing_column_normalizer_can_hide_new_core_guidance`.
+
+P3 renderer owner-window dispatch:
+`results/p3-renderer-missing-column-normalizer-can-hide-new-core-guidance-dispatch-2026-06-13.md`.
 
 Independent review threads for the coverage gate:
 `019ec1d0-a1f5-7601-97ef-b91f46e0d00c` and canonical follow-up
