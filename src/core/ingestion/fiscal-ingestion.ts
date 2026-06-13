@@ -24,11 +24,13 @@ type FiscalCsvIngestionOptions = {
 
 const DEFAULT_SOURCE_LABEL = "entrada.csv";
 const MISSING_CNPJ_COLUMN_MESSAGE =
-  "Nenhuma coluna de CNPJ suportada foi encontrada";
+  "Não encontrei uma coluna de CNPJ. Use um cabeçalho como CNPJ, CPF/CNPJ, documento ou informe a coluna manualmente.";
 const UNSUPPORTED_INPUT_FORMAT_MESSAGE =
-  "Formato de entrada ainda nao suportado pela ingestion fiscal";
-const INVALID_CNPJ_MESSAGE = "CNPJ invalido";
-const DUPLICATE_CNPJ_MESSAGE = "CNPJ duplicado na entrada";
+  "Este formato de entrada ainda não está disponível. Por enquanto, exporte a lista como CSV UTF-8 e tente novamente.";
+const INVALID_CNPJ_MESSAGE =
+  "CNPJ inválido. Revise os 14 dígitos antes de consultar esta linha.";
+const DUPLICATE_CNPJ_MESSAGE =
+  "CNPJ repetido. A consulta será reaproveitada da primeira ocorrência válida.";
 
 export function ingestFiscalCsv(
   inputCsv: string,

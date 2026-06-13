@@ -75,13 +75,13 @@ describe("processCsv", () => {
       "Empresa A;00.000.000/0001-91;00.000.000/0001-91;00000000000191;true;true;false;SUCCESS;mock;;2",
     );
     expect(result.outputCsv).toContain(
-      "Empresa B;00.000.000/0001-91;00.000.000/0001-91;00000000000191;true;true;false;SUCCESS;mock;;3",
+      "Empresa B;00.000.000/0001-91;00.000.000/0001-91;00000000000191;true;true;false;SUCCESS;mock;CNPJ repetido. A consulta será reaproveitada da primeira ocorrência válida.;3",
     );
     expect(result.outputCsv).toContain(
       "Empresa C;12.345.678/0001-95;12.345.678/0001-95;12345678000195;true;false;false;SUCCESS;mock;;4",
     );
     expect(result.outputCsv).toContain(
-      "Empresa D;123;123;123;false;;;INVALID_CNPJ;system;CNPJ invalido;5",
+      "Empresa D;123;123;123;false;;;INVALID_CNPJ;system;CNPJ inválido. Revise os 14 dígitos antes de consultar esta linha.;5",
     );
     expect(result.delivery).toMatchObject({
       extension: "csv",
@@ -110,10 +110,42 @@ describe("processCsv", () => {
       totalCnpjsUnicosConsultados: 2,
     });
     expect(result.outputCsv).toContain(
-      "Empresa B;123;123;123;false;;;INVALID_CNPJ;system;CNPJ invalido;3",
+      "Empresa B;123;123;123;false;;;INVALID_CNPJ;system;CNPJ inválido. Revise os 14 dígitos antes de consultar esta linha.;3",
     );
     expect(result.outputCsv).toContain(
-      "Empresa A duplicada;00.000.000/0001-91;00.000.000/0001-91;00000000000191;true;false;false;SUCCESS;mock;;4",
+      "Empresa A duplicada;00.000.000/0001-91;00.000.000/0001-91;00000000000191;true;false;false;SUCCESS;mock;CNPJ repetido. A consulta será reaproveitada da primeira ocorrência válida.;4",
+    );
+  });
+
+  it("keeps duplicate CNPJ visible when the reused lookup has a provider message", async () => {
+    const csv = [
+      "nome;cpf_cnpj",
+      "Empresa A;11.222.333/0001-81",
+      "Empresa A duplicada;11.222.333/0001-81",
+    ].join("\n");
+    const provider = new ErrorStatusLookupAdapter({
+      "11222333000181": {
+        cnpj: "11222333000181",
+        message: "CNPJ não encontrado na base consultada.",
+        simplesNacional: null,
+        simei: null,
+        source: "mock",
+        status: "NOT_FOUND",
+      },
+    });
+
+    const result = await processCsv(csv, provider);
+
+    expect(result.summary).toMatchObject({
+      totalCnpjsEncontrados: 2,
+      totalCnpjsUnicosConsultados: 1,
+      totalErros: 2,
+    });
+    expect(result.outputCsv).toContain(
+      "Empresa A;11.222.333/0001-81;11.222.333/0001-81;11222333000181;true;;;NOT_FOUND;mock;CNPJ não encontrado na base consultada.;2",
+    );
+    expect(result.outputCsv).toContain(
+      "Empresa A duplicada;11.222.333/0001-81;11.222.333/0001-81;11222333000181;true;;;NOT_FOUND;mock;CNPJ repetido. A consulta será reaproveitada da primeira ocorrência válida. Resultado reaproveitado: CNPJ não encontrado na base consultada.;3",
     );
   });
 

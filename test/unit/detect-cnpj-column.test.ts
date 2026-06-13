@@ -19,6 +19,13 @@ describe("detectCnpjColumn", () => {
     expect(detectCnpjColumn(["Nome", "CNPJ", "Cidade"])).toBe("CNPJ");
   });
 
+  it("detects common spreadsheet labels with punctuation and accents", () => {
+    expect(detectCnpjColumn(["Nome", "CPF/CNPJ", "Cidade"])).toBe("CPF/CNPJ");
+    expect(detectCnpjColumn(["Nome", "CNPJ da Empresa"])).toBe(
+      "CNPJ da Empresa",
+    );
+  });
+
   it("detects known headers even when the first header contains a BOM", () => {
     expect(detectCnpjColumn(["\uFEFFcnpj", "nome"])).toBe("\uFEFFcnpj");
   });

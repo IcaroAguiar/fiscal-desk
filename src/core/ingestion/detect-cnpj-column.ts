@@ -3,6 +3,8 @@ const KNOWN_CNPJ_COLUMNS = [
   "documento",
   "cpf_cnpj",
   "cnpj_empresa",
+  "cnpj_da_empresa",
+  "cnpj_fornecedor",
 ] as const;
 
 type DetectCnpjColumnOptions = {
@@ -39,5 +41,9 @@ function normalizeHeader(value: string): string {
   return value
     .replace(/^\uFEFF/, "")
     .trim()
-    .toLowerCase();
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "");
 }

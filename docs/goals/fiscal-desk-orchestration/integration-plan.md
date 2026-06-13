@@ -154,7 +154,7 @@ F8B1 was dispatched, independently reviewed and selectively integrated in Wave
 
 | Phase | Thread | Worktree | Scope |
 |---|---|---|---|
-| `post_local_base_regate_csv_input_intake_hardening` | worker `019ec28a-ddee-7582-9b44-8298dd89f582`; review `019ec296-2ca5-73b0-b984-6379c1be7d78` | worker `/Users/icaroaguiar/.codex/worktrees/a185/consulta-simples-csv`; review `/Users/icaroaguiar/.codex/worktrees/8fda/consulta-simples-csv` | Worker rework is `ready_for_judge_review_after_rework`; reported focused tests/typecheck/lint/full test/smoke CSV/smoke Electron/diff-check passed; re-review dispatched and integration remains blocked until reviewer and judge approve |
+| None | - | - | No active material owner window; `post_local_base_regate_csv_input_intake_hardening` was integrated and validated at `2026-06-13 17:20:37 -03` |
 
 Judge decision:
 `results/post-local-base-regate-csv-input-intake-hardening-judge-decision-2026-06-13.md`.
@@ -164,6 +164,12 @@ Independent review:
 
 Re-review dispatch:
 `results/post-local-base-regate-csv-input-intake-hardening-review-after-rework-dispatch-2026-06-13.md`.
+
+Re-review result:
+`results/post-local-base-regate-csv-input-intake-hardening-review-after-rework-2026-06-13.md`.
+
+Integration judge decision:
+`results/post-local-base-regate-csv-input-intake-hardening-integration-judge-decision-2026-06-13.md`.
 
 Independent review threads for the coverage gate:
 `019ec1d0-a1f5-7601-97ef-b91f46e0d00c` and canonical follow-up
@@ -227,6 +233,7 @@ worktree.
 | F8B local update diagnostic UI scope review | `integrated_docs_only` | docs-only scope review, F8B1 renderer-local worker approved and later closed in Wave 13 |
 | F6E2B delivery IPC/preload/types exposure | `integrated_validated_selective` | focused IPC/preload tests, integration/use-case tests, typecheck, lint, full test, build, independent review with selective judge resolution |
 | F8B1 local update diagnostic renderer blocked-state | `integrated_validated_selective` | focused renderer/local-contract tests, typecheck, lint, full test, build, smoke visual, smoke Electron UI, independent review with selective judge resolution |
+| Post Local Base Regate CSV input intake hardening | `integrated_validated` | focused ingestion/process tests, typecheck, lint, full test, smoke CSV mock, smoke Electron UI mock, independent review after rework |
 | testing_infra_coverage_gate | `integrated_validated_pass_with_risk` | coverage provider/script, required quality-gate coverage, scoped worktree ratchet, direct preload test, full tests, typecheck, lint, build, CSV/Electron/visual smokes, independent review |
 
 Wave 1 receipt: `results/integration-wave-1-f1-f2-f4.md`.

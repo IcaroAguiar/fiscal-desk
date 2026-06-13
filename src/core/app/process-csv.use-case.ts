@@ -7,6 +7,10 @@ import { AbortError } from "../infra/rate-limiter";
 import { readCsv } from "../ingestion/csv-reader";
 import { detectCnpjColumn } from "../ingestion/detect-cnpj-column";
 import { ingestFiscalCsv } from "../ingestion/fiscal-ingestion";
+import {
+  FISCAL_INGESTION_ISSUE_KIND,
+  type FiscalIngestionIssue,
+} from "../ingestion/ingestion-contract";
 import type { SimplesLookupPort } from "../simples/simples-lookup.port";
 import type { SimplesLookupResult } from "../simples/simples-lookup.types";
 import { estimateObservedRemainingMs } from "./eta";
@@ -75,12 +79,19 @@ export async function processCsv(
   );
 
   if (!cnpjColumn) {
-    throw new Error("Nenhuma coluna de CNPJ suportada foi encontrada");
+    throw new Error(
+      "Nenhuma coluna de CNPJ suportada foi encontrada. Use um cabeçalho como CNPJ, CPF/CNPJ, documento ou informe a coluna manualmente.",
+    );
   }
 
   const ingestionBatch = ingestFiscalCsv(inputCsv, {
     ...(options.cnpjColumn ? { cnpjColumn: options.cnpjColumn } : {}),
   });
+  const ingestionIssueByRow = new Map(
+    ingestionBatch.issues
+      .filter((issue) => issue.rowNumber !== null)
+      .map((issue) => [issue.rowNumber as number, issue]),
+  );
   const uniqueValidCnpjs = ingestionBatch.entries.map(
     (entry) => entry.cnpjNormalizado,
   );
@@ -119,6 +130,8 @@ export async function processCsv(
     const cnpjOriginal = row[cnpjColumn] ?? "";
     const cnpjNormalizado = normalizeCnpj(cnpjOriginal);
     const cnpjValido = validateCnpj(cnpjNormalizado);
+    const rowNumber = rowLineNumbers[index] ?? index + 1;
+    const ingestionIssue = ingestionIssueByRow.get(rowNumber);
 
     if (cnpjOriginal) {
       totalCnpjsEncontrados += 1;
@@ -137,7 +150,9 @@ export async function processCsv(
         simei: null,
         source: "system",
         status: "INVALID_CNPJ",
-        message: "CNPJ invalido",
+        message:
+          ingestionIssue?.message ??
+          "CNPJ inválido. Revise os 14 dígitos antes de consultar esta linha.",
       };
     } else if (runStatus === "CANCELLED") {
       const cachedResult = lookupCache.get(cnpjNormalizado);
@@ -209,8 +224,8 @@ export async function processCsv(
       simei: toCsvValue(lookupResult.simei),
       status: lookupResult.status,
       fonte: lookupResult.source,
-      mensagem: lookupResult.message ?? "",
-      linha: String(rowLineNumbers[index] ?? index + 1),
+      mensagem: formatOutputMessage(lookupResult, ingestionIssue),
+      linha: String(rowNumber),
     });
   }
 
@@ -268,6 +283,23 @@ function toCsvValue(value: boolean | null): string {
   }
 
   return String(value);
+}
+
+function formatOutputMessage(
+  lookupResult: SimplesLookupResult,
+  ingestionIssue?: FiscalIngestionIssue,
+): string {
+  const lookupMessage = lookupResult.message?.trim() ?? "";
+
+  if (ingestionIssue?.kind === FISCAL_INGESTION_ISSUE_KIND.DUPLICATE_CNPJ) {
+    if (lookupMessage) {
+      return `${ingestionIssue.message} Resultado reaproveitado: ${lookupMessage}`;
+    }
+
+    return ingestionIssue.message;
+  }
+
+  return lookupMessage || ingestionIssue?.message || "";
 }
 
 function isCancellationBoundary(signal?: AbortSignal): boolean {

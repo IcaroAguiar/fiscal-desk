@@ -89,7 +89,8 @@ describe("ingestFiscalCsv", () => {
         cnpjNormalizado: null,
         cnpjOriginal: "abc",
         kind: FISCAL_INGESTION_ISSUE_KIND.INVALID_CNPJ,
-        message: "CNPJ invalido",
+        message:
+          "CNPJ inválido. Revise os 14 dígitos antes de consultar esta linha.",
         rowNumber: 3,
         severity: FISCAL_INGESTION_ISSUE_SEVERITY.ERROR,
       },
@@ -97,7 +98,8 @@ describe("ingestFiscalCsv", () => {
         cnpjNormalizado: "03426484000123",
         cnpjOriginal: "03.426.484/0001-23",
         kind: FISCAL_INGESTION_ISSUE_KIND.DUPLICATE_CNPJ,
-        message: "CNPJ duplicado na entrada",
+        message:
+          "CNPJ repetido. A consulta será reaproveitada da primeira ocorrência válida.",
         rowNumber: 4,
         severity: FISCAL_INGESTION_ISSUE_SEVERITY.WARNING,
       },
@@ -120,7 +122,8 @@ describe("ingestFiscalCsv", () => {
         cnpjNormalizado: null,
         cnpjOriginal: null,
         kind: FISCAL_INGESTION_ISSUE_KIND.MISSING_CNPJ_COLUMN,
-        message: "Nenhuma coluna de CNPJ suportada foi encontrada",
+        message:
+          "Não encontrei uma coluna de CNPJ. Use um cabeçalho como CNPJ, CPF/CNPJ, documento ou informe a coluna manualmente.",
         rowNumber: null,
         severity: FISCAL_INGESTION_ISSUE_SEVERITY.ERROR,
       },
@@ -147,7 +150,8 @@ describe("ingestFiscalCsv", () => {
         cnpjNormalizado: null,
         cnpjOriginal: null,
         kind: FISCAL_INGESTION_ISSUE_KIND.UNSUPPORTED_INPUT_FORMAT,
-        message: "Formato de entrada ainda nao suportado pela ingestion fiscal",
+        message:
+          "Este formato de entrada ainda não está disponível. Por enquanto, exporte a lista como CSV UTF-8 e tente novamente.",
         rowNumber: null,
         severity: FISCAL_INGESTION_ISSUE_SEVERITY.ERROR,
       },
