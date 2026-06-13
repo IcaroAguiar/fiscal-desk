@@ -145,7 +145,7 @@ Nenhuma thread individual pode substituir o review da branch final integrada.
 
 | Phase | Judge status | Integration release |
 |---|---|---|
-| post_p3_legacy_resume_copy_harness_polish | dispatch_prepared | material worker not dispatched yet |
+| post_p3_legacy_resume_copy_harness_polish | pending_worktree_creation | Codex App pending worktree `local:6be9c7f0-6b93-4837-9f32-68bc85c0e2e6` |
 
 F8B1 was dispatched, independently reviewed and selectively integrated in Wave
 13. P3 renderer was integrated and validated after CSV input intake hardening.
@@ -173,10 +173,14 @@ The dispatch file
 `results/post-p3-legacy-resume-copy-harness-polish-dispatch-2026-06-13.md`
 was prepared at `2026-06-13 20:32:00 -03`.
 
-No material worker has been dispatched yet for this approved window. The worker
-must run in an isolated Codex App thread with `/goal`, `gpt-5.5`, reasoning
-`medium`, explicit allowed writes, real Electron smoke evidence and independent
-review before integration.
+The Codex App worker was requested at `2026-06-13 20:34:00 -03` and returned
+pending worktree `local:6be9c7f0-6b93-4837-9f32-68bc85c0e2e6`. The thread id
+has not appeared in `list_threads` yet. When it materializes, the orchestrator
+must record the `thread_id`/worktree and observe it through completion.
+
+The worker must run in an isolated Codex App thread with `/goal`, `gpt-5.5`,
+reasoning `medium`, explicit allowed writes, real Electron smoke evidence and
+independent review before integration.
 
 `post_local_base_regate_csv_input_intake_hardening` was integrated and validated
 at `2026-06-13 17:20:37 -03`. The read-only scope-selection gate
