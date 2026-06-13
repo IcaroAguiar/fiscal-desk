@@ -60,19 +60,20 @@ O fechamento geral exige uma validacao do app completo na worktree final:
 - review independente se o diff final for material;
 - resumo de riscos residuais.
 
-## Behavior Validation And Coverage Policy As Of 2026-06-13
+## Behavior Validation And Coverage Policy As Of 2026-06-13 13:40
 
-Cobertura quantitativa ainda nao e um gate ativo do repositorio. O comando
-`pnpm exec vitest run --coverage --coverage.reporter=text-summary
---coverage.reporter=json-summary` falha no pacote corrente porque
-`@vitest/coverage-v8` nao esta instalado, e `docs/ai/quality-gate` ainda mantem
-`requiredChecks.coverage` como `false`.
+Cobertura quantitativa agora e um gate ativo do repositorio para o pacote
+integrado. O owner window `testing_infra_coverage_gate` adicionou
+`@vitest/coverage-v8`, o script `pnpm test:coverage`, ativou
+`requiredChecks.coverage` em `docs/ai/quality-gate` e limitou o universo de
+coverage a `src/**/*.{ts,tsx}` para evitar que docs/scripts locais distorcam o
+sinal do app Electron.
 
-Isso significa que nenhuma fase pode declarar "cobertura aprovada" ate existir
-um owner window de testing-infra que aprove alteracao em `package.json`,
-`pnpm-lock.yaml`, script dedicado de coverage e ativacao do quality gate. Ate la,
-cada fechamento deve registrar cobertura como `unavailable_known_gap`, nao como
-sucesso implicito.
+Coverage continua sendo evidencia auxiliar, nao criterio suficiente de aceite.
+Nenhuma fase pode declarar comportamento funcional aprovado apenas por
+porcentagem. O fechamento precisa combinar cobertura quantitativa, testes
+focados do contrato alterado e smokes reais quando Electron, UI, IPC, provider
+ou CSV forem afetados.
 
 Validacao de comportamento real continua obrigatoria por superficie:
 
@@ -89,15 +90,23 @@ Validacao de comportamento real continua obrigatoria por superficie:
 Se o smoke aplicavel nao rodar, a fase nao fecha como validada: ela deve voltar
 para rework ou registrar blocker formal com risco residual aceito pelo judge.
 
-## Qualitative Coverage Audit As Of 2026-06-13
+## Qualitative Coverage Audit As Of 2026-06-13 13:40
 
 O audit `results/testability-coverage-audit-2026-06-13.md` classifica a
-validacao atual como `PASS_WITH_RISK`: os fluxos reais aprovados foram
-exercitados, mas cobertura quantitativa segue bloqueada.
+validacao pre-coverage como `PASS_WITH_RISK`. Depois do
+`testing_infra_coverage_gate`, a classificacao permanece `PASS_WITH_RISK`, mas
+com cobertura quantitativa ativa e uma lacuna qualitativa corrigida:
+`prepareLocalPublicBase` agora tem teste direto de preload provando que o bridge
+encaminha o payload completo para
+`ipcRenderer.invoke("local-public-base:prepare", input)`.
 
 Evidencia atual:
 
-- `pnpm test`: 40 arquivos e 255 testes passando;
+- `pnpm test`: 40 arquivos e 256 testes passando;
+- `pnpm test:coverage`: 40 arquivos e 256 testes passando; coverage de `src/**`
+  em 69.24% linhas/statements, 86.82% funcoes e 75.34% branches;
+- `QUALITY_GATE_DIFF_MODE=worktree node docs/ai/quality-gate/check-ratchet.mjs`:
+  pass para o recorte local do worker, preservando o modo default PR/CI;
 - `pnpm smoke:electron-ui`: app Electron real, provider `mock`, retomada,
   historico, checkpoint e XLSX salvos;
 - `FISCAL_DESK_SMOKE_PROVIDER=base-publica-local pnpm smoke:electron-ui`: app
@@ -115,9 +124,10 @@ O core estava correto ao bloquear; o harness foi ajustado em
 
 Riscos residuais aceitos para esta etapa:
 
-- falta `@vitest/coverage-v8`, entao cobertura por linha/branch nao existe;
-- `prepareLocalPublicBase` ainda nao tem unit test direto no preload, embora o
-  fluxo seja exercitado pelo smoke Electron real;
+- cobertura global ainda esta abaixo de um alvo operacional de 80% e deve ser
+  tratada como baseline/sinal, nao como prova funcional;
+- o ratchet default ainda precisa do contexto PR/CI/final branch para nao
+  misturar ruido historico de `origin/main...HEAD`;
 - Receita Web continua assistido/experimental;
 - release Windows, updater, diagnostico, telemetria e licenca continuam fora de
   escopo ate novo owner window.
@@ -144,7 +154,29 @@ F8B1 was dispatched, independently reviewed and selectively integrated in Wave
 
 | Phase | Thread | Worktree | Scope |
 |---|---|---|---|
-| None | - | - | No active material integration queue after Wave 13 closeout |
+| None | - | - | Coverage gate integrated and validated; next material work still requires fresh judge-selected owner window |
+
+Independent review threads for the coverage gate:
+`019ec1d0-a1f5-7601-97ef-b91f46e0d00c` and canonical follow-up
+`019ec1d9-37fa-7760-a442-dec7783aaa0c`.
+
+## Testing-Infra Coverage Gate Closeout As Of 2026-06-13 13:40
+
+The first `testing_infra_coverage_gate` result was `needs_rework` because the
+ratchet default compared `origin/main...HEAD` and pulled historical branch noise
+into the detached worker context. The rework preserved default PR/CI behavior
+and added opt-in `QUALITY_GATE_DIFF_MODE=worktree` for bounded worker receipts.
+
+The judge integrated the reworked candidate into the canonical branch, corrected
+the coverage universe to `src/**/*.{ts,tsx}`, reran the full local gate, and
+recorded the closeout as `integrated_validated_pass_with_risk`.
+
+Judge receipt:
+`results/testing-infra-coverage-gate-judge-decision-2026-06-13.md`.
+Canonical integration receipt:
+`results/testing-infra-coverage-gate-canonical-integration-2026-06-13.md`.
+Canonical review receipt:
+`results/testing-infra-coverage-gate-canonical-review-2026-06-13.md`.
 
 Wave 10 had local ignored docs copied into worker worktrees after creation.
 F6E2A revalidated and resumed after an initial stale missing-docs blocker, then
@@ -186,6 +218,7 @@ worktree.
 | F8B local update diagnostic UI scope review | `integrated_docs_only` | docs-only scope review, F8B1 renderer-local worker approved and later closed in Wave 13 |
 | F6E2B delivery IPC/preload/types exposure | `integrated_validated_selective` | focused IPC/preload tests, integration/use-case tests, typecheck, lint, full test, build, independent review with selective judge resolution |
 | F8B1 local update diagnostic renderer blocked-state | `integrated_validated_selective` | focused renderer/local-contract tests, typecheck, lint, full test, build, smoke visual, smoke Electron UI, independent review with selective judge resolution |
+| testing_infra_coverage_gate | `integrated_validated_pass_with_risk` | coverage provider/script, required quality-gate coverage, scoped worktree ratchet, direct preload test, full tests, typecheck, lint, build, CSV/Electron/visual smokes, independent review |
 
 Wave 1 receipt: `results/integration-wave-1-f1-f2-f4.md`.
 Wave 2 receipt: `results/integration-wave-2-f3-f5.md`.
@@ -201,6 +234,8 @@ Wave 10 receipt: `results/integration-wave-10-f6e2a-f8a.md`.
 Wave 11 receipt: `results/integration-wave-11-scope-reviews.md`.
 Wave 12 receipt: `results/integration-wave-12-f6e2b-delivery-ipc-preload.md`.
 Wave 13 receipt: `results/integration-wave-13-f8b1-renderer-blocked-state.md`.
+Coverage gate receipt:
+`results/testing-infra-coverage-gate-canonical-integration-2026-06-13.md`.
 
 Next integration rule: do not dispatch a new material worker until the next
 scope is explicitly selected by the judge. Runtime update, diagnostic package
@@ -330,7 +365,36 @@ No push, PR, deploy or release action was executed.
 Only intentionally excluded `skills/**` paths remain untracked in the worktree.
 They are not part of the integrated package.
 
-The next safe candidate is a non-feature testing-infra coverage gate window. It
-is not released automatically. It must be explicitly selected by the judge
-before any worker touches `package.json`, `pnpm-lock.yaml`, coverage scripts or
-quality-gate config.
+The non-feature testing-infra coverage gate was later selected, executed,
+reviewed and integrated. The next material work now requires a fresh
+judge-selected owner window.
+
+## Testing-Infra Coverage Gate History As Of 2026-06-13 13:40
+
+The judge selected the non-feature `testing_infra_coverage_gate` owner window
+after post-commit closeout and coverage/testability audit. This is not a Fiscal
+Desk product feature.
+
+Thread: `019ec1c2-abc1-7ce2-8b68-212c2e152a19`.
+
+Worktree: `/Users/icaroaguiar/.codex/worktrees/3547/consulta-simples-csv`.
+
+Dispatch receipt:
+`results/testing-infra-coverage-gate-dispatch-2026-06-13.md`.
+
+Allowed scope is limited to `package.json`, `pnpm-lock.yaml`,
+`vitest.config.ts` if needed, `docs/ai/quality-gate/quality-gate.config.json`,
+`docs/ai/quality-gate/README.md` if needed, `test/unit/preload.test.ts` and
+`results/testing-infra-coverage-gate.md` in the worker result packet.
+
+The worker was not allowed to touch runtime/product code, renderer UI,
+providers, IPC handlers, export, ingestion, release/update, diagnostics,
+telemetry, license/account behavior, generated coverage artifacts, dist
+artifacts, stage, commit, push, PR or deploy.
+
+Current status: `integrated_validated_pass_with_risk`.
+
+Closeout receipts:
+
+- `results/testing-infra-coverage-gate-canonical-integration-2026-06-13.md`
+- `results/testing-infra-coverage-gate-canonical-review-2026-06-13.md`

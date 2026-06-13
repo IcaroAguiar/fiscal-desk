@@ -454,8 +454,7 @@ versioning_decisions:
       - skills/electron-ui-evidence-capture/references/electron-ui-evidence-capture.md
       - skills/electron-ui-evidence-capture/scripts/run-electron-evidence-capture.sh
 next_judge_action:
-  - select_next_owner_window_after_post_commit_closeout
-  - consider_testing_infra_coverage_gate_as_next_non_feature_candidate
+  - select_next_owner_window_only_after_coverage_gate_closeout_review
   - keep_runtime_update_diagnostic_telemetry_license_release_blocked_until_fresh_scope
   - keep_f0_blocker_resolution_observed
   - keep_final_validation_in_single_worktree
@@ -484,24 +483,61 @@ staging_execution:
     - pnpm build
     - applicable_behavior_smokes
   coverage_status:
-    status: unavailable_known_gap
-    attempted_command: pnpm exec vitest run --coverage --coverage.reporter=text-summary --coverage.reporter=json-summary
-    failure: missing_dependency_@vitest/coverage-v8
-    quality_gate_required_check: false
-    next_action: open_testing_infra_owner_window_before_marking_coverage_passed
+    status: available_required_gate_pass_with_risk
+    command: pnpm test:coverage
+    coverage_universe: "src/**/*.{ts,tsx}"
+    provider: "@vitest/coverage-v8@3.2.4"
+    report_paths:
+      - coverage/coverage-summary.json
+      - coverage/lcov.info
+    quality_gate_required_check: true
+    lines_pct: 69.24
+    statements_pct: 69.24
+    functions_pct: 86.82
+    branches_pct: 75.34
+    dependency_file_change_warning:
+      status: justified_expected
+      files:
+        - package.json
+        - pnpm-lock.yaml
+      reason: Vitest coverage requires @vitest/coverage-v8 provider
+      validation:
+        - pnpm install --offline
+        - pnpm test:coverage
+        - pnpm build
+        - applicable_smokes
+    residual_risk:
+      - coverage_below_operational_80_percent_baseline
+      - coverage_is_signal_not_functional_acceptance
+      - default_pr_ci_ratchet_still_needs_final_branch_context
   qualitative_coverage_status:
-    status: pass_with_risk
+    status: pass_with_risk_after_testing_infra_coverage_gate
     audit_file: results/testability-coverage-audit-2026-06-13.md
-    full_test: pass_40_files_255_tests
+    coverage_gate_integration_file: results/testing-infra-coverage-gate-canonical-integration-2026-06-13.md
+    coverage_gate_review_file: results/testing-infra-coverage-gate-canonical-review-2026-06-13.md
+    full_test: pass_40_files_256_tests
+    coverage_test: pass_40_files_256_tests
+    direct_preload_prepare_local_public_base_test: pass
+    scoped_worktree_quality_gate: pass
     smoke_real_csv_base_publica_local: pass_after_consent_harness_fix
     smoke_electron_ui_mock: pass
     smoke_electron_ui_base_publica_local: pass
     smoke_visual: pass
     residual_risks:
-      - quantitative_coverage_unavailable_until_@vitest/coverage-v8_owner_window
-      - direct_preload_unit_coverage_missing_for_prepareLocalPublicBase
+      - quantitative_coverage_is_available_but_below_80_percent_baseline
+      - direct_preload_bridge_is_unit_tested_but_ipc_runtime_still_requires_smoke_for_future_changes
       - receita_web_live_batch_e2e_not_promised_assisted_experimental
       - windows_packaging_release_update_diagnostic_telemetry_license_not_in_scope
+    testing_infra_coverage_gate:
+      status: integrated_validated_pass_with_risk
+      judge_decision_file: results/testing-infra-coverage-gate-judge-decision-2026-06-13.md
+      canonical_integration_file: results/testing-infra-coverage-gate-canonical-integration-2026-06-13.md
+      canonical_review_file: results/testing-infra-coverage-gate-canonical-review-2026-06-13.md
+      separates_quantitative_and_qualitative_coverage: true
+      includes_test_obligation_matrix: true
+      proves_preload_prepareLocalPublicBase_forwarding: true
+      proves_electron_runtime_smokes: true
+      proves_quality_gate_scoped_worker_mode: true
   validation_result:
     cached_diff_check: pass
     excluded_paths_check: pass
@@ -529,7 +565,28 @@ post_commit_closeout:
   no_push_no_pr_no_deploy: true
   untracked_paths_are_excluded_skills_only: true
   next_candidate_owner_window: testing_infra_coverage_gate
-  next_candidate_status: candidate_only_not_released
+  next_candidate_status: integrated_validated_pass_with_risk
+  released_thread_id: 019ec1c2-abc1-7ce2-8b68-212c2e152a19
+  released_worktree: /Users/icaroaguiar/.codex/worktrees/3547/consulta-simples-csv
+  released_at: "2026-06-13 13:14:36 -03"
+  dispatch_receipt: results/testing-infra-coverage-gate-dispatch-2026-06-13.md
+  first_result_status: needs_rework
+  first_result_file: /Users/icaroaguiar/.codex/worktrees/3547/consulta-simples-csv/docs/goals/fiscal-desk-orchestration/results/testing-infra-coverage-gate.md
+  rework_dispatched_at: "2026-06-13 13:23:21 -03"
+  rework_decision_file: results/testing-infra-coverage-gate-judge-decision-2026-06-13.md
+  rework_result_status: ready_for_judge_review
+  rework_completed_at: "2026-06-13 13:27:00 -03"
+  judge_focused_preload_test: pass
+  judge_scoped_ratchet: pass
+  independent_review_status: approved_candidate
+  independent_review_thread_id: 019ec1d0-a1f5-7601-97ef-b91f46e0d00c
+  independent_review_dispatched_at: "2026-06-13 13:29:27 -03"
+  independent_review_dispatch_file: results/testing-infra-coverage-gate-review-dispatch-2026-06-13.md
+  canonical_review_status: approved_candidate
+  canonical_review_thread_id: 019ec1d9-37fa-7760-a442-dec7783aaa0c
+  canonical_integration_status: integrated_validated_pass_with_risk
+  canonical_integration_file: results/testing-infra-coverage-gate-canonical-integration-2026-06-13.md
+  canonical_review_file: results/testing-infra-coverage-gate-canonical-review-2026-06-13.md
   still_blocked_until_fresh_scope:
     - fiscal_feature_work
     - runtime_update_behavior
@@ -546,9 +603,9 @@ monitoring:
   observe_threads_frequently: true
   heartbeat_automation_id: fiscal-desk-f0-monitor
   heartbeat_interval_minutes: 30
-  last_observation_at: "2026-06-13 12:45:49 -03"
-  last_observation_file: results/orchestration-observation-2026-06-13-1245.md
-  last_observation_status: monitoring_no_new_worker_released
+  last_observation_at: "2026-06-13 13:52:46 -03"
+  last_observation_file: results/orchestration-observation-2026-06-13-1353.md
+  last_observation_status: coverage_gate_revalidated_ready_for_path_explicit_commit
   f0_thread_status: self_approval_blocker_resolved_by_judge
   final_integration_review_status: approved_by_judge
   final_integration_review_thread_id: 019ec005-f849-7b53-ae0f-ae7c02df4f63
@@ -573,6 +630,60 @@ monitoring:
   staging_versioning_closeout_file: results/staging-versioning-closeout.md
   staging_versioning_closeout_judge_decision_file: results/staging-versioning-closeout-judge-decision.md
   next_material_worker_status: ready_for_fresh_owner_window_selection
+  testing_infra_coverage_gate_status: integrated_validated_pass_with_risk
+  testing_infra_coverage_gate_thread_id: 019ec1c2-abc1-7ce2-8b68-212c2e152a19
+  testing_infra_coverage_gate_thread_title: Adicionar coverage no Vitest
+  testing_infra_coverage_gate_pending_worktree_id: local:c764f0f0-faec-4154-be84-1d301c4522d4
+  testing_infra_coverage_gate_worktree: /Users/icaroaguiar/.codex/worktrees/3547/consulta-simples-csv
+  testing_infra_coverage_gate_dispatched_at: "2026-06-13 13:14:36 -03"
+  testing_infra_coverage_gate_dispatch_file: results/testing-infra-coverage-gate-dispatch-2026-06-13.md
+  testing_infra_coverage_gate_first_result_status: needs_rework
+  testing_infra_coverage_gate_first_result_reason: ratchet_default_diff_against_origin_main_pulled_historical_noise_outside_allowed_write_set
+  testing_infra_coverage_gate_rework_requested_at: "2026-06-13 13:23:21 -03"
+  testing_infra_coverage_gate_rework_decision_file: results/testing-infra-coverage-gate-judge-decision-2026-06-13.md
+  testing_infra_coverage_gate_rework_completed_at: "2026-06-13 13:27:00 -03"
+  testing_infra_coverage_gate_rework_result_status: ready_for_judge_review
+  testing_infra_coverage_gate_judge_focused_checks:
+    preload_test: pass
+    scoped_ratchet: pass
+    diff_check: pass
+    sandbox_note: judge_reran_write_checks_with_escalation_because_worker_worktree_is_outside_current_writable_root
+  testing_infra_coverage_gate_independent_review_thread_id: 019ec1d0-a1f5-7601-97ef-b91f46e0d00c
+  testing_infra_coverage_gate_independent_review_status: approved_candidate
+  testing_infra_coverage_gate_independent_review_dispatched_at: "2026-06-13 13:29:27 -03"
+  testing_infra_coverage_gate_canonical_review_thread_id: 019ec1d9-37fa-7760-a442-dec7783aaa0c
+  testing_infra_coverage_gate_canonical_review_status: approved_candidate
+  testing_infra_coverage_gate_canonical_review_file: results/testing-infra-coverage-gate-canonical-review-2026-06-13.md
+  testing_infra_coverage_gate_canonical_integration_file: results/testing-infra-coverage-gate-canonical-integration-2026-06-13.md
+  testing_infra_coverage_gate_final_checks:
+    install_offline: pass
+    focused_preload_test: pass
+    coverage: pass_40_files_256_tests
+    scoped_quality_gate: pass
+    full_test: pass_40_files_256_tests
+    typecheck: pass
+    lint: pass
+    build: pass
+    smoke_real_csv_base_publica_local: pass
+    smoke_electron_ui_mock: pass
+    smoke_electron_ui_base_publica_local: pass
+    smoke_visual: pass
+    diff_check: pass
+    default_quality_gate: contextual_fail_origin_main_historical_diff_preserved
+    revalidated_before_versioning_at: "2026-06-13 13:52:46 -03"
+    revalidated_before_versioning_checks:
+      focused_preload_test: pass
+      coverage: pass_40_files_256_tests
+      scoped_quality_gate: pass
+      typecheck: pass
+      lint: pass
+      build: pass
+      diff_check: pass
+  testing_infra_coverage_gate_independent_review_file: results/testing-infra-coverage-gate-review-dispatch-2026-06-13.md
+  testing_infra_coverage_gate_rework_scope:
+    - scoped_worker_diff_mode_for_quality_gate
+    - qualitative_test_obligation_matrix
+    - direct_preload_bridge_assertion
   f3_thread_status: integrated_validated
   f5_thread_status: integrated_validated
   f6a_thread_status: integrated_validated

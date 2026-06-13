@@ -73,4 +73,28 @@ describe("preload appBridge", () => {
       },
     );
   });
+
+  it("forwards local public base preparation input", async () => {
+    const appBridge = electronMocks.exposed.appBridge as {
+      prepareLocalPublicBase: (
+        input: Record<string, unknown>,
+      ) => Promise<unknown>;
+    };
+    const input = {
+      consent: {
+        acceptedAt: "2026-06-13T12:00:00.000Z",
+        noticeVersion: "base-publica-local-v1",
+      },
+      content: "cnpj;razao_social\n00000000000191;Empresa Teste",
+      sourceFileName: "base-publica.csv",
+      sourceFilePath: "/tmp/base-publica.csv",
+    };
+
+    await appBridge.prepareLocalPublicBase(input);
+
+    expect(electronMocks.ipcRenderer.invoke).toHaveBeenCalledWith(
+      "local-public-base:prepare",
+      input,
+    );
+  });
 });

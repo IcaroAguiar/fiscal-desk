@@ -5,8 +5,9 @@ export default defineConfig({
     environment: 'node',
     include: ['test/**/*.test.ts'],
     coverage: {
-      reporter: ['text', 'html'],
+      include: ['src/**/*.{ts,tsx}'],
+      exclude: ['coverage/**', 'dist/**', 'dist-electron/**'],
+      reporter: ['text', 'html', 'json-summary', 'lcov'],
     },
   },
 });
-
