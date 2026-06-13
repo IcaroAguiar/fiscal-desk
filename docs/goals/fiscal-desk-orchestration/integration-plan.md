@@ -1306,3 +1306,26 @@ As of 2026-06-13 19:39 -03, the review thread is active:
 - title: `Review prontidao pos ratchet`;
 - worktree: `/Users/icaroaguiar/.codex/worktrees/dff9/consulta-simples-csv`;
 - canonical dispatch commit: `4ff5955`.
+
+## Post P3 Large File Rework Final Readiness Review Judge Decision As Of 2026-06-13 19:47
+
+Receipt:
+`results/post-p3-large-file-ratchet-rework-final-readiness-review-judge-decision-2026-06-13.md`.
+
+The final readiness review thread `019ec31c-9f9d-7482-9ba6-79ef5da19dca`
+completed as `approved_candidate`, and the judge accepted it.
+
+Current state:
+
+- documentation rebaseline: closed;
+- executable validation: accepted;
+- large-file ratchet blocker: closed;
+- final post-ratchet readiness review: accepted;
+- material feature worker: not automatically released;
+- next action: select a specific material owner window with explicit allowed
+  writes.
+
+Release/public distribution, updater/update real, telemetry, diagnostic
+sending, license/account, templates/models, PDF/Word/OCR, Receita Web
+live/massiva, storage/network expansion and guided delivery customization remain
+blocked until explicit owner windows.
