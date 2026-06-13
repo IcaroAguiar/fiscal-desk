@@ -154,7 +154,7 @@ F8B1 was dispatched, independently reviewed and selectively integrated in Wave
 
 | Phase | Thread | Worktree | Scope |
 |---|---|---|---|
-| `post_local_base_regate_csv_input_intake_hardening` | not dispatched yet | pending | Material single-writer CSV/CNPJ input hardening selected by judge; worker dispatch is the next action |
+| `post_local_base_regate_csv_input_intake_hardening` | pending `local:54c32872-df4a-4cd9-8e26-5f592283c7a1` | pending | Material single-writer CSV/CNPJ input hardening; requires judge review and independent review before integration |
 
 Independent review threads for the coverage gate:
 `019ec1d0-a1f5-7601-97ef-b91f46e0d00c` and canonical follow-up

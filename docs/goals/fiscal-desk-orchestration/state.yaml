@@ -454,8 +454,8 @@ versioning_decisions:
       - skills/electron-ui-evidence-capture/references/electron-ui-evidence-capture.md
       - skills/electron-ui-evidence-capture/scripts/run-electron-evidence-capture.sh
 next_judge_action:
-  - dispatch_post_local_base_regate_csv_input_intake_hardening
   - monitor_post_local_base_regate_csv_input_intake_hardening
+  - judge_post_local_base_regate_csv_input_intake_hardening_before_integration
   - keep_runtime_update_diagnostic_telemetry_license_release_blocked_until_fresh_scope
   - keep_f0_blocker_resolution_observed
   - keep_final_validation_in_single_worktree
@@ -604,9 +604,9 @@ monitoring:
   observe_threads_frequently: true
   heartbeat_automation_id: fiscal-desk-f0-monitor
   heartbeat_interval_minutes: 30
-  last_observation_at: "2026-06-13 16:49:58 -03"
+  last_observation_at: "2026-06-13 16:52:27 -03"
   last_observation_file: docs/goals/fiscal-desk-orchestration/integration-plan.md
-  last_observation_status: post_local_base_regate_material_owner_window_selection_approved_scope_candidate
+  last_observation_status: post_local_base_regate_csv_input_intake_hardening_dispatched
   f0_thread_status: self_approval_blocker_resolved_by_judge
   final_integration_review_status: approved_by_judge
   final_integration_review_thread_id: 019ec005-f849-7b53-ae0f-ae7c02df4f63
@@ -630,7 +630,7 @@ monitoring:
   staging_versioning_closeout_dispatch_file: results/staging-versioning-closeout-dispatch-2026-06-13.md
   staging_versioning_closeout_file: results/staging-versioning-closeout.md
   staging_versioning_closeout_judge_decision_file: results/staging-versioning-closeout-judge-decision.md
-  next_material_worker_status: approved_for_dispatch_post_local_base_regate_csv_input_intake_hardening
+  next_material_worker_status: active_post_local_base_regate_csv_input_intake_hardening_pending_judgment
   last_thread_observation:
     testing_infra_coverage_gate_worker: idle_completed
     testing_infra_coverage_gate_independent_review: idle_completed_approved_candidate
@@ -652,7 +652,45 @@ monitoring:
     post_local_base_regate_next_owner_window_selection: idle_completed_approved_scope_candidate_judged
     post_local_base_regate_first_release_status_rebaseline: idle_completed_approved_docs_only_judged
     post_local_base_regate_material_owner_window_selection: idle_completed_approved_scope_candidate_judged
-    material_worker_released: false
+    post_local_base_regate_csv_input_intake_hardening: dispatched_pending_worktree
+    material_worker_released: post_local_base_regate_csv_input_intake_hardening_only
+  active_material_owner_window_after_post_local_base_regate:
+    slug: post_local_base_regate_csv_input_intake_hardening
+    status: dispatched_pending_worktree
+    pending_worktree_id: local:54c32872-df4a-4cd9-8e26-5f592283c7a1
+    model: gpt-5.5
+    reasoning: medium
+    branch: feat/fiscal-desk-local-base-prep
+    target_min_commit: 6810b70
+    dispatch_file: results/post-local-base-regate-csv-input-intake-hardening-dispatch-2026-06-13.md
+    result_file: results/post-local-base-regate-csv-input-intake-hardening-2026-06-13.md
+    dispatched_at: "2026-06-13 16:52:27 -03"
+    classification: material_single_writer
+    requires_independent_review_before_integration: true
+    material_worker_released: true
+    blocks_other_material_workers_until_judged: true
+    allowed_write:
+      - src/core/ingestion/**
+      - src/core/cnpj/**
+      - src/core/app/process-csv.types.ts
+      - src/core/app/process-csv.use-case.ts
+      - src/main/ipc/process-csv.ipc.ts
+      - src/main/preload.ts
+      - src/main/types.ts
+      - src/renderer/ui/app.types.ts
+      - src/renderer/ui/app-view.ts
+      - src/renderer/ui/app-sync.ts
+      - src/renderer/ui/operational-copy.ts
+      - test/unit/csv-reader.test.ts
+      - test/unit/fiscal-ingestion.test.ts
+      - test/unit/detect-cnpj-column.test.ts
+      - test/unit/validate-cnpj.test.ts
+      - test/unit/normalize-cnpj.test.ts
+      - test/unit/process-csv.ipc.test.ts
+      - test/unit/preload.test.ts
+      - test/unit/app-view.test.ts
+      - test/integration/process-csv*.test.ts
+      - docs/goals/fiscal-desk-orchestration/results/post-local-base-regate-csv-input-intake-hardening-2026-06-13.md
   active_read_only_owner_window_selection_after_post_local_base_regate:
     slug: post_local_base_regate_material_owner_window_selection
     status: approved_by_judge_scope_candidate
