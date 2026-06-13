@@ -414,3 +414,20 @@ diagnostic package generation, telemetry transport, license/account behavior,
 release/package configuration, storage/network expansion, guided delivery
 customization, renderer template UI and reusable delivery models remain blocked
 until explicitly scoped.
+
+## First Release Rebaseline Dispatch As Of 2026-06-13 14:06
+
+Receipt: `results/first-release-rebaseline-dispatch-2026-06-13.md`.
+
+The judge selected `first_release_rebaseline_after_integrated_fiscal_desk` as
+the next owner window and dispatched it as a docs-only thread:
+`019ec1f1-82b7-77d0-93ba-a85c07efacd8`, worktree
+`/Users/icaroaguiar/.codex/worktrees/8bf3/consulta-simples-csv`.
+
+This window may update first-release/status/product-scope documentation only.
+It may not touch source, tests, package/lockfile, release config or orchestration
+state. It exists to remove historical drift before any new material feature
+worker is selected.
+
+No material worker is released while this docs-only owner window is active. The
+next material owner window requires the rebaseline result to be read and judged.
