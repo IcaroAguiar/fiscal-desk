@@ -814,3 +814,21 @@ worker files.
 No material feature work is released. The next required step is to repeat or
 explicitly close the post-rework security gate against the integrated canonical
 branch.
+
+## Post Local Base Rework Security Regate Dispatch As Of 2026-06-13 16:17
+
+Receipt:
+`results/first-release-post-local-base-rework-security-regate-dispatch-2026-06-13.md`.
+
+The judge dispatched a read-only security re-gate against canonical commit
+`946c578 fix: sanitize local public base warnings`.
+
+- pending worktree: `local:0b9483ed-b82a-4abe-be55-16f772168f93`;
+- allowed write:
+  `results/first-release-post-local-base-rework-security-regate-2026-06-13.md`;
+- reviewer role: validate the integrated Base Publica Local warning-log
+  hardening and return `approved_candidate`, `needs_rework`, or `blocked`;
+- constraints: no install/full test/build/coverage because disk is critically
+  low.
+
+Material feature work remains blocked until this re-gate is complete and judged.

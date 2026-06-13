@@ -454,8 +454,8 @@ versioning_decisions:
       - skills/electron-ui-evidence-capture/references/electron-ui-evidence-capture.md
       - skills/electron-ui-evidence-capture/scripts/run-electron-evidence-capture.sh
 next_judge_action:
-  - repeat_or_close_post_rework_security_gate_after_local_base_rework
-  - keep_material_feature_work_blocked_until_post_rework_security_gate_judged
+  - monitor_post_local_base_rework_security_regate
+  - judge_post_local_base_rework_security_regate_before_any_material_worker
   - keep_runtime_update_diagnostic_telemetry_license_release_blocked_until_fresh_scope
   - keep_f0_blocker_resolution_observed
   - keep_final_validation_in_single_worktree
@@ -604,9 +604,9 @@ monitoring:
   observe_threads_frequently: true
   heartbeat_automation_id: fiscal-desk-f0-monitor
   heartbeat_interval_minutes: 30
-  last_observation_at: "2026-06-13 16:15:02 -03"
+  last_observation_at: "2026-06-13 16:17:39 -03"
   last_observation_file: docs/goals/fiscal-desk-orchestration/integration-plan.md
-  last_observation_status: local_public_base_log_privacy_rework_integrated_pending_security_regate
+  last_observation_status: post_local_base_rework_security_regate_dispatched
   f0_thread_status: self_approval_blocker_resolved_by_judge
   final_integration_review_status: approved_by_judge
   final_integration_review_thread_id: 019ec005-f849-7b53-ae0f-ae7c02df4f63
@@ -648,6 +648,7 @@ monitoring:
     first_release_post_rework_security_review: idle_completed_approved_candidate_with_blocker_followup
     first_release_local_public_base_log_privacy_hardening: idle_completed_approved_integrated_with_validation_limits
     first_release_local_public_base_log_privacy_hardening_review: idle_completed_approved_candidate
+    first_release_post_local_base_rework_security_regate: dispatched_pending_worktree
     material_worker_released: local_public_base_log_privacy_rework_only
   active_first_release_rework_owner_windows:
     status: approved_by_judge_integrated_validated
@@ -786,6 +787,17 @@ monitoring:
         - test/unit/local-public-base.test.ts
         - docs/goals/fiscal-desk-orchestration/results/first-release-local-public-base-log-privacy-hardening-2026-06-13.md
     gates:
+      post_local_base_rework_security_regate:
+        slug: first_release_post_local_base_rework_security_regate
+        status: dispatched_pending_worktree
+        pending_worktree_id: local:0b9483ed-b82a-4abe-be55-16f772168f93
+        target_commit: 946c578
+        dispatch_file: results/first-release-post-local-base-rework-security-regate-dispatch-2026-06-13.md
+        result_file: results/first-release-post-local-base-rework-security-regate-2026-06-13.md
+        model: gpt-5.5
+        reasoning: medium
+        allowed_write:
+          - docs/goals/fiscal-desk-orchestration/results/first-release-post-local-base-rework-security-regate-2026-06-13.md
       release_review:
         slug: first_release_post_rework_release_review
         status: completed_approved_candidate
