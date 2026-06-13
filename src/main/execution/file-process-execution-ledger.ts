@@ -112,7 +112,7 @@ export class FileProcessExecutionLedger {
       previous.providerName === input.providerName &&
       previous.inputFingerprint === inputFingerprint &&
       RESUMABLE_STATUSES.has(previous.status)
-        ? previous.checkpoints
+        ? toSafeLookupCheckpoints(previous.checkpoints)
         : {};
     const document: LedgerDocument = {
       version: LEDGER_VERSION,
@@ -213,18 +213,29 @@ export class FileProcessExecutionSession
   }
 
   async restoreLookup(cnpj: string): Promise<SimplesLookupResult | null> {
-    return this.document.checkpoints[cnpj]?.result ?? null;
+    const checkpoint = this.document.checkpoints[cnpj];
+
+    if (!checkpoint) {
+      return null;
+    }
+
+    return toSafeLookupCheckpointResult(checkpoint.result);
   }
 
   async saveLookup(result: SimplesLookupResult): Promise<void> {
+    const checkpointResult = toSafeLookupCheckpointResult(result);
+    if (!checkpointResult) {
+      return;
+    }
+
     this.document = {
       ...this.document,
       updatedAt: new Date().toISOString(),
       checkpoints: {
         ...this.document.checkpoints,
-        [result.cnpj]: {
+        [checkpointResult.cnpj]: {
           completedAt: new Date().toISOString(),
-          result,
+          result: checkpointResult,
         },
       },
     };
@@ -282,8 +293,8 @@ async function readLedgerDocument(
 
     if (!isLedgerDocument(parsed)) {
       logger.warn("[csv] ledger local invalido descartado", {
-        checkpointPath: ledgerPath,
-        reason: "estrutura ou versao incompatível",
+        ledgerKey: path.basename(ledgerPath),
+        reason: "incompatible_structure",
       });
       return null;
     }
@@ -295,8 +306,8 @@ async function readLedgerDocument(
     }
 
     logger.warn("[csv] ledger local invalido descartado", {
-      checkpointPath: ledgerPath,
-      reason: error instanceof Error ? error.message : "erro desconhecido",
+      ledgerKey: path.basename(ledgerPath),
+      reason: toSafeLedgerReadFailureReason(error),
     });
     return null;
   }
@@ -341,6 +352,100 @@ function normalizeOptionalText(value: string | undefined): string | null {
   const normalized = value?.trim();
 
   return normalized ? normalized : null;
+}
+
+function toSafeLookupCheckpointResult(
+  result: unknown,
+): SimplesLookupResult | null {
+  if (!isSafeReusableLookupResult(result)) {
+    return null;
+  }
+
+  return {
+    cnpj: result.cnpj,
+    simplesNacional: result.simplesNacional,
+    simei: result.simei,
+    source: result.source,
+    status: result.status,
+  };
+}
+
+function toSafeLookupCheckpoints(
+  checkpoints: Record<string, LookupCheckpoint>,
+): Record<string, LookupCheckpoint> {
+  const safeCheckpoints: Record<string, LookupCheckpoint> = {};
+
+  for (const [checkpointKey, checkpoint] of Object.entries(checkpoints)) {
+    if (!isLookupCheckpoint(checkpoint)) {
+      continue;
+    }
+
+    const checkpointResult = toSafeLookupCheckpointResult(checkpoint.result);
+
+    if (!checkpointResult || checkpointResult.cnpj !== checkpointKey) {
+      continue;
+    }
+
+    safeCheckpoints[checkpointKey] = {
+      completedAt: checkpoint.completedAt,
+      result: checkpointResult,
+    };
+  }
+
+  return safeCheckpoints;
+}
+
+function isSafeReusableLookupResult(
+  result: unknown,
+): result is SimplesLookupResult {
+  if (!result || typeof result !== "object") {
+    return false;
+  }
+
+  const candidate = result as Partial<SimplesLookupResult>;
+
+  return (
+    typeof candidate.cnpj === "string" &&
+    /^\d{14}$/.test(candidate.cnpj) &&
+    typeof candidate.source === "string" &&
+    isReusableCheckpointStatus(candidate.status) &&
+    (typeof candidate.simplesNacional === "boolean" ||
+      candidate.simplesNacional === null) &&
+    (typeof candidate.simei === "boolean" || candidate.simei === null)
+  );
+}
+
+function isLookupCheckpoint(value: unknown): value is LookupCheckpoint {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+
+  const candidate = value as Partial<LookupCheckpoint>;
+
+  return typeof candidate.completedAt === "string" && "result" in candidate;
+}
+
+function isReusableCheckpointStatus(
+  value: unknown,
+): value is SimplesLookupResult["status"] {
+  return (
+    typeof value === "string" &&
+    REUSABLE_CHECKPOINT_STATUSES.includes(
+      value as SimplesLookupResult["status"],
+    )
+  );
+}
+
+function toSafeLedgerReadFailureReason(error: unknown): string {
+  if (error instanceof SyntaxError) {
+    return "invalid_json";
+  }
+
+  if (isNodeErrorWithCode(error)) {
+    return `read_failed_${error.code.toLowerCase()}`;
+  }
+
+  return "read_failed";
 }
 
 function toHistoryItem(
@@ -412,5 +517,14 @@ function isNoEntryError(error: unknown): boolean {
     typeof error === "object" &&
     "code" in error &&
     error.code === "ENOENT"
+  );
+}
+
+function isNodeErrorWithCode(error: unknown): error is { code: string } {
+  return (
+    error !== null &&
+    typeof error === "object" &&
+    "code" in error &&
+    typeof error.code === "string"
   );
 }

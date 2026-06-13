@@ -53,6 +53,9 @@ jobs:
       - name: Test
         run: pnpm test
 
+      - name: Coverage
+        run: pnpm test:coverage
+
       - name: Smoke real CSV offline
         run: pnpm smoke:real-csv
 

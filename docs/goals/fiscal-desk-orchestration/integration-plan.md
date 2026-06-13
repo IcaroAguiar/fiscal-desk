@@ -691,3 +691,38 @@ No material feature work is released, and no candidate code/config is integrated
 into the canonical branch by this decision. The current phase remains
 first-release blocker rework until both candidates return, are reviewed, and
 are serially integrated into the single final branch.
+
+## First Release Rework Integration Judge Decision As Of 2026-06-13 15:43
+
+Receipt:
+`results/first-release-rework-integration-judge-decision-2026-06-13.md`.
+
+The two reopened first-release rework windows returned final candidates and
+both passed independent re-review:
+
+- `first_release_local_privacy_hardening` re-review
+  `019ec243-9bd5-7283-a967-8151f3d29aeb`: `approved_candidate`;
+- `first_release_package_identity_and_publish_safety` re-review
+  `019ec242-a827-72d0-b499-b13f7dbc3fa8`: `approved_candidate`.
+
+The judge integrated both accepted reworks into the canonical branch
+`feat/fiscal-desk-local-base-prep` and validated them in the single worktree.
+
+Canonical validation passed:
+
+- frozen install, typecheck, lint, focused ledger/IPC tests, full test,
+  coverage, build;
+- `smoke:real-csv` with provider `mock`;
+- `smoke:electron-ui` with provider `mock`;
+- `smoke:electron-ui` with provider `base-publica-local`;
+- release publish scans and log/privacy scans.
+
+The `package.json` change is intentional metadata/scripts/publish-safety work:
+the package is now `fiscal-desk`, `private: true`, and all `dist:*` scripts are
+no-publish. `pnpm-lock.yaml` is unchanged and `pnpm install --frozen-lockfile`
+passed.
+
+No new feature worker is released by this decision. The next step is a fresh
+read-only post-rework release/security gate against the canonical branch. Only
+after that gate is complete and judged can the orchestrator select the next
+material owner window.

@@ -12,7 +12,10 @@ O rework de release/package foi aplicado dentro do allowed write scope.
 
 O pacote agora declara a identidade visivel do primeiro release candidate como
 Fiscal Desk (`package.json`, `electron-builder.yml`) e todos os scripts
-`dist:*` ficam explicitamente no-publish via `--publish never`.
+`dist:*` ficam explicitamente no-publish via `--publish never`. A flag
+`private` tambem foi ajustada para `true` para bloquear publish acidental do
+pacote via NPM, ja que este repositorio entrega um app Electron e nao uma
+biblioteca publicavel.
 
 O PR quality gate agora executa `pnpm test:coverage`, que ja existe no pacote e
 rodou localmente com sucesso. `pnpm smoke:electron-ui` nao foi adicionado ao CI
@@ -35,12 +38,14 @@ ou configurado.
 - `package.json`
 - `electron-builder.yml`
 - `.github/workflows/pr-quality-gate.yml`
+- `.github/workflows/windows-exe.yml`
 
 ## Arquivos alterados
 
 - `package.json`
 - `electron-builder.yml`
 - `.github/workflows/pr-quality-gate.yml`
+- `.github/workflows/windows-exe.yml`
 - `docs/goals/fiscal-desk-orchestration/results/first-release-package-identity-and-publish-safety-2026-06-13.md`
 
 ## Decisao de identidade de pacote
@@ -52,7 +57,8 @@ Mudancas:
 
 - `package.json`:
   - `name`: `fiscal-desk`;
-  - `description`: `Fiscal Desk local-first para validar enquadramento no Simples Nacional a partir de CSV.`
+  - `description`: `Fiscal Desk local-first para validar enquadramento no Simples Nacional a partir de CSV.`;
+  - `private`: `true`.
 - `electron-builder.yml`:
   - `productName`: `Fiscal Desk`;
   - `appId`: `com.icaroaguiar.fiscal-desk`.
@@ -74,9 +80,12 @@ adicionado nenhum mecanismo de migracao.
 ## Decisao de publish safety
 
 Decisao: todos os scripts de distribuicao devem declarar `--publish never`.
+Como defesa adicional, o pacote tambem fica `private: true` para impedir
+publish NPM acidental por comando manual ou automacao futura nao prevista.
 
 Mudancas:
 
+- `private`: agora e `true`.
 - `dist:mac`: agora executa `electron-builder --mac dmg --publish never`.
 - `dist:win`: ja usava `--publish never`; preservado.
 - `dist:win:arm64`: ja usava `--publish never`; preservado.
@@ -108,6 +117,47 @@ Smoke Electron:
   release ate um owner window especifico preparar o runner ou um smoke
   headless confiavel.
 
+## Rework after independent release review
+
+O review independente de release/CI aprovou o candidato dentro do escopo
+original, mas encontrou um blocker fora do allowed write inicial:
+`.github/workflows/windows-exe.yml` ainda podia publicar GitHub Release por
+`workflow_dispatch` e por tag `v*`, alem de usar o nome legado
+`consulta-simples-csv-windows` no artifact.
+
+Findings corrigidos:
+
+- `.github/workflows/windows-exe.yml` nao usa mais
+  `softprops/action-gh-release`.
+- Os steps `Publish rolling unsigned release` e `Publish GitHub Release` foram
+  removidos.
+- `permissions.contents` foi reduzido de `write` para `read`.
+- O workflow ainda pode construir o instalador Windows unsigned e subir artifact
+  interno via `actions/upload-artifact`.
+- O artifact foi renomeado de `consulta-simples-csv-windows` para
+  `fiscal-desk-windows`.
+
+Provas read-only do rework:
+
+- Check de scripts `dist:*`: pass; todos contem `--publish never`.
+  - `dist:mac=pnpm build && pnpm build:browser && electron-builder --mac dmg --publish never`
+  - `dist:win=pnpm build && electron-builder --win nsis --x64 --publish never`
+  - `dist:win:arm64=pnpm build && electron-builder --win nsis --arm64 --publish never`
+  - `dist:dir=pnpm build && electron-builder --dir --publish never`
+- Check do workflow Windows: pass; ausentes
+  `softprops/action-gh-release`, `contents: write`, `tag_name`,
+  `Publish GitHub Release` e `Publish rolling unsigned release`.
+- `electron-builder.yml` permanece com `appId: com.icaroaguiar.fiscal-desk` e
+  `productName: Fiscal Desk`.
+- `.github/workflows/pr-quality-gate.yml` permanece com passo `Coverage` via
+  `pnpm test:coverage`.
+
+Observacao: o gatilho de tag `v*` no workflow Windows foi preservado apenas
+como build/upload de artifact interno, sem permissao de escrita e sem action de
+release. Se o judge quiser bloquear qualquer execucao por tag antes do primeiro
+release real, isso deve ser um ajuste adicional de politica de workflow; este
+rework removeu a capacidade de publish/release.
+
 ## Tests e checks executados
 
 - `pnpm install --frozen-lockfile`: pass.
@@ -123,6 +173,16 @@ Smoke Electron:
     functions.
 - `pnpm build`: pass.
   - Gerou `dist/**` e `dist-electron/**` locais/ignorados.
+- Rework verification `pnpm typecheck`: pass.
+- Rework verification `pnpm lint`: pass, 119 arquivos checados, sem fixes.
+- Rework verification `pnpm test`: pass, 40 arquivos / 256 testes.
+- Rework verification `pnpm test:coverage`: pass, 40 arquivos / 256 testes.
+  - Coverage global: 69.24% statements/lines, 75.32% branches, 86.82%
+    functions.
+- Rework verification `pnpm build`: pass.
+- Rework verification scripts `dist:*` no-publish: pass.
+- Rework verification workflow Windows sem publish release: pass.
+- Rework verification NPM publish guard: pass; `package.json.private=true`.
 - `git diff --check`: pass.
 - `git diff -- pnpm-lock.yaml`: sem diff.
 
@@ -135,6 +195,8 @@ Smoke Electron:
 - `pnpm smoke:electron-ui`: nao exigido como verificacao local deste owner
   window e nao adicionado ao CI por risco de runner Ubuntu sem display/GUI
   confiavel.
+- Workflow Windows real no GitHub Actions: nao executado; a verificacao foi por
+  diff/read-only local e build local, sem disparar actions remotas.
 - Review independente por subagente: nao executado nesta thread. O resultado
   fica explicitamente como candidato para judge, sem autoaprovacao.
 
@@ -147,11 +209,15 @@ Smoke Electron:
   comportamento Electron/runtime.
 - Smoke Electron continua manual/local ate haver configuracao robusta de runner
   GUI ou estrategia headless validada.
+- `.github/workflows/windows-exe.yml` ainda responde a tags `v*`, mas agora sem
+  permissao de escrita e sem step/action de GitHub Release; ele apenas constroi
+  e sobe artifact interno.
 - O build local gerou artefatos ignorados em `dist/**`, `dist-electron/**` e
   `coverage/**`; nenhum deles deve ser versionado.
 - O aviso de harness sobre `dependency_file_change=1` corresponde ao
-  `package.json` alterado intencionalmente para metadata/scripts; nao houve
-  mudanca em `pnpm-lock.yaml` nem adicao de dependencia.
+  `package.json` alterado intencionalmente para metadata/scripts e
+  `private: true`; nao houve mudanca em `pnpm-lock.yaml` nem adicao de
+  dependencia.
 
 ## Recomendacao ao judge
 
@@ -164,5 +230,7 @@ O judge deve confirmar explicitamente:
   o primeiro release candidate;
 - que nao ha instalacao legada a preservar antes de mudar `appId`;
 - que `--publish never` em todos os `dist:*` satisfaz a politica no-publish;
+- que o workflow Windows sem `contents: write`, sem `softprops/action-gh-release`
+  e com artifact `fiscal-desk-windows` satisfaz o blocker de publish safety;
 - que `pnpm test:coverage` em CI e suficiente para este gate, mantendo
   `pnpm smoke:electron-ui` como evidencia local/manual por enquanto.

@@ -334,10 +334,17 @@ async function processCsvWithLedger(
     });
 
     console.info("[csv] processamento iniciado", {
+      deliveryFormat:
+        "deliveryFormat" in deliverySelection
+          ? deliverySelection.deliveryFormat
+          : null,
+      deliveryOptionId:
+        "deliveryOptionId" in deliverySelection
+          ? deliverySelection.deliveryOptionId
+          : null,
+      hasSourceFile: Boolean(input.sourceFilePath),
       provider: input.provider,
-      sourceFilePath: input.sourceFilePath ?? null,
       runId: executionSession.runId,
-      checkpointPath: executionSession.checkpointPath,
     });
 
     const result = await processCsv(input.content, provider, {
@@ -357,10 +364,9 @@ async function processCsvWithLedger(
           lastLoggedAt = Date.now();
           console.info("[csv] progresso", {
             completedUniqueLookups: progress.completedUniqueLookups,
-            totalUniqueLookups: progress.totalUniqueLookups,
-            currentCnpj: progress.currentCnpj,
             elapsedMs: progress.elapsedMs,
             estimatedRemainingMs: progress.estimatedRemainingMs,
+            totalUniqueLookups: progress.totalUniqueLookups,
           });
         }
       },
@@ -378,10 +384,12 @@ async function processCsvWithLedger(
     });
 
     console.info("[csv] processamento finalizado", {
-      runStatus: result.runStatus,
+      deliveryFormat: result.delivery.format,
       elapsedMs: Date.now() - startedAt,
-      savedPath: autoSaveResult.savedPath,
+      hasAutoSavedOutput: Boolean(autoSaveResult.savedPath),
       runId: executionSession.runId,
+      runStatus: result.runStatus,
+      summary: result.summary,
       resumedUniqueLookups: result.execution?.resumedUniqueLookups ?? 0,
     });
 

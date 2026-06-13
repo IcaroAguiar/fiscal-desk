@@ -25,8 +25,11 @@ Mudancas principais:
 - `FileProcessExecutionLedger.saveLookup` passa a persistir uma projecao segura
   do `SimplesLookupResult`, sem `raw` e sem propriedades extras do payload do
   provider;
+- checkpoints legados reutilizaveis tambem passam por projecao segura antes de
+  serem copiados para uma nova execucao;
+- mensagens brutas de provider nao sao mais persistidas em checkpoint;
 - warnings de ledger local invalido deixam de registrar path absoluto e passam
-  a registrar apenas `ledgerKey`;
+  a registrar apenas `ledgerKey` e uma categoria de erro sanitizada;
 - testes focados provam que logs e checkpoints sao sanitizados e que
   retomada/exportacao continuam preservadas.
 
@@ -97,6 +100,7 @@ Removido dos checkpoints:
 
 - `raw`;
 - `providerResponse`;
+- `message` bruta de provider;
 - qualquer propriedade extra que venha junto do resultado do provider fora da
   forma canonica `SimplesLookupResult` minima.
 
@@ -105,8 +109,8 @@ Retido nos checkpoints por necessidade de retomada/exportacao local:
 - CNPJ normalizado como chave local do checkpoint;
 - `result.cnpj`, porque o resultado restaurado precisa reconstruir a linha de
   exportacao sem nova consulta;
-- `simplesNacional`, `simei`, `source`, `status` e `message`, porque esses
-  campos sao usados para manter saida CSV/XLSX e comportamento de retomada.
+- `simplesNacional`, `simei`, `source` e `status`, porque esses campos sao
+  usados para manter saida CSV/XLSX e comportamento de retomada.
 
 Retido no ledger/historico por comportamento existente:
 
@@ -125,9 +129,9 @@ qualquer alteracao de release.
   lockfile estava atualizado e `git diff -- package.json pnpm-lock.yaml` nao
   teve saida.
 - `pnpm exec vitest run test/unit/main/file-process-execution-ledger.test.ts test/unit/process-csv.ipc.test.ts test/unit/process-csv.ipc.delivery.test.ts`:
-  pass, 3 arquivos / 35 testes.
+  pass, 3 arquivos / 36 testes no rework final.
 - `pnpm typecheck`: pass.
-- `pnpm test`: pass, 40 arquivos / 258 testes.
+- `pnpm test`: pass, 40 arquivos / 259 testes no rework final.
 - `pnpm lint`: pass, `biome check .`.
 - `rg -n "console\.(info|warn|error|log).*sourceFilePath|console\.(info|warn|error|log).*currentCnpj|console\.(info|warn|error|log).*savedPath|console\.(info|warn|error|log).*checkpointPath" src/main src/core`:
   pass sem matches.
@@ -135,11 +139,15 @@ qualquer alteracao de release.
   inspecionado manualmente. Logs IPC estao sanitizados; warnings do ledger
   usam `ledgerKey`; warnings da Base Publica Local ficam fora do allowed write
   deste worker e nao foram alterados.
-- `rg -n "raw|providerResponse|checkpointPath|sourceFilePath|savedPath|currentCnpj" src/main/execution/file-process-execution-ledger.ts src/main/ipc/process-csv.ipc.ts test/unit/main/file-process-execution-ledger.test.ts test/unit/process-csv.ipc.test.ts`:
+- `rg -n "raw|providerResponse|razaoSocial|checkpointPath|sourceFilePath|savedPath|currentCnpj" src/main/execution/file-process-execution-ledger.ts src/main/ipc/process-csv.ipc.ts test/unit/main/file-process-execution-ledger.test.ts test/unit/process-csv.ipc.test.ts test/unit/process-csv.ipc.delivery.test.ts`:
   inspecionado manualmente. Matches remanescentes em codigo sao leitura/retorno
   local necessarios para retomada/autosave/dialogo ou asserts de teste de
-  sanitizacao; `raw`/`providerResponse` aparecem apenas no teste que prova
-  remocao do payload bruto.
+  sanitizacao; `raw`/`providerResponse`/`razaoSocial` aparecem apenas nos testes
+  que injetam legado inseguro e provam remocao do payload bruto.
+- `rg -n "error\.message|reason:|logger\.warn|console\.(info|warn|error|log)" src/main/execution/file-process-execution-ledger.ts src/main/ipc/process-csv.ipc.ts`:
+  inspecionado manualmente. Nao ha `error.message`; reasons sao categorias
+  sanitizadas (`incompatible_structure`, `invalid_json` ou
+  `read_failed_<code>`).
 - `git diff --check`: pass.
 
 Falhas intermediarias corrigidas:
@@ -150,6 +158,46 @@ Falhas intermediarias corrigidas:
   `deliverySelection` e `options` opcional no mock; corrigido;
 - primeira execucao de `pnpm lint` falhou por formatacao no teste novo;
   corrigido com `pnpm exec biome format --write test/unit/process-csv.ipc.test.ts`.
+
+## Rework after independent security review
+
+O judge recebeu review independente de seguranca e recusou o candidato inicial.
+Este rework corrige os tres findings obrigatorios:
+
+1. Checkpoints legados com `raw` ainda podiam ser copiados.
+   - Correcao: `startRun` agora aplica `toSafeLookupCheckpoints` sobre
+     `previous.checkpoints` antes de criar o novo documento. Cada checkpoint
+     legado e regravado somente com a projecao tecnica minima ou descartado se
+     nao for reutilizavel/seguro.
+   - Teste: `sanitizes legacy checkpoints before reuse and rewrites unsafe payloads`
+     cria ledger legado com `raw`, `providerResponse`, `razaoSocial`, path local
+     status nao reutilizavel e checkpoint malformado; prova que
+     `restoreLookup` nao devolve payload bruto, descarta o que nao pode ser
+     sanitizado e que o ledger regravado nao contem esses campos.
+
+2. `message` podia carregar dado fiscal derivado do provider.
+   - Correcao: `toSafeLookupCheckpointResult` nao persiste mais `message`.
+     Checkpoint fica restrito a `cnpj`, `simplesNacional`, `simei`, `source` e
+     `status`.
+   - Teste: `persists sanitized lookup checkpoints without provider raw payload`
+     usa mensagem de Base Publica Local com razao social e prova que ela nao e
+     persistida nem restaurada.
+
+3. Warning de erro de leitura do ledger ainda usava `error.message`.
+   - Correcao: warnings usam `ledgerKey` e reason categorico sanitizado via
+     `toSafeLedgerReadFailureReason`; `error.message` nao e mais registrado.
+   - Teste: `logs an actionable warning when a ledger file is corrupted` agora
+     exige `reason: "invalid_json"` e prova que nem o diretorio nem o
+     `checkpointPath` completo aparecem no warning.
+
+Checks do rework final:
+
+- testes focados: pass, 3 arquivos / 36 testes;
+- `pnpm typecheck`: pass;
+- `pnpm lint`: pass;
+- `pnpm test`: pass, 40 arquivos / 259 testes;
+- scans de logs/checkpoint: executados e inspecionados;
+- `git diff --check`: pass.
 
 ## Checks nao executados
 
@@ -169,6 +217,10 @@ Falhas intermediarias corrigidas:
 - CNPJ normalizado permanece como chave local de checkpoint e dentro do resultado
   restaurado. Isso e intencional para retomada/exportacao local sem nova
   consulta, mas continua sendo identificador fiscal sensivel no perfil local.
+- Mensagens de provider deixam de aparecer em linhas retomadas de checkpoint;
+  se a consulta for retomada sem nova chamada ao provider, a coluna `mensagem`
+  pode ficar vazia para esses resultados. A decisao segue o judge: checkpoint e
+  cache tecnico de retomada, nao arquivo rico de auditoria/export.
 - `sourceFilePath`, `outputPath` e `checkpointPath` continuam no ledger/historico
   local por necessidade funcional; a mudanca reduz exposicao em logs, nao muda a
   politica de armazenamento local nem adiciona criptografia.

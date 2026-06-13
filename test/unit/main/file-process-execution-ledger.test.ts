@@ -48,6 +48,146 @@ describe("FileProcessExecutionLedger", () => {
     expect(secondRun.runId).not.toBe(firstRun.runId);
   });
 
+  it("persists sanitized lookup checkpoints without provider raw payload", async () => {
+    const directory = await mkdtemp(join(tmpdir(), "ledger-test-"));
+    const ledger = new FileProcessExecutionLedger(directory);
+    const inputCsv = "cnpj\n00.000.000/0001-91";
+
+    const firstRun = await ledger.startRun({
+      inputCsv,
+      providerName: "base-publica-local",
+    });
+    await firstRun.saveLookup({
+      cnpj: "00000000000191",
+      message: "Base Pública Local 2026-01-01: Empresa Sensivel Ltda.",
+      raw: {
+        providerResponse: {
+          cnpj: "00000000000191",
+          razaoSocial: "Empresa Sensivel Ltda.",
+        },
+      },
+      simplesNacional: true,
+      simei: false,
+      source: "base-publica-local",
+      status: "SUCCESS",
+    });
+    await firstRun.finish({
+      status: "CANCELLED",
+      outputPath: null,
+      summary: null,
+    });
+
+    const rawLedger = await readFile(firstRun.checkpointPath, "utf8");
+    expect(rawLedger).not.toContain("raw");
+    expect(rawLedger).not.toContain("providerResponse");
+    expect(rawLedger).not.toContain("Empresa Sensivel Ltda.");
+    expect(rawLedger).not.toContain("Base Pública Local");
+
+    const secondRun = await ledger.startRun({
+      inputCsv,
+      providerName: "base-publica-local",
+    });
+
+    await expect(
+      secondRun.restoreLookup("00000000000191"),
+    ).resolves.toStrictEqual({
+      cnpj: "00000000000191",
+      simplesNacional: true,
+      simei: false,
+      source: "base-publica-local",
+      status: "SUCCESS",
+    });
+  });
+
+  it("sanitizes legacy checkpoints before reuse and rewrites unsafe payloads", async () => {
+    const directory = await mkdtemp(join(tmpdir(), "ledger-test-"));
+    const ledger = new FileProcessExecutionLedger(directory);
+    const inputCsv = "cnpj\n00.000.000/0001-91\n12.345.678/0001-95";
+
+    const firstRun = await ledger.startRun({
+      inputCsv,
+      providerName: "base-publica-local",
+    });
+    await firstRun.setTotalUniqueLookups(2);
+    await firstRun.saveLookup({
+      cnpj: "00000000000191",
+      simplesNacional: true,
+      simei: false,
+      source: "base-publica-local",
+      status: "SUCCESS",
+    });
+    await firstRun.finish({
+      status: "CANCELLED",
+      outputPath: null,
+      summary: null,
+    });
+
+    const legacyDocument = JSON.parse(
+      await readFile(firstRun.checkpointPath, "utf8"),
+    ) as {
+      checkpoints: Record<string, unknown>;
+    };
+    legacyDocument.checkpoints["00000000000191"] = {
+      completedAt: new Date().toISOString(),
+      result: {
+        cnpj: "00000000000191",
+        message: "Base Pública Local 2026-01-01: Empresa Legada S.A.",
+        raw: {
+          providerResponse: {
+            cnpj: "00000000000191",
+            razaoSocial: "Empresa Legada S.A.",
+          },
+        },
+        simplesNacional: true,
+        simei: false,
+        source: "base-publica-local",
+        status: "SUCCESS",
+      },
+    };
+    legacyDocument.checkpoints["12345678000195"] = {
+      completedAt: new Date().toISOString(),
+      result: {
+        cnpj: "12345678000195",
+        raw: { providerResponse: { path: "/tmp/fiscal-desk/base.csv" } },
+        simplesNacional: null,
+        simei: null,
+        source: "base-publica-local",
+        status: "TEMPORARY_ERROR",
+      },
+    };
+    legacyDocument.checkpoints["11111111111111"] = null;
+    await writeFile(
+      firstRun.checkpointPath,
+      `${JSON.stringify(legacyDocument, null, 2)}\n`,
+      "utf8",
+    );
+
+    const secondRun = await ledger.startRun({
+      inputCsv,
+      providerName: "base-publica-local",
+    });
+
+    await expect(
+      secondRun.restoreLookup("00000000000191"),
+    ).resolves.toStrictEqual({
+      cnpj: "00000000000191",
+      simplesNacional: true,
+      simei: false,
+      source: "base-publica-local",
+      status: "SUCCESS",
+    });
+    await expect(secondRun.restoreLookup("12345678000195")).resolves.toBeNull();
+    await expect(secondRun.restoreLookup("11111111111111")).resolves.toBeNull();
+
+    const rewrittenLedger = await readFile(secondRun.checkpointPath, "utf8");
+    expect(rewrittenLedger).not.toContain("raw");
+    expect(rewrittenLedger).not.toContain("providerResponse");
+    expect(rewrittenLedger).not.toContain("razaoSocial");
+    expect(rewrittenLedger).not.toContain("Empresa Legada S.A.");
+    expect(rewrittenLedger).not.toContain("/tmp/fiscal-desk/base.csv");
+    expect(rewrittenLedger).not.toContain("TEMPORARY_ERROR");
+  });
+
   it("does not reuse checkpoints from completed runs", async () => {
     const directory = await mkdtemp(join(tmpdir(), "ledger-test-"));
     const ledger = new FileProcessExecutionLedger(directory);
@@ -276,9 +416,13 @@ describe("FileProcessExecutionLedger", () => {
     expect(logger.warn).toHaveBeenCalledWith(
       "[csv] ledger local invalido descartado",
       expect.objectContaining({
-        checkpointPath: firstRun.checkpointPath,
-        reason: expect.any(String),
+        ledgerKey: expect.stringMatching(/^mock-[a-f0-9]{24}\.json$/),
+        reason: "invalid_json",
       }),
+    );
+    expect(JSON.stringify(logger.warn.mock.calls)).not.toContain(directory);
+    expect(JSON.stringify(logger.warn.mock.calls)).not.toContain(
+      firstRun.checkpointPath,
     );
   });
 });

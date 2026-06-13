@@ -284,6 +284,111 @@ describe("process-csv IPC", () => {
     });
   });
 
+  it("writes operational process logs without CNPJ or local paths", async () => {
+    const handler = handlers.get("csv:process");
+    const sender = { send: vi.fn() };
+    const infoSpy = vi.spyOn(console, "info").mockImplementation(() => {});
+    vi.mocked(processCsv).mockImplementationOnce(
+      async (_content, _provider, options) => {
+        if (!options) {
+          throw new Error("options are required for this test");
+        }
+
+        options.onLookupProgress?.({
+          completedUniqueLookups: 1,
+          currentCnpj: "00000000000191",
+          elapsedMs: 25,
+          estimatedRemainingMs: 0,
+          totalUniqueLookups: 1,
+        });
+
+        return {
+          delivery: {
+            extension: "xlsx",
+            format: "xlsx",
+            mimeType:
+              "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+          },
+          execution: {
+            checkpointPath: ledgerMocks.session.checkpointPath,
+            completedUniqueLookups: 1,
+            resumedUniqueLookups: 0,
+            runId: ledgerMocks.session.runId,
+            status: "SUCCESS",
+            totalUniqueLookups: 1,
+          },
+          outputCsv: "cnpj;status\n00000000000191;SUCCESS",
+          outputXlsx: new Uint8Array([80, 75, 3, 4]),
+          runStatus: "SUCCESS",
+          summary: {
+            totalCnpjsEncontrados: 1,
+            totalCnpjsRetomados: 0,
+            totalCnpjsUnicosConsultados: 1,
+            totalCnpjsValidos: 1,
+            totalErros: 0,
+            totalLinhas: 1,
+            totalNaoOptantesSimples: 0,
+            totalOptantesSimples: 1,
+          },
+        };
+      },
+    );
+
+    try {
+      await expect(
+        handler?.(
+          { sender },
+          {
+            content: "cnpj\n00000000000191",
+            deliveryFormat: "xlsx",
+            provider: "mock",
+            sourceFilePath: "/tmp/fiscal-desk-test/entrada.csv",
+          },
+        ),
+      ).resolves.toMatchObject({
+        delivery: {
+          format: "xlsx",
+        },
+        savedPath: "/tmp/fiscal-desk-test/entrada-processado.xlsx",
+      });
+
+      const serializedLogs = JSON.stringify(infoSpy.mock.calls);
+
+      expect(infoSpy).toHaveBeenCalledWith(
+        "[csv] processamento iniciado",
+        expect.objectContaining({
+          deliveryFormat: "xlsx",
+          hasSourceFile: true,
+          provider: "mock",
+          runId: "test-run",
+        }),
+      );
+      expect(infoSpy).toHaveBeenCalledWith(
+        "[csv] progresso",
+        expect.objectContaining({
+          completedUniqueLookups: 1,
+          totalUniqueLookups: 1,
+        }),
+      );
+      expect(infoSpy).toHaveBeenCalledWith(
+        "[csv] processamento finalizado",
+        expect.objectContaining({
+          deliveryFormat: "xlsx",
+          hasAutoSavedOutput: true,
+          runStatus: "SUCCESS",
+        }),
+      );
+      expect(serializedLogs).not.toContain("00000000000191");
+      expect(serializedLogs).not.toContain("/tmp/fiscal-desk-test");
+      expect(serializedLogs).not.toContain("sourceFilePath");
+      expect(serializedLogs).not.toContain("savedPath");
+      expect(serializedLogs).not.toContain("checkpointPath");
+      expect(serializedLogs).not.toContain("currentCnpj");
+    } finally {
+      infoSpy.mockRestore();
+    }
+  });
+
   it("lists execution history through the ledger adapter", async () => {
     const handler = handlers.get("csv:list-executions");
     const history = [
