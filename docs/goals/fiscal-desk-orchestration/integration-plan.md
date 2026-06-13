@@ -154,7 +154,7 @@ F8B1 was dispatched, independently reviewed and selectively integrated in Wave
 
 | Phase | Thread | Worktree | Scope |
 |---|---|---|---|
-| `post_local_base_regate_csv_input_intake_hardening` | pending `local:54c32872-df4a-4cd9-8e26-5f592283c7a1` | pending | Material single-writer CSV/CNPJ input hardening; requires judge review and independent review before integration |
+| `post_local_base_regate_csv_input_intake_hardening` | worker `019ec28a-ddee-7582-9b44-8298dd89f582`; review `019ec296-2ca5-73b0-b984-6379c1be7d78` | worker `/Users/icaroaguiar/.codex/worktrees/a185/consulta-simples-csv`; review `/Users/icaroaguiar/.codex/worktrees/8fda/consulta-simples-csv` | Worker candidate `ready_for_judge_review`; judge pre-review focused tests/typecheck/lint/diff-check passed; independent review required before any integration |
 
 Independent review threads for the coverage gate:
 `019ec1d0-a1f5-7601-97ef-b91f46e0d00c` and canonical follow-up

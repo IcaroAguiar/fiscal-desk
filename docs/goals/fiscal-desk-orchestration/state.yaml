@@ -604,9 +604,9 @@ monitoring:
   observe_threads_frequently: true
   heartbeat_automation_id: fiscal-desk-f0-monitor
   heartbeat_interval_minutes: 30
-  last_observation_at: "2026-06-13 16:52:27 -03"
+  last_observation_at: "2026-06-13 17:05:09 -03"
   last_observation_file: docs/goals/fiscal-desk-orchestration/integration-plan.md
-  last_observation_status: post_local_base_regate_csv_input_intake_hardening_dispatched
+  last_observation_status: post_local_base_regate_csv_input_intake_hardening_candidate_in_independent_review
   f0_thread_status: self_approval_blocker_resolved_by_judge
   final_integration_review_status: approved_by_judge
   final_integration_review_thread_id: 019ec005-f849-7b53-ae0f-ae7c02df4f63
@@ -630,7 +630,7 @@ monitoring:
   staging_versioning_closeout_dispatch_file: results/staging-versioning-closeout-dispatch-2026-06-13.md
   staging_versioning_closeout_file: results/staging-versioning-closeout.md
   staging_versioning_closeout_judge_decision_file: results/staging-versioning-closeout-judge-decision.md
-  next_material_worker_status: active_post_local_base_regate_csv_input_intake_hardening_pending_judgment
+  next_material_worker_status: active_post_local_base_regate_csv_input_intake_hardening_candidate_pending_independent_review
   last_thread_observation:
     testing_infra_coverage_gate_worker: idle_completed
     testing_infra_coverage_gate_independent_review: idle_completed_approved_candidate
@@ -652,19 +652,37 @@ monitoring:
     post_local_base_regate_next_owner_window_selection: idle_completed_approved_scope_candidate_judged
     post_local_base_regate_first_release_status_rebaseline: idle_completed_approved_docs_only_judged
     post_local_base_regate_material_owner_window_selection: idle_completed_approved_scope_candidate_judged
-    post_local_base_regate_csv_input_intake_hardening: dispatched_pending_worktree
+    post_local_base_regate_csv_input_intake_hardening: worker_candidate_ready_review_pending
+    post_local_base_regate_csv_input_intake_hardening_review: dispatched_pending_worktree
     material_worker_released: post_local_base_regate_csv_input_intake_hardening_only
   active_material_owner_window_after_post_local_base_regate:
     slug: post_local_base_regate_csv_input_intake_hardening
-    status: dispatched_pending_worktree
+    status: ready_for_judge_review_pending_independent_review
     pending_worktree_id: local:54c32872-df4a-4cd9-8e26-5f592283c7a1
+    thread_id: 019ec28a-ddee-7582-9b44-8298dd89f582
+    thread_title: Fortalece ingestão CSV/CNPJ
+    worktree: /Users/icaroaguiar/.codex/worktrees/a185/consulta-simples-csv
     model: gpt-5.5
     reasoning: medium
     branch: feat/fiscal-desk-local-base-prep
     target_min_commit: 6810b70
     dispatch_file: results/post-local-base-regate-csv-input-intake-hardening-dispatch-2026-06-13.md
     result_file: results/post-local-base-regate-csv-input-intake-hardening-2026-06-13.md
+    result_status: ready_for_judge_review
     dispatched_at: "2026-06-13 16:52:27 -03"
+    candidate_observed_at: "2026-06-13 17:03:35 -03"
+    judge_pre_review_validation:
+      focused_tests: pass
+      typecheck: pass
+      lint: pass
+      diff_check: pass
+    review_pending_worktree_id: local:701b2e08-e901-4b1f-aab5-c15a97328202
+    review_thread_id: 019ec296-2ca5-73b0-b984-6379c1be7d78
+    review_thread_title: Revisar hardening do intake CSV
+    review_worktree: /Users/icaroaguiar/.codex/worktrees/8fda/consulta-simples-csv
+    review_dispatch_file: results/post-local-base-regate-csv-input-intake-hardening-review-dispatch-2026-06-13.md
+    review_result_file: results/post-local-base-regate-csv-input-intake-hardening-review-2026-06-13.md
+    review_dispatched_at: "2026-06-13 17:05:09 -03"
     classification: material_single_writer
     requires_independent_review_before_integration: true
     material_worker_released: true
