@@ -33,6 +33,7 @@ Allowed write persistente:
 Artefatos transitorios permitidos na worktree, sem stage/commit/copia para o
 branch canonico:
 
+- `node_modules/**`
 - `coverage/**`
 - `dist/**`
 - `dist-electron/**`
@@ -83,6 +84,8 @@ Rodar, nesta ordem quando viavel:
 
 - `git status --short --branch --untracked-files=all`
 - `git log -3 --oneline`
+- `pnpm install --frozen-lockfile`, somente se `node_modules` ou binarios locais
+  estiverem ausentes; nao pode alterar `package.json` nem `pnpm-lock.yaml`
 - `pnpm lint`
 - `pnpm typecheck`
 - `pnpm test`

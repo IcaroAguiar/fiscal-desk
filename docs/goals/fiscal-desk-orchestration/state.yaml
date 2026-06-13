@@ -1061,6 +1061,7 @@ monitoring:
     allowed_persistent_write:
       - docs/goals/fiscal-desk-orchestration/results/post-p3-validation-docs-rebaseline-integrated-first-release-validation-2026-06-13.md
     allowed_transient_artifacts:
+      - node_modules/**
       - coverage/**
       - dist/**
       - dist-electron/**
