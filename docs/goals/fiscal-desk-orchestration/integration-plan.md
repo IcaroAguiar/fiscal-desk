@@ -154,11 +154,12 @@ F8B1 was dispatched, independently reviewed and selectively integrated in Wave
 
 | Phase | Thread | Worktree | Scope |
 |---|---|---|---|
-| `post_csv_input_intake_next_owner_window_selection` | pending (`local:89bc6049-df92-4695-8229-5c8a58c02a76`) | pending | Read-only next owner-window selection after `post_local_base_regate_csv_input_intake_hardening`; no material worker released |
+| `post_csv_input_intake_next_owner_window_selection` | `019ec2ab-1703-7453-8e1d-9b570d471122` | `/Users/icaroaguiar/.codex/worktrees/fc09/consulta-simples-csv` | Read-only next owner-window selection after `post_local_base_regate_csv_input_intake_hardening`; no material worker released |
 
 No active material owner window exists. `post_local_base_regate_csv_input_intake_hardening`
 was integrated and validated at `2026-06-13 17:20:37 -03`; the only active
-work is a read-only scope-selection gate dispatched at `2026-06-13 17:26:55 -03`.
+work is a read-only scope-selection gate dispatched at `2026-06-13 17:26:55 -03`
+and observed active at `2026-06-13 17:29:28 -03`.
 
 Judge decision:
 `results/post-local-base-regate-csv-input-intake-hardening-judge-decision-2026-06-13.md`.

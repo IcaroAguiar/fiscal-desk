@@ -604,9 +604,9 @@ monitoring:
   observe_threads_frequently: true
   heartbeat_automation_id: fiscal-desk-f0-monitor
   heartbeat_interval_minutes: 30
-  last_observation_at: "2026-06-13 17:26:55 -03"
+  last_observation_at: "2026-06-13 17:29:28 -03"
   last_observation_file: docs/goals/fiscal-desk-orchestration/integration-plan.md
-  last_observation_status: post_csv_input_intake_next_owner_window_selection_dispatched
+  last_observation_status: post_csv_input_intake_next_owner_window_selection_thread_active
   f0_thread_status: self_approval_blocker_resolved_by_judge
   final_integration_review_status: approved_by_judge
   final_integration_review_thread_id: 019ec005-f849-7b53-ae0f-ae7c02df4f63
@@ -750,16 +750,18 @@ monitoring:
     slug: post_csv_input_intake_next_owner_window_selection
     status: dispatched_pending_receipt
     pending_worktree_id: local:89bc6049-df92-4695-8229-5c8a58c02a76
-    thread_id: pending
-    thread_title: pending
-    worktree: pending
+    thread_id: 019ec2ab-1703-7453-8e1d-9b570d471122
+    thread_title: Selecionar owner window pos CSV
+    worktree: /Users/icaroaguiar/.codex/worktrees/fc09/consulta-simples-csv
     model: gpt-5.5
     reasoning: medium
     branch: feat/fiscal-desk-local-base-prep
     target_min_commit: cd544e7
+    canonical_dispatch_commit: 8f2c9d0
     dispatch_file: results/post-csv-input-intake-next-owner-window-selection-dispatch-2026-06-13.md
     result_file: results/post-csv-input-intake-next-owner-window-selection-2026-06-13.md
     dispatched_at: "2026-06-13 17:26:55 -03"
+    coordination_update_sent_at: "2026-06-13 17:29:28 -03"
     classification: read_only_scope_selection
     material_worker_released: false
     blocks_material_workers_until_judged: true
