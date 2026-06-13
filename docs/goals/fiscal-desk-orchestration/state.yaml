@@ -604,9 +604,9 @@ monitoring:
   observe_threads_frequently: true
   heartbeat_automation_id: fiscal-desk-f0-monitor
   heartbeat_interval_minutes: 30
-  last_observation_at: "2026-06-13 18:29:45 -03"
+  last_observation_at: "2026-06-13 18:35:50 -03"
   last_observation_file: docs/goals/fiscal-desk-orchestration/integration-plan.md
-  last_observation_status: post_p3_rebaseline_readiness_next_owner_window_selection_active
+  last_observation_status: post_p3_rebaseline_readiness_next_owner_window_selection_approved_next_docs_rebaseline_prepared
   f0_thread_status: self_approval_blocker_resolved_by_judge
   final_integration_review_status: approved_by_judge
   final_integration_review_thread_id: 019ec005-f849-7b53-ae0f-ae7c02df4f63
@@ -630,7 +630,7 @@ monitoring:
   staging_versioning_closeout_dispatch_file: results/staging-versioning-closeout-dispatch-2026-06-13.md
   staging_versioning_closeout_file: results/staging-versioning-closeout.md
   staging_versioning_closeout_judge_decision_file: results/staging-versioning-closeout-judge-decision.md
-  next_material_worker_status: blocked_pending_post_p3_rebaseline_readiness_next_owner_window_selection
+  next_material_worker_status: blocked_pending_post_p3_readiness_first_release_validation_docs_rebaseline
   last_thread_observation:
     testing_infra_coverage_gate_worker: idle_completed
     testing_infra_coverage_gate_independent_review: idle_completed_approved_candidate
@@ -661,7 +661,8 @@ monitoring:
     post_p3_first_release_status_rebaseline: idle_completed_approved_docs_only_integrated_local_docs
     post_p3_rebaseline_next_owner_window_selection: idle_completed_approved_scope_candidate_judged
     post_p3_rebaseline_first_release_readiness_review: idle_completed_approved_candidate_judged
-    post_p3_rebaseline_readiness_next_owner_window_selection: active_read_only_selection
+    post_p3_rebaseline_readiness_next_owner_window_selection: idle_completed_approved_scope_candidate_judged
+    post_p3_readiness_first_release_validation_docs_rebaseline: dispatch_prepared_pending_thread
     material_worker_released: none_after_p3_renderer_missing_column_normalizer_integration
   active_material_owner_window_after_post_local_base_regate:
     slug: post_local_base_regate_csv_input_intake_hardening
@@ -962,7 +963,7 @@ monitoring:
       - docs/goals/fiscal-desk-orchestration/results/post-p3-rebaseline-first-release-readiness-review-2026-06-13.md
   active_read_only_owner_window_selection_after_post_p3_rebaseline_readiness:
     slug: post_p3_rebaseline_readiness_next_owner_window_selection
-    status: active_read_only_selection
+    status: approved_by_judge_scope_candidate
     pending_worktree_id: local:fe8b4b19-04ee-43bb-9d57-2627e9148d59
     thread_id: 019ec2e3-acd3-7d32-bbde-6c8e2740569f
     thread_title: Selecionar owner window pos readiness
@@ -973,13 +974,36 @@ monitoring:
     target_min_commit: e735ed4
     dispatch_file: results/post-p3-rebaseline-readiness-next-owner-window-selection-dispatch-2026-06-13.md
     result_file: results/post-p3-rebaseline-readiness-next-owner-window-selection-2026-06-13.md
+    judge_decision_file: results/post-p3-rebaseline-readiness-next-owner-window-selection-judge-decision-2026-06-13.md
     prepared_at: "2026-06-13 18:27:15 -03"
     observed_active_at: "2026-06-13 18:29:45 -03"
+    completed_observed_at: "2026-06-13 18:35:50 -03"
+    judged_at: "2026-06-13 18:35:50 -03"
     classification: read_only_owner_window_selection
     material_worker_released: false
     blocks_material_workers_until_judged: true
+    result_status: approved_scope_candidate
+    selected_next_owner_window: post_p3_readiness_first_release_validation_docs_rebaseline
+    selected_next_owner_window_classification: docs_only
+    next_material_worker_status_after_judgment: blocked_pending_post_p3_readiness_first_release_validation_docs_rebaseline
     allowed_write:
       - docs/goals/fiscal-desk-orchestration/results/post-p3-rebaseline-readiness-next-owner-window-selection-2026-06-13.md
+  active_docs_only_validation_rebaseline_after_post_p3_readiness:
+    slug: post_p3_readiness_first_release_validation_docs_rebaseline
+    status: dispatch_prepared_pending_thread
+    model: gpt-5.5
+    reasoning: medium
+    branch: feat/fiscal-desk-local-base-prep
+    target_min_commit: 6807684
+    dispatch_file: results/post-p3-readiness-first-release-validation-docs-rebaseline-dispatch-2026-06-13.md
+    result_file: results/post-p3-readiness-first-release-validation-docs-rebaseline-2026-06-13.md
+    prepared_at: "2026-06-13 18:35:50 -03"
+    classification: docs_only
+    material_worker_released: false
+    blocks_material_workers_until_judged: true
+    allowed_write:
+      - docs/qa/first-release-validation.md
+      - docs/goals/fiscal-desk-orchestration/results/post-p3-readiness-first-release-validation-docs-rebaseline-2026-06-13.md
   active_read_only_owner_window_selection_after_post_local_base_regate:
     slug: post_local_base_regate_material_owner_window_selection
     status: approved_by_judge_scope_candidate

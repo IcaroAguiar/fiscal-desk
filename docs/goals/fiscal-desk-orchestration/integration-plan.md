@@ -145,18 +145,18 @@ Nenhuma thread individual pode substituir o review da branch final integrada.
 
 | Phase | Judge status | Integration release |
 |---|---|---|
-| `post_p3_rebaseline_readiness_next_owner_window_selection` | `active_read_only_selection` | Codex App selection thread active |
+| `post_p3_readiness_first_release_validation_docs_rebaseline` | `dispatch_prepared_pending_thread` | Pending Codex App docs-only thread creation |
 
 F8B1 was dispatched, independently reviewed and selectively integrated in Wave
 13. P3 renderer was integrated and validated after CSV input intake hardening.
-New material work remains blocked until the post-P3-rebaseline readiness review
-is completed, judged, and followed by a fresh owner-window selection.
+New material work remains blocked until the post-P3 readiness validation-doc
+rebaseline is completed and judged.
 
 ## Active Queue As Of 2026-06-13
 
 | Phase | Thread | Worktree | Scope |
 |---|---|---|---|
-| `post_p3_rebaseline_readiness_next_owner_window_selection` | `019ec2e3-acd3-7d32-bbde-6c8e2740569f` | `/Users/icaroaguiar/.codex/worktrees/31d4/consulta-simples-csv` | Read-only owner-window selection; no material worker active |
+| None | - | - | No active worker; next docs-only validation-doc rebaseline is prepared |
 
 `post_local_base_regate_csv_input_intake_hardening` was integrated and validated
 at `2026-06-13 17:20:37 -03`. The read-only scope-selection gate
@@ -219,6 +219,16 @@ dispatch. The Codex App selection thread
 `019ec2e3-acd3-7d32-bbde-6c8e2740569f` was observed active at
 `2026-06-13 18:29:45 -03` in
 `/Users/icaroaguiar/.codex/worktrees/31d4/consulta-simples-csv`.
+The selector returned `approved_scope_candidate`, and the judge accepted the
+next docs-only window at `2026-06-13 18:35:50 -03`.
+
+The next authorized window is docs-only:
+`post_p3_readiness_first_release_validation_docs_rebaseline`. It may only
+update `docs/qa/first-release-validation.md` and its receipt so the validation
+doc matches the integrated coverage gate and post-P3 first-release cut. No
+material feature work, release execution, dist, publish, signing, notarization,
+updater, telemetry, diagnostic sending, license/account or external side effect
+is released by this approval.
 
 Judge decision:
 `results/post-local-base-regate-csv-input-intake-hardening-judge-decision-2026-06-13.md`.
@@ -303,6 +313,15 @@ Post-P3 rebaseline first release readiness review judge decision:
 
 Post-P3 rebaseline readiness next owner-window selection dispatch:
 `results/post-p3-rebaseline-readiness-next-owner-window-selection-dispatch-2026-06-13.md`.
+
+Post-P3 rebaseline readiness next owner-window selection result:
+`results/post-p3-rebaseline-readiness-next-owner-window-selection-2026-06-13.md`.
+
+Post-P3 rebaseline readiness next owner-window selection judge decision:
+`results/post-p3-rebaseline-readiness-next-owner-window-selection-judge-decision-2026-06-13.md`.
+
+Post-P3 readiness first-release validation docs rebaseline dispatch:
+`results/post-p3-readiness-first-release-validation-docs-rebaseline-dispatch-2026-06-13.md`.
 
 Independent review threads for the coverage gate:
 `019ec1d0-a1f5-7601-97ef-b91f46e0d00c` and canonical follow-up
