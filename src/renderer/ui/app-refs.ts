@@ -8,9 +8,12 @@ export type AppRefs = {
   deliveryFormatBadge: HTMLElement | null;
   deliverySelect: HTMLSelectElement | null;
   executionCheckpoint: HTMLElement | null;
+  executionCheckpointCopy: HTMLElement | null;
+  executionBlocker: HTMLElement | null;
   executionHistory: HTMLElement | null;
   executionResume: HTMLElement | null;
   executionRunId: HTMLElement | null;
+  executionSuggestion: HTMLElement | null;
   executionStatus: HTMLElement | null;
   fileBadge: HTMLElement | null;
   fileDropzoneHint: HTMLElement | null;
@@ -225,6 +228,15 @@ export function collectAppRefs(appRoot: HTMLElement): AppRefs {
     ),
     executionCheckpoint: appRoot.querySelector<HTMLElement>(
       '[data-slot="execution-checkpoint"]',
+    ),
+    executionCheckpointCopy: appRoot.querySelector<HTMLElement>(
+      '[data-slot="execution-checkpoint-copy"]',
+    ),
+    executionBlocker: appRoot.querySelector<HTMLElement>(
+      '[data-slot="execution-blocker"]',
+    ),
+    executionSuggestion: appRoot.querySelector<HTMLElement>(
+      '[data-slot="execution-suggestion"]',
     ),
     executionHistory: appRoot.querySelector<HTMLElement>(
       '[data-slot="execution-history"]',

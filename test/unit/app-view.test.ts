@@ -87,6 +87,39 @@ describe("app view execution history", () => {
     );
   });
 
+  it("renders operational execution panel slots without technical ids", () => {
+    const html = renderShell({
+      ...initialState,
+      execution: {
+        checkpointPath: "/tmp/fiscal-desk/ledger.json",
+        completedUniqueLookups: 4,
+        resumedUniqueLookups: 0,
+        runId: "run-technical-id",
+        status: "RUNNING",
+        totalUniqueLookups: 10,
+      },
+      fileName: "clientes.csv",
+      progress: {
+        completedUniqueLookups: 4,
+        currentCnpj: "11222333000144",
+        elapsedMs: 60_000,
+        estimatedRemainingMs: 90_000,
+        totalUniqueLookups: 10,
+      },
+      status: "processing",
+    });
+
+    expect(html).toContain("Painel de Execução");
+    expect(html).toContain('data-slot="execution-blocker"');
+    expect(html).toContain('data-slot="execution-checkpoint-copy"');
+    expect(html).toContain('data-slot="execution-suggestion"');
+    expect(html).toContain("Consultando 11222333000144");
+    expect(html).toContain("estimativa móvel: cerca de 1m 30s restantes.");
+    expect(html).toContain("Retomada local disponível.");
+    expect(html).not.toContain("run-technical-id");
+    expect(html).not.toContain("ledger.json");
+  });
+
   it("renders resumable interrupted executions with an action button", () => {
     const state: UiState = {
       ...initialState,

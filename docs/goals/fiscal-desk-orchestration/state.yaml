@@ -604,9 +604,9 @@ monitoring:
   observe_threads_frequently: true
   heartbeat_automation_id: fiscal-desk-f0-monitor
   heartbeat_interval_minutes: 30
-  last_observation_at: "2026-06-13 20:06:53 -03"
+  last_observation_at: "2026-06-13 20:19:10 -03"
   last_observation_file: docs/goals/fiscal-desk-orchestration/integration-plan.md
-  last_observation_status: post_p3_operational_execution_panel_suggestions_rework_sent
+  last_observation_status: post_p3_operational_execution_panel_suggestions_integrated_validated_after_rework
   f0_thread_status: self_approval_blocker_resolved_by_judge
   final_integration_review_status: approved_by_judge
   final_integration_review_thread_id: 019ec005-f849-7b53-ae0f-ae7c02df4f63
@@ -669,11 +669,11 @@ monitoring:
     post_p3_integrated_validation_large_file_ratchet_rework_review: idle_completed_approved_candidate_judged
     post_p3_large_file_ratchet_rework_next_owner_window_selection: idle_completed_approved_scope_candidate_judged
     post_p3_large_file_ratchet_rework_final_readiness_review: idle_completed_approved_candidate_judged
-    post_p3_operational_execution_panel_suggestions: idle_completed_ready_for_judge_review
+    post_p3_operational_execution_panel_suggestions: idle_completed_ready_for_judge_review_after_rework_integrated_validated
     post_p3_operational_execution_panel_suggestions_review: idle_completed_approved_candidate
-    post_p3_operational_execution_panel_suggestions_judge: needs_rework_quality_gate
-    post_p3_operational_execution_panel_suggestions_rework: active_worker_rework_sent
-    material_worker_released: post_p3_operational_execution_panel_suggestions
+    post_p3_operational_execution_panel_suggestions_judge: integrated_validated_after_rework
+    post_p3_operational_execution_panel_suggestions_rework: idle_completed_ready_for_judge_review_after_rework
+    material_worker_released: none_pending_fresh_owner_window_selection
   active_material_owner_window_after_post_local_base_regate:
     slug: post_local_base_regate_csv_input_intake_hardening
     status: approved_by_judge_integrated_validated
@@ -1254,7 +1254,7 @@ monitoring:
       - docs/goals/fiscal-desk-orchestration/results/post-p3-large-file-ratchet-rework-final-readiness-review-2026-06-13.md
   active_material_owner_window_after_post_p3_readiness:
     slug: post_p3_operational_execution_panel_suggestions
-    status: needs_rework_quality_gate
+    status: approved_by_judge_integrated_validated_after_rework
     pending_worktree_id: local:69ad988e-c8ab-4e83-8643-1cb1098394d9
     thread_id: 019ec327-63be-7143-97ec-84bf9bd7bfd0
     thread_title: "Implementa painel de sugestões"
@@ -1273,17 +1273,21 @@ monitoring:
     classification: material_renderer_worker
     dispatch_file: results/post-p3-operational-execution-panel-suggestions-dispatch-2026-06-13.md
     result_file: results/post-p3-operational-execution-panel-suggestions-2026-06-13.md
-    result_status: ready_for_judge_review
+    result_status: ready_for_judge_review_after_rework
     candidate_observed_at: "2026-06-13 19:57:22 -03"
     candidate_worktree_head: eb20ec3
-    integration_status: not_integrated_reverted_after_quality_gate_failure
-    judge_decision_status: needs_rework
+    integration_status: integrated_validated_after_rework
+    judge_decision_status: integrated_validated_after_rework
     judge_decision_file: results/post-p3-operational-execution-panel-suggestions-judge-decision-2026-06-13.md
+    integration_judge_decision_file: results/post-p3-operational-execution-panel-suggestions-integration-judge-decision-2026-06-13.md
     judge_decided_at: "2026-06-13 20:04:59 -03"
     rework_requested_at: "2026-06-13 20:06:53 -03"
     rework_requested_thread_id: 019ec327-63be-7143-97ec-84bf9bd7bfd0
-    rework_required_status: active
+    rework_completed_at: "2026-06-13 20:14:28 -03"
+    rework_required_status: closed
+    integrated_at: "2026-06-13 20:19:10 -03"
     material_worker_released: true
+    current_queue_effect: no_active_material_worker_after_acceptance
     requires_independent_review_before_integration: true
     review_status: approved_candidate
     review_pending_worktree_id: local:6d5c9bcb-69a1-43c3-a95b-a2fe722cb49f
@@ -1295,12 +1299,35 @@ monitoring:
     review_completed_at: "2026-06-13 20:01:00 -03"
     review_dispatch_file: results/post-p3-operational-execution-panel-suggestions-review-dispatch-2026-06-13.md
     review_result_file: results/post-p3-operational-execution-panel-suggestions-review-2026-06-13.md
-    quality_gate_status: fail
+    quality_gate_status: pass_after_rework
     quality_gate_failures:
       - coverage.pr-minimum changed-line coverage 53.33 below 70
       - code.large-file-ratchet large file count increased from 2 to 3
       - file.size src/renderer/ui/app-sync.ts 520 lines above 500
       - file.size src/renderer/ui/app-view.ts 515 lines above 500
+    quality_gate_after_rework:
+      status: pass
+      changed_line_coverage_pct: 98.47
+      changed_line_coverage: 193/196
+      large_files_baseline: 2
+      large_files_current: 1
+      failures: []
+    canonical_validation_after_rework:
+      diff_check: pass
+      focused_renderer_tests: pass_4_files_27_tests
+      typecheck: pass
+      lint: pass_122_files
+      test: pass_42_files_271_tests
+      coverage: pass_global_76_06_pct
+      quality_gate: pass
+      build: pass
+      smoke_visual: pass
+      smoke_electron_ui_mock: pass
+      smoke_electron_ui_base_publica_local: pass_after_sandbox_eperm_rerun_outside_sandbox
+    residual_risks_after_integration:
+      - magic_string_boundary_warn_only_17_renderer_data_slots
+      - visual_surface_change_expected_and_smoke_visual_passed
+      - legacy_uiResumeText_1_CNPJs_retomados_remains_harness_bound_future_polish
     review_allowed_write:
       - docs/goals/fiscal-desk-orchestration/results/post-p3-operational-execution-panel-suggestions-review-2026-06-13.md
     allowed_write:

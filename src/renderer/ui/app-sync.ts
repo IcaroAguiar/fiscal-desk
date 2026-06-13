@@ -22,9 +22,13 @@ import {
 } from "./app-view";
 import {
   buildDedupeLabel,
+  buildOperationalPanelCopy,
   formatCommandBarSummary,
+  formatExecutionResume,
+  formatExecutionStatus,
   formatProviderHint,
   formatProviderMode,
+  getOperationalToneClass,
   previewAutoSavePath,
 } from "./operational-copy";
 import { renderSummaryInto } from "./render-summary";
@@ -182,35 +186,48 @@ function syncProtocolRefs(refs: AppRefs, state: UiState): void {
 }
 
 function syncSessionRefs(refs: AppRefs, state: UiState): void {
+  const operationalPanel = buildOperationalPanelCopy(state);
+
   if (refs.sessionState) {
     refs.sessionState.textContent = state.execution
       ? formatExecutionStatus(state.execution.status)
       : "Aguardando";
+    refs.sessionState.className = [
+      "status-token",
+      getOperationalToneClass(operationalPanel.blockerTone),
+    ].join(" ");
   }
 
   if (refs.sessionEntry) {
-    refs.sessionEntry.textContent = formatCommandBarSummary(
-      state.fileName,
-      state.provider,
-    );
+    refs.sessionEntry.textContent = operationalPanel.currentItemLabel;
   }
 
   if (refs.sessionDedupe) {
-    refs.sessionDedupe.textContent = state.summary
-      ? buildDedupeLabel(state.summary)
-      : "—";
+    refs.sessionDedupe.textContent = operationalPanel.etaLabel;
   }
 
   if (refs.sessionRun) {
-    refs.sessionRun.textContent = state.execution
-      ? state.execution.runId.slice(0, 8)
-      : "—";
+    refs.sessionRun.textContent = operationalPanel.failureLabel;
   }
 
   if (refs.sessionCheckpoint) {
-    refs.sessionCheckpoint.textContent = state.execution?.checkpointPath
-      ? (state.execution.checkpointPath.split(/[/\\]/).pop() ?? "consulta.json")
-      : "—";
+    refs.sessionCheckpoint.textContent = operationalPanel.lastSaveLabel;
+  }
+
+  if (refs.executionBlocker) {
+    refs.executionBlocker.textContent = operationalPanel.blockerLabel;
+    refs.executionBlocker.className = [
+      "status-token",
+      getOperationalToneClass(operationalPanel.blockerTone),
+    ].join(" ");
+  }
+
+  if (refs.executionCheckpointCopy) {
+    refs.executionCheckpointCopy.textContent = operationalPanel.checkpointLabel;
+  }
+
+  if (refs.executionSuggestion) {
+    refs.executionSuggestion.textContent = operationalPanel.suggestionLabel;
   }
 }
 
@@ -328,8 +345,8 @@ function syncExecutionRefs(refs: AppRefs, state: UiState): void {
 
   if (refs.executionRunId) {
     refs.executionRunId.textContent = state.execution
-      ? state.execution.runId.slice(0, 8)
-      : "—";
+      ? "registrada"
+      : "não iniciada";
   }
 
   if (refs.executionResume) {
@@ -338,33 +355,13 @@ function syncExecutionRefs(refs: AppRefs, state: UiState): void {
 
   if (refs.executionCheckpoint) {
     refs.executionCheckpoint.textContent = state.execution?.checkpointPath
-      ? (state.execution.checkpointPath.split(/[/\\]/).pop() ?? "consulta.json")
+      ? "disponível"
       : "—";
   }
 
   if (refs.executionHistory) {
     refs.executionHistory.innerHTML = renderExecutionHistory(state);
   }
-}
-
-function formatExecutionStatus(status: string): string {
-  if (status === "SUCCESS") return "Concluído";
-  if (status === "ERROR") return "Erro";
-  if (status === "CANCELLED") return "Cancelado";
-  if (status === "PROCESSING") return "Em consulta";
-  return status;
-}
-
-function formatExecutionResume(state: UiState): string {
-  if (!state.execution) {
-    return "Sem consulta em andamento";
-  }
-
-  if (state.execution.resumedUniqueLookups === 0) {
-    return "Retomada não utilizada";
-  }
-
-  return `${state.execution.resumedUniqueLookups} CNPJs retomados`;
 }
 
 function syncActiveView(refs: AppRefs, state: UiState): void {

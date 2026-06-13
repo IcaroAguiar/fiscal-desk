@@ -1479,3 +1479,47 @@ thread `019ec327-63be-7143-97ec-84bf9bd7bfd0`.
 
 Rework remains inside the original owner window and allowed write set. No
 material code is integrated in the final branch while this rework is active.
+
+## Post P3 Operational Execution Panel Suggestions Integration As Of 2026-06-13 20:19
+
+Receipt:
+`results/post-p3-operational-execution-panel-suggestions-integration-judge-decision-2026-06-13.md`.
+
+The worker completed the required rework as
+`ready_for_judge_review_after_rework`. The judge applied the reworked material
+patch in the final branch `feat/fiscal-desk-local-base-prep`, copied the
+updated worker receipt and validated the integrated result in the canonical
+worktree.
+
+Canonical validation after rework:
+
+- focused renderer/copy/sync tests: pass, 4 files and 27 tests;
+- `pnpm typecheck`: pass;
+- `pnpm lint`: pass, 122 files;
+- `pnpm test`: pass, 42 files and 271 tests;
+- `pnpm test:coverage`: pass, global line coverage 76.06%;
+- `QUALITY_GATE_DIFF_MODE=worktree node docs/ai/quality-gate/check-ratchet.mjs`:
+  pass, changed-line coverage 98.47% (`193/196`), large files baseline 2 and
+  current 1;
+- `pnpm build`: pass;
+- `pnpm smoke:visual`: pass across desktop, tablet and mobile;
+- `pnpm smoke:electron-ui`: pass with provider `mock` and XLSX delivery;
+- `FISCAL_DESK_SMOKE_PROVIDER=base-publica-local pnpm smoke:electron-ui`: pass
+  outside sandbox after the known `tsx` pipe `EPERM` sandbox failure.
+
+Decision: `integrated_validated_after_rework`.
+
+The previous quality-gate blocker is closed. No new material worker is released
+automatically by this integration. The next step is a fresh explicit
+owner-window selection or queue closeout before touching any additional
+material surface.
+
+Residual risks accepted for this integration:
+
+- `magic_string_boundary=17` is warn-only and comes from renderer-local
+  `data-slot`s used for sync/test surfaces;
+- `visual_surface_change=1` is expected for the operational panel and is covered
+  by visual smoke;
+- legacy `uiResumeText: "1 CNPJs retomados"` remains in the smoke-bound legacy
+  activity slot; the new panel uses singular copy correctly and a legacy-harness
+  copy fix requires its own owner window.

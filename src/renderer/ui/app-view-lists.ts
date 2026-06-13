@@ -55,9 +55,9 @@ export function renderLogList(state: UiState): string {
       <span data-slot="command-hint">${escapeHtml(formatProviderHint(state.fileName, state.provider))}</span>
       <span>CNPJs repetidos: <strong data-slot="dedupe-label">${state.summary ? buildDedupeLabel(state.summary) : "—"}</strong></span>
       <span>Andamento: <strong data-slot="execution-status">${state.execution?.status ?? "Aguardando"}</strong></span>
-      <span>Consulta: <strong data-slot="execution-run-id">${state.execution?.runId.slice(0, 8) ?? "—"}</strong></span>
+      <span>Consulta local: <strong data-slot="execution-run-id">${state.execution ? "registrada" : "não iniciada"}</strong></span>
       <span>Retomada local: <strong data-slot="execution-resume">${formatResumeLabel(state)}</strong></span>
-      <span>Ponto de retomada: <strong data-slot="execution-checkpoint">${state.execution?.checkpointPath ? escapeHtml(state.execution.checkpointPath.split(/[/\\]/).pop() ?? "consulta.json") : "—"}</strong></span>
+      <span>Ponto de retomada: <strong data-slot="execution-checkpoint">${state.execution?.checkpointPath ? "disponível" : "—"}</strong></span>
     </div>
   `;
 }

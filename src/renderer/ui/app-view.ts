@@ -17,11 +17,12 @@ import { formatLocalPublicBaseStatusLine } from "./app-local-public-base-copy";
 import { renderLogList, renderQueueItems } from "./app-view-lists";
 import { button, statusPill } from "./components";
 import {
-  buildDedupeLabel,
-  formatCommandBarSummary,
+  buildOperationalPanelCopy,
+  formatExecutionResume,
   formatProgressLine,
   formatProviderHint,
   formatProviderMode,
+  getOperationalToneClass,
   previewAutoSavePath,
 } from "./operational-copy";
 
@@ -95,18 +96,15 @@ export function renderShell(state: UiState): string {
       ? "Nome previsto para o arquivo final."
       : "O arquivo final fica ao lado da planilha original.";
   const protocolResume = state.execution
-    ? formatResumeLabel(state)
+    ? formatExecutionResume(state)
     : "Disponível quando houver checkpoint";
-  const sessionRun = state.execution?.runId.slice(0, 8) ?? "—";
-  const sessionCheckpoint = state.execution?.checkpointPath
-    ? (state.execution.checkpointPath.split(/[/\\]/).pop() ?? "consulta.json")
-    : "—";
   const hasOperationalSignals =
     Boolean(state.fileName) ||
     Boolean(state.summary) ||
     Boolean(state.progress) ||
     state.status === "processing" ||
     state.status === "error";
+  const operationalPanel = buildOperationalPanelCopy(state);
 
   return `
     <main class="app-shell workbench-shell workbench-v5">
@@ -283,25 +281,39 @@ export function renderShell(state: UiState): string {
 
           <section class="session-zone t-panel-slide" aria-label="Sessão local" data-view-panel="painel" data-open="${state.activeView === "painel" ? "true" : "false"}">
             <div class="zone-head">
-              <h2>Sessão local</h2>
-              <span class="status-token" data-slot="session-state">${escapeHtml(state.execution?.status ?? "Aguardando")}</span>
+              <h2>Painel de Execução</h2>
+              <span class="status-token ${getOperationalToneClass(operationalPanel.blockerTone)}" data-slot="session-state">${escapeHtml(state.execution?.status ?? "Aguardando")}</span>
             </div>
             <div class="session-grid">
               <div>
-                <span class="ops-label">Arquivo</span>
-                <strong data-slot="session-entry">${escapeHtml(formatCommandBarSummary(state.fileName, state.provider))}</strong>
+                <span class="ops-label">Agora</span>
+                <strong data-slot="session-entry">${escapeHtml(operationalPanel.currentItemLabel)}</strong>
               </div>
               <div>
-                <span class="ops-label">CNPJs repetidos</span>
-                <strong data-slot="session-dedupe">${state.summary ? escapeHtml(buildDedupeLabel(state.summary)) : "—"}</strong>
+                <span class="ops-label">ETA</span>
+                <strong data-slot="session-dedupe">${escapeHtml(operationalPanel.etaLabel)}</strong>
               </div>
               <div>
-                <span class="ops-label">Consulta</span>
-                <strong data-slot="session-run">${escapeHtml(sessionRun)}</strong>
+                <span class="ops-label">Falhas</span>
+                <strong data-slot="session-run">${escapeHtml(operationalPanel.failureLabel)}</strong>
               </div>
               <div>
-                <span class="ops-label">Checkpoint</span>
-                <strong data-slot="session-checkpoint">${escapeHtml(sessionCheckpoint)}</strong>
+                <span class="ops-label">Último salvamento</span>
+                <strong data-slot="session-checkpoint">${escapeHtml(operationalPanel.lastSaveLabel)}</strong>
+              </div>
+            </div>
+            <div class="ops-suggestions" aria-label="Sugestões assistidas">
+              <div>
+                <span class="ops-label">Bloqueios</span>
+                <strong class="status-token ${getOperationalToneClass(operationalPanel.blockerTone)}" data-slot="execution-blocker">${escapeHtml(operationalPanel.blockerLabel)}</strong>
+              </div>
+              <div>
+                <span class="ops-label">Retomada</span>
+                <strong data-slot="execution-checkpoint-copy">${escapeHtml(operationalPanel.checkpointLabel)}</strong>
+              </div>
+              <div>
+                <span class="ops-label">Sugestão assistida</span>
+                <strong data-slot="execution-suggestion">${escapeHtml(operationalPanel.suggestionLabel)}</strong>
               </div>
             </div>
             ${renderLocalTrustGrid()}
@@ -398,18 +410,6 @@ function renderViewLink(
   const aria = active ? ' aria-current="page"' : "";
 
   return `<a class="${className}${activeClass}" href="${href}" data-view="${view}" data-view-surface="${kind}"${aria}>${escapeHtml(label)}</a>`;
-}
-
-function formatResumeLabel(state: UiState): string {
-  if (!state.execution) {
-    return "Sem consulta em andamento";
-  }
-
-  if (state.execution.resumedUniqueLookups === 0) {
-    return "Retomada não utilizada";
-  }
-
-  return `${state.execution.resumedUniqueLookups} CNPJs retomados`;
 }
 
 export function getProgressPercent(state: UiState): number {
