@@ -1362,7 +1362,8 @@ monitoring:
       - docs/fiscal-desk/**
   active_read_only_owner_window_selection_after_operational_panel:
     slug: post_p3_operational_panel_next_owner_window_selection
-    status: dispatch_prepared_pending_thread
+    status: queued_pending_worktree
+    pending_worktree_id: local:8e026ea9-3d5a-4e97-b4c4-d3f1d88fbac8
     model: gpt-5.5
     reasoning: medium
     branch: feat/fiscal-desk-local-base-prep
