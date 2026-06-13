@@ -606,7 +606,7 @@ monitoring:
   heartbeat_interval_minutes: 30
   last_observation_at: "2026-06-13 19:47:00 -03"
   last_observation_file: docs/goals/fiscal-desk-orchestration/integration-plan.md
-  last_observation_status: post_p3_large_file_ratchet_rework_final_readiness_approved_ready_for_material_owner_window_selection
+  last_observation_status: post_p3_operational_execution_panel_suggestions_prepared_for_dispatch
   f0_thread_status: self_approval_blocker_resolved_by_judge
   final_integration_review_status: approved_by_judge
   final_integration_review_thread_id: 019ec005-f849-7b53-ae0f-ae7c02df4f63
@@ -630,7 +630,7 @@ monitoring:
   staging_versioning_closeout_dispatch_file: results/staging-versioning-closeout-dispatch-2026-06-13.md
   staging_versioning_closeout_file: results/staging-versioning-closeout.md
   staging_versioning_closeout_judge_decision_file: results/staging-versioning-closeout-judge-decision.md
-  next_material_worker_status: ready_for_specific_owner_window_selection
+  next_material_worker_status: prepared_for_dispatch_post_p3_operational_execution_panel_suggestions
   last_thread_observation:
     testing_infra_coverage_gate_worker: idle_completed
     testing_infra_coverage_gate_independent_review: idle_completed_approved_candidate
@@ -669,6 +669,7 @@ monitoring:
     post_p3_integrated_validation_large_file_ratchet_rework_review: idle_completed_approved_candidate_judged
     post_p3_large_file_ratchet_rework_next_owner_window_selection: idle_completed_approved_scope_candidate_judged
     post_p3_large_file_ratchet_rework_final_readiness_review: idle_completed_approved_candidate_judged
+    post_p3_operational_execution_panel_suggestions: prepared_for_codex_app_thread
     material_worker_released: none_after_p3_renderer_missing_column_normalizer_integration
   active_material_owner_window_after_post_local_base_regate:
     slug: post_local_base_regate_csv_input_intake_hardening
@@ -1248,6 +1249,52 @@ monitoring:
     next_material_worker_status_after_judgment: ready_for_specific_owner_window_selection
     allowed_write:
       - docs/goals/fiscal-desk-orchestration/results/post-p3-large-file-ratchet-rework-final-readiness-review-2026-06-13.md
+  active_material_owner_window_after_post_p3_readiness:
+    slug: post_p3_operational_execution_panel_suggestions
+    status: prepared_for_codex_app_thread
+    pending_worktree_id: pending
+    thread_id: pending
+    thread_title: pending
+    worktree: pending
+    model: gpt-5.5
+    reasoning: medium
+    branch: feat/fiscal-desk-local-base-prep
+    target_min_commit: 231686b
+    classification: material_renderer_worker
+    dispatch_file: results/post-p3-operational-execution-panel-suggestions-dispatch-2026-06-13.md
+    result_file: results/post-p3-operational-execution-panel-suggestions-2026-06-13.md
+    result_status: pending_worker_result
+    material_worker_released: true
+    requires_independent_review_before_integration: true
+    allowed_write:
+      - src/renderer/ui/app-view.ts
+      - src/renderer/ui/app-sync.ts
+      - src/renderer/ui/app-refs.ts
+      - src/renderer/ui/app-helpers.ts
+      - src/renderer/ui/operational-copy.ts
+      - src/renderer/ui/app-view-lists.ts
+      - src/renderer/styles.css
+      - test/unit/renderer-operational-copy.test.ts
+      - test/unit/app-view.test.ts
+      - test/unit/app-helpers.test.ts
+      - test/unit/app-sync.test.ts
+      - docs/goals/fiscal-desk-orchestration/results/post-p3-operational-execution-panel-suggestions-2026-06-13.md
+    blocked_surfaces:
+      - src/main/**
+      - src/core/**
+      - src/main/preload.ts
+      - ipc_preload_contracts
+      - providers
+      - ingestion_export_core
+      - release_update_package
+      - diagnostics_generation_or_sending
+      - telemetry
+      - license_account
+      - storage_network_backend
+      - reusable_templates_or_models
+      - pdf_word_ocr
+      - receita_web_live_massiva_or_automatic_fallback
+      - docs/fiscal-desk/**
   active_read_only_owner_window_selection_after_post_local_base_regate:
     slug: post_local_base_regate_material_owner_window_selection
     status: approved_by_judge_scope_candidate

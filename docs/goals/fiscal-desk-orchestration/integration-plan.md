@@ -1329,3 +1329,46 @@ Release/public distribution, updater/update real, telemetry, diagnostic
 sending, license/account, templates/models, PDF/Word/OCR, Receita Web
 live/massiva, storage/network expansion and guided delivery customization remain
 blocked until explicit owner windows.
+
+## Post P3 Operational Execution Panel Suggestions Dispatch As Of 2026-06-13
+
+Receipt:
+`results/post-p3-operational-execution-panel-suggestions-dispatch-2026-06-13.md`.
+
+The judge selected the next material owner window:
+`post_p3_operational_execution_panel_suggestions`.
+
+Classification: material renderer worker.
+
+Reason: the documentation rebaseline, executable validation, large-file ratchet
+rework and final post-ratchet readiness review are closed. The packet `010`
+surface is the next bounded material slice that can improve user-facing runtime
+behavior without reopening F6E2C, update/release, license/account,
+diagnostics/telemetry, PDF/Word/OCR, Receita Web massiva, providers or
+templates/models.
+
+Allowed writes:
+
+- `src/renderer/ui/app-view.ts`
+- `src/renderer/ui/app-sync.ts`
+- `src/renderer/ui/app-refs.ts`
+- `src/renderer/ui/app-helpers.ts`
+- `src/renderer/ui/operational-copy.ts`
+- `src/renderer/ui/app-view-lists.ts`
+- `src/renderer/styles.css`
+- `test/unit/renderer-operational-copy.test.ts`
+- `test/unit/app-view.test.ts`
+- `test/unit/app-helpers.test.ts`
+- `test/unit/app-sync.test.ts`
+- `docs/goals/fiscal-desk-orchestration/results/post-p3-operational-execution-panel-suggestions-2026-06-13.md`
+
+This worker may use only existing renderer state and already-integrated
+execution/progress signals. If the implementation needs IPC/preload, main, core,
+provider, ingestion/export, package/lock, release/update, telemetry,
+diagnostics, license/account, storage/network, templates/models, PDF/Word/OCR
+or Receita Web live/massiva, it must stop with a blocker instead of expanding
+scope.
+
+The result remains candidate-only. It requires judge inspection, canonical
+verification where feasible and independent review before any material
+integration is accepted.
