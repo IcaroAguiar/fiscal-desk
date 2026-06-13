@@ -1414,3 +1414,11 @@ The next orchestration step is to create and observe the reviewer thread. If it
 returns `approved_candidate`, the judge may inspect and validate integration in
 the final branch. If it returns `needs_rework` or `blocked`, the candidate goes
 back to the worker/rework queue instead of being integrated.
+
+As of 2026-06-13 19:59 -03, the review thread is active:
+
+- pending worktree: `local:6d5c9bcb-69a1-43c3-a95b-a2fe722cb49f`;
+- thread: `019ec335-9377-77f2-a38b-9184ee782901`;
+- title: `Revisar painel operacional P3`;
+- worktree: `/Users/icaroaguiar/.codex/worktrees/2e5e/consulta-simples-csv`;
+- canonical dispatch commit: `c55d438`.

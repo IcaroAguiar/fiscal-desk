@@ -604,9 +604,9 @@ monitoring:
   observe_threads_frequently: true
   heartbeat_automation_id: fiscal-desk-f0-monitor
   heartbeat_interval_minutes: 30
-  last_observation_at: "2026-06-13 19:57:22 -03"
+  last_observation_at: "2026-06-13 19:59:17 -03"
   last_observation_file: docs/goals/fiscal-desk-orchestration/integration-plan.md
-  last_observation_status: post_p3_operational_execution_panel_suggestions_ready_for_independent_review
+  last_observation_status: post_p3_operational_execution_panel_suggestions_review_active
   f0_thread_status: self_approval_blocker_resolved_by_judge
   final_integration_review_status: approved_by_judge
   final_integration_review_thread_id: 019ec005-f849-7b53-ae0f-ae7c02df4f63
@@ -670,7 +670,7 @@ monitoring:
     post_p3_large_file_ratchet_rework_next_owner_window_selection: idle_completed_approved_scope_candidate_judged
     post_p3_large_file_ratchet_rework_final_readiness_review: idle_completed_approved_candidate_judged
     post_p3_operational_execution_panel_suggestions: idle_completed_ready_for_judge_review
-    post_p3_operational_execution_panel_suggestions_review: dispatch_prepared
+    post_p3_operational_execution_panel_suggestions_review: active_independent_review
     material_worker_released: post_p3_operational_execution_panel_suggestions
   active_material_owner_window_after_post_local_base_regate:
     slug: post_local_base_regate_csv_input_intake_hardening
@@ -1276,7 +1276,13 @@ monitoring:
     candidate_worktree_head: eb20ec3
     material_worker_released: true
     requires_independent_review_before_integration: true
-    review_status: dispatch_prepared
+    review_status: active_independent_review
+    review_pending_worktree_id: local:6d5c9bcb-69a1-43c3-a95b-a2fe722cb49f
+    review_thread_id: 019ec335-9377-77f2-a38b-9184ee782901
+    review_thread_title: "Revisar painel operacional P3"
+    review_worktree: /Users/icaroaguiar/.codex/worktrees/2e5e/consulta-simples-csv
+    review_dispatched_at: "2026-06-13 19:58:48 -03"
+    review_observed_active_at: "2026-06-13 19:59:17 -03"
     review_dispatch_file: results/post-p3-operational-execution-panel-suggestions-review-dispatch-2026-06-13.md
     review_result_file: results/post-p3-operational-execution-panel-suggestions-review-2026-06-13.md
     review_allowed_write:
