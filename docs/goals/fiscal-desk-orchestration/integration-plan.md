@@ -145,7 +145,7 @@ Nenhuma thread individual pode substituir o review da branch final integrada.
 
 | Phase | Judge status | Integration release |
 |---|---|---|
-| `post_p3_first_release_status_rebaseline` | `dispatch_prepared_pending_thread` | Pending Codex App thread creation |
+| `post_p3_first_release_status_rebaseline` | `active_docs_copied_pending_receipt` | Docs-only worker active; material work blocked |
 
 F8B1 was dispatched, independently reviewed and selectively integrated in Wave
 13. P3 renderer was integrated and validated after CSV input intake hardening.
@@ -156,7 +156,7 @@ completed and judged.
 
 | Phase | Thread | Worktree | Scope |
 |---|---|---|---|
-| None | - | - | No active worker after post-P3 owner-window selection was judged |
+| `post_p3_first_release_status_rebaseline` | `019ec2cb-fcc3-79e3-8bb1-e85eda92213d` | `/Users/icaroaguiar/.codex/worktrees/d295/consulta-simples-csv` | Docs-only first-release/status rebaseline after P3; `docs/fiscal-desk/**` copied into worker worktree |
 
 `post_local_base_regate_csv_input_intake_hardening` was integrated and validated
 at `2026-06-13 17:20:37 -03`. The read-only scope-selection gate
@@ -186,7 +186,11 @@ local and ignored by `.git/info/exclude`, the orchestrator must provide an
 editable copy to the worker worktree before requiring execution. No material
 feature work is released by this approval.
 
-The docs-only dispatch was prepared at `2026-06-13 18:01:49 -03`.
+The docs-only dispatch was prepared at `2026-06-13 18:01:49 -03`. The Codex App
+thread was created and observed active at `2026-06-13 18:04:29 -03`. The
+orchestrator copied the local ignored `docs/fiscal-desk/**` tree into the worker
+worktree and sent a coordination update, so the worker should not block on
+missing docs unless they disappear locally.
 
 Judge decision:
 `results/post-local-base-regate-csv-input-intake-hardening-judge-decision-2026-06-13.md`.
