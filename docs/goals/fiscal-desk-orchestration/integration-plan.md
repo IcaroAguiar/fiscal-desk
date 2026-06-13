@@ -154,7 +154,7 @@ F8B1 was dispatched, independently reviewed and selectively integrated in Wave
 
 | Phase | Thread | Worktree | Scope |
 |---|---|---|---|
-| `p3_renderer_missing_column_normalizer_can_hide_new_core_guidance` | pending | pending | Material single-writer renderer-copy owner window prepared for dispatch; independent review required before integration |
+| `p3_renderer_missing_column_normalizer_can_hide_new_core_guidance` | `019ec2b1-befe-70b3-95ad-61fbda8a089e` | `/Users/icaroaguiar/.codex/worktrees/75bc/consulta-simples-csv` | Material single-writer renderer-copy owner window active; independent review required before integration |
 
 `post_local_base_regate_csv_input_intake_hardening` was integrated and validated
 at `2026-06-13 17:20:37 -03`. The read-only scope-selection gate
@@ -163,8 +163,8 @@ at `2026-06-13 17:20:37 -03`. The read-only scope-selection gate
 approved by the judge at `2026-06-13 17:31:33 -03`.
 
 The next material owner window dispatch was prepared at
-`2026-06-13 17:32:52 -03`, but the Codex App worker thread has not been created
-yet in this record.
+`2026-06-13 17:32:52 -03`; the Codex App worker thread was observed active at
+`2026-06-13 17:35:09 -03`.
 
 Judge decision:
 `results/post-local-base-regate-csv-input-intake-hardening-judge-decision-2026-06-13.md`.
