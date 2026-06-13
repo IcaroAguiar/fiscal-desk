@@ -454,8 +454,8 @@ versioning_decisions:
       - skills/electron-ui-evidence-capture/references/electron-ui-evidence-capture.md
       - skills/electron-ui-evidence-capture/scripts/run-electron-evidence-capture.sh
 next_judge_action:
-  - record_no_active_material_worker_after_f6e2c_no_code_acceptance
-  - select_fresh_owner_window_before_any_new_material_worker
+  - monitor_post_f6e2c_next_owner_window_selection_scope_review
+  - judge_scope_review_before_any_new_material_worker
   - keep_runtime_update_diagnostic_telemetry_license_release_blocked_until_fresh_scope
   - keep_f0_blocker_resolution_observed
   - keep_final_validation_in_single_worktree
@@ -604,9 +604,9 @@ monitoring:
   observe_threads_frequently: true
   heartbeat_automation_id: fiscal-desk-f0-monitor
   heartbeat_interval_minutes: 30
-  last_observation_at: "2026-06-13 14:38:00 -03"
-  last_observation_file: results/orchestration-observation-2026-06-13-1438.md
-  last_observation_status: monitoring_ok_f6e2c_no_code_accepted_no_active_material_worker
+  last_observation_at: "2026-06-13 14:43:02 -03"
+  last_observation_file: results/post-f6e2c-next-owner-window-selection-dispatch-2026-06-13.md
+  last_observation_status: post_f6e2c_next_owner_window_selection_dispatched_docs_only
   f0_thread_status: self_approval_blocker_resolved_by_judge
   final_integration_review_status: approved_by_judge
   final_integration_review_thread_id: 019ec005-f849-7b53-ae0f-ae7c02df4f63
@@ -630,7 +630,7 @@ monitoring:
   staging_versioning_closeout_dispatch_file: results/staging-versioning-closeout-dispatch-2026-06-13.md
   staging_versioning_closeout_file: results/staging-versioning-closeout.md
   staging_versioning_closeout_judge_decision_file: results/staging-versioning-closeout-judge-decision.md
-  next_material_worker_status: ready_for_fresh_owner_window_selection_after_final_review_rebaseline_and_f6e2c_no_code_acceptance
+  next_material_worker_status: blocked_until_post_f6e2c_next_owner_window_selection_is_judged
   last_thread_observation:
     testing_infra_coverage_gate_worker: idle_completed
     testing_infra_coverage_gate_independent_review: idle_completed_approved_candidate
@@ -638,7 +638,24 @@ monitoring:
     final_integration_review: idle_completed_approved_candidate_judged
     first_release_rebaseline: idle_completed_approved_after_factual_rework
     f6e2c_renderer_delivery_selection_ui: idle_completed_approved_no_code_judged
+    post_f6e2c_next_owner_window_selection: pending_worktree_creation
     material_worker_released: false
+  active_docs_only_scope_review:
+    slug: post_f6e2c_next_owner_window_selection
+    status: active
+    thread_id: 019ec213-dd46-7202-a1fd-5747d3376844
+    thread_title: Definir próxima owner window
+    pending_worktree_id: local:19734829-daaa-4a4a-b875-c5ba8ed4a823
+    worktree: /Users/icaroaguiar/.codex/worktrees/3316/consulta-simples-csv
+    model: gpt-5.5
+    reasoning: medium
+    dispatch_file: results/post-f6e2c-next-owner-window-selection-dispatch-2026-06-13.md
+    dispatched_at: "2026-06-13 14:43:02 -03"
+    result_file: results/post-f6e2c-next-owner-window-selection-2026-06-13.md
+    allowed_write:
+      - docs/goals/fiscal-desk-orchestration/results/post-f6e2c-next-owner-window-selection-2026-06-13.md
+    material_worker_released: false
+    blocks_material_workers_until_judged: true
   active_docs_only_owner_window:
     slug: first_release_rebaseline_after_integrated_fiscal_desk
     status: approved_by_judge_integrated_to_canonical_worktree

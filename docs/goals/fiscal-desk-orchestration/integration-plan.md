@@ -515,3 +515,25 @@ Do not treat F0 or the coverage gate as the current blocker. F0 remains an
 operational sentinel, coverage remains an active quality signal, and future
 feature work still needs a fresh judge-selected owner window before any
 subagent/thread is released.
+
+## Post-F6E2C Next Owner Window Selection Dispatch As Of 2026-06-13 14:43
+
+Receipt:
+`results/post-f6e2c-next-owner-window-selection-dispatch-2026-06-13.md`.
+
+The judge opened a docs-only scope-review window
+`post_f6e2c_next_owner_window_selection` in thread
+`019ec213-dd46-7202-a1fd-5747d3376844`, title
+`Definir próxima owner window`, worktree
+`/Users/icaroaguiar/.codex/worktrees/3316/consulta-simples-csv`.
+
+This window exists because the rebaselined first-release docs still recommended
+F6E2C, but F6E2C has now closed as `approved_by_judge_no_code`. The scope review
+must recommend the next owner window and exact allowed writes before any new
+material worker is released.
+
+No material worker is released by this dispatch. Runtime update, diagnostic
+package generation, telemetry transport, license/account behavior,
+release/package configuration, storage/network expansion, guided delivery
+customization, renderer template UI, reusable delivery models and PDF/Word/OCR
+remain blocked until a fresh scope is judged.
