@@ -1422,3 +1422,54 @@ As of 2026-06-13 19:59 -03, the review thread is active:
 - title: `Revisar painel operacional P3`;
 - worktree: `/Users/icaroaguiar/.codex/worktrees/2e5e/consulta-simples-csv`;
 - canonical dispatch commit: `c55d438`.
+
+## Post P3 Operational Execution Panel Suggestions Judge Decision As Of 2026-06-13 20:04
+
+Receipt:
+`results/post-p3-operational-execution-panel-suggestions-judge-decision-2026-06-13.md`.
+
+The independent review returned `approved_candidate`, but canonical integration
+validation found a blocking quality-gate failure after the material patch was
+temporarily applied in the final branch. The material patch was reverted before
+this decision, so no candidate code is integrated.
+
+Passing evidence before the blocker:
+
+- focused renderer/copy/sync tests: pass, 4 files and 24 tests;
+- `pnpm typecheck`: pass;
+- `pnpm lint`: pass;
+- `pnpm test`: pass, 42 files and 268 tests;
+- `pnpm build`: pass;
+- `pnpm smoke:visual`: pass;
+- `pnpm smoke:electron-ui`: pass with provider `mock`;
+- `FISCAL_DESK_SMOKE_PROVIDER=base-publica-local pnpm smoke:electron-ui`:
+  pass outside sandbox after an initial `tsx` pipe `EPERM`;
+- `pnpm test:coverage`: pass, global line coverage 73.16%.
+
+Blocking evidence:
+
+- `QUALITY_GATE_DIFF_MODE=worktree node docs/ai/quality-gate/check-ratchet.mjs`:
+  fail;
+- changed-line coverage: 53.33%, below the 70% minimum;
+- large file count increased from 2 to 3;
+- `src/renderer/ui/app-sync.ts`: 520 lines, above 500;
+- `src/renderer/ui/app-view.ts`: 515 lines, above 500.
+
+Decision: `needs_rework`.
+
+The same worker window remains the active material owner, but it must rework the
+candidate before any integration can be accepted. Required rework:
+
+- keep the original allowed write set;
+- reduce `app-sync.ts` and `app-view.ts` below the large-file threshold or
+  otherwise close the ratchet without broadening scope;
+- improve changed-line coverage to at least 70%;
+- rerun the focused tests and worktree quality gate;
+- preserve the passing UI/Electron smoke behavior.
+
+Warn-only harness signals to carry into closeout:
+
+- `magic_string_boundary=17`;
+- `visual_surface_change=1`;
+- legacy smoke text `uiResumeText: "1 CNPJs retomados"` remains a residual
+  risk accepted only if the new panel keeps singular copy correct.
