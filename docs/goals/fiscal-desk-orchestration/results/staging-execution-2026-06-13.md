@@ -14,6 +14,11 @@ manual staging gate.
 The package remains staged only. No commit, push, PR, deploy or release action
 was executed.
 
+Post-commit note: this statement records the state at 2026-06-13 12:21:56 -03.
+It was later superseded operationally by
+`results/post-commit-closeout-2026-06-13.md`, after commits `bf2db8f` and
+`fdee157` landed on `feat/fiscal-desk-local-base-prep`.
+
 ## Stage Boundaries
 
 Included:

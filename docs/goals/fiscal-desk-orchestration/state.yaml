@@ -454,7 +454,8 @@ versioning_decisions:
       - skills/electron-ui-evidence-capture/references/electron-ui-evidence-capture.md
       - skills/electron-ui-evidence-capture/scripts/run-electron-evidence-capture.sh
 next_judge_action:
-  - select_next_owner_window_after_staging_validation
+  - select_next_owner_window_after_post_commit_closeout
+  - consider_testing_infra_coverage_gate_as_next_non_feature_candidate
   - keep_runtime_update_diagnostic_telemetry_license_release_blocked_until_fresh_scope
   - keep_f0_blocker_resolution_observed
   - keep_final_validation_in_single_worktree
@@ -519,13 +520,34 @@ staging_execution:
     qualitative_audit_file: results/testability-coverage-audit-2026-06-13.md
     independent_review_blocker: app_sync_prepare_button_reenabled_without_consent
     independent_review_blocker_status: fixed_re_review_approved
+post_commit_closeout:
+  status: committed_ready_for_fresh_scope_selection
+  closeout_file: results/post-commit-closeout-2026-06-13.md
+  branch: feat/fiscal-desk-local-base-prep
+  integration_commit: bf2db8f
+  testability_commit: fdee157
+  no_push_no_pr_no_deploy: true
+  untracked_paths_are_excluded_skills_only: true
+  next_candidate_owner_window: testing_infra_coverage_gate
+  next_candidate_status: candidate_only_not_released
+  still_blocked_until_fresh_scope:
+    - fiscal_feature_work
+    - runtime_update_behavior
+    - diagnostic_package_generation
+    - telemetry_transport
+    - license_account_behavior
+    - release_package_configuration
+    - storage_network_expansion
+    - guided_delivery_customization
+    - renderer_template_ui
+    - reusable_delivery_models
 monitoring:
   orchestrator_goal_active: true
   observe_threads_frequently: true
   heartbeat_automation_id: fiscal-desk-f0-monitor
   heartbeat_interval_minutes: 30
-  last_observation_at: "2026-06-13 11:52:58 -03"
-  last_observation_file: results/orchestration-observation-2026-06-13-0524.md
+  last_observation_at: "2026-06-13 12:43:07 -03"
+  last_observation_file: results/post-commit-closeout-2026-06-13.md
   f0_thread_status: self_approval_blocker_resolved_by_judge
   final_integration_review_status: approved_by_judge
   final_integration_review_thread_id: 019ec005-f849-7b53-ae0f-ae7c02df4f63
