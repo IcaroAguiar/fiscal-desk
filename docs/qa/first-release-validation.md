@@ -13,6 +13,7 @@ Todo PR material deve executar, no minimo:
 - `pnpm lint`
 - `pnpm typecheck`
 - `pnpm test`
+- `pnpm test:coverage`
 - `pnpm smoke:real-csv`
 - `pnpm smoke:electron-ui`
 - `pnpm smoke:visual`
@@ -20,7 +21,28 @@ Todo PR material deve executar, no minimo:
 - `gitleaks detect --source . --redact --no-banner`
 - `node docs/ai/quality-gate/check-ratchet.mjs`
 
-O gate de coverage ainda e warning-only porque o projeto nao gera `coverage/lcov.info`. Quando adicionarmos coverage real, o ratchet deve virar bloqueante para linhas alteradas.
+Coverage quantitativa agora e um sinal ativo de regressao do pacote integrado.
+O gate atual gera `coverage/coverage-summary.json` e `coverage/lcov.info` via
+`pnpm test:coverage`, com universo limitado a `src/**/*.{ts,tsx}` para medir o
+codigo do app Electron.
+
+Coverage nao e prova funcional suficiente. Nenhuma fase material pode fechar
+apenas por percentual, ratchet ou numero de testes. A validacao precisa
+combinar coverage, teste focado do contrato alterado e smokes qualitativos
+conforme a superficie tocada:
+
+| Superficie tocada | Evidencia qualitativa minima |
+|---|---|
+| Core, parser, normalizador, export, provider ou ingestao | Testes focados do contrato alterado e `pnpm smoke:real-csv` quando o fluxo CSV/core/provider for afetado. |
+| Renderer, copy, layout ou estado visivel | Teste focado de renderer quando houver e `pnpm smoke:visual`. |
+| Main, preload, IPC, execucao, entrega ou fluxo Electron | `pnpm smoke:electron-ui`. |
+| Base Publica Local, preparo ou consentimento local | Smoke Electron com Base Publica Local quando aplicavel: `FISCAL_DESK_SMOKE_PROVIDER=base-publica-local pnpm smoke:electron-ui`. |
+
+O primeiro release nao marca como disponiveis: release publico, `dist`/publish
+distribuivel, update real, envio de diagnostico, telemetria real,
+licenca/account real, templates/modelos reutilizaveis, PDF/Word/OCR reais ou
+Receita Web live/massiva. Esses itens continuam bloqueados ate owner windows
+proprios, com gates e smokes especificos.
 
 ## Smoke real com arquivo e CNPJs publicos
 

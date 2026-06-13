@@ -1048,3 +1048,30 @@ The judge dispatched a read-only security re-gate against canonical commit
   low.
 
 Material feature work remains blocked until this re-gate is complete and judged.
+
+## Post P3 Readiness Validation Docs Rebaseline Judge Decision As Of 2026-06-13 18:42
+
+Receipt:
+`results/post-p3-readiness-first-release-validation-docs-rebaseline-judge-decision-2026-06-13.md`.
+
+The docs-only worker `019ec2ec-4d33-7233-9555-d97ec33bb913` returned
+`ready_for_judge_review` from worktree
+`/Users/icaroaguiar/.codex/worktrees/cf27/consulta-simples-csv`.
+
+The judge accepted and integrated only:
+
+- `docs/qa/first-release-validation.md`;
+- `results/post-p3-readiness-first-release-validation-docs-rebaseline-2026-06-13.md`.
+
+This closes the stale validation-doc gap found after the post-P3 readiness
+review. The public validation doc now treats `pnpm test:coverage`,
+`coverage/coverage-summary.json`, and `coverage/lcov.info` as active coverage
+gate evidence, while preserving that coverage is not sufficient functional
+proof. CSV, Electron and visual smokes remain qualitative obligations by
+touched surface.
+
+No code, tests, package, workflow, release config, distribution, telemetry,
+diagnostic, license/account, PDF/Word/OCR, Receita Web live/massiva or
+`docs/fiscal-desk/**` change is released by this decision. Material feature work
+remains blocked until a fresh read-only owner-window selection is dispatched and
+judged against this rebaselined branch.
