@@ -593,3 +593,22 @@ read-only gate.
 
 No material worker is released by this acceptance. Material work remains
 blocked until the release/security review gate is run and judged.
+
+## First Release Candidate Release/Security Review Dispatch As Of 2026-06-13 15:01
+
+Receipt:
+`results/first-release-candidate-release-security-review-dispatch-2026-06-13.md`.
+
+The judge opened the accepted read-only gate
+`first_release_candidate_release_security_review` as two independent threads:
+
+- release review:
+  `019ec224-8c95-7ff3-b482-68fdde82dd74`, worktree
+  `/Users/icaroaguiar/.codex/worktrees/55c0/consulta-simples-csv`;
+- security review:
+  `019ec225-2895-79c3-9858-88822540126d`, worktree
+  `/Users/icaroaguiar/.codex/worktrees/e6ee/consulta-simples-csv`.
+
+The split is safe because both threads are read-only and write distinct result
+receipts. No material worker is released. Material work remains blocked until
+both receipts are complete and judged.

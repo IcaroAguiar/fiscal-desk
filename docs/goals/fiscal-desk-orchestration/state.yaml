@@ -604,9 +604,9 @@ monitoring:
   observe_threads_frequently: true
   heartbeat_automation_id: fiscal-desk-f0-monitor
   heartbeat_interval_minutes: 30
-  last_observation_at: "2026-06-13 14:55:03 -03"
-  last_observation_file: results/post-f6e2c-first-release-status-rebaseline-judge-decision-2026-06-13.md
-  last_observation_status: post_f6e2c_first_release_status_rebaseline_approved_docs_only
+  last_observation_at: "2026-06-13 15:01:41 -03"
+  last_observation_file: results/first-release-candidate-release-security-review-dispatch-2026-06-13.md
+  last_observation_status: first_release_candidate_release_security_review_dispatched_read_only
   f0_thread_status: self_approval_blocker_resolved_by_judge
   final_integration_review_status: approved_by_judge
   final_integration_review_thread_id: 019ec005-f849-7b53-ae0f-ae7c02df4f63
@@ -630,7 +630,7 @@ monitoring:
   staging_versioning_closeout_dispatch_file: results/staging-versioning-closeout-dispatch-2026-06-13.md
   staging_versioning_closeout_file: results/staging-versioning-closeout.md
   staging_versioning_closeout_judge_decision_file: results/staging-versioning-closeout-judge-decision.md
-  next_material_worker_status: blocked_until_first_release_candidate_release_security_review_is_judged
+  next_material_worker_status: blocked_until_first_release_candidate_release_and_security_reviews_are_judged
   last_thread_observation:
     testing_infra_coverage_gate_worker: idle_completed
     testing_infra_coverage_gate_independent_review: idle_completed_approved_candidate
@@ -640,7 +640,41 @@ monitoring:
     f6e2c_renderer_delivery_selection_ui: idle_completed_approved_no_code_judged
     post_f6e2c_next_owner_window_selection: idle_completed_approved_scope_candidate_judged
     post_f6e2c_first_release_status_rebaseline: idle_completed_approved_docs_rebaseline_judged
+    first_release_candidate_release_review: active
+    first_release_candidate_security_review: active
     material_worker_released: false
+  active_read_only_release_security_gate:
+    slug: first_release_candidate_release_security_review
+    status: active
+    dispatch_file: results/first-release-candidate-release-security-review-dispatch-2026-06-13.md
+    dispatched_at: "2026-06-13 15:01:41 -03"
+    material_worker_released: false
+    blocks_material_workers_until_judged: true
+    gates:
+      release_review:
+        slug: first_release_candidate_release_review
+        status: active
+        thread_id: 019ec224-8c95-7ff3-b482-68fdde82dd74
+        thread_title: Executar release review read-only
+        pending_worktree_id: local:b9c5d025-6726-4bf9-a5b2-cb74eabc181d
+        worktree: /Users/icaroaguiar/.codex/worktrees/55c0/consulta-simples-csv
+        model: gpt-5.5
+        reasoning: medium
+        result_file: results/first-release-candidate-release-review-2026-06-13.md
+        allowed_write:
+          - docs/goals/fiscal-desk-orchestration/results/first-release-candidate-release-review-2026-06-13.md
+      security_review:
+        slug: first_release_candidate_security_review
+        status: active
+        thread_id: 019ec225-2895-79c3-9858-88822540126d
+        thread_title: Executar security review read-only
+        pending_worktree_id: local:9ec41050-692b-470a-94cf-8cbf4cc3b1a1
+        worktree: /Users/icaroaguiar/.codex/worktrees/e6ee/consulta-simples-csv
+        model: gpt-5.5
+        reasoning: medium
+        result_file: results/first-release-candidate-security-review-2026-06-13.md
+        allowed_write:
+          - docs/goals/fiscal-desk-orchestration/results/first-release-candidate-security-review-2026-06-13.md
   active_docs_only_owner_window_after_scope_review:
     slug: post_f6e2c_first_release_status_rebaseline
     status: approved_by_judge_docs_only
