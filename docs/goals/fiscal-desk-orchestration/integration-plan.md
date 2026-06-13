@@ -537,3 +537,22 @@ package generation, telemetry transport, license/account behavior,
 release/package configuration, storage/network expansion, guided delivery
 customization, renderer template UI, reusable delivery models and PDF/Word/OCR
 remain blocked until a fresh scope is judged.
+
+## Post-F6E2C Next Owner Window Selection Judge Decision As Of 2026-06-13 14:47
+
+Receipt:
+`results/post-f6e2c-next-owner-window-selection-judge-decision-2026-06-13.md`.
+
+The docs-only scope review completed in thread
+`019ec213-dd46-7202-a1fd-5747d3376844` with result
+`approved_scope_candidate`. The judge accepts the result as
+`approved_by_judge_docs_only`.
+
+Accepted next owner window:
+`post_f6e2c_first_release_status_rebaseline`.
+
+This next window is docs-only and exists to remove stale local product-doc
+language that still recommends F6E2C after F6E2C closed as no-code. It does not
+release material feature work. Material workers remain blocked until that docs
+rebaseline is completed and judged. After that, the recommended gate is split
+read-only release/security review for the first release candidate.
