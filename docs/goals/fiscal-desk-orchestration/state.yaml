@@ -630,7 +630,7 @@ monitoring:
   staging_versioning_closeout_dispatch_file: results/staging-versioning-closeout-dispatch-2026-06-13.md
   staging_versioning_closeout_file: results/staging-versioning-closeout.md
   staging_versioning_closeout_judge_decision_file: results/staging-versioning-closeout-judge-decision.md
-  next_material_worker_status: blocked_pending_post_p3_operational_panel_next_owner_window_selection
+  next_material_worker_status: approved_for_post_p3_legacy_resume_copy_harness_polish_dispatch
   last_thread_observation:
     testing_infra_coverage_gate_worker: idle_completed
     testing_infra_coverage_gate_independent_review: idle_completed_approved_candidate
@@ -673,8 +673,8 @@ monitoring:
     post_p3_operational_execution_panel_suggestions_review: idle_completed_approved_candidate
     post_p3_operational_execution_panel_suggestions_judge: integrated_validated_after_rework
     post_p3_operational_execution_panel_suggestions_rework: idle_completed_ready_for_judge_review_after_rework
-    post_p3_operational_panel_next_owner_window_selection: dispatch_prepared_pending_thread
-    material_worker_released: none_pending_scope_selection
+    post_p3_operational_panel_next_owner_window_selection: idle_completed_approved_scope_candidate_judged
+    material_worker_released: none_pending_post_p3_legacy_resume_copy_harness_polish_dispatch
   active_material_owner_window_after_post_local_base_regate:
     slug: post_local_base_regate_csv_input_intake_hardening
     status: approved_by_judge_integrated_validated
@@ -1362,7 +1362,7 @@ monitoring:
       - docs/fiscal-desk/**
   active_read_only_owner_window_selection_after_operational_panel:
     slug: post_p3_operational_panel_next_owner_window_selection
-    status: active
+    status: approved_by_judge_scope_candidate
     pending_worktree_id: local:8e026ea9-3d5a-4e97-b4c4-d3f1d88fbac8
     thread_id: 019ec34e-024e-7040-846d-9ec73093c156
     thread_title: "Selecionar owner pós painel"
@@ -1375,13 +1375,74 @@ monitoring:
     prepared_at: "2026-06-13 20:23:41 -03"
     dispatched_at: "2026-06-13 20:25:30 -03"
     observed_active_at: "2026-06-13 20:26:18 -03"
+    completed_at: "2026-06-13 20:28:48 -03"
+    judged_at: "2026-06-13 20:29:55 -03"
     classification: read_only_owner_window_selection
     material_worker_released: false
     blocks_material_workers_until_judged: true
+    result_status: approved_scope_candidate
+    selected_next_owner_window: post_p3_legacy_resume_copy_harness_polish
+    selected_next_owner_window_classification: material_single_writer_renderer_copy_harness
+    next_material_worker_status_after_judgment: approved_for_dispatch
     dispatch_file: results/post-p3-operational-panel-next-owner-window-selection-dispatch-2026-06-13.md
     result_file: results/post-p3-operational-panel-next-owner-window-selection-2026-06-13.md
+    judge_decision_file: results/post-p3-operational-panel-next-owner-window-selection-judge-decision-2026-06-13.md
+    residual_risks:
+      - visible_legacy_copy_change_requires_electron_smoke
+      - smoke_harness_must_not_be_weakened
+      - no_contract_or_ipc_preload_main_core_provider_change_authorized
     allowed_write:
       - docs/goals/fiscal-desk-orchestration/results/post-p3-operational-panel-next-owner-window-selection-2026-06-13.md
+  approved_material_owner_window_after_operational_panel:
+    slug: post_p3_legacy_resume_copy_harness_polish
+    status: approved_for_dispatch
+    classification: material_single_writer_renderer_copy_harness
+    source_selection_thread_id: 019ec34e-024e-7040-846d-9ec73093c156
+    source_selection_result_file: results/post-p3-operational-panel-next-owner-window-selection-2026-06-13.md
+    source_selection_judge_decision_file: results/post-p3-operational-panel-next-owner-window-selection-judge-decision-2026-06-13.md
+    approved_at: "2026-06-13 20:29:55 -03"
+    material_worker_released: false
+    requires_independent_review_before_integration: true
+    allowed_write:
+      - src/renderer/ui/operational-copy.ts
+      - src/renderer/ui/app-view-lists.ts
+      - test/unit/renderer-operational-copy.test.ts
+      - test/unit/app-view.test.ts
+      - test/unit/app-sync.test.ts
+      - scripts/smoke-electron-ui.ts
+      - docs/goals/fiscal-desk-orchestration/results/post-p3-legacy-resume-copy-harness-polish-2026-06-13.md
+    forbidden_write:
+      - src/core/**
+      - src/main/**
+      - src/preload*
+      - src/renderer/ui/app-view.ts
+      - src/renderer/ui/app-sync.ts
+      - src/renderer/styles.css
+      - package.json
+      - pnpm-lock.yaml
+      - docs/fiscal-desk/**
+      - docs/qa/**
+      - .visual-fidelity/**
+    required_checks:
+      - pnpm exec vitest run test/unit/renderer-operational-copy.test.ts test/unit/app-view.test.ts test/unit/app-sync.test.ts
+      - pnpm smoke:electron-ui
+      - FISCAL_DESK_SMOKE_PROVIDER=base-publica-local pnpm smoke:electron-ui
+      - pnpm lint
+      - pnpm typecheck
+      - pnpm test
+      - pnpm test:coverage
+      - QUALITY_GATE_DIFF_MODE=worktree node docs/ai/quality-gate/check-ratchet.mjs
+      - pnpm build
+      - git diff --check
+    still_blocked:
+      - excel_input
+      - guided_delivery_models_templates
+      - diagnostic_generation_or_sending
+      - telemetry_transport
+      - license_account_behavior
+      - release_update_dist_publish_signing_notarization
+      - pdf_word_ocr
+      - receita_web_live_massiva
   active_read_only_owner_window_selection_after_post_local_base_regate:
     slug: post_local_base_regate_material_owner_window_selection
     status: approved_by_judge_scope_candidate

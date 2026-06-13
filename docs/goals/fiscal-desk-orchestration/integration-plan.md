@@ -145,7 +145,7 @@ Nenhuma thread individual pode substituir o review da branch final integrada.
 
 | Phase | Judge status | Integration release |
 |---|---|---|
-| none | n/a | no material feature worker released |
+| post_p3_legacy_resume_copy_harness_polish | approved_for_dispatch | material worker not dispatched yet |
 
 F8B1 was dispatched, independently reviewed and selectively integrated in Wave
 13. P3 renderer was integrated and validated after CSV input intake hardening.
@@ -156,7 +156,23 @@ rebaseline is completed and judged.
 
 | Phase | Thread | Worktree | Scope |
 |---|---|---|---|
-| none | n/a | n/a | waiting for fresh read-only owner-window selection |
+| none | n/a | n/a | waiting for material worker dispatch |
+
+The read-only scope-selection gate
+`post_p3_operational_panel_next_owner_window_selection` completed as
+`approved_scope_candidate` and was accepted by the judge at
+`2026-06-13 20:29:55 -03`.
+
+The next authorized window is material and narrow:
+`post_p3_legacy_resume_copy_harness_polish`. It may only correct the legacy
+`uiResumeText`/`execution-resume` copy and align the Electron smoke harness.
+It does not release Excel input, guided delivery/templates, diagnostics,
+telemetry, license/account, release/update, PDF/Word/OCR or Receita Web live.
+
+No material worker has been dispatched yet for this approved window. The worker
+must run in an isolated Codex App thread with `/goal`, `gpt-5.5`, reasoning
+`medium`, explicit allowed writes, real Electron smoke evidence and independent
+review before integration.
 
 `post_local_base_regate_csv_input_intake_hardening` was integrated and validated
 at `2026-06-13 17:20:37 -03`. The read-only scope-selection gate
