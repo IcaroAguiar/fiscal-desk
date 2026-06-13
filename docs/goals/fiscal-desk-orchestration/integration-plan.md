@@ -154,7 +154,7 @@ F8B1 was dispatched, independently reviewed and selectively integrated in Wave
 
 | Phase | Thread | Worktree | Scope |
 |---|---|---|---|
-| `post_p3_renderer_next_owner_window_selection` | pending | pending | Read-only next owner-window selection after P3 renderer integration; no material worker released |
+| `post_p3_renderer_next_owner_window_selection` | `019ec2c1-e7d7-7da3-8c18-874987ff83fc` | `/Users/icaroaguiar/.codex/worktrees/bea2/consulta-simples-csv` | Read-only next owner-window selection after P3 renderer integration; no material worker released |
 
 `post_local_base_regate_csv_input_intake_hardening` was integrated and validated
 at `2026-06-13 17:20:37 -03`. The read-only scope-selection gate
@@ -175,7 +175,8 @@ reviewer was observed active at `2026-06-13 17:42:13 -03`. The review returned
 
 No material worker is active after the P3 integration. The next read-only
 scope-selection gate was prepared at `2026-06-13 17:50:31 -03`; material work
-remains blocked until this selection is completed and judged.
+remains blocked until this selection is completed and judged. The Codex App
+selection thread was observed active at `2026-06-13 17:53:12 -03`.
 
 Judge decision:
 `results/post-local-base-regate-csv-input-intake-hardening-judge-decision-2026-06-13.md`.

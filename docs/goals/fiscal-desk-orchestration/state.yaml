@@ -454,8 +454,8 @@ versioning_decisions:
       - skills/electron-ui-evidence-capture/references/electron-ui-evidence-capture.md
       - skills/electron-ui-evidence-capture/scripts/run-electron-evidence-capture.sh
 next_judge_action:
-  - create_post_p3_renderer_next_owner_window_selection_thread
   - observe_post_p3_renderer_next_owner_window_selection
+  - judge_post_p3_renderer_next_owner_window_selection_when_receipt_returns
   - keep_runtime_update_diagnostic_telemetry_license_release_blocked_until_fresh_scope
   - keep_f0_blocker_resolution_observed
   - keep_final_validation_in_single_worktree
@@ -604,9 +604,9 @@ monitoring:
   observe_threads_frequently: true
   heartbeat_automation_id: fiscal-desk-f0-monitor
   heartbeat_interval_minutes: 30
-  last_observation_at: "2026-06-13 17:50:31 -03"
+  last_observation_at: "2026-06-13 17:53:12 -03"
   last_observation_file: docs/goals/fiscal-desk-orchestration/integration-plan.md
-  last_observation_status: post_p3_renderer_next_owner_window_selection_dispatch_prepared
+  last_observation_status: post_p3_renderer_next_owner_window_selection_thread_active
   f0_thread_status: self_approval_blocker_resolved_by_judge
   final_integration_review_status: approved_by_judge
   final_integration_review_thread_id: 019ec005-f849-7b53-ae0f-ae7c02df4f63
@@ -657,7 +657,7 @@ monitoring:
     post_csv_input_intake_next_owner_window_selection: idle_completed_approved_scope_candidate_judged
     p3_renderer_missing_column_normalizer_can_hide_new_core_guidance: idle_completed_approved_integrated_validated
     p3_renderer_missing_column_normalizer_review: idle_completed_approved_candidate
-    post_p3_renderer_next_owner_window_selection: dispatch_prepared_pending_thread
+    post_p3_renderer_next_owner_window_selection: active_pending_receipt
     material_worker_released: none_after_p3_renderer_missing_column_normalizer_integration
   active_material_owner_window_after_post_local_base_regate:
     slug: post_local_base_regate_csv_input_intake_hardening
@@ -838,18 +838,19 @@ monitoring:
       - docs/goals/fiscal-desk-orchestration/results/p3-renderer-missing-column-normalizer-can-hide-new-core-guidance-2026-06-13.md
   active_read_only_owner_window_selection_after_p3_renderer:
     slug: post_p3_renderer_next_owner_window_selection
-    status: dispatch_prepared_pending_thread
-    pending_worktree_id: pending
-    thread_id: pending
-    thread_title: pending
-    worktree: pending
+    status: active_pending_receipt
+    pending_worktree_id: local:8f6e604d-b5aa-459e-9cc3-6bfbaaf4043a
+    thread_id: 019ec2c1-e7d7-7da3-8c18-874987ff83fc
+    thread_title: Selecionar owner window pos P3
+    worktree: /Users/icaroaguiar/.codex/worktrees/bea2/consulta-simples-csv
     model: gpt-5.5
     reasoning: medium
     branch: feat/fiscal-desk-local-base-prep
     target_min_commit: 43bbca0
+    canonical_dispatch_commit: ee1e448
     dispatch_file: results/post-p3-renderer-next-owner-window-selection-dispatch-2026-06-13.md
     result_file: results/post-p3-renderer-next-owner-window-selection-2026-06-13.md
-    dispatched_at: pending
+    dispatched_at: "2026-06-13 17:53:12 -03"
     classification: read_only_scope_selection
     material_worker_released: false
     blocks_material_workers_until_judged: true
