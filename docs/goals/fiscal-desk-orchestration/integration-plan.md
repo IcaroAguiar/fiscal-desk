@@ -1075,3 +1075,18 @@ diagnostic, license/account, PDF/Word/OCR, Receita Web live/massiva or
 `docs/fiscal-desk/**` change is released by this decision. Material feature work
 remains blocked until a fresh read-only owner-window selection is dispatched and
 judged against this rebaselined branch.
+
+## Post P3 Validation Docs Rebaseline Next Owner Window Selection Dispatch As Of 2026-06-13 18:44
+
+Receipt:
+`results/post-p3-validation-docs-rebaseline-next-owner-window-selection-dispatch-2026-06-13.md`.
+
+The judge prepared a fresh read-only owner-window selection after accepting the
+validation-doc rebaseline at commit `aea3596`.
+
+This selection is not material feature work. Its role is to choose exactly one
+next owner window against the current canonical branch, with an explicit bias
+toward a material executable window if no concrete docs/gate blocker remains.
+
+Material feature work remains blocked until this read-only selection returns a
+candidate receipt and the judge accepts it.
