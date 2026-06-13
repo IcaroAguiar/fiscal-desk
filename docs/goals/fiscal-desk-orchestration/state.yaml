@@ -1510,7 +1510,7 @@ monitoring:
     reasoning: medium
     branch: feat/fiscal-desk-local-base-prep
     target_min_commit: 9946551
-    canonical_dispatch_commit: pending
+    canonical_dispatch_commit: c931a11
     prepared_at: "2026-06-13 20:54:22 -03"
     dispatch_file: results/post-p3-legacy-polish-next-owner-window-selection-dispatch-2026-06-13.md
     result_file: results/post-p3-legacy-polish-next-owner-window-selection-2026-06-13.md
