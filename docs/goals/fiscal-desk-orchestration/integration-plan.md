@@ -1298,3 +1298,11 @@ Allowed write:
 `results/post-p3-large-file-ratchet-rework-final-readiness-review-2026-06-13.md`.
 
 No material worker is released by this dispatch.
+
+As of 2026-06-13 19:39 -03, the review thread is active:
+
+- pending worktree: `local:0265dc7b-5bb1-4d83-8461-6b6e03fc1439`;
+- thread: `019ec31c-9f9d-7482-9ba6-79ef5da19dca`;
+- title: `Review prontidao pos ratchet`;
+- worktree: `/Users/icaroaguiar/.codex/worktrees/dff9/consulta-simples-csv`;
+- canonical dispatch commit: `4ff5955`.

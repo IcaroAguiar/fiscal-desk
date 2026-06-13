@@ -1223,13 +1223,20 @@ monitoring:
       - docs/goals/fiscal-desk-orchestration/results/post-p3-large-file-ratchet-rework-next-owner-window-selection-2026-06-13.md
   active_read_only_final_readiness_review_after_large_file_rework:
     slug: post_p3_large_file_ratchet_rework_final_readiness_review
-    status: prepared_for_codex_app_thread
+    status: active
+    pending_worktree_id: local:0265dc7b-5bb1-4d83-8461-6b6e03fc1439
+    thread_id: 019ec31c-9f9d-7482-9ba6-79ef5da19dca
+    thread_title: Review prontidao pos ratchet
+    worktree: /Users/icaroaguiar/.codex/worktrees/dff9/consulta-simples-csv
     model: gpt-5.5
     reasoning: medium
     branch: feat/fiscal-desk-local-base-prep
     target_min_commit: 27d5484
+    canonical_dispatch_commit: 4ff5955
     dispatch_file: results/post-p3-large-file-ratchet-rework-final-readiness-review-dispatch-2026-06-13.md
     prepared_at: "2026-06-13 19:34:00 -03"
+    dispatched_at: "2026-06-13 19:39:00 -03"
+    observed_active_at: "2026-06-13 19:39:00 -03"
     classification: read_only_review
     material_worker_released: false
     blocks_material_workers_until_judged: true
