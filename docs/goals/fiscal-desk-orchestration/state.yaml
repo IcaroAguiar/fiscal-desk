@@ -1051,7 +1051,7 @@ monitoring:
     slug: post_p3_validation_docs_rebaseline_integrated_first_release_validation
     status: prepared_for_dispatch
     branch: feat/fiscal-desk-local-base-prep
-    target_min_commit: 3ed9df5
+    target_min_commit: d42e533
     dispatch_file: results/post-p3-validation-docs-rebaseline-integrated-first-release-validation-dispatch-2026-06-13.md
     result_file: results/post-p3-validation-docs-rebaseline-integrated-first-release-validation-2026-06-13.md
     prepared_at: "2026-06-13 18:50:32 -03"

@@ -15,7 +15,7 @@ implementa feature, nao altera codigo e nao faz release/distribuicao.
 ## Contexto Canonico
 
 - Branch canonica: `feat/fiscal-desk-local-base-prep`
-- Commit minimo: `3ed9df5 docs: record next owner selection thread`
+- Commit minimo: `d42e533 docs: approve integrated release validation window`
 - Judge/orquestrador: `019ebe5c-3853-79c2-87ad-8ddace386c93`
 - Decisao de selecao:
   `results/post-p3-validation-docs-rebaseline-next-owner-window-selection-judge-decision-2026-06-13.md`
