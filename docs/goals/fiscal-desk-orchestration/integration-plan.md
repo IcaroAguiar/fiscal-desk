@@ -154,7 +154,11 @@ F8B1 was dispatched, independently reviewed and selectively integrated in Wave
 
 | Phase | Thread | Worktree | Scope |
 |---|---|---|---|
-| None | - | - | No active material owner window; `post_local_base_regate_csv_input_intake_hardening` was integrated and validated at `2026-06-13 17:20:37 -03` |
+| `post_csv_input_intake_next_owner_window_selection` | pending (`local:89bc6049-df92-4695-8229-5c8a58c02a76`) | pending | Read-only next owner-window selection after `post_local_base_regate_csv_input_intake_hardening`; no material worker released |
+
+No active material owner window exists. `post_local_base_regate_csv_input_intake_hardening`
+was integrated and validated at `2026-06-13 17:20:37 -03`; the only active
+work is a read-only scope-selection gate dispatched at `2026-06-13 17:26:55 -03`.
 
 Judge decision:
 `results/post-local-base-regate-csv-input-intake-hardening-judge-decision-2026-06-13.md`.
@@ -170,6 +174,9 @@ Re-review result:
 
 Integration judge decision:
 `results/post-local-base-regate-csv-input-intake-hardening-integration-judge-decision-2026-06-13.md`.
+
+Next owner-window selection dispatch:
+`results/post-csv-input-intake-next-owner-window-selection-dispatch-2026-06-13.md`.
 
 Independent review threads for the coverage gate:
 `019ec1d0-a1f5-7601-97ef-b91f46e0d00c` and canonical follow-up

@@ -454,7 +454,8 @@ versioning_decisions:
       - skills/electron-ui-evidence-capture/references/electron-ui-evidence-capture.md
       - skills/electron-ui-evidence-capture/scripts/run-electron-evidence-capture.sh
 next_judge_action:
-  - select_next_owner_window_after_csv_input_intake_hardening
+  - observe_post_csv_input_intake_next_owner_window_selection
+  - judge_post_csv_input_intake_next_owner_window_selection_when_receipt_returns
   - keep_runtime_update_diagnostic_telemetry_license_release_blocked_until_fresh_scope
   - keep_f0_blocker_resolution_observed
   - keep_final_validation_in_single_worktree
@@ -603,9 +604,9 @@ monitoring:
   observe_threads_frequently: true
   heartbeat_automation_id: fiscal-desk-f0-monitor
   heartbeat_interval_minutes: 30
-  last_observation_at: "2026-06-13 17:20:37 -03"
+  last_observation_at: "2026-06-13 17:26:55 -03"
   last_observation_file: docs/goals/fiscal-desk-orchestration/integration-plan.md
-  last_observation_status: post_local_base_regate_csv_input_intake_hardening_integrated_validated
+  last_observation_status: post_csv_input_intake_next_owner_window_selection_dispatched
   f0_thread_status: self_approval_blocker_resolved_by_judge
   final_integration_review_status: approved_by_judge
   final_integration_review_thread_id: 019ec005-f849-7b53-ae0f-ae7c02df4f63
@@ -629,7 +630,7 @@ monitoring:
   staging_versioning_closeout_dispatch_file: results/staging-versioning-closeout-dispatch-2026-06-13.md
   staging_versioning_closeout_file: results/staging-versioning-closeout.md
   staging_versioning_closeout_judge_decision_file: results/staging-versioning-closeout-judge-decision.md
-  next_material_worker_status: none_active_pending_next_owner_window_selection
+  next_material_worker_status: blocked_until_post_csv_input_intake_next_owner_window_selection_is_judged
   last_thread_observation:
     testing_infra_coverage_gate_worker: idle_completed
     testing_infra_coverage_gate_independent_review: idle_completed_approved_candidate
@@ -653,6 +654,7 @@ monitoring:
     post_local_base_regate_material_owner_window_selection: idle_completed_approved_scope_candidate_judged
     post_local_base_regate_csv_input_intake_hardening: idle_completed_rework_approved_integrated_validated
     post_local_base_regate_csv_input_intake_hardening_review: idle_completed_approved_candidate_after_rework
+    post_csv_input_intake_next_owner_window_selection: dispatched_pending_receipt
     material_worker_released: post_local_base_regate_csv_input_intake_hardening_only
   active_material_owner_window_after_post_local_base_regate:
     slug: post_local_base_regate_csv_input_intake_hardening
@@ -744,6 +746,28 @@ monitoring:
       - test/unit/app-view.test.ts
       - test/integration/process-csv*.test.ts
       - docs/goals/fiscal-desk-orchestration/results/post-local-base-regate-csv-input-intake-hardening-2026-06-13.md
+  active_read_only_owner_window_selection_after_csv_input_intake:
+    slug: post_csv_input_intake_next_owner_window_selection
+    status: dispatched_pending_receipt
+    pending_worktree_id: local:89bc6049-df92-4695-8229-5c8a58c02a76
+    thread_id: pending
+    thread_title: pending
+    worktree: pending
+    model: gpt-5.5
+    reasoning: medium
+    branch: feat/fiscal-desk-local-base-prep
+    target_min_commit: cd544e7
+    dispatch_file: results/post-csv-input-intake-next-owner-window-selection-dispatch-2026-06-13.md
+    result_file: results/post-csv-input-intake-next-owner-window-selection-2026-06-13.md
+    dispatched_at: "2026-06-13 17:26:55 -03"
+    classification: read_only_scope_selection
+    material_worker_released: false
+    blocks_material_workers_until_judged: true
+    result_status: pending
+    candidate_initial_residual_risk:
+      - p3_renderer_missing_column_normalizer_can_hide_new_core_guidance
+    allowed_write:
+      - docs/goals/fiscal-desk-orchestration/results/post-csv-input-intake-next-owner-window-selection-2026-06-13.md
   active_read_only_owner_window_selection_after_post_local_base_regate:
     slug: post_local_base_regate_material_owner_window_selection
     status: approved_by_judge_scope_candidate
