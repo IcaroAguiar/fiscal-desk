@@ -1362,13 +1362,19 @@ monitoring:
       - docs/fiscal-desk/**
   active_read_only_owner_window_selection_after_operational_panel:
     slug: post_p3_operational_panel_next_owner_window_selection
-    status: queued_pending_worktree
+    status: active
     pending_worktree_id: local:8e026ea9-3d5a-4e97-b4c4-d3f1d88fbac8
+    thread_id: 019ec34e-024e-7040-846d-9ec73093c156
+    thread_title: "Selecionar owner pós painel"
+    worktree: /Users/icaroaguiar/.codex/worktrees/292b/consulta-simples-csv
     model: gpt-5.5
     reasoning: medium
     branch: feat/fiscal-desk-local-base-prep
     target_min_commit: 5bff1ce
+    canonical_dispatch_commit: 7dd8599
     prepared_at: "2026-06-13 20:23:41 -03"
+    dispatched_at: "2026-06-13 20:25:30 -03"
+    observed_active_at: "2026-06-13 20:26:18 -03"
     classification: read_only_owner_window_selection
     material_worker_released: false
     blocks_material_workers_until_judged: true
