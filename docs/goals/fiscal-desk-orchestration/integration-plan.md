@@ -213,6 +213,9 @@ No material worker is released by this dispatch.
 
 The Codex App selection thread was requested at `2026-06-13 20:56:25 -03` and
 returned pending worktree `local:cb6e3ce6-07b3-4d59-9c5e-e6abe2b7b0e0`.
+It materialized as thread `019ec36a-345e-7be0-9458-3fa3ef77577e` in worktree
+`/Users/icaroaguiar/.codex/worktrees/2519/consulta-simples-csv` and was observed
+active at `2026-06-13 20:57:07 -03`.
 
 `post_local_base_regate_csv_input_intake_hardening` was integrated and validated
 at `2026-06-13 17:20:37 -03`. The read-only scope-selection gate
