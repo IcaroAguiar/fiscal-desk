@@ -501,3 +501,17 @@ No source or test code changed. The judge revalidated with
 `pnpm exec vitest run test/unit/app-view.test.ts` and `pnpm smoke:electron-ui`
 on the canonical branch. The queue is back to fresh owner-window selection;
 no next material worker is released by this acceptance.
+
+## Orchestration Observation As Of 2026-06-13 14:38
+
+Receipt:
+`results/orchestration-observation-2026-06-13-1438.md`.
+
+The current state is post-F6E2C and pre-next-owner-window selection. No material
+worker is active, the F6E2C thread is idle, and no pending approved integration
+queue remains in the orchestration package.
+
+Do not treat F0 or the coverage gate as the current blocker. F0 remains an
+operational sentinel, coverage remains an active quality signal, and future
+feature work still needs a fresh judge-selected owner window before any
+subagent/thread is released.
