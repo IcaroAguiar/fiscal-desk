@@ -45,7 +45,7 @@ export function renderShell(state: UiState): string {
     ? (visualFixture?.entryTitle ?? "Arquivo de CNPJs")
     : state.fileName
       ? state.fileName
-      : "Arquivo CSV";
+      : "Arquivo CSV ou Excel";
   const entryHint = referenceMode
     ? (visualFixture?.entryHint ?? "Arraste aqui ou selecione no computador.")
     : state.fileName
@@ -62,8 +62,8 @@ export function renderShell(state: UiState): string {
   const activeQueueHint = state.summary
     ? "Consulta concluída"
     : state.fileName
-      ? "Pronto para consultar"
-      : "Escolha um CSV para iniciar.";
+      ? `Pronto para consultar ${getInputFormatLabel(state.inputFormat)}`
+      : "Escolha uma planilha para iniciar.";
   const activeQueueStatus = state.summary
     ? "concluído"
     : state.fileName
@@ -79,7 +79,7 @@ export function renderShell(state: UiState): string {
     ? (visualFixture?.entryHint ?? "Arquivo aguardando seleção.")
     : state.fileName
       ? "Entrada carregada neste computador."
-      : "Selecione um CSV para preparar a consulta.";
+      : "Selecione uma planilha CSV ou Excel para preparar a consulta.";
   const protocolBase = referenceMode
     ? (visualFixture?.providerPrimaryStatus ??
       formatProviderMode(state.provider))
@@ -148,19 +148,19 @@ export function renderShell(state: UiState): string {
           <section class="entry-zone t-panel-slide" data-view-panel="painel" data-open="${state.activeView === "painel" ? "true" : "false"}">
             <div class="zone-head">
               <div>
-                <h2>Arquivo de entrada ${renderHelp("Como funciona", "Use uma planilha CSV com uma coluna de CNPJ. O app identifica a coluna quando possível.")}</h2>
+                <h2>Arquivo de entrada ${renderHelp("Como funciona", "Use uma planilha CSV ou Excel com uma coluna de CNPJ. O app identifica a coluna quando possível.")}</h2>
                 <p class="body">Selecione a planilha que será consultada.</p>
               </div>
               <span class="status-token status-token--warning" data-slot="file-badge">${escapeHtml(entryFileBadge)}</span>
             </div>
 
             <div class="file-dropzone">
-              <span class="file-dropzone__icon" aria-hidden="true">CSV</span>
+              <span class="file-dropzone__icon" aria-hidden="true">${state.inputFormat === "xlsx" ? "XLSX" : "CSV"}</span>
               <div>
                 <strong data-slot="file-dropzone-title">${escapeHtml(entryTitle)}</strong>
                 <span data-slot="file-dropzone-hint">${escapeHtml(entryHint)}</span>
               </div>
-              ${button({ variant: "secondary", "data-action": "pick-file", children: state.fileName && !referenceMode ? "Trocar CSV" : "Selecionar CSV" })}
+              ${button({ variant: "secondary", "data-action": "pick-file", children: state.fileName && !referenceMode ? "Trocar planilha" : "Selecionar planilha" })}
             </div>
           </section>
 
@@ -452,6 +452,10 @@ export function getDeliveryFormatLabel(
   deliveryFormat: UiState["deliveryFormat"],
 ): string {
   return deliveryFormat === "xlsx" ? "Excel com abas" : "CSV";
+}
+
+function getInputFormatLabel(inputFormat: UiState["inputFormat"]): string {
+  return inputFormat === "xlsx" ? "XLSX" : "CSV";
 }
 
 export function getProviderStatusLabel(state: UiState): string {

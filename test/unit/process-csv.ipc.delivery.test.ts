@@ -162,7 +162,10 @@ describe("process-csv IPC delivery selection", () => {
     });
 
     expect(processCsv).toHaveBeenCalledWith(
-      "cnpj\n00000000000191",
+      {
+        content: "cnpj\n00000000000191",
+        format: "csv",
+      },
       expect.any(Object),
       expect.objectContaining({
         deliveryOptionId: PROCESS_CSV_DELIVERY_OPTION_ID.PRESERVE_COLUMNS_CSV,
@@ -221,7 +224,10 @@ describe("process-csv IPC delivery selection", () => {
     });
 
     expect(processCsv).toHaveBeenCalledWith(
-      "cnpj\n00000000000191",
+      {
+        content: "cnpj\n00000000000191",
+        format: "csv",
+      },
       expect.any(Object),
       expect.objectContaining({
         deliveryOptionId:

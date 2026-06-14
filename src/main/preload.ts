@@ -10,6 +10,7 @@ import type {
   ProcessCsvDeliveryFormat,
   ProcessCsvDeliveryOptionId,
   ProcessCsvExecution,
+  ProcessCsvInputFormat,
   ProcessCsvOutputDelivery,
   ProcessCsvRunStatus,
   ProcessCsvSummary,
@@ -19,16 +20,22 @@ import type {
 type PickCsvResult = {
   filePath: string;
   fileName: string;
+  content: string | number[];
+  inputFormat: ProcessCsvInputFormat;
+};
+
+type PickLocalPublicBaseSourceResult = {
+  filePath: string;
+  fileName: string;
   content: string;
 };
 
-type PickLocalPublicBaseSourceResult = PickCsvResult;
-
 type ProcessCsvInput = {
   acceptedLocalPublicBaseNotice?: boolean;
-  content: string;
+  content: string | number[];
   deliveryFormat?: ProcessCsvDeliveryFormat;
   deliveryOptionId?: ProcessCsvDeliveryOptionId;
+  inputFormat?: ProcessCsvInputFormat;
   provider: SimplesProviderName;
   cnpjColumn?: string;
   sourceFilePath?: string;

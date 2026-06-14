@@ -3,9 +3,11 @@ import { mkdir, readdir, readFile, rename, writeFile } from "node:fs/promises";
 import path from "node:path";
 import type {
   ProcessCsvExecutionStatus,
+  ProcessCsvInputFormat,
   ProcessCsvSummary,
   ProcessExecutionHistoryItem,
 } from "../../core/app/process-csv.types";
+import { PROCESS_CSV_INPUT_FORMAT } from "../../core/app/process-csv.types";
 import type { SimplesLookupResult } from "../../core/simples/simples-lookup.types";
 import type { SimplesProviderName } from "../../core/simples/simples-provider.names";
 import { FileProcessExecutionSession } from "./file-process-execution-ledger-session";
@@ -16,6 +18,7 @@ const LEDGER_VERSION = 1;
 const CHECKPOINT_POLICY_VERSION = "stable-results-v1";
 const CNPJ_NORMALIZER_VERSION = "normalize-cnpj-v1";
 const CSV_PARSER_VERSION = "csv-reader-v1";
+const XLSX_PARSER_VERSION = "xlsx-reader-v1";
 const DEFAULT_PROVIDER_CONFIG_VERSION = "provider-config-v1";
 const INPUT_FINGERPRINT_ALGORITHM = "sha256";
 const RESUMABLE_STATUSES = new Set<ProcessCsvExecutionStatus>([
@@ -49,6 +52,7 @@ type LedgerOperationalMetadata = {
   cnpjNormalizerVersion: string;
   csvParserVersion: string;
   elapsedMs: number | null;
+  inputFormat: ProcessCsvInputFormat;
   ledgerVersion: typeof LEDGER_VERSION;
   provider: {
     configVersion: string;
@@ -75,7 +79,9 @@ export type LedgerDocument = {
 
 export type StartProcessExecutionInput = {
   cnpjColumn?: string;
-  inputCsv: string;
+  inputContent?: string | Uint8Array | number[];
+  inputCsv?: string;
+  inputFormat?: ProcessCsvInputFormat;
   providerName: SimplesProviderName;
   providerConfigVersion?: string;
   sourceFilePath?: string;
@@ -192,14 +198,19 @@ export class FileProcessExecutionLedger {
 export function createInputFingerprint(
   input: StartProcessExecutionInput,
 ): string {
+  const inputFormat = normalizeInputFormat(input.inputFormat);
+  const parserVersion = resolveParserVersion(inputFormat);
   return createHash(INPUT_FINGERPRINT_ALGORITHM)
     .update(
       JSON.stringify({
         checkpointPolicyVersion: CHECKPOINT_POLICY_VERSION,
         cnpjColumn: normalizeOptionalText(input.cnpjColumn),
         cnpjNormalizerVersion: CNPJ_NORMALIZER_VERSION,
-        csvParserVersion: CSV_PARSER_VERSION,
-        inputCsv: input.inputCsv,
+        csvParserVersion: parserVersion,
+        inputContentHash: createInputContentHash(
+          input.inputContent ?? input.inputCsv ?? "",
+        ),
+        inputFormat,
         ledgerVersion: LEDGER_VERSION,
         providerConfigVersion:
           input.providerConfigVersion ?? DEFAULT_PROVIDER_CONFIG_VERSION,
@@ -263,8 +274,11 @@ function createOperationalMetadata(
     },
     cnpjColumn: normalizeOptionalText(input.cnpjColumn),
     cnpjNormalizerVersion: CNPJ_NORMALIZER_VERSION,
-    csvParserVersion: CSV_PARSER_VERSION,
+    csvParserVersion: resolveParserVersion(
+      normalizeInputFormat(input.inputFormat),
+    ),
     elapsedMs,
+    inputFormat: normalizeInputFormat(input.inputFormat),
     ledgerVersion: LEDGER_VERSION,
     provider: {
       configVersion:
@@ -272,6 +286,32 @@ function createOperationalMetadata(
       name: input.providerName,
     },
   };
+}
+
+function normalizeInputFormat(
+  value: ProcessCsvInputFormat | undefined,
+): ProcessCsvInputFormat {
+  return value === PROCESS_CSV_INPUT_FORMAT.XLSX
+    ? PROCESS_CSV_INPUT_FORMAT.XLSX
+    : PROCESS_CSV_INPUT_FORMAT.CSV;
+}
+
+function resolveParserVersion(inputFormat: ProcessCsvInputFormat) {
+  return inputFormat === PROCESS_CSV_INPUT_FORMAT.XLSX
+    ? XLSX_PARSER_VERSION
+    : CSV_PARSER_VERSION;
+}
+
+function createInputContentHash(input: string | Uint8Array | number[]): string {
+  const hash = createHash(INPUT_FINGERPRINT_ALGORITHM);
+
+  if (typeof input === "string") {
+    hash.update(input, TEXT_ENCODING);
+    return hash.digest("hex");
+  }
+
+  hash.update(Buffer.from(input));
+  return hash.digest("hex");
 }
 
 function normalizeOptionalText(value: string | undefined): string | null {
@@ -388,6 +428,8 @@ function toHistoryItem(
     ledgerKey,
     runId: document.runId,
     status: document.status,
+    inputFormat:
+      document.operationalMetadata.inputFormat ?? PROCESS_CSV_INPUT_FORMAT.CSV,
     providerName: document.providerName,
     providerConfigVersion: document.operationalMetadata.provider.configVersion,
     sourceFilePath: document.sourceFilePath,

@@ -6,11 +6,18 @@ import { writeXlsxWorkbook } from "../export/xlsx-writer";
 import { AbortError } from "../infra/rate-limiter";
 import { readCsv } from "../ingestion/csv-reader";
 import { detectCnpjColumn } from "../ingestion/detect-cnpj-column";
-import { ingestFiscalCsv } from "../ingestion/fiscal-ingestion";
 import {
+  ingestFiscalCsv,
+  ingestFiscalXlsx,
+} from "../ingestion/fiscal-ingestion";
+import {
+  FISCAL_INGESTION_INPUT_FORMAT,
   FISCAL_INGESTION_ISSUE_KIND,
+  FISCAL_INGESTION_SOURCE_KIND,
+  type FiscalIngestionBatch,
   type FiscalIngestionIssue,
 } from "../ingestion/ingestion-contract";
+import { readXlsx } from "../ingestion/xlsx-reader";
 import type { SimplesLookupPort } from "../simples/simples-lookup.port";
 import type { SimplesLookupResult } from "../simples/simples-lookup.types";
 import { estimateObservedRemainingMs } from "./eta";
@@ -18,10 +25,12 @@ import type {
   LookupProgress,
   ProcessCsvDeliveryFormat,
   ProcessCsvExecution,
+  ProcessCsvInputFormat,
   ProcessCsvOutputDelivery,
   ProcessCsvRunStatus,
   ProcessCsvSummary,
 } from "./process-csv.types";
+import { PROCESS_CSV_INPUT_FORMAT } from "./process-csv.types";
 import { resolveProcessCsvOutputDelivery } from "./process-csv-delivery";
 import type { ProcessExecutionLedgerSession } from "./process-execution-ledger.port";
 
@@ -43,6 +52,23 @@ type ProcessCsvResult = {
   execution: ProcessCsvExecution | null;
 };
 
+export type ProcessCsvSourceInput =
+  | string
+  | {
+      content: string | Buffer | ArrayBuffer | Uint8Array | number[];
+      format?: ProcessCsvInputFormat;
+      sourceFileName?: string;
+      sourceFilePath?: string;
+    };
+
+type ParsedProcessInput = {
+  delimiter: ReturnType<typeof readCsv>["delimiter"];
+  headers: string[];
+  ingestionBatch: FiscalIngestionBatch;
+  rowLineNumbers: number[];
+  rows: Array<Record<string, string>>;
+};
+
 const ERROR_STATUSES = new Set<SimplesLookupResult["status"]>([
   "INVALID_CNPJ",
   "NOT_FOUND",
@@ -60,7 +86,7 @@ const CHECKPOINT_REUSABLE_STATUSES = new Set<SimplesLookupResult["status"]>([
 ]);
 
 export async function processCsv(
-  inputCsv: string,
+  input: ProcessCsvSourceInput,
   provider: SimplesLookupPort,
   options: ProcessCsvOptions = {},
 ): Promise<ProcessCsvResult> {
@@ -72,7 +98,9 @@ export async function processCsv(
       ? { deliveryOptionId: options.deliveryOptionId }
       : {}),
   });
-  const { delimiter, headers, rowLineNumbers, rows } = readCsv(inputCsv);
+  const parsedInput = await parseProcessInput(input, options);
+  const { delimiter, headers, ingestionBatch, rowLineNumbers, rows } =
+    parsedInput;
   const cnpjColumn = detectCnpjColumn(
     headers,
     options.cnpjColumn ? { override: options.cnpjColumn } : {},
@@ -84,9 +112,6 @@ export async function processCsv(
     );
   }
 
-  const ingestionBatch = ingestFiscalCsv(inputCsv, {
-    ...(options.cnpjColumn ? { cnpjColumn: options.cnpjColumn } : {}),
-  });
   const ingestionIssueByRow = new Map(
     ingestionBatch.issues
       .filter((issue) => issue.rowNumber !== null)
@@ -275,6 +300,93 @@ export async function processCsv(
         }
       : null,
   };
+}
+
+async function parseProcessInput(
+  input: ProcessCsvSourceInput,
+  options: ProcessCsvOptions,
+): Promise<ParsedProcessInput> {
+  const source = normalizeProcessInput(input);
+
+  if (source.format === PROCESS_CSV_INPUT_FORMAT.XLSX) {
+    const bytes = normalizeBinaryInput(source.content);
+    const { headers, rowLineNumbers, rows } = await readXlsx(bytes);
+    const ingestionBatch = await ingestFiscalXlsx(bytes, {
+      ...(options.cnpjColumn ? { cnpjColumn: options.cnpjColumn } : {}),
+      format: FISCAL_INGESTION_INPUT_FORMAT.XLSX,
+      sourceKind: source.sourceFilePath
+        ? FISCAL_INGESTION_SOURCE_KIND.LOCAL_FILE
+        : FISCAL_INGESTION_SOURCE_KIND.TEXT_BUFFER,
+      sourceLabel:
+        source.sourceFileName ?? source.sourceFilePath ?? "entrada.xlsx",
+    });
+
+    return {
+      delimiter: ";",
+      headers,
+      ingestionBatch,
+      rowLineNumbers,
+      rows,
+    };
+  }
+
+  if (typeof source.content !== "string") {
+    throw new Error("Entrada CSV precisa ser texto UTF-8.");
+  }
+
+  const { delimiter, headers, rowLineNumbers, rows } = readCsv(source.content);
+  const ingestionBatch = ingestFiscalCsv(source.content, {
+    ...(options.cnpjColumn ? { cnpjColumn: options.cnpjColumn } : {}),
+    format: FISCAL_INGESTION_INPUT_FORMAT.CSV,
+    sourceKind: source.sourceFilePath
+      ? FISCAL_INGESTION_SOURCE_KIND.LOCAL_FILE
+      : FISCAL_INGESTION_SOURCE_KIND.TEXT_BUFFER,
+    sourceLabel:
+      source.sourceFileName ?? source.sourceFilePath ?? "entrada.csv",
+  });
+
+  return {
+    delimiter,
+    headers,
+    ingestionBatch,
+    rowLineNumbers,
+    rows,
+  };
+}
+
+function normalizeProcessInput(input: ProcessCsvSourceInput): {
+  content: string | Buffer | ArrayBuffer | Uint8Array | number[];
+  format: ProcessCsvInputFormat;
+  sourceFileName?: string;
+  sourceFilePath?: string;
+} {
+  if (typeof input === "string") {
+    return {
+      content: input,
+      format: PROCESS_CSV_INPUT_FORMAT.CSV,
+    };
+  }
+
+  return {
+    content: input.content,
+    format: input.format ?? PROCESS_CSV_INPUT_FORMAT.CSV,
+    ...(input.sourceFileName ? { sourceFileName: input.sourceFileName } : {}),
+    ...(input.sourceFilePath ? { sourceFilePath: input.sourceFilePath } : {}),
+  };
+}
+
+function normalizeBinaryInput(
+  input: string | Buffer | ArrayBuffer | Uint8Array | number[],
+): Buffer | ArrayBuffer | Uint8Array {
+  if (typeof input === "string") {
+    throw new Error("Entrada XLSX precisa ser binaria.");
+  }
+
+  if (Array.isArray(input)) {
+    return Uint8Array.from(input);
+  }
+
+  return input;
 }
 
 function toCsvValue(value: boolean | null): string {

@@ -1,5 +1,14 @@
 import { FISCAL_EXPORT_DELIVERY_OPTION_ID } from "../export/export-contract";
+import { FISCAL_INGESTION_INPUT_FORMAT } from "../ingestion/ingestion-contract";
 import type { SimplesProviderName } from "../simples/simples-provider.names";
+
+export const PROCESS_CSV_INPUT_FORMAT = {
+  CSV: FISCAL_INGESTION_INPUT_FORMAT.CSV,
+  XLSX: FISCAL_INGESTION_INPUT_FORMAT.XLSX,
+} as const;
+
+export type ProcessCsvInputFormat =
+  (typeof PROCESS_CSV_INPUT_FORMAT)[keyof typeof PROCESS_CSV_INPUT_FORMAT];
 
 export const PROCESS_CSV_DELIVERY_FORMAT = {
   CSV: "csv",
@@ -175,6 +184,7 @@ export type ProcessExecutionHistoryItem = {
   ledgerKey: string;
   runId: string;
   status: ProcessCsvExecutionStatus;
+  inputFormat?: ProcessCsvInputFormat;
   providerName: SimplesProviderName;
   providerConfigVersion: string;
   sourceFilePath: string | null;

@@ -6,6 +6,7 @@ import type {
   LookupProgress,
   ProcessCsvDeliveryFormat,
   ProcessCsvExecution,
+  ProcessCsvInputFormat,
   ProcessCsvOutputDelivery,
   ProcessCsvRunStatus,
   ProcessCsvSummary,
@@ -13,6 +14,13 @@ import type {
 } from "../../main/types";
 
 export type PickCsvResult = {
+  filePath: string;
+  fileName: string;
+  content: string | number[];
+  inputFormat: ProcessCsvInputFormat;
+};
+
+export type PickLocalPublicBaseSourceResult = {
   filePath: string;
   fileName: string;
   content: string;
@@ -33,8 +41,9 @@ export type AppBridge = {
   pickCsvFile(): Promise<PickCsvResult | null>;
   processCsv(input: {
     acceptedLocalPublicBaseNotice?: boolean;
-    content: string;
+    content: string | number[];
     deliveryFormat?: ProcessCsvDeliveryFormat;
+    inputFormat?: ProcessCsvInputFormat;
     provider: SimplesProviderName;
     cnpjColumn?: string;
     sourceFilePath?: string;
@@ -54,7 +63,7 @@ export type AppBridge = {
     receitaWebAvailable: boolean;
   }>;
   getLocalPublicBaseStatus(): Promise<LocalPublicBaseStatus>;
-  pickLocalPublicBaseSourceFile(): Promise<PickCsvResult | null>;
+  pickLocalPublicBaseSourceFile(): Promise<PickLocalPublicBaseSourceResult | null>;
   prepareLocalPublicBase(input: {
     content: string;
     consent?: LocalPublicBasePreparationConsent;
@@ -125,7 +134,8 @@ export type UiState = {
   activeView: UiView;
   fileName: string | null;
   filePath: string | null;
-  content: string | null;
+  content: string | number[] | null;
+  inputFormat: ProcessCsvInputFormat;
   provider: SimplesProviderName;
   deliveryFormat: ProcessCsvDeliveryFormat;
   localPublicBaseNoticeAccepted: boolean;
@@ -154,6 +164,7 @@ export const initialState: UiState = {
   fileName: null,
   filePath: null,
   content: null,
+  inputFormat: "csv",
   provider: "mock",
   deliveryFormat: "csv",
   localPublicBaseNoticeAccepted: false,
@@ -162,7 +173,7 @@ export const initialState: UiState = {
   receitaWebAvailable: false,
   cnpjColumn: "",
   status: "idle",
-  message: "Selecione um CSV para iniciar a consulta.",
+  message: "Selecione uma planilha CSV ou Excel para iniciar a consulta.",
   outputCsv: null,
   outputXlsx: null,
   outputDelivery: null,

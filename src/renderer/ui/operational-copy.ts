@@ -90,7 +90,7 @@ export function formatCommandBarSummary(
   fileName: string | null,
   provider: SimplesProviderName,
 ): string {
-  const label = fileName ?? "Nenhum CSV selecionado";
+  const label = fileName ?? "Nenhuma planilha selecionada";
 
   return `${label} • ${formatProviderMode(provider)}`;
 }
@@ -100,7 +100,7 @@ export function formatProviderHint(
   provider: SimplesProviderName,
 ): string {
   if (!fileName) {
-    return "Selecione um CSV para continuar";
+    return "Selecione uma planilha CSV ou Excel para continuar";
   }
 
   if (provider === SIMPLES_PROVIDER.RECEITA_WEB) {
@@ -127,7 +127,7 @@ export function previewAutoSavePath(
   sourceFilePath: string,
   deliveryFormat: ProcessCsvDeliveryFormat = "csv",
 ): string {
-  const normalized = sourceFilePath.replace(/\.csv$/i, "");
+  const normalized = sourceFilePath.replace(/\.(csv|xlsx)$/i, "");
 
   return `${normalized}-processado.${deliveryFormat}`;
 }

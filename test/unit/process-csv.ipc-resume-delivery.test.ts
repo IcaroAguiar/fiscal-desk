@@ -361,13 +361,18 @@ describe("process-csv IPC", () => {
     expect(readFile).toHaveBeenCalledWith(sourceFilePath, "utf8");
     expect(ledgerMocks.startRun).toHaveBeenCalledWith({
       cnpjColumn: "cnpj",
-      inputCsv: content,
+      inputContent: content,
+      inputFormat: "csv",
       providerConfigVersion: "provider-config-v1",
       providerName: "mock",
       sourceFilePath,
     });
     expect(processCsv).toHaveBeenCalledWith(
-      content,
+      {
+        content,
+        format: "csv",
+        sourceFilePath,
+      },
       expect.any(Object),
       expect.objectContaining({
         cnpjColumn: "cnpj",
@@ -404,7 +409,11 @@ describe("process-csv IPC", () => {
     });
 
     expect(processCsv).toHaveBeenCalledWith(
-      content,
+      {
+        content,
+        format: "csv",
+        sourceFilePath,
+      },
       expect.any(Object),
       expect.objectContaining({
         deliveryOptionId:
@@ -464,7 +473,11 @@ describe("process-csv IPC", () => {
     });
 
     expect(processCsv).toHaveBeenCalledWith(
-      "cnpj\n00000000000191",
+      {
+        content: "cnpj\n00000000000191",
+        format: "csv",
+        sourceFilePath: "/tmp/fiscal-desk-test/entrada.csv",
+      },
       expect.any(Object),
       expect.objectContaining({
         deliveryFormat: "xlsx",

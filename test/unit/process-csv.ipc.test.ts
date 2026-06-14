@@ -219,6 +219,30 @@ describe("process-csv IPC", () => {
     ).rejects.toThrow("disponível apenas no Windows");
   });
 
+  it("picks XLSX input as bytes with explicit input format", async () => {
+    const handler = handlers.get("csv:pick-input-file");
+    const { readFile } = await import("node:fs/promises");
+    electronMocks.dialog.showOpenDialog.mockResolvedValueOnce({
+      canceled: false,
+      filePaths: ["/tmp/fiscal-desk-test/entrada.xlsx"],
+    });
+    vi.mocked(readFile).mockResolvedValueOnce(Buffer.from([80, 75, 3, 4]));
+
+    await expect(handler?.()).resolves.toEqual({
+      content: [80, 75, 3, 4],
+      fileName: "entrada.xlsx",
+      filePath: "/tmp/fiscal-desk-test/entrada.xlsx",
+      inputFormat: "xlsx",
+    });
+
+    expect(electronMocks.dialog.showOpenDialog).toHaveBeenCalledWith(
+      expect.objectContaining({
+        filters: [{ name: "Planilhas", extensions: ["csv", "xlsx"] }],
+      }),
+    );
+    expect(readFile).toHaveBeenCalledWith("/tmp/fiscal-desk-test/entrada.xlsx");
+  });
+
   it("rejects Base Pública Local before ledger side effects without consent or prepared base", async () => {
     const handler = handlers.get("csv:process");
 

@@ -5,6 +5,7 @@ import {
   PROCESS_CSV_EVENT_KIND,
   PROCESS_CSV_EXECUTION_BOUNDARIES,
   PROCESS_CSV_EXECUTION_STATUS,
+  PROCESS_CSV_INPUT_FORMAT,
   PROCESS_CSV_IPC_CHANNEL,
   PROCESS_CSV_RUN_STATUS,
   PROCESS_CSV_TERMINAL_EXECUTION_STATUSES,
@@ -47,6 +48,10 @@ describe("process CSV contracts", () => {
 
   it("keeps delivery formats, domain events and IPC channels centralized", () => {
     expect(PROCESS_CSV_DELIVERY_FORMAT).toEqual({
+      CSV: "csv",
+      XLSX: "xlsx",
+    });
+    expect(PROCESS_CSV_INPUT_FORMAT).toEqual({
       CSV: "csv",
       XLSX: "xlsx",
     });

@@ -1,5 +1,6 @@
+import ExcelJS from "exceljs";
 import { describe, expect, it } from "vitest";
-
+import { PROCESS_CSV_INPUT_FORMAT } from "../../src/core/app/process-csv.types";
 import { processCsv } from "../../src/core/app/process-csv.use-case";
 import { FISCAL_EXPORT_DELIVERY_OPTION_ID } from "../../src/core/export/export-contract";
 import {
@@ -166,6 +167,40 @@ describe("processCsv", () => {
     });
     expect(result.outputCsv).toContain("Empresa A");
     expect(result.outputXlsx?.byteLength).toBeGreaterThan(1000);
+  });
+
+  it("processes XLSX input through the fiscal ingestion core", async () => {
+    const xlsx = await createXlsxBuffer([
+      ["nome", "cpf_cnpj"],
+      ["Empresa A", "00.000.000/0001-91"],
+      ["Empresa B", "123"],
+      ["Empresa A duplicada", "00.000.000/0001-91"],
+      ["Empresa C", "12.345.678/0001-95"],
+    ]);
+    const provider = new CountingSuccessLookupAdapter();
+
+    const result = await processCsv(
+      {
+        content: xlsx,
+        format: PROCESS_CSV_INPUT_FORMAT.XLSX,
+        sourceFileName: "entrada.xlsx",
+      },
+      provider,
+    );
+
+    expect(provider.calls).toEqual(["00000000000191", "12345678000195"]);
+    expect(result.summary).toMatchObject({
+      totalLinhas: 4,
+      totalCnpjsEncontrados: 4,
+      totalCnpjsValidos: 3,
+      totalCnpjsUnicosConsultados: 2,
+    });
+    expect(result.outputCsv).toContain(
+      "Empresa B;123;123;123;false;;;INVALID_CNPJ;system;CNPJ inválido. Revise os 14 dígitos antes de consultar esta linha.;3",
+    );
+    expect(result.outputCsv).toContain(
+      "Empresa A duplicada;00.000.000/0001-91;00.000.000/0001-91;00000000000191;true;false;false;SUCCESS;mock;CNPJ repetido. A consulta será reaproveitada da primeira ocorrência válida.;4",
+    );
   });
 
   it("can resolve the current CSV delivery through the F6E1 delivery option id", async () => {
@@ -385,3 +420,15 @@ describe("processCsv", () => {
     expect(result.outputCsv).toContain("UNPARSABLE_RESULT");
   });
 });
+
+async function createXlsxBuffer(rows: string[][]): Promise<Uint8Array> {
+  const workbook = new ExcelJS.Workbook();
+  const worksheet = workbook.addWorksheet("entrada");
+
+  for (const row of rows) {
+    worksheet.addRow(row);
+  }
+
+  const buffer = await workbook.xlsx.writeBuffer();
+  return new Uint8Array(buffer);
+}

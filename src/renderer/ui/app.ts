@@ -210,6 +210,7 @@ export function mountApp(root: HTMLDivElement | null): void {
     state.fileName = result.fileName;
     state.filePath = result.filePath;
     state.content = result.content;
+    state.inputFormat = result.inputFormat;
     resetOutputState(state);
     state.summary = null;
     state.execution = null;
@@ -218,14 +219,14 @@ export function mountApp(root: HTMLDivElement | null): void {
     state.now = Date.now();
     state.status = "idle";
     state.activeView = "fila";
-    state.message = `Arquivo "${result.fileName}" pronto. Revise a base de consulta e a coluna antes de iniciar.`;
+    state.message = `Arquivo "${result.fileName}" pronto. Revise a base de consulta, o formato e a coluna antes de iniciar.`;
     syncUi();
   }
 
   async function handleProcessFile(): Promise<void> {
     if (!state.content) {
       state.status = "error";
-      state.message = "Selecione um CSV antes de processar.";
+      state.message = "Selecione uma planilha CSV ou Excel antes de processar.";
       syncUi();
       return;
     }
@@ -250,6 +251,7 @@ export function mountApp(root: HTMLDivElement | null): void {
           : {}),
         content: state.content,
         deliveryFormat: state.deliveryFormat,
+        inputFormat: state.inputFormat,
         provider: state.provider,
         ...(state.filePath ? { sourceFilePath: state.filePath } : {}),
         ...(state.cnpjColumn.trim()
@@ -310,6 +312,7 @@ export function mountApp(root: HTMLDivElement | null): void {
       state.fileName = historyItem.sourceFileName;
       state.filePath = historyItem.sourceFilePath;
       state.content = null;
+      state.inputFormat = historyItem.inputFormat ?? "csv";
       state.provider = historyItem.providerName;
       state.cnpjColumn = historyItem.cnpjColumn ?? "";
       applyProcessResult(state, result);
@@ -397,6 +400,48 @@ export function mountApp(root: HTMLDivElement | null): void {
 
   function syncUi(): void {
     syncUiRefs(refs, state);
+    syncInputFormatCopy();
+  }
+
+  function syncInputFormatCopy(): void {
+    const inputFormatLabel = state.inputFormat === "xlsx" ? "XLSX" : "CSV";
+    const fileTitle = appRoot.querySelector<HTMLElement>(
+      '[data-slot="file-dropzone-title"]',
+    );
+    const fileHint = appRoot.querySelector<HTMLElement>(
+      '[data-slot="file-dropzone-hint"]',
+    );
+    const fileIcon = appRoot.querySelector<HTMLElement>(".file-dropzone__icon");
+    const pickButton = appRoot.querySelector<HTMLButtonElement>(
+      '[data-action="pick-file"]',
+    );
+    const protocolEntryHint = appRoot.querySelector<HTMLElement>(
+      '[data-slot="protocol-entry-hint"]',
+    );
+
+    if (fileTitle && !state.fileName) {
+      fileTitle.textContent = "Arquivo CSV ou Excel";
+    }
+
+    if (fileHint && !state.fileName) {
+      fileHint.textContent =
+        "Selecione uma planilha com CNPJs. O resultado fica ao lado do arquivo original.";
+    }
+
+    if (fileIcon) {
+      fileIcon.textContent = inputFormatLabel;
+    }
+
+    if (pickButton) {
+      pickButton.textContent = state.fileName
+        ? "Trocar planilha"
+        : "Selecionar planilha";
+    }
+
+    if (protocolEntryHint && !state.fileName) {
+      protocolEntryHint.textContent =
+        "Selecione uma planilha CSV ou Excel para preparar a consulta.";
+    }
   }
 }
 

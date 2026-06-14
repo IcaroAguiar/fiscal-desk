@@ -147,17 +147,17 @@ Nenhuma thread individual pode substituir o review da branch final integrada.
 |---|---|---|
 | post_p3_legacy_resume_copy_harness_polish | approved_by_judge_integrated_validated | worker `019ec355-e935-7263-b4b3-2c808b58469d`, review `019ec35d-24c2-7f93-b4cf-a8da8ecadaa1`, judge decision `results/post-p3-legacy-resume-copy-harness-polish-integration-judge-decision-2026-06-13.md` |
 | post_p3_excel_input_core_ingestion_contract | integrated_validated | worker `019ec370-acf3-76e1-b59c-d7f7fccfab56`, review `019ec37c-a5f4-70e2-ba8f-5f065163a3ab`, judge decision `results/post-p3-excel-input-core-ingestion-contract-integration-judge-decision-2026-06-13.md` |
+| post_p3_excel_input_runtime_exposure | approved_by_judge_integrated_validated | worker `019ec38f-785c-7c43-a14b-61392cd1119e`, review `019ec3a4-8c28-75e2-8315-77b0122fada6`, judge decision `results/post-p3-excel-input-runtime-exposure-integration-judge-decision-2026-06-13.md` |
 
 F8B1 was dispatched, independently reviewed and selectively integrated in Wave
 13. P3 renderer was integrated and validated after CSV input intake hardening.
-New material work remains blocked until the post-P3 readiness validation-doc
-rebaseline is completed and judged.
+Post-P3 legacy copy polish, Excel core ingestion and Excel runtime exposure were
+integrated and validated after independent review/rework where required.
 
 ## Active Queue As Of 2026-06-13
 
-| Phase | Thread | Worktree | Scope |
-|---|---|---|---|
-| post_p3_excel_input_runtime_exposure | active | `/Users/icaroaguiar/.codex/worktrees/16e4/consulta-simples-csv` | material single-writer runtime exposure for Excel input |
+No material worker is active. The next safe step is a fresh read-only
+owner-window selection before releasing any new material work.
 
 The read-only scope-selection gate
 `post_p3_operational_panel_next_owner_window_selection` completed as
@@ -295,6 +295,22 @@ returned pending worktree `local:30c57af9-ed7e-4fa5-b04e-dba25e4b8253`.
 It materialized as thread `019ec38f-785c-7c43-a14b-61392cd1119e` in worktree
 `/Users/icaroaguiar/.codex/worktrees/16e4/consulta-simples-csv` and was
 observed active at `2026-06-13 21:38:23 -03`.
+
+The worker returned `ready_for_judge_review`. Independent review thread
+`019ec3a4-8c28-75e2-8315-77b0122fada6` first returned `needs_rework` because
+the XLSX parser version did not participate in the ledger fingerprint. Rework
+was sent to the same worker and independently confirmed as `approved_rework`.
+The judge integrated the approved candidate into
+`feat/fiscal-desk-local-base-prep` and validated the canonical branch at
+`2026-06-13 22:16:15 -03` with focused tests, full test, coverage, lint,
+typecheck, build, ratchet, Electron XLSX smokes for `mock` and
+`base-publica-local`, visual smoke and diff check.
+
+Decision: `approved_by_judge_integrated_validated`.
+
+No material worker remains active after this integration. The accepted residual
+risks are documented in
+`results/post-p3-excel-input-runtime-exposure-integration-judge-decision-2026-06-13.md`.
 
 `post_local_base_regate_csv_input_intake_hardening` was integrated and validated
 at `2026-06-13 17:20:37 -03`. The read-only scope-selection gate

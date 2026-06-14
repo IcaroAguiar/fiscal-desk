@@ -1,11 +1,18 @@
+import { createHash } from "node:crypto";
 import { mkdtemp, readFile, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 import { describe, expect, it, vi } from "vitest";
 
-import { FileProcessExecutionLedger } from "../../../src/main/execution/file-process-execution-ledger";
-import type { ProcessCsvSummary } from "../../../src/main/types";
+import {
+  createInputFingerprint,
+  FileProcessExecutionLedger,
+} from "../../../src/main/execution/file-process-execution-ledger";
+import {
+  PROCESS_CSV_INPUT_FORMAT,
+  type ProcessCsvSummary,
+} from "../../../src/main/types";
 
 describe("FileProcessExecutionLedger", () => {
   it("reuses checkpoints from interrupted runs for the same input and provider", async () => {
@@ -251,6 +258,69 @@ describe("FileProcessExecutionLedger", () => {
     expect(secondRun.checkpointPath).not.toBe(firstRun.checkpointPath);
   });
 
+  it("separates CSV and XLSX checkpoints in the execution fingerprint", async () => {
+    const directory = await mkdtemp(join(tmpdir(), "ledger-test-"));
+    const ledger = new FileProcessExecutionLedger(directory);
+    const inputCsv = "cnpj\n00.000.000/0001-91";
+
+    const csvRun = await ledger.startRun({
+      inputContent: inputCsv,
+      inputFormat: PROCESS_CSV_INPUT_FORMAT.CSV,
+      providerName: "mock",
+    });
+    await csvRun.saveLookup({
+      cnpj: "00000000000191",
+      simplesNacional: true,
+      simei: false,
+      source: "mock",
+      status: "SUCCESS",
+    });
+    await csvRun.finish({
+      status: "CANCELLED",
+      outputPath: null,
+      summary: null,
+    });
+
+    const xlsxRun = await ledger.startRun({
+      inputContent: new Uint8Array(Buffer.from(inputCsv, "utf8")),
+      inputFormat: PROCESS_CSV_INPUT_FORMAT.XLSX,
+      providerName: "mock",
+    });
+
+    await expect(xlsxRun.restoreLookup("00000000000191")).resolves.toBeNull();
+    expect(xlsxRun.checkpointPath).not.toBe(csvRun.checkpointPath);
+  });
+
+  it("uses the effective XLSX parser version in the execution fingerprint", () => {
+    const content = new Uint8Array(Buffer.from("cnpj\n00.000.000/0001-91"));
+    const inputContentHash = createHash("sha256")
+      .update(Buffer.from(content))
+      .digest("hex");
+    const fingerprintFor = (csvParserVersion: string) =>
+      createHash("sha256")
+        .update(
+          JSON.stringify({
+            checkpointPolicyVersion: "stable-results-v1",
+            cnpjColumn: null,
+            cnpjNormalizerVersion: "normalize-cnpj-v1",
+            csvParserVersion,
+            inputContentHash,
+            inputFormat: "xlsx",
+            ledgerVersion: 1,
+            providerConfigVersion: "provider-config-v1",
+            providerName: "mock",
+          }),
+        )
+        .digest("hex");
+    const fingerprint = createInputFingerprint({
+      inputContent: content,
+      inputFormat: PROCESS_CSV_INPUT_FORMAT.XLSX,
+      providerName: "mock",
+    });
+    expect(fingerprint).toBe(fingerprintFor("xlsx-reader-v1"));
+    expect(fingerprint).not.toBe(fingerprintFor("csv-reader-v1"));
+  });
+
   it("marks completed runs and writes summary metadata to the ledger file", async () => {
     const directory = await mkdtemp(join(tmpdir(), "ledger-test-"));
     const ledger = new FileProcessExecutionLedger(directory);
@@ -330,6 +400,7 @@ describe("FileProcessExecutionLedger", () => {
       checkpointPath: interruptedRun.checkpointPath,
       checkpointedUniqueLookups: 1,
       cnpjColumn: "cnpj",
+      inputFormat: "csv",
       providerConfigVersion: "provider-config-v1",
       providerName: "mock",
       resumeBlockedReason: null,

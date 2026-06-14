@@ -69,7 +69,7 @@ describe("renderer operational copy", () => {
       "clientes.csv • Simulação",
     );
     expect(formatCommandBarSummary(null, "cnpja-open")).toBe(
-      "Nenhum CSV selecionado • CNPJá Open",
+      "Nenhuma planilha selecionada • CNPJá Open",
     );
     expect(formatCommandBarSummary("clientes.csv", "receita-web")).toBe(
       "clientes.csv • Receita Web manual",
@@ -78,7 +78,7 @@ describe("renderer operational copy", () => {
 
   it("formats the provider hint for the selected execution mode", () => {
     expect(formatProviderHint(null, "mock")).toBe(
-      "Selecione um CSV para continuar",
+      "Selecione uma planilha CSV ou Excel para continuar",
     );
     expect(formatProviderHint("clientes.csv", "mock")).toBe(
       "Consulta configurada em Simulação.",

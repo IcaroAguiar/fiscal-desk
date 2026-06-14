@@ -47,6 +47,29 @@ describe("preload appBridge", () => {
     );
   });
 
+  it("forwards XLSX input format through processCsv", async () => {
+    const appBridge = electronMocks.exposed.appBridge as {
+      processCsv: (input: Record<string, unknown>) => Promise<unknown>;
+    };
+
+    await appBridge.processCsv({
+      content: [80, 75, 3, 4],
+      inputFormat: "xlsx",
+      provider: "mock",
+      sourceFilePath: "/tmp/entrada.xlsx",
+    });
+
+    expect(electronMocks.ipcRenderer.invoke).toHaveBeenCalledWith(
+      PROCESS_CSV_IPC_CHANNEL.PROCESS,
+      {
+        content: [80, 75, 3, 4],
+        inputFormat: "xlsx",
+        provider: "mock",
+        sourceFilePath: "/tmp/entrada.xlsx",
+      },
+    );
+  });
+
   it("forwards current delivery option ids through resumeExecution", async () => {
     const appBridge = electronMocks.exposed.appBridge as {
       resumeExecution: (
