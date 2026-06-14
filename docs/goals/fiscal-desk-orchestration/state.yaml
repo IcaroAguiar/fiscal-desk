@@ -604,9 +604,9 @@ monitoring:
   observe_threads_frequently: true
   heartbeat_automation_id: fiscal-desk-f0-monitor
   heartbeat_interval_minutes: 30
-  last_observation_at: "2026-06-13 23:22:38 -03"
+  last_observation_at: "2026-06-13 23:26:46 -03"
   last_observation_file: docs/goals/fiscal-desk-orchestration/integration-plan.md
-  last_observation_status: post_p3_branch_pr_preparation_closeout_thread_active
+  last_observation_status: post_p3_branch_pr_preparation_closeout_approved_by_judge
   f0_thread_status: self_approval_blocker_resolved_by_judge
   final_integration_review_status: approved_by_judge
   final_integration_review_thread_id: 019ec005-f849-7b53-ae0f-ae7c02df4f63
@@ -630,7 +630,7 @@ monitoring:
   staging_versioning_closeout_dispatch_file: results/staging-versioning-closeout-dispatch-2026-06-13.md
   staging_versioning_closeout_file: results/staging-versioning-closeout.md
   staging_versioning_closeout_judge_decision_file: results/staging-versioning-closeout-judge-decision.md
-  next_material_worker_status: blocked_pending_branch_pr_preparation_closeout
+  next_material_worker_status: blocked_pending_explicit_pr_action_approval
   last_thread_observation:
     testing_infra_coverage_gate_worker: idle_completed
     testing_infra_coverage_gate_independent_review: idle_completed_approved_candidate
@@ -692,8 +692,8 @@ monitoring:
     post_p3_excel_runtime_docs_rebaseline_integrated_first_release_validation_judge: approved_by_judge_integrated_validated
     post_p3_excel_validation_next_owner_window_selection: idle_completed_approved_scope_candidate_judged
     post_p3_first_release_final_readiness_pr_closeout: idle_completed_approved_candidate_judged
-    post_p3_branch_pr_preparation_closeout: active_read_only_pr_preparation_thread
-    material_worker_released: none_active_pending_branch_pr_preparation_closeout
+    post_p3_branch_pr_preparation_closeout: idle_completed_approved_pr_preparation_candidate_judged
+    material_worker_released: none_active_pending_explicit_pr_action_approval
   active_material_owner_window_after_post_local_base_regate:
     slug: post_local_base_regate_csv_input_intake_hardening
     status: approved_by_judge_integrated_validated
@@ -2089,7 +2089,7 @@ monitoring:
       - receita_web_live_massiva
   active_read_only_branch_pr_preparation_closeout:
     slug: post_p3_branch_pr_preparation_closeout
-    status: active_read_only_pr_preparation_thread
+    status: approved_by_judge_for_pr_action_approval
     pending_worktree_id: local:8ef69773-6b61-4c82-a35a-2a81d9c317f8
     thread_id: 019ec3ef-ae95-7971-90af-02644602eb50
     thread_title: Fiscal Desk - Branch PR Preparation Closeout
@@ -2103,15 +2103,19 @@ monitoring:
     prepared_at: "2026-06-13 23:20:21 -03"
     dispatched_at: "2026-06-13 23:22:38 -03"
     observed_active_at: "2026-06-13 23:22:38 -03"
+    result_status: approved_pr_preparation_candidate
+    judged_at: "2026-06-13 23:26:46 -03"
     branch: feat/fiscal-desk-local-base-prep
     target_min_commit: 72a4e44
     dispatch_commit: 72a4e44
     dispatch_file: results/post-p3-branch-pr-preparation-closeout-dispatch-2026-06-13.md
     result_file: results/post-p3-branch-pr-preparation-closeout-2026-06-13.md
+    judge_decision_file: results/post-p3-branch-pr-preparation-closeout-judge-decision-2026-06-13.md
     material_worker_released: false
     allowed_write:
       - docs/goals/fiscal-desk-orchestration/results/post-p3-branch-pr-preparation-closeout-2026-06-13.md
-    blocks_material_workers_until_judged: true
+    blocks_material_workers_until_judged: false
+    next_authorized_window: explicit_pr_action_approval_required
     side_effects_allowed: false
     still_blocked:
       - material_feature_workers_until_branch_pr_closeout_judged

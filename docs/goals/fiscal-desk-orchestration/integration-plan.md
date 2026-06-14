@@ -484,11 +484,20 @@ The Codex App PR-preparation closeout thread was requested at
 `/Users/icaroaguiar/.codex/worktrees/8095/consulta-simples-csv`. It is active
 as a read-only PR preparation gate with `/goal`, `gpt-5.5`, reasoning `medium`.
 
+The PR-preparation closeout receipt returned
+`approved_pr_preparation_candidate` and was accepted by the judge at
+`2026-06-13 23:26:46 -03`:
+`results/post-p3-branch-pr-preparation-closeout-judge-decision-2026-06-13.md`.
+The branch is ready for an explicit PR action approval. No PR was created or
+updated by this decision.
+
 Current state:
 
 - first-release readiness/PR closeout is accepted by the judge;
+- branch/PR preparation closeout is accepted by the judge;
 - branch `feat/fiscal-desk-local-base-prep` is the single integration branch;
 - no material implementation worker is active;
+- PR create/update now requires explicit user authorization;
 - `skills/**` remains local/untracked and excluded by default;
 - `docs/fiscal-desk/**` remains local-only unless a separate versioning decision
   changes that;
