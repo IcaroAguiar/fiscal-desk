@@ -370,6 +370,11 @@ Dispatch prepared at `2026-06-13 22:48:14 -03`:
 This dispatch allows only one persistent receipt and transient check artifacts.
 No feature/material implementation worker is released by this dispatch.
 
+The Codex App validation thread was requested at `2026-06-13 22:50:20 -03`,
+returned pending worktree `local:1307995f-c417-44be-9a32-614bc13a20d9`, and
+materialized as thread `019ec3d1-fb28-75e2-a3e1-0623fc26bd22` in worktree
+`/Users/icaroaguiar/.codex/worktrees/a40e/consulta-simples-csv`.
+
 `post_local_base_regate_csv_input_intake_hardening` was integrated and validated
 at `2026-06-13 17:20:37 -03`. The read-only scope-selection gate
 `post_csv_input_intake_next_owner_window_selection` was dispatched at

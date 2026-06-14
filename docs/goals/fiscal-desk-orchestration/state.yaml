@@ -604,9 +604,9 @@ monitoring:
   observe_threads_frequently: true
   heartbeat_automation_id: fiscal-desk-f0-monitor
   heartbeat_interval_minutes: 30
-  last_observation_at: "2026-06-13 22:46:47 -03"
+  last_observation_at: "2026-06-13 22:50:20 -03"
   last_observation_file: docs/goals/fiscal-desk-orchestration/integration-plan.md
-  last_observation_status: post_p3_excel_runtime_docs_rebaseline_next_owner_window_selection_approved_scope_candidate
+  last_observation_status: post_p3_excel_runtime_docs_rebaseline_integrated_first_release_validation_active
   f0_thread_status: self_approval_blocker_resolved_by_judge
   final_integration_review_status: approved_by_judge
   final_integration_review_thread_id: 019ec005-f849-7b53-ae0f-ae7c02df4f63
@@ -688,7 +688,7 @@ monitoring:
     post_p3_excel_runtime_next_owner_window_selection: idle_completed_approved_scope_candidate_judged
     post_p3_excel_runtime_docs_rebaseline: idle_completed_approved_docs_only_integrated_local_docs
     post_p3_excel_runtime_docs_rebaseline_next_owner_window_selection: idle_completed_approved_scope_candidate_judged
-    post_p3_excel_runtime_docs_rebaseline_integrated_first_release_validation: dispatch_prepared_pending_thread
+    post_p3_excel_runtime_docs_rebaseline_integrated_first_release_validation: active_executable_validation
     material_worker_released: none_active_pending_integrated_validation
   active_material_owner_window_after_post_local_base_regate:
     slug: post_local_base_regate_csv_input_intake_hardening
@@ -1931,14 +1931,21 @@ monitoring:
       - receita_web_live_massiva
   active_executable_validation_after_excel_runtime_docs_rebaseline:
     slug: post_p3_excel_runtime_docs_rebaseline_integrated_first_release_validation
-    status: dispatch_prepared_pending_thread
+    status: active_executable_validation
     classification: non_feature_material_validation
     source_selection_thread_id: 019ec3c9-1675-7711-9de3-f926a5f10299
     source_selection_result_file: results/post-p3-excel-runtime-docs-rebaseline-next-owner-window-selection-2026-06-13.md
     source_selection_judge_decision_file: results/post-p3-excel-runtime-docs-rebaseline-next-owner-window-selection-judge-decision-2026-06-13.md
     prepared_at: "2026-06-13 22:48:14 -03"
+    requested_at: "2026-06-13 22:50:20 -03"
+    pending_worktree_id: local:1307995f-c417-44be-9a32-614bc13a20d9
+    thread_id: 019ec3d1-fb28-75e2-a3e1-0623fc26bd22
+    thread_title: Validar integrado pós Excel
+    worktree: /Users/icaroaguiar/.codex/worktrees/a40e/consulta-simples-csv
+    observed_active_at: "2026-06-13 22:50:20 -03"
     branch: feat/fiscal-desk-local-base-prep
     target_min_commit: 105ec0a
+    canonical_dispatch_commit: 524ed79
     dispatch_file: results/post-p3-excel-runtime-docs-rebaseline-integrated-first-release-validation-dispatch-2026-06-13.md
     result_file: results/post-p3-excel-runtime-docs-rebaseline-integrated-first-release-validation-2026-06-13.md
     material_feature_worker_released: false
