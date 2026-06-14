@@ -461,6 +461,35 @@ at `2026-06-13 17:20:37 -03`. The read-only scope-selection gate
 `2026-06-13 17:26:55 -03`, observed active at `2026-06-13 17:29:28 -03` and
 approved by the judge at `2026-06-13 17:31:33 -03`.
 
+## Post P3 Branch PR Preparation Closeout Dispatch As Of 2026-06-13
+
+Receipt:
+`results/post-p3-branch-pr-preparation-closeout-dispatch-2026-06-13.md`.
+
+The judge prepared the branch/PR preparation closeout dispatch at
+`2026-06-13 23:20:21 -03`. No material worker, PR creation, stage, commit,
+push, release, publish, signing, notarization, updater, diagnostics,
+telemetry, license/account, templates, PDF/Word/OCR or Receita Web live surface
+is released by this dispatch.
+
+The closeout thread may only produce a PR preparation artifact: suggested title,
+suggested PR body/checklist, checks to cite, mandatory exclusions, residual
+risks, remaining blocked surfaces, and a go/no-go recommendation for a future
+PR action. It may not create or update a PR.
+
+Current state:
+
+- first-release readiness/PR closeout is accepted by the judge;
+- branch `feat/fiscal-desk-local-base-prep` is the single integration branch;
+- no material implementation worker is active;
+- `skills/**` remains local/untracked and excluded by default;
+- `docs/fiscal-desk/**` remains local-only unless a separate versioning decision
+  changes that;
+- release/public distribution, updater real, diagnostics sent externally,
+  telemetry, license/account, storage/network/backend, templates/models,
+  PDF/Word/OCR and Receita Web live/massiva remain blocked until explicit owner
+  windows.
+
 The next material owner window dispatch was prepared at
 `2026-06-13 17:32:52 -03`; the Codex App worker thread was observed active at
 `2026-06-13 17:35:09 -03`. The first worker receipt stopped on
