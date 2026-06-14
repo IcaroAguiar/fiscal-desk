@@ -680,7 +680,8 @@ monitoring:
     post_p3_legacy_polish_next_owner_window_selection: idle_completed_approved_scope_candidate_judged
     post_p3_excel_input_core_ingestion_contract: idle_completed_ready_for_judge_review_after_rework_integrated_validated
     post_p3_excel_input_core_ingestion_contract_review: idle_completed_approved_candidate
-    post_p3_excel_ingestion_next_owner_window_selection: active_read_only_selection
+    post_p3_excel_ingestion_next_owner_window_selection: idle_completed_approved_scope_candidate_judged
+    post_p3_excel_input_runtime_exposure: dispatch_prepared_not_started
     material_worker_released: none_waiting_for_post_excel_owner_window_selection
   active_material_owner_window_after_post_local_base_regate:
     slug: post_local_base_regate_csv_input_intake_hardening
@@ -1645,7 +1646,7 @@ monitoring:
       - receita_web_live_massiva
   active_read_only_owner_window_selection_after_excel_ingestion:
     slug: post_p3_excel_ingestion_next_owner_window_selection
-    status: active_read_only_selection
+    status: approved_by_judge_scope_candidate
     pending_worktree_id: local:d250f596-51fc-4559-bbb8-ca5f63656d8b
     thread_id: 019ec388-5dd0-7063-865b-a28039875f4c
     thread_title: Selecionar owner window pos Excel core
@@ -1658,13 +1659,20 @@ monitoring:
     prepared_at: "2026-06-13 21:27:21 -03"
     requested_at: "2026-06-13 21:29:23 -03"
     observed_active_at: "2026-06-13 21:30:11 -03"
+    completed_at: "2026-06-13 21:32:32 -03"
+    judged_at: "2026-06-13 21:33:24 -03"
     dispatch_file: results/post-p3-excel-ingestion-next-owner-window-selection-dispatch-2026-06-13.md
     result_file: results/post-p3-excel-ingestion-next-owner-window-selection-2026-06-13.md
+    judge_decision_file: results/post-p3-excel-ingestion-next-owner-window-selection-judge-decision-2026-06-13.md
     classification: read_only_owner_window_selection
     material_worker_released: false
     blocks_material_workers_until_judged: true
     allowed_write:
       - docs/goals/fiscal-desk-orchestration/results/post-p3-excel-ingestion-next-owner-window-selection-2026-06-13.md
+    result_status: approved_scope_candidate
+    selected_next_owner_window: post_p3_excel_input_runtime_exposure
+    selected_next_owner_window_classification: material_single_writer
+    next_material_worker_status_after_judgment: approved_for_dispatch
     candidate_surfaces_to_evaluate:
       - excel_ui_ipc_preload_runtime
       - excel_ingestion_qa_validation_docs
@@ -1672,6 +1680,54 @@ monitoring:
       - diagnostic_generation_local_reviewable
       - update_release_scope_or_ui_blocked_state
       - first_release_hardening
+    still_blocked:
+      - release_public_distribution
+      - updater_update_real
+      - diagnostic_send_external
+      - telemetry_transport
+      - license_account_real
+      - storage_network_backend_remote
+      - reusable_templates_models
+      - pdf_word_ocr_real
+      - receita_web_live_massiva
+  approved_material_owner_window_after_excel_ingestion:
+    slug: post_p3_excel_input_runtime_exposure
+    status: dispatch_prepared
+    classification: material_single_writer
+    source_selection_thread_id: 019ec388-5dd0-7063-865b-a28039875f4c
+    source_selection_result_file: results/post-p3-excel-ingestion-next-owner-window-selection-2026-06-13.md
+    source_selection_judge_decision_file: results/post-p3-excel-ingestion-next-owner-window-selection-judge-decision-2026-06-13.md
+    approved_at: "2026-06-13 21:33:24 -03"
+    prepared_at: "2026-06-13 21:33:24 -03"
+    target_min_commit: d1b17ee
+    dispatch_file: results/post-p3-excel-input-runtime-exposure-dispatch-2026-06-13.md
+    material_worker_released: false
+    requires_independent_review_before_integration: true
+    allowed_write:
+      - src/core/app/process-csv.types.ts
+      - src/core/app/process-csv.use-case.ts
+      - src/main/ipc/process-csv.ipc.ts
+      - src/main/preload.ts
+      - src/main/types.ts
+      - src/main/execution/file-process-execution-ledger.ts
+      - src/renderer/ui/app.types.ts
+      - src/renderer/ui/app.ts
+      - src/renderer/ui/app-view.ts
+      - src/renderer/ui/operational-copy.ts
+      - src/renderer/ui/app-helpers.ts
+      - test/integration/process-csv.use-case.test.ts
+      - test/integration/process-csv-ledger-resume.test.ts
+      - test/unit/main/file-process-execution-ledger.test.ts
+      - test/unit/process-csv-contracts.test.ts
+      - test/unit/process-csv.ipc.test.ts
+      - test/unit/process-csv.ipc.delivery.test.ts
+      - test/unit/process-csv.ipc-resume-delivery.test.ts
+      - test/unit/preload.test.ts
+      - test/unit/app-view.test.ts
+      - test/unit/app-helpers.test.ts
+      - test/unit/renderer-operational-copy.test.ts
+      - scripts/smoke-electron-ui.ts
+      - docs/goals/fiscal-desk-orchestration/results/post-p3-excel-input-runtime-exposure-2026-06-13.md
     still_blocked:
       - release_public_distribution
       - updater_update_real

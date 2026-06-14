@@ -157,7 +157,7 @@ rebaseline is completed and judged.
 
 | Phase | Thread | Worktree | Scope |
 |---|---|---|---|
-| post_p3_excel_ingestion_next_owner_window_selection | active | `/Users/icaroaguiar/.codex/worktrees/0ed9/consulta-simples-csv` | read-only owner-window selection after Excel core integration |
+| post_p3_excel_input_runtime_exposure | dispatch prepared | n/a | material single-writer runtime exposure for Excel input |
 
 The read-only scope-selection gate
 `post_p3_operational_panel_next_owner_window_selection` completed as
@@ -283,6 +283,13 @@ returned pending worktree `local:d250f596-51fc-4559-bbb8-ca5f63656d8b`.
 It materialized as thread `019ec388-5dd0-7063-865b-a28039875f4c` in worktree
 `/Users/icaroaguiar/.codex/worktrees/0ed9/consulta-simples-csv` and was observed
 active at `2026-06-13 21:30:11 -03`.
+The selector returned `approved_scope_candidate` at `2026-06-13 21:32:32 -03`,
+recommending `post_p3_excel_input_runtime_exposure`. The judge accepted the
+scope at `2026-06-13 21:33:24 -03` with an adjusted allowlist that includes
+ledger/fingerprint and the Electron smoke harness. Material dispatch prepared:
+`results/post-p3-excel-input-runtime-exposure-dispatch-2026-06-13.md`.
+
+No material worker has been requested yet for this dispatch.
 
 `post_local_base_regate_csv_input_intake_hardening` was integrated and validated
 at `2026-06-13 17:20:37 -03`. The read-only scope-selection gate
