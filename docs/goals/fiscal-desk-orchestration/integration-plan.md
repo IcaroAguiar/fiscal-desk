@@ -243,6 +243,8 @@ repeated focused Vitest/lint/typecheck/ratchet/diff-check, and accepted the
 candidate as `ready_for_independent_review_after_rework` at
 `2026-06-13 21:14:48 -03`. Review dispatch prepared:
 `results/post-p3-excel-input-core-ingestion-contract-review-dispatch-2026-06-13.md`.
+The Codex App review thread was requested at `2026-06-13 21:16:33 -03` and
+returned pending worktree `local:54bcd436-37f9-45cd-af0a-9e45896bd248`.
 No integration is authorized before the independent review receipt is judged.
 
 `post_local_base_regate_csv_input_intake_hardening` was integrated and validated

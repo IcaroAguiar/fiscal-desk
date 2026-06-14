@@ -1559,13 +1559,16 @@ monitoring:
     rework_completed_at: "2026-06-13 21:13:41 -03"
     after_rework_judged_at: "2026-06-13 21:14:48 -03"
     review_prepared_at: "2026-06-13 21:14:48 -03"
+    review_requested_at: "2026-06-13 21:16:33 -03"
+    review_pending_worktree_id: local:54bcd436-37f9-45cd-af0a-9e45896bd248
     worker_result_status: ready_for_judge_review
     worker_after_rework_status: ready_for_judge_review_after_rework
     judge_result_status: ready_for_independent_review_after_rework
     rework_reason: worker_modified_test_unit_fiscal_desk_phase_6_contracts_outside_allowed_write_set
     material_worker_released: true
     requires_independent_review_before_integration: true
-    independent_review_released: false
+    independent_review_released: true
+    independent_review_status: pending_worktree_creation
     allowed_write:
       - src/core/ingestion/ingestion-contract.ts
       - src/core/ingestion/fiscal-ingestion.ts
