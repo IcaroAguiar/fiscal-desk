@@ -68,6 +68,11 @@ assina build, nao executa update real e nao libera nova feature material.
 - `git diff --stat main...HEAD`: pacote amplo com `src/**`, `test/**`,
   `scripts/**`, `.github/**`, docs/goals, docs/qa, package/lock e Electron
   config.
+- `git diff --check -- docs/goals/fiscal-desk-orchestration/results/post-p3-branch-pr-preparation-closeout-2026-06-13.md`:
+  sem output apos escrever este receipt.
+- `git diff --no-index --check /dev/null docs/goals/fiscal-desk-orchestration/results/post-p3-branch-pr-preparation-closeout-2026-06-13.md`:
+  exit 1 esperado para arquivo novo diferente de `/dev/null`, sem warnings de
+  whitespace.
 - `git diff --name-status main...HEAD`: confirmou o range amplo e versionavel,
   sem incluir `skills/**`, `docs/fiscal-desk/**` ou `.visual-fidelity/**`.
 - `rg` proporcional nos docs obrigatorios e fallback canonico para `PR`,
