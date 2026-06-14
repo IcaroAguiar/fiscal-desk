@@ -229,6 +229,14 @@ pending worktree `local:77cf7326-42ee-4dfc-a3b6-8f5c12d5a8c9`.
 It materialized as thread `019ec370-acf3-76e1-b59c-d7f7fccfab56` in worktree
 `/Users/icaroaguiar/.codex/worktrees/a88b/consulta-simples-csv` and was observed
 active at `2026-06-13 21:04:14 -03`.
+The worker completed at `2026-06-13 21:10:05 -03` with receipt status
+`ready_for_judge_review`. The judge repeated focused Vitest, lint, typecheck,
+ratchet and diff-check successfully, but rejected the candidate at
+`2026-06-13 21:12:11 -03` as `needs_rework_scope_violation` because the worker
+modified `test/unit/fiscal-desk-phase-6-contracts.test.ts`, which was outside
+the strict allowed write set. Rework was sent back to the same thread. No review
+independent and no integration are authorized until the worker returns
+`ready_for_judge_review_after_rework` with all changed files inside the allowlist.
 
 `post_local_base_regate_csv_input_intake_hardening` was integrated and validated
 at `2026-06-13 17:20:37 -03`. The read-only scope-selection gate
