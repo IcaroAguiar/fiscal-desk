@@ -342,6 +342,10 @@ The judge prepared a fresh read-only owner-window selection at
 `2026-06-13 22:38:34 -03`:
 `results/post-p3-excel-runtime-docs-rebaseline-next-owner-window-selection-dispatch-2026-06-13.md`.
 No material worker is released by this dispatch.
+The Codex App selection thread was requested at `2026-06-13 22:40:40 -03`,
+returned pending worktree `local:4c60139a-00c9-4c57-bd90-492b3f5251e8`, and
+materialized as thread `019ec3c9-1675-7711-9de3-f926a5f10299` in worktree
+`/Users/icaroaguiar/.codex/worktrees/dfd0/consulta-simples-csv`.
 
 `post_local_base_regate_csv_input_intake_hardening` was integrated and validated
 at `2026-06-13 17:20:37 -03`. The read-only scope-selection gate
