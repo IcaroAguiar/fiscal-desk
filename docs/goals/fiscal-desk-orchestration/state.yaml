@@ -630,7 +630,7 @@ monitoring:
   staging_versioning_closeout_dispatch_file: results/staging-versioning-closeout-dispatch-2026-06-13.md
   staging_versioning_closeout_file: results/staging-versioning-closeout.md
   staging_versioning_closeout_judge_decision_file: results/staging-versioning-closeout-judge-decision.md
-  next_material_worker_status: blocked_pending_post_p3_legacy_polish_next_owner_window_selection
+  next_material_worker_status: post_p3_excel_input_core_ingestion_contract_dispatch_prepared
   last_thread_observation:
     testing_infra_coverage_gate_worker: idle_completed
     testing_infra_coverage_gate_independent_review: idle_completed_approved_candidate
@@ -678,6 +678,7 @@ monitoring:
     post_p3_legacy_resume_copy_harness_polish_review: idle_completed_approved_candidate
     post_p3_legacy_resume_copy_harness_polish_judge: integrated_validated
     post_p3_legacy_polish_next_owner_window_selection: dispatch_prepared_not_started
+    post_p3_excel_input_core_ingestion_contract: dispatch_prepared_not_started
     material_worker_released: none_pending_next_owner_window_selection
   active_material_owner_window_after_post_local_base_regate:
     slug: post_local_base_regate_csv_input_intake_hardening
@@ -1505,7 +1506,7 @@ monitoring:
       - receita_web_live_massiva
   active_read_only_owner_window_selection_after_legacy_polish:
     slug: post_p3_legacy_polish_next_owner_window_selection
-    status: active
+    status: approved_by_judge_scope_candidate
     pending_worktree_id: local:cb6e3ce6-07b3-4d59-9c5e-e6abe2b7b0e0
     thread_id: 019ec36a-345e-7be0-9458-3fa3ef77577e
     thread_title: Selecionar próxima owner window
@@ -1518,13 +1519,76 @@ monitoring:
     prepared_at: "2026-06-13 20:54:22 -03"
     dispatched_at: "2026-06-13 20:56:25 -03"
     observed_active_at: "2026-06-13 20:57:07 -03"
+    completed_at: "2026-06-13 20:59:11 -03"
+    judged_at: "2026-06-13 21:00:05 -03"
     dispatch_file: results/post-p3-legacy-polish-next-owner-window-selection-dispatch-2026-06-13.md
     result_file: results/post-p3-legacy-polish-next-owner-window-selection-2026-06-13.md
+    judge_decision_file: results/post-p3-legacy-polish-next-owner-window-selection-judge-decision-2026-06-13.md
     classification: read_only_owner_window_selection
     material_worker_released: false
     blocks_material_workers_until_judged: true
+    result_status: approved_scope_candidate
+    selected_next_owner_window: post_p3_excel_input_core_ingestion_contract
+    selected_next_owner_window_classification: material_single_writer_core_ingestion
+    next_material_worker_status_after_judgment: approved_for_dispatch
     allowed_write:
       - docs/goals/fiscal-desk-orchestration/results/post-p3-legacy-polish-next-owner-window-selection-2026-06-13.md
+  approved_material_owner_window_after_legacy_polish:
+    slug: post_p3_excel_input_core_ingestion_contract
+    status: dispatch_prepared
+    classification: material_single_writer_core_ingestion
+    source_selection_thread_id: 019ec36a-345e-7be0-9458-3fa3ef77577e
+    source_selection_result_file: results/post-p3-legacy-polish-next-owner-window-selection-2026-06-13.md
+    source_selection_judge_decision_file: results/post-p3-legacy-polish-next-owner-window-selection-judge-decision-2026-06-13.md
+    approved_at: "2026-06-13 21:00:05 -03"
+    prepared_at: "2026-06-13 21:00:05 -03"
+    target_min_commit: e622743
+    dispatch_file: results/post-p3-excel-input-core-ingestion-contract-dispatch-2026-06-13.md
+    material_worker_released: false
+    requires_independent_review_before_integration: true
+    allowed_write:
+      - src/core/ingestion/ingestion-contract.ts
+      - src/core/ingestion/fiscal-ingestion.ts
+      - src/core/ingestion/xlsx-reader.ts
+      - test/unit/fiscal-ingestion.test.ts
+      - test/unit/xlsx-reader.test.ts
+      - docs/goals/fiscal-desk-orchestration/results/post-p3-excel-input-core-ingestion-contract-2026-06-13.md
+    forbidden_write:
+      - src/renderer/**
+      - src/main/**
+      - src/main/ipc/**
+      - src/main/preload.ts
+      - src/core/app/**
+      - src/core/export/**
+      - src/core/simples/**
+      - src/core/public-base/**
+      - test/integration/**
+      - scripts/**
+      - package.json
+      - pnpm-lock.yaml
+      - electron-builder.yml
+      - .github/**
+      - docs/fiscal-desk/**
+      - docs/qa/**
+      - docs/adr/**
+      - .visual-fidelity/**
+    required_checks:
+      - pnpm exec vitest run test/unit/fiscal-ingestion.test.ts test/unit/xlsx-reader.test.ts test/unit/fiscal-desk-phase-6-contracts.test.ts
+      - pnpm test
+      - pnpm test:coverage
+      - pnpm lint
+      - pnpm typecheck
+      - QUALITY_GATE_DIFF_MODE=worktree node docs/ai/quality-gate/check-ratchet.mjs
+      - git diff --check
+    still_blocked:
+      - excel_ui_ipc_preload_runtime
+      - guided_delivery_models_templates
+      - diagnostic_generation_or_sending
+      - telemetry_transport
+      - license_account_behavior
+      - release_update_dist_publish_signing_notarization
+      - pdf_word_ocr
+      - receita_web_live_massiva
   active_read_only_owner_window_selection_after_post_local_base_regate:
     slug: post_local_base_regate_material_owner_window_selection
     status: approved_by_judge_scope_candidate

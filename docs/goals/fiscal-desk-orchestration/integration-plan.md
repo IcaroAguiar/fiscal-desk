@@ -216,6 +216,14 @@ returned pending worktree `local:cb6e3ce6-07b3-4d59-9c5e-e6abe2b7b0e0`.
 It materialized as thread `019ec36a-345e-7be0-9458-3fa3ef77577e` in worktree
 `/Users/icaroaguiar/.codex/worktrees/2519/consulta-simples-csv` and was observed
 active at `2026-06-13 20:57:07 -03`.
+The selector returned `approved_scope_candidate` at `2026-06-13 20:59:11 -03`,
+recommending `post_p3_excel_input_core_ingestion_contract` as a material
+single-writer core-ingestion slice. The judge accepted the scope at
+`2026-06-13 21:00:05 -03` and prepared dispatch
+`results/post-p3-excel-input-core-ingestion-contract-dispatch-2026-06-13.md`.
+This dispatch does not release UI, IPC, preload, runtime Electron,
+package/lock, release/update, diagnostics, telemetry, license/account,
+templates, PDF/Word/OCR or Receita Web live/massiva.
 
 `post_local_base_regate_csv_input_intake_hardening` was integrated and validated
 at `2026-06-13 17:20:37 -03`. The read-only scope-selection gate
