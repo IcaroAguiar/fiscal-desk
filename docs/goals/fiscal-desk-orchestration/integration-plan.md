@@ -401,6 +401,25 @@ No feature/material implementation worker remains active. The next safe action
 is a fresh read-only owner-window selection before any additional feature
 material.
 
+## Post P3 Excel Validation Next Owner Window Selection Dispatch As Of 2026-06-13
+
+Receipt:
+`results/post-p3-excel-validation-next-owner-window-selection-dispatch-2026-06-13.md`.
+
+The judge prepared a fresh read-only owner-window selection at
+`2026-06-13 23:02:00 -03`. No material worker is released by this dispatch.
+
+Current state:
+
+- Excel/XLSX runtime and post-Excel integrated validation are closed;
+- no material implementation worker is active;
+- the next thread may only recommend exactly one owner window or keep the queue
+  blocked with evidence;
+- release/public distribution, updater real, diagnostics sent externally,
+  telemetry, license/account, storage/network/backend, templates/models,
+  PDF/Word/OCR and Receita Web live/massiva remain blocked until explicit owner
+  windows.
+
 `post_local_base_regate_csv_input_intake_hardening` was integrated and validated
 at `2026-06-13 17:20:37 -03`. The read-only scope-selection gate
 `post_csv_input_intake_next_owner_window_selection` was dispatched at

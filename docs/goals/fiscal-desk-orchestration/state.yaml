@@ -604,9 +604,9 @@ monitoring:
   observe_threads_frequently: true
   heartbeat_automation_id: fiscal-desk-f0-monitor
   heartbeat_interval_minutes: 30
-  last_observation_at: "2026-06-13 22:58:46 -03"
+  last_observation_at: "2026-06-13 23:02:00 -03"
   last_observation_file: docs/goals/fiscal-desk-orchestration/integration-plan.md
-  last_observation_status: post_p3_excel_runtime_docs_rebaseline_integrated_first_release_validation_approved
+  last_observation_status: post_p3_excel_validation_next_owner_window_selection_dispatch_prepared
   f0_thread_status: self_approval_blocker_resolved_by_judge
   final_integration_review_status: approved_by_judge
   final_integration_review_thread_id: 019ec005-f849-7b53-ae0f-ae7c02df4f63
@@ -630,7 +630,7 @@ monitoring:
   staging_versioning_closeout_dispatch_file: results/staging-versioning-closeout-dispatch-2026-06-13.md
   staging_versioning_closeout_file: results/staging-versioning-closeout.md
   staging_versioning_closeout_judge_decision_file: results/staging-versioning-closeout-judge-decision.md
-  next_material_worker_status: none_waiting_for_post_excel_validation_next_owner_window_selection
+  next_material_worker_status: blocked_pending_post_p3_excel_validation_next_owner_window_selection
   last_thread_observation:
     testing_infra_coverage_gate_worker: idle_completed
     testing_infra_coverage_gate_independent_review: idle_completed_approved_candidate
@@ -690,7 +690,8 @@ monitoring:
     post_p3_excel_runtime_docs_rebaseline_next_owner_window_selection: idle_completed_approved_scope_candidate_judged
     post_p3_excel_runtime_docs_rebaseline_integrated_first_release_validation: idle_completed_ready_for_judge_review_approved_validated
     post_p3_excel_runtime_docs_rebaseline_integrated_first_release_validation_judge: approved_by_judge_integrated_validated
-    material_worker_released: none_active_after_integrated_validation
+    post_p3_excel_validation_next_owner_window_selection: dispatch_prepared_pending_thread
+    material_worker_released: none_active_pending_next_owner_window_selection
   active_material_owner_window_after_post_local_base_regate:
     slug: post_local_base_regate_csv_input_intake_hardening
     status: approved_by_judge_integrated_validated
@@ -1986,6 +1987,40 @@ monitoring:
       receipt_diff_check: pass
     still_blocked:
       - material_feature_workers_until_fresh_owner_window_selection
+      - release_public_distribution
+      - updater_update_real
+      - diagnostic_send_external_or_package_real
+      - telemetry_transport
+      - license_account_real
+      - storage_network_backend_remote
+      - reusable_templates_models
+      - pdf_word_ocr_real
+      - receita_web_live_massiva
+  active_read_only_owner_window_selection_after_excel_validation:
+    slug: post_p3_excel_validation_next_owner_window_selection
+    status: dispatch_prepared_pending_thread
+    classification: read_only_owner_window_selection
+    source_validation_thread_id: 019ec3d1-fb28-75e2-a3e1-0623fc26bd22
+    source_validation_result_file: results/post-p3-excel-runtime-docs-rebaseline-integrated-first-release-validation-2026-06-13.md
+    source_validation_judge_decision_file: results/post-p3-excel-runtime-docs-rebaseline-integrated-first-release-validation-judge-decision-2026-06-13.md
+    prepared_at: "2026-06-13 23:02:00 -03"
+    branch: feat/fiscal-desk-local-base-prep
+    target_min_commit: 2751122
+    dispatch_file: results/post-p3-excel-validation-next-owner-window-selection-dispatch-2026-06-13.md
+    result_file: results/post-p3-excel-validation-next-owner-window-selection-2026-06-13.md
+    material_worker_released: false
+    blocks_material_workers_until_judged: true
+    allowed_write:
+      - docs/goals/fiscal-desk-orchestration/results/post-p3-excel-validation-next-owner-window-selection-2026-06-13.md
+    candidate_surfaces_to_evaluate:
+      - first_release_final_readiness_or_pr_closeout_read_only
+      - guided_xlsx_delivery_without_reusable_templates
+      - diagnostic_local_reviewable_no_external_send
+      - update_release_scope_or_blocked_state_only
+      - release_package_config_read_only_review
+      - keep_blocked_if_no_safe_owner_window
+    still_blocked:
+      - material_feature_workers_until_this_selection_judged
       - release_public_distribution
       - updater_update_real
       - diagnostic_send_external_or_package_real
