@@ -332,6 +332,12 @@ The Codex App docs-only worker was requested at `2026-06-13 22:31:19 -03`,
 returned pending worktree `local:2760d2ca-b6a1-499f-ad92-6b442af2e077`, and
 materialized as thread `019ec3c0-8180-7813-adb0-e9abe797b3f4` in worktree
 `/Users/icaroaguiar/.codex/worktrees/ae44/consulta-simples-csv`.
+The worker completed as `ready_for_judge_review`. The judge promoted the
+versioned QA doc, the receipt and the local ignored `docs/fiscal-desk/**` edits
+back to the canonical worktree, validated the docs-only diff at
+`2026-06-13 22:36:47 -03`, and accepted the window as
+`approved_docs_only_integrated_local_docs`.
+No material worker remains active after this docs-only rebaseline.
 
 `post_local_base_regate_csv_input_intake_hardening` was integrated and validated
 at `2026-06-13 17:20:37 -03`. The read-only scope-selection gate

@@ -4,7 +4,9 @@ Este documento define o criterio publico de validacao para a primeira sequencia 
 
 ## Objetivo
 
-Entregar PRs pequenos e reversiveis para transformar o app em Fiscal Desk sem quebrar o fluxo atual de CSV, providers existentes e saida processada.
+Entregar PRs pequenos e reversiveis para transformar o app em Fiscal Desk sem
+quebrar o fluxo atual de CSV, entrada Excel/XLSX atual, providers existentes e
+saida processada.
 
 ## Cobertura de testes esperada
 
@@ -43,6 +45,12 @@ distribuivel, update real, envio de diagnostico, telemetria real,
 licenca/account real, templates/modelos reutilizaveis, PDF/Word/OCR reais ou
 Receita Web live/massiva. Esses itens continuam bloqueados ate owner windows
 proprios, com gates e smokes especificos.
+
+Evidencia pos-Excel runtime: `post_p3_excel_input_runtime_exposure` validou
+entrada XLSX no Electron com `mock` e `base-publica-local`, preservando CSV,
+checkpoint, retomada e autosave XLSX. A validacao canonica registrou 43 arquivos
+/ 283 testes, cobertura global 76.39%, PR coverage 75.59%, lint, typecheck,
+build, ratchet e smoke visual.
 
 ## Smoke real com arquivo e CNPJs publicos
 
@@ -85,7 +93,13 @@ Para PRs que tocam IPC, preload, fluxo de processamento, persistencia local ou e
 pnpm smoke:electron-ui
 ```
 
-Esse smoke lanca o app Electron real com `userData` temporario, carrega a UI pelo renderer local, seleciona o provider `mock`, processa a fixture publica pelo `window.appBridge.processCsv`, valida auto-save e valida que o ledger/checkpoint foi criado. Ele existe para impedir fechamento baseado apenas em teste unitario ou mock de DOM.
+Esse smoke lanca o app Electron real com `userData` temporario, carrega a UI pelo
+renderer local, seleciona o provider `mock`, processa a fixture publica pelo
+`window.appBridge.processCsv`, valida auto-save e valida que o ledger/checkpoint
+foi criado. Para fluxos que tocam entrada Excel/XLSX, o smoke deve provar
+`inputFormat: "xlsx"` ou evidencia equivalente de arquivo XLSX processado no
+runtime. Ele existe para impedir fechamento baseado apenas em teste unitario ou
+mock de DOM.
 
 ## Smoke visual
 

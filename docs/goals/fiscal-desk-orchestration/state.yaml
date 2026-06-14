@@ -686,8 +686,8 @@ monitoring:
     post_p3_excel_input_runtime_exposure_rework_review: idle_completed_approved_rework
     post_p3_excel_input_runtime_exposure_judge: approved_by_judge_integrated_validated
     post_p3_excel_runtime_next_owner_window_selection: idle_completed_approved_scope_candidate_judged
-    post_p3_excel_runtime_docs_rebaseline: dispatch_prepared_pending_thread
-    material_worker_released: none_active_after_post_p3_excel_input_runtime_exposure
+    post_p3_excel_runtime_docs_rebaseline: idle_completed_approved_docs_only_integrated_local_docs
+    material_worker_released: none_active_after_post_p3_excel_runtime_docs_rebaseline
   active_material_owner_window_after_post_local_base_regate:
     slug: post_local_base_regate_csv_input_intake_hardening
     status: approved_by_judge_integrated_validated
@@ -1830,7 +1830,7 @@ monitoring:
       - receita_web_live_massiva
   active_docs_only_owner_window_after_excel_runtime:
     slug: post_p3_excel_runtime_docs_rebaseline
-    status: active_docs_only_worker
+    status: approved_docs_only_integrated_local_docs
     classification: docs_only
     source_selection_thread_id: 019ec3b9-f3e2-7863-8fe9-8c98c8e34460
     source_selection_result_file: results/post-p3-excel-runtime-next-owner-window-selection-2026-06-13.md
@@ -1842,10 +1842,21 @@ monitoring:
     thread_title: Planejar roadmap fiscal desk
     worktree: /Users/icaroaguiar/.codex/worktrees/ae44/consulta-simples-csv
     observed_active_at: "2026-06-13 22:31:19 -03"
+    completed_at: "2026-06-13 22:35:41 -03"
+    judged_at: "2026-06-13 22:36:47 -03"
     branch: feat/fiscal-desk-local-base-prep
     target_min_commit: 2e2d4ef
     canonical_dispatch_commit: 43c5668
     dispatch_file: results/post-p3-excel-runtime-docs-rebaseline-dispatch-2026-06-13.md
+    result_file: results/post-p3-excel-runtime-docs-rebaseline-2026-06-13.md
+    result_status: ready_for_judge_review
+    judge_decision_file: results/post-p3-excel-runtime-docs-rebaseline-judge-decision-2026-06-13.md
+    canonical_validation:
+      docs_diff_check: pass
+      stale_excel_planned_scan: pass_no_blocker
+      tests_build_smokes: skipped_docs_only
+      local_docs_promoted_to_canonical: true
+      versioned_qa_doc_promoted: true
     material_worker_released: false
     allowed_write:
       - docs/fiscal-desk/first-release.md
@@ -1859,7 +1870,7 @@ monitoring:
     blocks_material_workers_until_judged: true
     local_docs_handling: copy_from_canonical_absolute_if_missing_in_worker_worktree
     still_blocked:
-      - material_feature_workers_until_docs_rebaseline_judged
+      - material_feature_workers_until_fresh_owner_window_selection
       - release_public_distribution
       - updater_update_real
       - diagnostic_send_external_or_package_real
