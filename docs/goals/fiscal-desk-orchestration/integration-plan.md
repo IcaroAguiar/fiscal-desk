@@ -325,6 +325,9 @@ The selector returned `approved_scope_candidate`, recommending
 product/QA docs still described Excel input as planned/disabled after runtime
 integration. The judge accepted that scope at `2026-06-13 22:27:41 -03`.
 No material worker is released by this decision.
+The docs-only dispatch was prepared at `2026-06-13 22:28:55 -03`:
+`results/post-p3-excel-runtime-docs-rebaseline-dispatch-2026-06-13.md`.
+No material worker is released by this dispatch.
 
 `post_local_base_regate_csv_input_intake_hardening` was integrated and validated
 at `2026-06-13 17:20:37 -03`. The read-only scope-selection gate

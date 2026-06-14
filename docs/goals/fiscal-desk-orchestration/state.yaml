@@ -686,6 +686,7 @@ monitoring:
     post_p3_excel_input_runtime_exposure_rework_review: idle_completed_approved_rework
     post_p3_excel_input_runtime_exposure_judge: approved_by_judge_integrated_validated
     post_p3_excel_runtime_next_owner_window_selection: idle_completed_approved_scope_candidate_judged
+    post_p3_excel_runtime_docs_rebaseline: dispatch_prepared_pending_thread
     material_worker_released: none_active_after_post_p3_excel_input_runtime_exposure
   active_material_owner_window_after_post_local_base_regate:
     slug: post_local_base_regate_csv_input_intake_hardening
@@ -1818,6 +1819,40 @@ monitoring:
     selected_next_owner_window_classification: docs_only
     next_material_worker_status_after_judgment: blocked_pending_post_p3_excel_runtime_docs_rebaseline
     still_blocked:
+      - release_public_distribution
+      - updater_update_real
+      - diagnostic_send_external_or_package_real
+      - telemetry_transport
+      - license_account_real
+      - storage_network_backend_remote
+      - reusable_templates_models
+      - pdf_word_ocr_real
+      - receita_web_live_massiva
+  active_docs_only_owner_window_after_excel_runtime:
+    slug: post_p3_excel_runtime_docs_rebaseline
+    status: dispatch_prepared_pending_thread
+    classification: docs_only
+    source_selection_thread_id: 019ec3b9-f3e2-7863-8fe9-8c98c8e34460
+    source_selection_result_file: results/post-p3-excel-runtime-next-owner-window-selection-2026-06-13.md
+    source_selection_judge_decision_file: results/post-p3-excel-runtime-next-owner-window-selection-judge-decision-2026-06-13.md
+    prepared_at: "2026-06-13 22:28:55 -03"
+    branch: feat/fiscal-desk-local-base-prep
+    target_min_commit: 2e2d4ef
+    dispatch_file: results/post-p3-excel-runtime-docs-rebaseline-dispatch-2026-06-13.md
+    material_worker_released: false
+    allowed_write:
+      - docs/fiscal-desk/first-release.md
+      - docs/fiscal-desk/status.md
+      - docs/fiscal-desk/product-spec.md
+      - docs/fiscal-desk/roadmap.md
+      - docs/fiscal-desk/implementation-plan.md
+      - docs/fiscal-desk/quality-gates.md
+      - docs/qa/first-release-validation.md
+      - docs/goals/fiscal-desk-orchestration/results/post-p3-excel-runtime-docs-rebaseline-2026-06-13.md
+    blocks_material_workers_until_judged: true
+    local_docs_handling: copy_from_canonical_absolute_if_missing_in_worker_worktree
+    still_blocked:
+      - material_feature_workers_until_docs_rebaseline_judged
       - release_public_distribution
       - updater_update_real
       - diagnostic_send_external_or_package_real
