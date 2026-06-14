@@ -416,6 +416,19 @@ The selector returned `approved_scope_candidate`, recommending
 `post_p3_first_release_final_readiness_pr_closeout` as a read-only closeout
 window. The judge accepted that scope at `2026-06-13 23:08:51 -03`.
 
+## Post P3 First Release Final Readiness PR Closeout Dispatch As Of 2026-06-13
+
+Receipt:
+`results/post-p3-first-release-final-readiness-pr-closeout-dispatch-2026-06-13.md`.
+
+The judge prepared the read-only closeout dispatch at
+`2026-06-13 23:10:29 -03`. No material worker is released by this dispatch.
+
+The closeout thread may only decide whether the current branch is ready to move
+to branch/PR preparation or whether a concrete blocker remains. It may not
+implement code, create a PR, package a release, publish, sign, notarize, deploy,
+send diagnostics, enable telemetry or open any feature surface.
+
 Current state:
 
 - Excel/XLSX runtime and post-Excel integrated validation are closed;
