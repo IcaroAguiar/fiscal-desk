@@ -435,14 +435,21 @@ materialized as thread `019ec3e7-b051-7252-bfdc-05e2e40b101e` in worktree
 `/Users/icaroaguiar/.codex/worktrees/c162/consulta-simples-csv`. It is active
 as a read-only closeout gate with `/goal`, `gpt-5.5`, reasoning `medium`.
 
+The closeout receipt returned `approved_candidate` and was accepted by the judge
+at `2026-06-13 23:17:15 -03`:
+`results/post-p3-first-release-final-readiness-pr-closeout-judge-decision-2026-06-13.md`.
+The branch may move to branch/PR preparation closeout. No material feature
+worker, release publication, updater, diagnostics, telemetry, license/account,
+templates, PDF/Word/OCR or Receita Web live surface is released by this
+decision.
+
 Current state:
 
 - Excel/XLSX runtime and post-Excel integrated validation are closed;
 - no material implementation worker is active;
-- the next thread may only recommend exactly one owner window or keep the queue
-  blocked with evidence;
-- the next authorized work is read-only final readiness/PR closeout, not feature
-  implementation;
+- the first-release readiness/PR closeout gate is accepted by the judge;
+- the next authorized work is branch/PR preparation closeout, not feature
+  implementation or release publication;
 - release/public distribution, updater real, diagnostics sent externally,
   telemetry, license/account, storage/network/backend, templates/models,
   PDF/Word/OCR and Receita Web live/massiva remain blocked until explicit owner
