@@ -604,9 +604,9 @@ monitoring:
   observe_threads_frequently: true
   heartbeat_automation_id: fiscal-desk-f0-monitor
   heartbeat_interval_minutes: 30
-  last_observation_at: "2026-06-13 23:20:21 -03"
+  last_observation_at: "2026-06-13 23:22:38 -03"
   last_observation_file: docs/goals/fiscal-desk-orchestration/integration-plan.md
-  last_observation_status: post_p3_branch_pr_preparation_closeout_dispatch_prepared
+  last_observation_status: post_p3_branch_pr_preparation_closeout_thread_active
   f0_thread_status: self_approval_blocker_resolved_by_judge
   final_integration_review_status: approved_by_judge
   final_integration_review_thread_id: 019ec005-f849-7b53-ae0f-ae7c02df4f63
@@ -692,7 +692,7 @@ monitoring:
     post_p3_excel_runtime_docs_rebaseline_integrated_first_release_validation_judge: approved_by_judge_integrated_validated
     post_p3_excel_validation_next_owner_window_selection: idle_completed_approved_scope_candidate_judged
     post_p3_first_release_final_readiness_pr_closeout: idle_completed_approved_candidate_judged
-    post_p3_branch_pr_preparation_closeout: dispatch_prepared_pending_thread
+    post_p3_branch_pr_preparation_closeout: active_read_only_pr_preparation_thread
     material_worker_released: none_active_pending_branch_pr_preparation_closeout
   active_material_owner_window_after_post_local_base_regate:
     slug: post_local_base_regate_csv_input_intake_hardening
@@ -2089,14 +2089,23 @@ monitoring:
       - receita_web_live_massiva
   active_read_only_branch_pr_preparation_closeout:
     slug: post_p3_branch_pr_preparation_closeout
-    status: dispatch_prepared_pending_thread
+    status: active_read_only_pr_preparation_thread
+    pending_worktree_id: local:8ef69773-6b61-4c82-a35a-2a81d9c317f8
+    thread_id: 019ec3ef-ae95-7971-90af-02644602eb50
+    thread_title: Fiscal Desk - Branch PR Preparation Closeout
+    worktree: /Users/icaroaguiar/.codex/worktrees/8095/consulta-simples-csv
+    model: gpt-5.5
+    reasoning: medium
     classification: read_only_pr_preparation
     source_readiness_thread_id: 019ec3e7-b051-7252-bfdc-05e2e40b101e
     source_readiness_result_file: results/post-p3-first-release-final-readiness-pr-closeout-2026-06-13.md
     source_readiness_judge_decision_file: results/post-p3-first-release-final-readiness-pr-closeout-judge-decision-2026-06-13.md
     prepared_at: "2026-06-13 23:20:21 -03"
+    dispatched_at: "2026-06-13 23:22:38 -03"
+    observed_active_at: "2026-06-13 23:22:38 -03"
     branch: feat/fiscal-desk-local-base-prep
-    target_min_commit: c7c8758
+    target_min_commit: 72a4e44
+    dispatch_commit: 72a4e44
     dispatch_file: results/post-p3-branch-pr-preparation-closeout-dispatch-2026-06-13.md
     result_file: results/post-p3-branch-pr-preparation-closeout-2026-06-13.md
     material_worker_released: false

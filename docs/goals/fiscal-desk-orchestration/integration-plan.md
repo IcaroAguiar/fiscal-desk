@@ -477,6 +477,13 @@ suggested PR body/checklist, checks to cite, mandatory exclusions, residual
 risks, remaining blocked surfaces, and a go/no-go recommendation for a future
 PR action. It may not create or update a PR.
 
+The Codex App PR-preparation closeout thread was requested at
+`2026-06-13 23:22:38 -03`, returned pending worktree
+`local:8ef69773-6b61-4c82-a35a-2a81d9c317f8`, and materialized as thread
+`019ec3ef-ae95-7971-90af-02644602eb50` in worktree
+`/Users/icaroaguiar/.codex/worktrees/8095/consulta-simples-csv`. It is active
+as a read-only PR preparation gate with `/goal`, `gpt-5.5`, reasoning `medium`.
+
 Current state:
 
 - first-release readiness/PR closeout is accepted by the judge;
