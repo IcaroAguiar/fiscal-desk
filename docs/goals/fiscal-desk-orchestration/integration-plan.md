@@ -346,6 +346,23 @@ The Codex App selection thread was requested at `2026-06-13 22:40:40 -03`,
 returned pending worktree `local:4c60139a-00c9-4c57-bd90-492b3f5251e8`, and
 materialized as thread `019ec3c9-1675-7711-9de3-f926a5f10299` in worktree
 `/Users/icaroaguiar/.codex/worktrees/dfd0/consulta-simples-csv`.
+The selector returned `approved_scope_candidate`, recommending
+`post_p3_excel_runtime_docs_rebaseline_integrated_first_release_validation` as a
+non-feature material validation window. The judge accepted that scope at
+`2026-06-13 22:46:47 -03`.
+
+Current state:
+
+- the docs-only rebaseline after Excel runtime is closed;
+- no feature/material implementation worker is active;
+- the next authorized work is executable integrated validation, with only one
+  persistent receipt allowed;
+- any new feature material remains blocked until that validation is judged.
+
+The next validation window must run lint, typecheck, full tests, coverage, CSV
+smoke, XLSX Electron smokes for `mock` and `base-publica-local`, visual smoke,
+build, gitleaks and the worktree quality ratchet. If a check fails, it must
+return blocker/rework evidence instead of patching code or docs.
 
 `post_local_base_regate_csv_input_intake_hardening` was integrated and validated
 at `2026-06-13 17:20:37 -03`. The read-only scope-selection gate

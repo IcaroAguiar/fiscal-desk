@@ -604,9 +604,9 @@ monitoring:
   observe_threads_frequently: true
   heartbeat_automation_id: fiscal-desk-f0-monitor
   heartbeat_interval_minutes: 30
-  last_observation_at: "2026-06-13 20:19:10 -03"
+  last_observation_at: "2026-06-13 22:46:47 -03"
   last_observation_file: docs/goals/fiscal-desk-orchestration/integration-plan.md
-  last_observation_status: post_p3_operational_execution_panel_suggestions_integrated_validated_after_rework
+  last_observation_status: post_p3_excel_runtime_docs_rebaseline_next_owner_window_selection_approved_scope_candidate
   f0_thread_status: self_approval_blocker_resolved_by_judge
   final_integration_review_status: approved_by_judge
   final_integration_review_thread_id: 019ec005-f849-7b53-ae0f-ae7c02df4f63
@@ -630,7 +630,7 @@ monitoring:
   staging_versioning_closeout_dispatch_file: results/staging-versioning-closeout-dispatch-2026-06-13.md
   staging_versioning_closeout_file: results/staging-versioning-closeout.md
   staging_versioning_closeout_judge_decision_file: results/staging-versioning-closeout-judge-decision.md
-  next_material_worker_status: none_waiting_for_post_excel_owner_window_selection
+  next_material_worker_status: blocked_pending_post_p3_excel_runtime_docs_rebaseline_integrated_first_release_validation
   last_thread_observation:
     testing_infra_coverage_gate_worker: idle_completed
     testing_infra_coverage_gate_independent_review: idle_completed_approved_candidate
@@ -687,8 +687,9 @@ monitoring:
     post_p3_excel_input_runtime_exposure_judge: approved_by_judge_integrated_validated
     post_p3_excel_runtime_next_owner_window_selection: idle_completed_approved_scope_candidate_judged
     post_p3_excel_runtime_docs_rebaseline: idle_completed_approved_docs_only_integrated_local_docs
-    post_p3_excel_runtime_docs_rebaseline_next_owner_window_selection: dispatch_prepared_pending_thread
-    material_worker_released: none_active_after_post_p3_excel_runtime_docs_rebaseline
+    post_p3_excel_runtime_docs_rebaseline_next_owner_window_selection: idle_completed_approved_scope_candidate_judged
+    post_p3_excel_runtime_docs_rebaseline_integrated_first_release_validation: approved_for_dispatch_pending_thread
+    material_worker_released: none_active_pending_integrated_validation
   active_material_owner_window_after_post_local_base_regate:
     slug: post_local_base_regate_csv_input_intake_hardening
     status: approved_by_judge_integrated_validated
@@ -1883,7 +1884,7 @@ monitoring:
       - receita_web_live_massiva
   active_read_only_owner_window_selection_after_excel_runtime_docs_rebaseline:
     slug: post_p3_excel_runtime_docs_rebaseline_next_owner_window_selection
-    status: active_read_only_selection
+    status: approved_by_judge_scope_candidate
     classification: read_only_owner_window_selection
     source_docs_only_thread_id: 019ec3c0-8180-7813-adb0-e9abe797b3f4
     source_docs_only_judge_decision_file: results/post-p3-excel-runtime-docs-rebaseline-judge-decision-2026-06-13.md
@@ -1894,12 +1895,21 @@ monitoring:
     thread_title: Planejar roadmap fiscal desk
     worktree: /Users/icaroaguiar/.codex/worktrees/dfd0/consulta-simples-csv
     observed_active_at: "2026-06-13 22:40:40 -03"
+    completed_observed_at: "2026-06-13 22:46:47 -03"
+    judged_at: "2026-06-13 22:46:47 -03"
     branch: feat/fiscal-desk-local-base-prep
     target_min_commit: 0ffb0ee
     canonical_dispatch_commit: 59b586b
     dispatch_file: results/post-p3-excel-runtime-docs-rebaseline-next-owner-window-selection-dispatch-2026-06-13.md
+    result_file: results/post-p3-excel-runtime-docs-rebaseline-next-owner-window-selection-2026-06-13.md
+    judge_decision_file: results/post-p3-excel-runtime-docs-rebaseline-next-owner-window-selection-judge-decision-2026-06-13.md
+    result_status: approved_scope_candidate
+    selected_next_owner_window: post_p3_excel_runtime_docs_rebaseline_integrated_first_release_validation
+    selected_next_owner_window_classification: non_feature_material_integrated_validation
+    next_material_worker_status_after_judgment: blocked_pending_post_p3_excel_runtime_docs_rebaseline_integrated_first_release_validation
     material_worker_released: false
-    blocks_material_workers_until_judged: true
+    blocks_material_workers_until_judged: false
+    blocks_material_feature_workers_until_integrated_validation_judged: true
     allowed_write:
       - docs/goals/fiscal-desk-orchestration/results/post-p3-excel-runtime-docs-rebaseline-next-owner-window-selection-2026-06-13.md
     candidate_surfaces_to_evaluate:
