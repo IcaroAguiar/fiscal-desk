@@ -320,6 +320,11 @@ The Codex App selection thread was requested at `2026-06-13 22:23:59 -03`,
 returned pending worktree `local:a79de604-97a2-445f-b611-aa779e4ad901`, and
 materialized as thread `019ec3b9-f3e2-7863-8fe9-8c98c8e34460` in worktree
 `/Users/icaroaguiar/.codex/worktrees/4f76/consulta-simples-csv`.
+The selector returned `approved_scope_candidate`, recommending
+`post_p3_excel_runtime_docs_rebaseline` as a docs-only rebaseline because local
+product/QA docs still described Excel input as planned/disabled after runtime
+integration. The judge accepted that scope at `2026-06-13 22:27:41 -03`.
+No material worker is released by this decision.
 
 `post_local_base_regate_csv_input_intake_hardening` was integrated and validated
 at `2026-06-13 17:20:37 -03`. The read-only scope-selection gate
