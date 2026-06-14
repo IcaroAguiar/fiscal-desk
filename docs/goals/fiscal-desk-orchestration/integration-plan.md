@@ -412,6 +412,9 @@ The Codex App selection thread was requested at `2026-06-13 23:04:23 -03`,
 returned pending worktree `local:eb1d4c0f-7411-4b9c-a4df-7e01a9363941`, and
 materialized as thread `019ec3de-ac9c-7652-8ec2-015c26295071` in worktree
 `/Users/icaroaguiar/.codex/worktrees/25c7/consulta-simples-csv`.
+The selector returned `approved_scope_candidate`, recommending
+`post_p3_first_release_final_readiness_pr_closeout` as a read-only closeout
+window. The judge accepted that scope at `2026-06-13 23:08:51 -03`.
 
 Current state:
 
@@ -419,6 +422,8 @@ Current state:
 - no material implementation worker is active;
 - the next thread may only recommend exactly one owner window or keep the queue
   blocked with evidence;
+- the next authorized work is read-only final readiness/PR closeout, not feature
+  implementation;
 - release/public distribution, updater real, diagnostics sent externally,
   telemetry, license/account, storage/network/backend, templates/models,
   PDF/Word/OCR and Receita Web live/massiva remain blocked until explicit owner
