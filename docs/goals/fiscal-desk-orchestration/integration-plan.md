@@ -312,6 +312,11 @@ No material worker remains active after this integration. The accepted residual
 risks are documented in
 `results/post-p3-excel-input-runtime-exposure-integration-judge-decision-2026-06-13.md`.
 
+The judge prepared a fresh read-only owner-window selection after Excel runtime
+integration at `2026-06-13 22:21:43 -03`:
+`results/post-p3-excel-runtime-next-owner-window-selection-dispatch-2026-06-13.md`.
+No material worker is released by this dispatch.
+
 `post_local_base_regate_csv_input_intake_hardening` was integrated and validated
 at `2026-06-13 17:20:37 -03`. The read-only scope-selection gate
 `post_csv_input_intake_next_owner_window_selection` was dispatched at

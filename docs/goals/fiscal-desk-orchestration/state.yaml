@@ -685,6 +685,7 @@ monitoring:
     post_p3_excel_input_runtime_exposure_review: idle_completed_needs_rework
     post_p3_excel_input_runtime_exposure_rework_review: idle_completed_approved_rework
     post_p3_excel_input_runtime_exposure_judge: approved_by_judge_integrated_validated
+    post_p3_excel_runtime_next_owner_window_selection: dispatch_prepared_pending_thread
     material_worker_released: none_active_after_post_p3_excel_input_runtime_exposure
   active_material_owner_window_after_post_local_base_regate:
     slug: post_local_base_regate_csv_input_intake_hardening
@@ -1774,6 +1775,37 @@ monitoring:
       - release_public_distribution
       - updater_update_real
       - diagnostic_send_external
+      - telemetry_transport
+      - license_account_real
+      - storage_network_backend_remote
+      - reusable_templates_models
+      - pdf_word_ocr_real
+      - receita_web_live_massiva
+  active_read_only_owner_window_selection_after_excel_runtime:
+    slug: post_p3_excel_runtime_next_owner_window_selection
+    status: dispatch_prepared_pending_thread
+    classification: read_only_owner_window_selection
+    source_material_thread_id: 019ec38f-785c-7c43-a14b-61392cd1119e
+    source_material_judge_decision_file: results/post-p3-excel-input-runtime-exposure-integration-judge-decision-2026-06-13.md
+    prepared_at: "2026-06-13 22:21:43 -03"
+    branch: feat/fiscal-desk-local-base-prep
+    target_min_commit: 62bb72e
+    dispatch_file: results/post-p3-excel-runtime-next-owner-window-selection-dispatch-2026-06-13.md
+    material_worker_released: false
+    blocks_material_workers_until_judged: true
+    allowed_write:
+      - docs/goals/fiscal-desk-orchestration/results/post-p3-excel-runtime-next-owner-window-selection-2026-06-13.md
+    candidate_surfaces_to_evaluate:
+      - docs_rebaseline_after_excel_runtime
+      - excel_ingestion_qa_validation_docs
+      - guided_delivery_models_without_reusable_templates
+      - diagnostic_generation_local_reviewable_only
+      - update_release_scope_or_ui_blocked_state_only
+      - first_release_hardening_after_excel_runtime
+    still_blocked:
+      - release_public_distribution
+      - updater_update_real
+      - diagnostic_send_external_or_package_real
       - telemetry_transport
       - license_account_real
       - storage_network_backend_remote
