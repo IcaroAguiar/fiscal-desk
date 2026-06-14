@@ -1943,6 +1943,8 @@ monitoring:
     thread_title: Validar integrado pós Excel
     worktree: /Users/icaroaguiar/.codex/worktrees/a40e/consulta-simples-csv
     observed_active_at: "2026-06-13 22:50:20 -03"
+    first_attempt_status: blocked_bootstrap_missing_node_modules
+    resumed_after_bootstrap_correction_at: "2026-06-13 22:54:00 -03"
     branch: feat/fiscal-desk-local-base-prep
     target_min_commit: 105ec0a
     canonical_dispatch_commit: 524ed79

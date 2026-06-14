@@ -379,6 +379,9 @@ The first validation attempt found the expected isolated-worktree bootstrap gap:
 corrected the dispatch to allow `pnpm install --frozen-lockfile` and
 `node_modules/**` as transient ignored bootstrap artifacts only, with no
 package/lockfile changes allowed.
+At `2026-06-13 22:54:00 -03`, the judge resumed the same validation thread with
+that bootstrap authorization. The first `blocked` result is treated as an
+orchestration/bootstrap gap, not as product validation failure.
 
 `post_local_base_regate_csv_input_intake_hardening` was integrated and validated
 at `2026-06-13 17:20:37 -03`. The read-only scope-selection gate
