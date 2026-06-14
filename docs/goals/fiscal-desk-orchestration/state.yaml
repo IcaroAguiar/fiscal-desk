@@ -688,7 +688,7 @@ monitoring:
     post_p3_excel_runtime_next_owner_window_selection: idle_completed_approved_scope_candidate_judged
     post_p3_excel_runtime_docs_rebaseline: idle_completed_approved_docs_only_integrated_local_docs
     post_p3_excel_runtime_docs_rebaseline_next_owner_window_selection: idle_completed_approved_scope_candidate_judged
-    post_p3_excel_runtime_docs_rebaseline_integrated_first_release_validation: approved_for_dispatch_pending_thread
+    post_p3_excel_runtime_docs_rebaseline_integrated_first_release_validation: dispatch_prepared_pending_thread
     material_worker_released: none_active_pending_integrated_validation
   active_material_owner_window_after_post_local_base_regate:
     slug: post_local_base_regate_csv_input_intake_hardening
@@ -1920,6 +1920,39 @@ monitoring:
       - keep_blocked_if_no_safe_owner_window
     still_blocked:
       - material_feature_workers_until_this_selection_judged
+      - release_public_distribution
+      - updater_update_real
+      - diagnostic_send_external_or_package_real
+      - telemetry_transport
+      - license_account_real
+      - storage_network_backend_remote
+      - reusable_templates_models
+      - pdf_word_ocr_real
+      - receita_web_live_massiva
+  active_executable_validation_after_excel_runtime_docs_rebaseline:
+    slug: post_p3_excel_runtime_docs_rebaseline_integrated_first_release_validation
+    status: dispatch_prepared_pending_thread
+    classification: non_feature_material_validation
+    source_selection_thread_id: 019ec3c9-1675-7711-9de3-f926a5f10299
+    source_selection_result_file: results/post-p3-excel-runtime-docs-rebaseline-next-owner-window-selection-2026-06-13.md
+    source_selection_judge_decision_file: results/post-p3-excel-runtime-docs-rebaseline-next-owner-window-selection-judge-decision-2026-06-13.md
+    prepared_at: "2026-06-13 22:48:14 -03"
+    branch: feat/fiscal-desk-local-base-prep
+    target_min_commit: 105ec0a
+    dispatch_file: results/post-p3-excel-runtime-docs-rebaseline-integrated-first-release-validation-dispatch-2026-06-13.md
+    result_file: results/post-p3-excel-runtime-docs-rebaseline-integrated-first-release-validation-2026-06-13.md
+    material_feature_worker_released: false
+    allowed_write:
+      - docs/goals/fiscal-desk-orchestration/results/post-p3-excel-runtime-docs-rebaseline-integrated-first-release-validation-2026-06-13.md
+    transient_outputs_allowed:
+      - coverage/**
+      - dist/**
+      - dist-electron/**
+      - .vite/**
+      - /private/tmp/**
+    blocks_material_feature_workers_until_judged: true
+    still_blocked:
+      - material_feature_workers_until_integrated_validation_judged
       - release_public_distribution
       - updater_update_real
       - diagnostic_send_external_or_package_real

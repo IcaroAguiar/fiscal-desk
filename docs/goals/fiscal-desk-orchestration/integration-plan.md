@@ -364,6 +364,12 @@ smoke, XLSX Electron smokes for `mock` and `base-publica-local`, visual smoke,
 build, gitleaks and the worktree quality ratchet. If a check fails, it must
 return blocker/rework evidence instead of patching code or docs.
 
+Dispatch prepared at `2026-06-13 22:48:14 -03`:
+`results/post-p3-excel-runtime-docs-rebaseline-integrated-first-release-validation-dispatch-2026-06-13.md`.
+
+This dispatch allows only one persistent receipt and transient check artifacts.
+No feature/material implementation worker is released by this dispatch.
+
 `post_local_base_regate_csv_input_intake_hardening` was integrated and validated
 at `2026-06-13 17:20:37 -03`. The read-only scope-selection gate
 `post_csv_input_intake_next_owner_window_selection` was dispatched at
