@@ -630,7 +630,7 @@ monitoring:
   staging_versioning_closeout_dispatch_file: results/staging-versioning-closeout-dispatch-2026-06-13.md
   staging_versioning_closeout_file: results/staging-versioning-closeout.md
   staging_versioning_closeout_judge_decision_file: results/staging-versioning-closeout-judge-decision.md
-  next_material_worker_status: post_p3_excel_input_core_ingestion_contract_dispatch_prepared
+  next_material_worker_status: post_p3_excel_input_core_ingestion_contract_pending_worktree_creation
   last_thread_observation:
     testing_infra_coverage_gate_worker: idle_completed
     testing_infra_coverage_gate_independent_review: idle_completed_approved_candidate
@@ -678,8 +678,8 @@ monitoring:
     post_p3_legacy_resume_copy_harness_polish_review: idle_completed_approved_candidate
     post_p3_legacy_resume_copy_harness_polish_judge: integrated_validated
     post_p3_legacy_polish_next_owner_window_selection: dispatch_prepared_not_started
-    post_p3_excel_input_core_ingestion_contract: dispatch_prepared_not_started
-    material_worker_released: none_pending_next_owner_window_selection
+    post_p3_excel_input_core_ingestion_contract: pending_worktree_creation
+    material_worker_released: post_p3_excel_input_core_ingestion_contract_pending_worktree_creation
   active_material_owner_window_after_post_local_base_regate:
     slug: post_local_base_regate_csv_input_intake_hardening
     status: approved_by_judge_integrated_validated
@@ -1535,7 +1535,7 @@ monitoring:
       - docs/goals/fiscal-desk-orchestration/results/post-p3-legacy-polish-next-owner-window-selection-2026-06-13.md
   approved_material_owner_window_after_legacy_polish:
     slug: post_p3_excel_input_core_ingestion_contract
-    status: dispatch_prepared
+    status: pending_worktree_creation
     classification: material_single_writer_core_ingestion
     source_selection_thread_id: 019ec36a-345e-7be0-9458-3fa3ef77577e
     source_selection_result_file: results/post-p3-legacy-polish-next-owner-window-selection-2026-06-13.md
@@ -1544,7 +1544,9 @@ monitoring:
     prepared_at: "2026-06-13 21:00:05 -03"
     target_min_commit: e622743
     dispatch_file: results/post-p3-excel-input-core-ingestion-contract-dispatch-2026-06-13.md
-    material_worker_released: false
+    pending_worktree_id: local:77cf7326-42ee-4dfc-a3b6-8f5c12d5a8c9
+    dispatched_at: "2026-06-13 21:03:27 -03"
+    material_worker_released: true
     requires_independent_review_before_integration: true
     allowed_write:
       - src/core/ingestion/ingestion-contract.ts
