@@ -1,5 +1,6 @@
 export const FISCAL_INGESTION_INPUT_FORMAT = {
   CSV: "csv",
+  XLSX: "xlsx",
 } as const;
 
 export type FiscalIngestionInputFormat =

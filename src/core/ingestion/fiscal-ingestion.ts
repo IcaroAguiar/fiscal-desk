@@ -13,8 +13,9 @@ import {
   type FiscalIngestionSource,
   type FiscalIngestionSourceKind,
 } from "./ingestion-contract";
+import { readXlsx } from "./xlsx-reader";
 
-type FiscalCsvIngestionOptions = {
+type FiscalIngestionOptions = {
   cnpjColumn?: string;
   format?: string;
   receivedAt?: Date | string;
@@ -23,6 +24,7 @@ type FiscalCsvIngestionOptions = {
 };
 
 const DEFAULT_SOURCE_LABEL = "entrada.csv";
+const DEFAULT_XLSX_SOURCE_LABEL = "entrada.xlsx";
 const MISSING_CNPJ_COLUMN_MESSAGE =
   "Não encontrei uma coluna de CNPJ. Use um cabeçalho como CNPJ, CPF/CNPJ, documento ou informe a coluna manualmente.";
 const UNSUPPORTED_INPUT_FORMAT_MESSAGE =
@@ -34,9 +36,9 @@ const DUPLICATE_CNPJ_MESSAGE =
 
 export function ingestFiscalCsv(
   inputCsv: string,
-  options: FiscalCsvIngestionOptions = {},
+  options: FiscalIngestionOptions = {},
 ): FiscalIngestionBatch {
-  const source = createFiscalIngestionSource(options);
+  const source = createFiscalIngestionSource(options, DEFAULT_SOURCE_LABEL);
 
   if (source.format !== FISCAL_INGESTION_INPUT_FORMAT.CSV) {
     return createEmptyBatch(source, [
@@ -74,7 +76,63 @@ export function ingestFiscalCsv(
     );
   }
 
-  return createCsvIngestionBatch({
+  return createFiscalIngestionBatch({
+    cnpjColumn,
+    rowLineNumbers,
+    rows,
+    source,
+  });
+}
+
+export async function ingestFiscalXlsx(
+  inputXlsx: Buffer | ArrayBuffer | Uint8Array,
+  options: FiscalIngestionOptions = {},
+): Promise<FiscalIngestionBatch> {
+  const source = createFiscalIngestionSource(
+    {
+      ...options,
+      format: options.format ?? FISCAL_INGESTION_INPUT_FORMAT.XLSX,
+    },
+    DEFAULT_XLSX_SOURCE_LABEL,
+  );
+
+  if (source.format !== FISCAL_INGESTION_INPUT_FORMAT.XLSX) {
+    return createEmptyBatch(source, [
+      {
+        cnpjNormalizado: null,
+        cnpjOriginal: null,
+        kind: FISCAL_INGESTION_ISSUE_KIND.UNSUPPORTED_INPUT_FORMAT,
+        message: UNSUPPORTED_INPUT_FORMAT_MESSAGE,
+        rowNumber: null,
+        severity: FISCAL_INGESTION_ISSUE_SEVERITY.ERROR,
+      },
+    ]);
+  }
+
+  const { headers, rowLineNumbers, rows } = await readXlsx(inputXlsx);
+  const cnpjColumn = detectCnpjColumn(
+    headers,
+    options.cnpjColumn ? { override: options.cnpjColumn } : {},
+  );
+
+  if (!cnpjColumn) {
+    return createEmptyBatch(
+      source,
+      [
+        {
+          cnpjNormalizado: null,
+          cnpjOriginal: null,
+          kind: FISCAL_INGESTION_ISSUE_KIND.MISSING_CNPJ_COLUMN,
+          message: MISSING_CNPJ_COLUMN_MESSAGE,
+          rowNumber: null,
+          severity: FISCAL_INGESTION_ISSUE_SEVERITY.ERROR,
+        },
+      ],
+      rows.length,
+    );
+  }
+
+  return createFiscalIngestionBatch({
     cnpjColumn,
     rowLineNumbers,
     rows,
@@ -83,12 +141,13 @@ export function ingestFiscalCsv(
 }
 
 function createFiscalIngestionSource(
-  options: FiscalCsvIngestionOptions,
+  options: FiscalIngestionOptions,
+  defaultSourceLabel: string,
 ): FiscalIngestionSource {
   return {
     format: options.format ?? FISCAL_INGESTION_INPUT_FORMAT.CSV,
     kind: options.sourceKind ?? FISCAL_INGESTION_SOURCE_KIND.TEXT_BUFFER,
-    label: options.sourceLabel ?? DEFAULT_SOURCE_LABEL,
+    label: options.sourceLabel ?? defaultSourceLabel,
     receivedAt: toIsoString(options.receivedAt ?? new Date()),
   };
 }
@@ -97,7 +156,7 @@ function toIsoString(value: Date | string): string {
   return value instanceof Date ? value.toISOString() : value;
 }
 
-function createCsvIngestionBatch(input: {
+function createFiscalIngestionBatch(input: {
   cnpjColumn: string;
   rowLineNumbers: number[];
   rows: Array<Record<string, string>>;

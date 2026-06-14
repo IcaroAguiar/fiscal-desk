@@ -630,7 +630,7 @@ monitoring:
   staging_versioning_closeout_dispatch_file: results/staging-versioning-closeout-dispatch-2026-06-13.md
   staging_versioning_closeout_file: results/staging-versioning-closeout.md
   staging_versioning_closeout_judge_decision_file: results/staging-versioning-closeout-judge-decision.md
-  next_material_worker_status: post_p3_excel_input_core_ingestion_contract_pending_worktree_creation
+  next_material_worker_status: none_waiting_for_next_owner_window_selection
   last_thread_observation:
     testing_infra_coverage_gate_worker: idle_completed
     testing_infra_coverage_gate_independent_review: idle_completed_approved_candidate
@@ -677,9 +677,10 @@ monitoring:
     post_p3_legacy_resume_copy_harness_polish: idle_completed_ready_for_judge_review_integrated_validated
     post_p3_legacy_resume_copy_harness_polish_review: idle_completed_approved_candidate
     post_p3_legacy_resume_copy_harness_polish_judge: integrated_validated
-    post_p3_legacy_polish_next_owner_window_selection: dispatch_prepared_not_started
-    post_p3_excel_input_core_ingestion_contract: pending_worktree_creation
-    material_worker_released: post_p3_excel_input_core_ingestion_contract_pending_worktree_creation
+    post_p3_legacy_polish_next_owner_window_selection: idle_completed_approved_scope_candidate_judged
+    post_p3_excel_input_core_ingestion_contract: idle_completed_ready_for_judge_review_after_rework_integrated_validated
+    post_p3_excel_input_core_ingestion_contract_review: idle_completed_approved_candidate
+    material_worker_released: none_waiting_for_next_owner_window_selection
   active_material_owner_window_after_post_local_base_regate:
     slug: post_local_base_regate_csv_input_intake_hardening
     status: approved_by_judge_integrated_validated
@@ -1535,7 +1536,7 @@ monitoring:
       - docs/goals/fiscal-desk-orchestration/results/post-p3-legacy-polish-next-owner-window-selection-2026-06-13.md
   approved_material_owner_window_after_legacy_polish:
     slug: post_p3_excel_input_core_ingestion_contract
-    status: ready_for_independent_review_after_rework
+    status: approved_by_judge_integrated_validated
     classification: material_single_writer_core_ingestion
     source_selection_thread_id: 019ec36a-345e-7be0-9458-3fa3ef77577e
     source_selection_result_file: results/post-p3-legacy-polish-next-owner-window-selection-2026-06-13.md
@@ -1547,6 +1548,8 @@ monitoring:
     judge_decision_file: results/post-p3-excel-input-core-ingestion-contract-judge-decision-2026-06-13.md
     after_rework_judge_decision_file: results/post-p3-excel-input-core-ingestion-contract-after-rework-judge-decision-2026-06-13.md
     review_dispatch_file: results/post-p3-excel-input-core-ingestion-contract-review-dispatch-2026-06-13.md
+    review_file: results/post-p3-excel-input-core-ingestion-contract-review-2026-06-13.md
+    integration_judge_decision_file: results/post-p3-excel-input-core-ingestion-contract-integration-judge-decision-2026-06-13.md
     pending_worktree_id: local:77cf7326-42ee-4dfc-a3b6-8f5c12d5a8c9
     thread_id: 019ec370-acf3-76e1-b59c-d7f7fccfab56
     thread_title: Adicionar ingestão Excel
@@ -1564,14 +1567,19 @@ monitoring:
     review_thread_id: 019ec37c-a5f4-70e2-ba8f-5f065163a3ab
     review_worktree: /Users/icaroaguiar/.codex/worktrees/1e64/consulta-simples-csv
     review_observed_active_at: "2026-06-13 21:17:28 -03"
+    review_completed_at: "2026-06-13 21:18:19 -03"
+    review_judged_at: "2026-06-13 21:24:08 -03"
+    integrated_at: "2026-06-13 21:24:08 -03"
+    validated_at: "2026-06-13 21:24:08 -03"
     worker_result_status: ready_for_judge_review
     worker_after_rework_status: ready_for_judge_review_after_rework
-    judge_result_status: ready_for_independent_review_after_rework
+    judge_result_status: integrated_validated
     rework_reason: worker_modified_test_unit_fiscal_desk_phase_6_contracts_outside_allowed_write_set
     material_worker_released: true
     requires_independent_review_before_integration: true
     independent_review_released: true
-    independent_review_status: active
+    independent_review_status: approved_candidate
+    integration_status: integrated_validated
     allowed_write:
       - src/core/ingestion/ingestion-contract.ts
       - src/core/ingestion/fiscal-ingestion.ts
@@ -1612,6 +1620,15 @@ monitoring:
       - typecheck_pass
       - ratchet_pass_pr_coverage_100_percent
       - diff_check_pass
+    canonical_integration_checks:
+      - focused_vitest_pass_3_files_13_tests
+      - lint_pass_124_files
+      - typecheck_pass
+      - diff_check_pass
+      - full_test_pass_43_files_278_tests
+      - coverage_pass_43_files_278_tests_global_76_27_percent
+      - ratchet_pass_pr_coverage_100_percent_global_76_27_percent
+      - build_pass
     after_rework_scope_evidence:
       - test_unit_fiscal_desk_phase_6_contracts_no_diff
       - git_diff_name_only_only_allowed_write_files

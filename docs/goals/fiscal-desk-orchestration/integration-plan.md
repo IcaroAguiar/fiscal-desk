@@ -146,6 +146,7 @@ Nenhuma thread individual pode substituir o review da branch final integrada.
 | Phase | Judge status | Integration release |
 |---|---|---|
 | post_p3_legacy_resume_copy_harness_polish | approved_by_judge_integrated_validated | worker `019ec355-e935-7263-b4b3-2c808b58469d`, review `019ec35d-24c2-7f93-b4cf-a8da8ecadaa1`, judge decision `results/post-p3-legacy-resume-copy-harness-polish-integration-judge-decision-2026-06-13.md` |
+| post_p3_excel_input_core_ingestion_contract | integrated_validated | worker `019ec370-acf3-76e1-b59c-d7f7fccfab56`, review `019ec37c-a5f4-70e2-ba8f-5f065163a3ab`, judge decision `results/post-p3-excel-input-core-ingestion-contract-integration-judge-decision-2026-06-13.md` |
 
 F8B1 was dispatched, independently reviewed and selectively integrated in Wave
 13. P3 renderer was integrated and validated after CSV input intake hardening.
@@ -156,7 +157,7 @@ rebaseline is completed and judged.
 
 | Phase | Thread | Worktree | Scope |
 |---|---|---|---|
-| none | n/a | n/a | waiting for material worker dispatch |
+| none | n/a | n/a | waiting for next read-only owner-window selection |
 
 The read-only scope-selection gate
 `post_p3_operational_panel_next_owner_window_selection` completed as
@@ -248,7 +249,30 @@ returned pending worktree `local:54bcd436-37f9-45cd-af0a-9e45896bd248`.
 It materialized as thread `019ec37c-a5f4-70e2-ba8f-5f065163a3ab` in worktree
 `/Users/icaroaguiar/.codex/worktrees/1e64/consulta-simples-csv` and was observed
 active at `2026-06-13 21:17:28 -03`.
-No integration is authorized before the independent review receipt is judged.
+The independent review returned `approved_candidate` at
+`2026-06-13 21:18:19 -03`. The judge integrated the approved post-rework
+candidate into `feat/fiscal-desk-local-base-prep` and validated the canonical
+branch at `2026-06-13 21:24:08 -03`.
+
+Canonical validation after integration:
+
+- focused ingestion/reader/F6 contract tests: pass, 3 files and 13 tests;
+- `pnpm lint`: pass, 124 files;
+- `pnpm typecheck`: pass;
+- `git diff --check`: pass;
+- `pnpm test`: pass, 43 files and 278 tests;
+- `pnpm test:coverage`: pass, global coverage 76.27%;
+- `QUALITY_GATE_DIFF_MODE=worktree node docs/ai/quality-gate/check-ratchet.mjs`:
+  pass, changed-line coverage 100%, global coverage 76.27%, non-blocking
+  warning `agentic-review.not-enforced`;
+- `pnpm build`: pass.
+
+Decision: `integrated_validated`.
+
+No material worker remains active after this integration. The next safe step is
+a fresh read-only owner-window selection before releasing new material work.
+The accepted residual risks are documented in
+`results/post-p3-excel-input-core-ingestion-contract-integration-judge-decision-2026-06-13.md`.
 
 `post_local_base_regate_csv_input_intake_hardening` was integrated and validated
 at `2026-06-13 17:20:37 -03`. The read-only scope-selection gate
