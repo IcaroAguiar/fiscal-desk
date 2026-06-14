@@ -408,6 +408,10 @@ Receipt:
 
 The judge prepared a fresh read-only owner-window selection at
 `2026-06-13 23:02:00 -03`. No material worker is released by this dispatch.
+The Codex App selection thread was requested at `2026-06-13 23:04:23 -03`,
+returned pending worktree `local:eb1d4c0f-7411-4b9c-a4df-7e01a9363941`, and
+materialized as thread `019ec3de-ac9c-7652-8ec2-015c26295071` in worktree
+`/Users/icaroaguiar/.codex/worktrees/25c7/consulta-simples-csv`.
 
 Current state:
 
