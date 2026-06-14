@@ -681,8 +681,8 @@ monitoring:
     post_p3_excel_input_core_ingestion_contract: idle_completed_ready_for_judge_review_after_rework_integrated_validated
     post_p3_excel_input_core_ingestion_contract_review: idle_completed_approved_candidate
     post_p3_excel_ingestion_next_owner_window_selection: idle_completed_approved_scope_candidate_judged
-    post_p3_excel_input_runtime_exposure: dispatch_prepared_not_started
-    material_worker_released: none_waiting_for_post_excel_owner_window_selection
+    post_p3_excel_input_runtime_exposure: pending_worktree_creation
+    material_worker_released: post_p3_excel_input_runtime_exposure_pending_worktree_creation
   active_material_owner_window_after_post_local_base_regate:
     slug: post_local_base_regate_csv_input_intake_hardening
     status: approved_by_judge_integrated_validated
@@ -1692,16 +1692,19 @@ monitoring:
       - receita_web_live_massiva
   approved_material_owner_window_after_excel_ingestion:
     slug: post_p3_excel_input_runtime_exposure
-    status: dispatch_prepared
+    status: pending_worktree_creation
     classification: material_single_writer
     source_selection_thread_id: 019ec388-5dd0-7063-865b-a28039875f4c
     source_selection_result_file: results/post-p3-excel-ingestion-next-owner-window-selection-2026-06-13.md
     source_selection_judge_decision_file: results/post-p3-excel-ingestion-next-owner-window-selection-judge-decision-2026-06-13.md
     approved_at: "2026-06-13 21:33:24 -03"
     prepared_at: "2026-06-13 21:33:24 -03"
+    requested_at: "2026-06-13 21:37:05 -03"
+    pending_worktree_id: local:30c57af9-ed7e-4fa5-b04e-dba25e4b8253
     target_min_commit: d1b17ee
+    canonical_dispatch_commit: c04cca4
     dispatch_file: results/post-p3-excel-input-runtime-exposure-dispatch-2026-06-13.md
-    material_worker_released: false
+    material_worker_released: true
     requires_independent_review_before_integration: true
     allowed_write:
       - src/core/app/process-csv.types.ts

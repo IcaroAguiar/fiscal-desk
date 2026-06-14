@@ -157,7 +157,7 @@ rebaseline is completed and judged.
 
 | Phase | Thread | Worktree | Scope |
 |---|---|---|---|
-| post_p3_excel_input_runtime_exposure | dispatch prepared | n/a | material single-writer runtime exposure for Excel input |
+| post_p3_excel_input_runtime_exposure | pending worktree | `local:30c57af9-ed7e-4fa5-b04e-dba25e4b8253` | material single-writer runtime exposure for Excel input |
 
 The read-only scope-selection gate
 `post_p3_operational_panel_next_owner_window_selection` completed as
@@ -290,6 +290,8 @@ ledger/fingerprint and the Electron smoke harness. Material dispatch prepared:
 `results/post-p3-excel-input-runtime-exposure-dispatch-2026-06-13.md`.
 
 No material worker has been requested yet for this dispatch.
+The Codex App material worker was requested at `2026-06-13 21:37:05 -03` and
+returned pending worktree `local:30c57af9-ed7e-4fa5-b04e-dba25e4b8253`.
 
 `post_local_base_regate_csv_input_intake_hardening` was integrated and validated
 at `2026-06-13 17:20:37 -03`. The read-only scope-selection gate
