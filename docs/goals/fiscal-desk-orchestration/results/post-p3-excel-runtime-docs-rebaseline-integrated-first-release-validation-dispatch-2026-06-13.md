@@ -24,11 +24,21 @@ Allowed write persistente:
 
 Artefatos transitorios permitidos, sem stage e sem integracao:
 
+- `node_modules/**`
 - `coverage/**`
 - `dist/**`
 - `dist-electron/**`
 - `.vite/**`
 - `/private/tmp/**`
+
+Bootstrap permitido se a worktree isolada nao tiver dependencias instaladas:
+
+- `pnpm install --frozen-lockfile`
+
+Esse bootstrap pode criar `node_modules/**`, que e ignorado pelo repositorio.
+Ele nao pode alterar `package.json`, `pnpm-lock.yaml` ou qualquer arquivo
+versionado. Se o install precisar alterar lockfile ou baixar algo fora do
+comportamento normal do lockfile congelado, pare com `blocked`.
 
 Forbidden persistent writes:
 
@@ -66,6 +76,8 @@ Execute e registre comando, resultado e evidencia curta:
 
 - `git status --short --branch --untracked-files=all`
 - `git log -5 --oneline`
+- `pnpm install --frozen-lockfile`, somente se `node_modules` estiver ausente
+  ou os binarios locais como `biome` nao estiverem disponiveis
 - `pnpm lint`
 - `pnpm typecheck`
 - `pnpm test`

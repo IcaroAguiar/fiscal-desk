@@ -1952,11 +1952,15 @@ monitoring:
     allowed_write:
       - docs/goals/fiscal-desk-orchestration/results/post-p3-excel-runtime-docs-rebaseline-integrated-first-release-validation-2026-06-13.md
     transient_outputs_allowed:
+      - node_modules/**
       - coverage/**
       - dist/**
       - dist-electron/**
       - .vite/**
       - /private/tmp/**
+    bootstrap_allowed_if_dependencies_absent:
+      - pnpm install --frozen-lockfile
+    bootstrap_correction_at: "2026-06-13 22:54:00 -03"
     blocks_material_feature_workers_until_judged: true
     still_blocked:
       - material_feature_workers_until_integrated_validation_judged

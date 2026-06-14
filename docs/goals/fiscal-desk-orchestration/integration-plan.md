@@ -374,6 +374,11 @@ The Codex App validation thread was requested at `2026-06-13 22:50:20 -03`,
 returned pending worktree `local:1307995f-c417-44be-9a32-614bc13a20d9`, and
 materialized as thread `019ec3d1-fb28-75e2-a3e1-0623fc26bd22` in worktree
 `/Users/icaroaguiar/.codex/worktrees/a40e/consulta-simples-csv`.
+The first validation attempt found the expected isolated-worktree bootstrap gap:
+`pnpm lint` could not find `biome` because `node_modules` was absent. The judge
+corrected the dispatch to allow `pnpm install --frozen-lockfile` and
+`node_modules/**` as transient ignored bootstrap artifacts only, with no
+package/lockfile changes allowed.
 
 `post_local_base_regate_csv_input_intake_hardening` was integrated and validated
 at `2026-06-13 17:20:37 -03`. The read-only scope-selection gate
