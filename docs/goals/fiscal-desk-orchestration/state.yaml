@@ -687,6 +687,7 @@ monitoring:
     post_p3_excel_input_runtime_exposure_judge: approved_by_judge_integrated_validated
     post_p3_excel_runtime_next_owner_window_selection: idle_completed_approved_scope_candidate_judged
     post_p3_excel_runtime_docs_rebaseline: idle_completed_approved_docs_only_integrated_local_docs
+    post_p3_excel_runtime_docs_rebaseline_next_owner_window_selection: dispatch_prepared_pending_thread
     material_worker_released: none_active_after_post_p3_excel_runtime_docs_rebaseline
   active_material_owner_window_after_post_local_base_regate:
     slug: post_local_base_regate_csv_input_intake_hardening
@@ -1871,6 +1872,37 @@ monitoring:
     local_docs_handling: copy_from_canonical_absolute_if_missing_in_worker_worktree
     still_blocked:
       - material_feature_workers_until_fresh_owner_window_selection
+      - release_public_distribution
+      - updater_update_real
+      - diagnostic_send_external_or_package_real
+      - telemetry_transport
+      - license_account_real
+      - storage_network_backend_remote
+      - reusable_templates_models
+      - pdf_word_ocr_real
+      - receita_web_live_massiva
+  active_read_only_owner_window_selection_after_excel_runtime_docs_rebaseline:
+    slug: post_p3_excel_runtime_docs_rebaseline_next_owner_window_selection
+    status: dispatch_prepared_pending_thread
+    classification: read_only_owner_window_selection
+    source_docs_only_thread_id: 019ec3c0-8180-7813-adb0-e9abe797b3f4
+    source_docs_only_judge_decision_file: results/post-p3-excel-runtime-docs-rebaseline-judge-decision-2026-06-13.md
+    prepared_at: "2026-06-13 22:38:34 -03"
+    branch: feat/fiscal-desk-local-base-prep
+    target_min_commit: 0ffb0ee
+    dispatch_file: results/post-p3-excel-runtime-docs-rebaseline-next-owner-window-selection-dispatch-2026-06-13.md
+    material_worker_released: false
+    blocks_material_workers_until_judged: true
+    allowed_write:
+      - docs/goals/fiscal-desk-orchestration/results/post-p3-excel-runtime-docs-rebaseline-next-owner-window-selection-2026-06-13.md
+    candidate_surfaces_to_evaluate:
+      - first_release_final_validation_or_hardening
+      - guided_delivery_without_reusable_templates
+      - diagnostic_local_reviewable_scope_only
+      - update_release_scope_or_ui_blocked_state_only
+      - keep_blocked_if_no_safe_owner_window
+    still_blocked:
+      - material_feature_workers_until_this_selection_judged
       - release_public_distribution
       - updater_update_real
       - diagnostic_send_external_or_package_real

@@ -338,6 +338,10 @@ back to the canonical worktree, validated the docs-only diff at
 `2026-06-13 22:36:47 -03`, and accepted the window as
 `approved_docs_only_integrated_local_docs`.
 No material worker remains active after this docs-only rebaseline.
+The judge prepared a fresh read-only owner-window selection at
+`2026-06-13 22:38:34 -03`:
+`results/post-p3-excel-runtime-docs-rebaseline-next-owner-window-selection-dispatch-2026-06-13.md`.
+No material worker is released by this dispatch.
 
 `post_local_base_regate_csv_input_intake_hardening` was integrated and validated
 at `2026-06-13 17:20:37 -03`. The read-only scope-selection gate
