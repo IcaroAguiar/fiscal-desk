@@ -157,7 +157,7 @@ rebaseline is completed and judged.
 
 | Phase | Thread | Worktree | Scope |
 |---|---|---|---|
-| post_p3_excel_ingestion_next_owner_window_selection | pending worktree | `local:d250f596-51fc-4559-bbb8-ca5f63656d8b` | read-only owner-window selection after Excel core integration |
+| post_p3_excel_ingestion_next_owner_window_selection | active | `/Users/icaroaguiar/.codex/worktrees/0ed9/consulta-simples-csv` | read-only owner-window selection after Excel core integration |
 
 The read-only scope-selection gate
 `post_p3_operational_panel_next_owner_window_selection` completed as
@@ -280,6 +280,9 @@ No material worker is released by this dispatch.
 
 The Codex App selection thread was requested at `2026-06-13 21:29:23 -03` and
 returned pending worktree `local:d250f596-51fc-4559-bbb8-ca5f63656d8b`.
+It materialized as thread `019ec388-5dd0-7063-865b-a28039875f4c` in worktree
+`/Users/icaroaguiar/.codex/worktrees/0ed9/consulta-simples-csv` and was observed
+active at `2026-06-13 21:30:11 -03`.
 
 `post_local_base_regate_csv_input_intake_hardening` was integrated and validated
 at `2026-06-13 17:20:37 -03`. The read-only scope-selection gate

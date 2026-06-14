@@ -680,7 +680,7 @@ monitoring:
     post_p3_legacy_polish_next_owner_window_selection: idle_completed_approved_scope_candidate_judged
     post_p3_excel_input_core_ingestion_contract: idle_completed_ready_for_judge_review_after_rework_integrated_validated
     post_p3_excel_input_core_ingestion_contract_review: idle_completed_approved_candidate
-    post_p3_excel_ingestion_next_owner_window_selection: pending_worktree_creation
+    post_p3_excel_ingestion_next_owner_window_selection: active_read_only_selection
     material_worker_released: none_waiting_for_post_excel_owner_window_selection
   active_material_owner_window_after_post_local_base_regate:
     slug: post_local_base_regate_csv_input_intake_hardening
@@ -1645,9 +1645,11 @@ monitoring:
       - receita_web_live_massiva
   active_read_only_owner_window_selection_after_excel_ingestion:
     slug: post_p3_excel_ingestion_next_owner_window_selection
-    status: pending_worktree_creation
+    status: active_read_only_selection
     pending_worktree_id: local:d250f596-51fc-4559-bbb8-ca5f63656d8b
+    thread_id: 019ec388-5dd0-7063-865b-a28039875f4c
     thread_title: Selecionar owner window pos Excel core
+    worktree: /Users/icaroaguiar/.codex/worktrees/0ed9/consulta-simples-csv
     model: gpt-5.5
     reasoning: medium
     branch: feat/fiscal-desk-local-base-prep
@@ -1655,6 +1657,7 @@ monitoring:
     canonical_dispatch_commit: 81389d1
     prepared_at: "2026-06-13 21:27:21 -03"
     requested_at: "2026-06-13 21:29:23 -03"
+    observed_active_at: "2026-06-13 21:30:11 -03"
     dispatch_file: results/post-p3-excel-ingestion-next-owner-window-selection-dispatch-2026-06-13.md
     result_file: results/post-p3-excel-ingestion-next-owner-window-selection-2026-06-13.md
     classification: read_only_owner_window_selection
