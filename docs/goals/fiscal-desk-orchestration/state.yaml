@@ -604,9 +604,9 @@ monitoring:
   observe_threads_frequently: true
   heartbeat_automation_id: fiscal-desk-f0-monitor
   heartbeat_interval_minutes: 30
-  last_observation_at: "2026-06-13 22:50:20 -03"
+  last_observation_at: "2026-06-13 22:58:46 -03"
   last_observation_file: docs/goals/fiscal-desk-orchestration/integration-plan.md
-  last_observation_status: post_p3_excel_runtime_docs_rebaseline_integrated_first_release_validation_active
+  last_observation_status: post_p3_excel_runtime_docs_rebaseline_integrated_first_release_validation_approved
   f0_thread_status: self_approval_blocker_resolved_by_judge
   final_integration_review_status: approved_by_judge
   final_integration_review_thread_id: 019ec005-f849-7b53-ae0f-ae7c02df4f63
@@ -630,7 +630,7 @@ monitoring:
   staging_versioning_closeout_dispatch_file: results/staging-versioning-closeout-dispatch-2026-06-13.md
   staging_versioning_closeout_file: results/staging-versioning-closeout.md
   staging_versioning_closeout_judge_decision_file: results/staging-versioning-closeout-judge-decision.md
-  next_material_worker_status: blocked_pending_post_p3_excel_runtime_docs_rebaseline_integrated_first_release_validation
+  next_material_worker_status: none_waiting_for_post_excel_validation_next_owner_window_selection
   last_thread_observation:
     testing_infra_coverage_gate_worker: idle_completed
     testing_infra_coverage_gate_independent_review: idle_completed_approved_candidate
@@ -688,8 +688,9 @@ monitoring:
     post_p3_excel_runtime_next_owner_window_selection: idle_completed_approved_scope_candidate_judged
     post_p3_excel_runtime_docs_rebaseline: idle_completed_approved_docs_only_integrated_local_docs
     post_p3_excel_runtime_docs_rebaseline_next_owner_window_selection: idle_completed_approved_scope_candidate_judged
-    post_p3_excel_runtime_docs_rebaseline_integrated_first_release_validation: active_executable_validation
-    material_worker_released: none_active_pending_integrated_validation
+    post_p3_excel_runtime_docs_rebaseline_integrated_first_release_validation: idle_completed_ready_for_judge_review_approved_validated
+    post_p3_excel_runtime_docs_rebaseline_integrated_first_release_validation_judge: approved_by_judge_integrated_validated
+    material_worker_released: none_active_after_integrated_validation
   active_material_owner_window_after_post_local_base_regate:
     slug: post_local_base_regate_csv_input_intake_hardening
     status: approved_by_judge_integrated_validated
@@ -1931,7 +1932,7 @@ monitoring:
       - receita_web_live_massiva
   active_executable_validation_after_excel_runtime_docs_rebaseline:
     slug: post_p3_excel_runtime_docs_rebaseline_integrated_first_release_validation
-    status: active_executable_validation
+    status: approved_by_judge_integrated_validated
     classification: non_feature_material_validation
     source_selection_thread_id: 019ec3c9-1675-7711-9de3-f926a5f10299
     source_selection_result_file: results/post-p3-excel-runtime-docs-rebaseline-next-owner-window-selection-2026-06-13.md
@@ -1945,11 +1946,15 @@ monitoring:
     observed_active_at: "2026-06-13 22:50:20 -03"
     first_attempt_status: blocked_bootstrap_missing_node_modules
     resumed_after_bootstrap_correction_at: "2026-06-13 22:54:00 -03"
+    completed_at: "2026-06-13 22:57:59 -03"
+    judged_at: "2026-06-13 22:58:46 -03"
     branch: feat/fiscal-desk-local-base-prep
     target_min_commit: 105ec0a
     canonical_dispatch_commit: 524ed79
     dispatch_file: results/post-p3-excel-runtime-docs-rebaseline-integrated-first-release-validation-dispatch-2026-06-13.md
     result_file: results/post-p3-excel-runtime-docs-rebaseline-integrated-first-release-validation-2026-06-13.md
+    result_status: ready_for_judge_review
+    judge_decision_file: results/post-p3-excel-runtime-docs-rebaseline-integrated-first-release-validation-judge-decision-2026-06-13.md
     material_feature_worker_released: false
     allowed_write:
       - docs/goals/fiscal-desk-orchestration/results/post-p3-excel-runtime-docs-rebaseline-integrated-first-release-validation-2026-06-13.md
@@ -1963,9 +1968,24 @@ monitoring:
     bootstrap_allowed_if_dependencies_absent:
       - pnpm install --frozen-lockfile
     bootstrap_correction_at: "2026-06-13 22:54:00 -03"
-    blocks_material_feature_workers_until_judged: true
+    blocks_material_feature_workers_until_judged: false
+    next_action_after_judgment: fresh_read_only_owner_window_selection
+    canonical_validation:
+      bootstrap_pnpm_install_frozen_lockfile: pass
+      lint: pass
+      typecheck: pass
+      test: pass_43_files_283_tests
+      coverage: pass_76_38_percent_lines
+      smoke_real_csv: pass
+      smoke_electron_xlsx_mock: pass_after_sandbox_eperm_rerun
+      smoke_electron_xlsx_base_publica_local: pass_after_sandbox_eperm_rerun
+      smoke_visual: pass_after_sandbox_eperm_rerun
+      build: pass
+      gitleaks: pass
+      ratchet_worktree: pass
+      receipt_diff_check: pass
     still_blocked:
-      - material_feature_workers_until_integrated_validation_judged
+      - material_feature_workers_until_fresh_owner_window_selection
       - release_public_distribution
       - updater_update_real
       - diagnostic_send_external_or_package_real

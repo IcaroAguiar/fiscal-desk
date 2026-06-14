@@ -382,6 +382,24 @@ package/lockfile changes allowed.
 At `2026-06-13 22:54:00 -03`, the judge resumed the same validation thread with
 that bootstrap authorization. The first `blocked` result is treated as an
 orchestration/bootstrap gap, not as product validation failure.
+The resumed worker completed as `ready_for_judge_review`. The judge promoted
+the receipt and accepted the validation at `2026-06-13 22:58:46 -03`.
+
+Accepted validation evidence:
+
+- `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm test:coverage`;
+- `pnpm smoke:real-csv`;
+- Electron XLSX smokes for `mock` and `base-publica-local`, after sandbox
+  `listen EPERM` reruns outside sandbox;
+- `pnpm smoke:visual`, after the same sandbox rerun pattern;
+- `pnpm build`;
+- `gitleaks detect --source . --redact --no-banner`;
+- `QUALITY_GATE_DIFF_MODE=worktree node docs/ai/quality-gate/check-ratchet.mjs`;
+- `git diff --check` for the receipt.
+
+No feature/material implementation worker remains active. The next safe action
+is a fresh read-only owner-window selection before any additional feature
+material.
 
 `post_local_base_regate_csv_input_intake_hardening` was integrated and validated
 at `2026-06-13 17:20:37 -03`. The read-only scope-selection gate
