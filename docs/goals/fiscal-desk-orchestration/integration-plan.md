@@ -226,6 +226,9 @@ package/lock, release/update, diagnostics, telemetry, license/account,
 templates, PDF/Word/OCR or Receita Web live/massiva.
 The Codex App worker was requested at `2026-06-13 21:03:27 -03` and returned
 pending worktree `local:77cf7326-42ee-4dfc-a3b6-8f5c12d5a8c9`.
+It materialized as thread `019ec370-acf3-76e1-b59c-d7f7fccfab56` in worktree
+`/Users/icaroaguiar/.codex/worktrees/a88b/consulta-simples-csv` and was observed
+active at `2026-06-13 21:04:14 -03`.
 
 `post_local_base_regate_csv_input_intake_hardening` was integrated and validated
 at `2026-06-13 17:20:37 -03`. The read-only scope-selection gate
