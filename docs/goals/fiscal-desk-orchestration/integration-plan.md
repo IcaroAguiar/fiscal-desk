@@ -237,6 +237,13 @@ modified `test/unit/fiscal-desk-phase-6-contracts.test.ts`, which was outside
 the strict allowed write set. Rework was sent back to the same thread. No review
 independent and no integration are authorized until the worker returns
 `ready_for_judge_review_after_rework` with all changed files inside the allowlist.
+The worker completed rework at `2026-06-13 21:13:41 -03`. The judge verified
+that `test/unit/fiscal-desk-phase-6-contracts.test.ts` no longer has a diff,
+repeated focused Vitest/lint/typecheck/ratchet/diff-check, and accepted the
+candidate as `ready_for_independent_review_after_rework` at
+`2026-06-13 21:14:48 -03`. Review dispatch prepared:
+`results/post-p3-excel-input-core-ingestion-contract-review-dispatch-2026-06-13.md`.
+No integration is authorized before the independent review receipt is judged.
 
 `post_local_base_regate_csv_input_intake_hardening` was integrated and validated
 at `2026-06-13 17:20:37 -03`. The read-only scope-selection gate

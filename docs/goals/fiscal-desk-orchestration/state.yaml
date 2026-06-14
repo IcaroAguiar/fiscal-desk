@@ -1535,7 +1535,7 @@ monitoring:
       - docs/goals/fiscal-desk-orchestration/results/post-p3-legacy-polish-next-owner-window-selection-2026-06-13.md
   approved_material_owner_window_after_legacy_polish:
     slug: post_p3_excel_input_core_ingestion_contract
-    status: needs_rework_scope_violation
+    status: ready_for_independent_review_after_rework
     classification: material_single_writer_core_ingestion
     source_selection_thread_id: 019ec36a-345e-7be0-9458-3fa3ef77577e
     source_selection_result_file: results/post-p3-legacy-polish-next-owner-window-selection-2026-06-13.md
@@ -1545,6 +1545,8 @@ monitoring:
     target_min_commit: e622743
     dispatch_file: results/post-p3-excel-input-core-ingestion-contract-dispatch-2026-06-13.md
     judge_decision_file: results/post-p3-excel-input-core-ingestion-contract-judge-decision-2026-06-13.md
+    after_rework_judge_decision_file: results/post-p3-excel-input-core-ingestion-contract-after-rework-judge-decision-2026-06-13.md
+    review_dispatch_file: results/post-p3-excel-input-core-ingestion-contract-review-dispatch-2026-06-13.md
     pending_worktree_id: local:77cf7326-42ee-4dfc-a3b6-8f5c12d5a8c9
     thread_id: 019ec370-acf3-76e1-b59c-d7f7fccfab56
     thread_title: Adicionar ingestão Excel
@@ -1554,8 +1556,12 @@ monitoring:
     completed_at: "2026-06-13 21:10:05 -03"
     judged_at: "2026-06-13 21:12:11 -03"
     rework_sent_at: "2026-06-13 21:12:11 -03"
+    rework_completed_at: "2026-06-13 21:13:41 -03"
+    after_rework_judged_at: "2026-06-13 21:14:48 -03"
+    review_prepared_at: "2026-06-13 21:14:48 -03"
     worker_result_status: ready_for_judge_review
-    judge_result_status: needs_rework_scope_violation
+    worker_after_rework_status: ready_for_judge_review_after_rework
+    judge_result_status: ready_for_independent_review_after_rework
     rework_reason: worker_modified_test_unit_fiscal_desk_phase_6_contracts_outside_allowed_write_set
     material_worker_released: true
     requires_independent_review_before_integration: true
@@ -1600,6 +1606,10 @@ monitoring:
       - typecheck_pass
       - ratchet_pass_pr_coverage_100_percent
       - diff_check_pass
+    after_rework_scope_evidence:
+      - test_unit_fiscal_desk_phase_6_contracts_no_diff
+      - git_diff_name_only_only_allowed_write_files
+      - worker_receipt_ready_for_judge_review_after_rework
     still_blocked:
       - excel_ui_ipc_preload_runtime
       - guided_delivery_models_templates
