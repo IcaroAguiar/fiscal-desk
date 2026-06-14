@@ -1561,6 +1561,9 @@ monitoring:
     review_prepared_at: "2026-06-13 21:14:48 -03"
     review_requested_at: "2026-06-13 21:16:33 -03"
     review_pending_worktree_id: local:54bcd436-37f9-45cd-af0a-9e45896bd248
+    review_thread_id: 019ec37c-a5f4-70e2-ba8f-5f065163a3ab
+    review_worktree: /Users/icaroaguiar/.codex/worktrees/1e64/consulta-simples-csv
+    review_observed_active_at: "2026-06-13 21:17:28 -03"
     worker_result_status: ready_for_judge_review
     worker_after_rework_status: ready_for_judge_review_after_rework
     judge_result_status: ready_for_independent_review_after_rework
@@ -1568,7 +1571,7 @@ monitoring:
     material_worker_released: true
     requires_independent_review_before_integration: true
     independent_review_released: true
-    independent_review_status: pending_worktree_creation
+    independent_review_status: active
     allowed_write:
       - src/core/ingestion/ingestion-contract.ts
       - src/core/ingestion/fiscal-ingestion.ts

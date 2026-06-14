@@ -245,6 +245,9 @@ candidate as `ready_for_independent_review_after_rework` at
 `results/post-p3-excel-input-core-ingestion-contract-review-dispatch-2026-06-13.md`.
 The Codex App review thread was requested at `2026-06-13 21:16:33 -03` and
 returned pending worktree `local:54bcd436-37f9-45cd-af0a-9e45896bd248`.
+It materialized as thread `019ec37c-a5f4-70e2-ba8f-5f065163a3ab` in worktree
+`/Users/icaroaguiar/.codex/worktrees/1e64/consulta-simples-csv` and was observed
+active at `2026-06-13 21:17:28 -03`.
 No integration is authorized before the independent review receipt is judged.
 
 `post_local_base_regate_csv_input_intake_hardening` was integrated and validated
