@@ -429,6 +429,12 @@ to branch/PR preparation or whether a concrete blocker remains. It may not
 implement code, create a PR, package a release, publish, sign, notarize, deploy,
 send diagnostics, enable telemetry or open any feature surface.
 
+The Codex App closeout thread was requested at `2026-06-13 23:14:14 -03`,
+returned pending worktree `local:ad0c7d79-3063-4e90-907c-a649c3fd16ad`, and
+materialized as thread `019ec3e7-b051-7252-bfdc-05e2e40b101e` in worktree
+`/Users/icaroaguiar/.codex/worktrees/c162/consulta-simples-csv`. It is active
+as a read-only closeout gate with `/goal`, `gpt-5.5`, reasoning `medium`.
+
 Current state:
 
 - Excel/XLSX runtime and post-Excel integrated validation are closed;
