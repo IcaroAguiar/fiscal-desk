@@ -328,6 +328,10 @@ No material worker is released by this decision.
 The docs-only dispatch was prepared at `2026-06-13 22:28:55 -03`:
 `results/post-p3-excel-runtime-docs-rebaseline-dispatch-2026-06-13.md`.
 No material worker is released by this dispatch.
+The Codex App docs-only worker was requested at `2026-06-13 22:31:19 -03`,
+returned pending worktree `local:2760d2ca-b6a1-499f-ad92-6b442af2e077`, and
+materialized as thread `019ec3c0-8180-7813-adb0-e9abe797b3f4` in worktree
+`/Users/icaroaguiar/.codex/worktrees/ae44/consulta-simples-csv`.
 
 `post_local_base_regate_csv_input_intake_hardening` was integrated and validated
 at `2026-06-13 17:20:37 -03`. The read-only scope-selection gate

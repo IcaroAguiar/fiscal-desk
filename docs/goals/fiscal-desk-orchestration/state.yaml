@@ -1830,14 +1830,21 @@ monitoring:
       - receita_web_live_massiva
   active_docs_only_owner_window_after_excel_runtime:
     slug: post_p3_excel_runtime_docs_rebaseline
-    status: dispatch_prepared_pending_thread
+    status: active_docs_only_worker
     classification: docs_only
     source_selection_thread_id: 019ec3b9-f3e2-7863-8fe9-8c98c8e34460
     source_selection_result_file: results/post-p3-excel-runtime-next-owner-window-selection-2026-06-13.md
     source_selection_judge_decision_file: results/post-p3-excel-runtime-next-owner-window-selection-judge-decision-2026-06-13.md
     prepared_at: "2026-06-13 22:28:55 -03"
+    requested_at: "2026-06-13 22:31:19 -03"
+    pending_worktree_id: local:2760d2ca-b6a1-499f-ad92-6b442af2e077
+    thread_id: 019ec3c0-8180-7813-adb0-e9abe797b3f4
+    thread_title: Planejar roadmap fiscal desk
+    worktree: /Users/icaroaguiar/.codex/worktrees/ae44/consulta-simples-csv
+    observed_active_at: "2026-06-13 22:31:19 -03"
     branch: feat/fiscal-desk-local-base-prep
     target_min_commit: 2e2d4ef
+    canonical_dispatch_commit: 43c5668
     dispatch_file: results/post-p3-excel-runtime-docs-rebaseline-dispatch-2026-06-13.md
     material_worker_released: false
     allowed_write:
