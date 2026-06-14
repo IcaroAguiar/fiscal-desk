@@ -157,7 +157,7 @@ rebaseline is completed and judged.
 
 | Phase | Thread | Worktree | Scope |
 |---|---|---|---|
-| none | n/a | n/a | waiting for next read-only owner-window selection |
+| post_p3_excel_ingestion_next_owner_window_selection | not started | n/a | read-only owner-window selection after Excel core integration |
 
 The read-only scope-selection gate
 `post_p3_operational_panel_next_owner_window_selection` completed as
@@ -273,6 +273,10 @@ No material worker remains active after this integration. The next safe step is
 a fresh read-only owner-window selection before releasing new material work.
 The accepted residual risks are documented in
 `results/post-p3-excel-input-core-ingestion-contract-integration-judge-decision-2026-06-13.md`.
+
+That read-only selection dispatch was prepared at `2026-06-13 21:27:21 -03`:
+`results/post-p3-excel-ingestion-next-owner-window-selection-dispatch-2026-06-13.md`.
+No material worker is released by this dispatch.
 
 `post_local_base_regate_csv_input_intake_hardening` was integrated and validated
 at `2026-06-13 17:20:37 -03`. The read-only scope-selection gate

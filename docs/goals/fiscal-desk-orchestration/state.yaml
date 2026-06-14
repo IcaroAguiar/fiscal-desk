@@ -630,7 +630,7 @@ monitoring:
   staging_versioning_closeout_dispatch_file: results/staging-versioning-closeout-dispatch-2026-06-13.md
   staging_versioning_closeout_file: results/staging-versioning-closeout.md
   staging_versioning_closeout_judge_decision_file: results/staging-versioning-closeout-judge-decision.md
-  next_material_worker_status: none_waiting_for_next_owner_window_selection
+  next_material_worker_status: none_waiting_for_post_excel_owner_window_selection
   last_thread_observation:
     testing_infra_coverage_gate_worker: idle_completed
     testing_infra_coverage_gate_independent_review: idle_completed_approved_candidate
@@ -680,7 +680,8 @@ monitoring:
     post_p3_legacy_polish_next_owner_window_selection: idle_completed_approved_scope_candidate_judged
     post_p3_excel_input_core_ingestion_contract: idle_completed_ready_for_judge_review_after_rework_integrated_validated
     post_p3_excel_input_core_ingestion_contract_review: idle_completed_approved_candidate
-    material_worker_released: none_waiting_for_next_owner_window_selection
+    post_p3_excel_ingestion_next_owner_window_selection: dispatch_prepared_not_started
+    material_worker_released: none_waiting_for_post_excel_owner_window_selection
   active_material_owner_window_after_post_local_base_regate:
     slug: post_local_base_regate_csv_input_intake_hardening
     status: approved_by_judge_integrated_validated
@@ -1641,6 +1642,39 @@ monitoring:
       - license_account_behavior
       - release_update_dist_publish_signing_notarization
       - pdf_word_ocr
+      - receita_web_live_massiva
+  active_read_only_owner_window_selection_after_excel_ingestion:
+    slug: post_p3_excel_ingestion_next_owner_window_selection
+    status: dispatch_prepared
+    thread_title: Selecionar owner window pos Excel core
+    model: gpt-5.5
+    reasoning: medium
+    branch: feat/fiscal-desk-local-base-prep
+    target_min_commit: 8cab93b
+    prepared_at: "2026-06-13 21:27:21 -03"
+    dispatch_file: results/post-p3-excel-ingestion-next-owner-window-selection-dispatch-2026-06-13.md
+    result_file: results/post-p3-excel-ingestion-next-owner-window-selection-2026-06-13.md
+    classification: read_only_owner_window_selection
+    material_worker_released: false
+    blocks_material_workers_until_judged: true
+    allowed_write:
+      - docs/goals/fiscal-desk-orchestration/results/post-p3-excel-ingestion-next-owner-window-selection-2026-06-13.md
+    candidate_surfaces_to_evaluate:
+      - excel_ui_ipc_preload_runtime
+      - excel_ingestion_qa_validation_docs
+      - guided_delivery_models_templates
+      - diagnostic_generation_local_reviewable
+      - update_release_scope_or_ui_blocked_state
+      - first_release_hardening
+    still_blocked:
+      - release_public_distribution
+      - updater_update_real
+      - diagnostic_send_external
+      - telemetry_transport
+      - license_account_real
+      - storage_network_backend_remote
+      - reusable_templates_models
+      - pdf_word_ocr_real
       - receita_web_live_massiva
   active_read_only_owner_window_selection_after_post_local_base_regate:
     slug: post_local_base_regate_material_owner_window_selection
