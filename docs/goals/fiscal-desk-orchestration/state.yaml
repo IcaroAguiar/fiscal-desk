@@ -604,9 +604,9 @@ monitoring:
   observe_threads_frequently: true
   heartbeat_automation_id: fiscal-desk-f0-monitor
   heartbeat_interval_minutes: 30
-  last_observation_at: "2026-06-13 23:26:46 -03"
-  last_observation_file: docs/goals/fiscal-desk-orchestration/integration-plan.md
-  last_observation_status: post_p3_branch_pr_preparation_closeout_approved_by_judge
+  last_observation_at: "2026-06-13 23:30:37 -03"
+  last_observation_file: docs/goals/fiscal-desk-orchestration/results/post-p3-pr-action-readiness-observation-2026-06-13.md
+  last_observation_status: waiting_for_explicit_pr_action_approval_no_existing_pr
   f0_thread_status: self_approval_blocker_resolved_by_judge
   final_integration_review_status: approved_by_judge
   final_integration_review_thread_id: 019ec005-f849-7b53-ae0f-ae7c02df4f63
@@ -693,6 +693,7 @@ monitoring:
     post_p3_excel_validation_next_owner_window_selection: idle_completed_approved_scope_candidate_judged
     post_p3_first_release_final_readiness_pr_closeout: idle_completed_approved_candidate_judged
     post_p3_branch_pr_preparation_closeout: idle_completed_approved_pr_preparation_candidate_judged
+    post_p3_pr_action_readiness_observation: done_no_existing_pr_waiting_for_explicit_approval
     material_worker_released: none_active_pending_explicit_pr_action_approval
   active_material_owner_window_after_post_local_base_regate:
     slug: post_local_base_regate_csv_input_intake_hardening
@@ -2129,6 +2130,21 @@ monitoring:
       - reusable_templates_models
       - pdf_word_ocr_real
       - receita_web_live_massiva
+  pending_pr_action_approval:
+    status: waiting_for_explicit_user_authorization
+    observed_at: "2026-06-13 23:30:37 -03"
+    branch: feat/fiscal-desk-local-base-prep
+    remote: https://github.com/IcaroAguiar/consulta-simples-csv.git
+    existing_pr_query: gh pr list --head feat/fiscal-desk-local-base-prep --state all
+    existing_pr_result: none
+    observation_file: results/post-p3-pr-action-readiness-observation-2026-06-13.md
+    source_pr_preparation_receipt: results/post-p3-branch-pr-preparation-closeout-2026-06-13.md
+    source_pr_preparation_judge_decision: results/post-p3-branch-pr-preparation-closeout-judge-decision-2026-06-13.md
+    requires_explicit_authorization_before:
+      - gh_pr_create
+      - gh_pr_edit
+      - git_push_if_needed
+      - external_pr_side_effects
   active_read_only_owner_window_selection_after_post_local_base_regate:
     slug: post_local_base_regate_material_owner_window_selection
     status: approved_by_judge_scope_candidate

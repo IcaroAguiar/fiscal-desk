@@ -491,6 +491,13 @@ The PR-preparation closeout receipt returned
 The branch is ready for an explicit PR action approval. No PR was created or
 updated by this decision.
 
+At `2026-06-13 23:30:37 -03`, the orchestrator ran a read-only PR existence
+check. `gh pr list --head feat/fiscal-desk-local-base-prep --state all`
+returned `[]`, so there is no current PR for this branch in the queried remote.
+The observation receipt is
+`results/post-p3-pr-action-readiness-observation-2026-06-13.md`.
+Creating a PR now requires explicit user authorization.
+
 Current state:
 
 - first-release readiness/PR closeout is accepted by the judge;
