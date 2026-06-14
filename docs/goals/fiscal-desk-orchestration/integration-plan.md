@@ -498,6 +498,14 @@ The observation receipt is
 `results/post-p3-pr-action-readiness-observation-2026-06-13.md`.
 Creating a PR now requires explicit user authorization.
 
+At `2026-06-13 23:32:27 -03`, the orchestrator also checked remote branch
+existence. `git ls-remote --heads origin feat/fiscal-desk-local-base-prep`
+returned no output. The local HEAD is
+`ac14eb77db955a1c60af3cf718b322913c7a26b8`, and the observation receipt is
+`results/post-p3-pr-remote-branch-readiness-observation-2026-06-13.md`.
+The next external action requires explicit authorization for both pushing the
+branch and creating the PR.
+
 Current state:
 
 - first-release readiness/PR closeout is accepted by the judge;
@@ -505,6 +513,8 @@ Current state:
 - branch `feat/fiscal-desk-local-base-prep` is the single integration branch;
 - no material implementation worker is active;
 - PR create/update now requires explicit user authorization;
+- because the branch is not on origin yet, PR creation also requires explicit
+  push authorization;
 - `skills/**` remains local/untracked and excluded by default;
 - `docs/fiscal-desk/**` remains local-only unless a separate versioning decision
   changes that;
