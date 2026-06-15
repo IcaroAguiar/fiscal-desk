@@ -10,6 +10,29 @@ const WINDOWS_BROWSER_CANDIDATES = [
   ["PROGRAMFILES(X86)", "Microsoft", "Edge", "Application", "msedge.exe"],
 ] as const;
 
+const BUNDLED_BROWSER_SEGMENTS: Partial<
+  Record<NodeJS.Platform, readonly string[][]>
+> = {
+  win32: [["chrome-win64", "chrome.exe"]],
+  darwin: [
+    [
+      "chrome-mac",
+      "Google Chrome for Testing.app",
+      "Contents",
+      "MacOS",
+      "Google Chrome for Testing",
+    ],
+    [
+      "chrome-mac-arm64",
+      "Google Chrome for Testing.app",
+      "Contents",
+      "MacOS",
+      "Google Chrome for Testing",
+    ],
+  ],
+  linux: [["chrome-linux", "chrome"]],
+} as const;
+
 function fromEnvPath(
   envName: string,
   ...segments: readonly string[]
@@ -22,9 +45,9 @@ function fromEnvPath(
   return path.win32.join(basePath, ...segments);
 }
 
-export function resolvePackagedWindowsBrowserPath(): string | undefined {
+function resolveSystemBrowserPath(): string | undefined {
   if (process.platform !== "win32") {
-    return undefined;
+    return;
   }
 
   for (const [envName, ...segments] of WINDOWS_BROWSER_CANDIDATES) {
@@ -35,4 +58,54 @@ export function resolvePackagedWindowsBrowserPath(): string | undefined {
   }
 
   return undefined;
+}
+
+function resolveBundledBrowserPath(
+  ...roots: readonly string[]
+): string | undefined {
+  const platformSegments = BUNDLED_BROWSER_SEGMENTS[process.platform];
+  if (!platformSegments) {
+    return;
+  }
+
+  const pathApi = process.platform === "win32" ? path.win32 : path.posix;
+
+  for (const root of roots) {
+    for (let revision = 1400; revision >= 1000; revision -= 1) {
+      const browserRoot = pathApi.join(root, `chromium-${revision}`);
+
+      for (const executableSegments of platformSegments) {
+        const executablePath = pathApi.join(browserRoot, ...executableSegments);
+        if (existsSync(executablePath)) {
+          return executablePath;
+        }
+      }
+    }
+  }
+
+  return undefined;
+}
+
+export function resolveReceitaBrowserPath(): string | undefined {
+  const systemBrowserPath = resolveSystemBrowserPath();
+  if (systemBrowserPath) {
+    return systemBrowserPath;
+  }
+
+  if (!process.resourcesPath) {
+    return undefined;
+  }
+
+  const bundledRoots = [
+    path.join(process.resourcesPath, "playwright-browsers", "win64"),
+    path.join(
+      process.resourcesPath,
+      "app.asar.unpacked",
+      "node_modules",
+      "playwright-core",
+      ".local-browsers",
+    ),
+  ];
+
+  return resolveBundledBrowserPath(...bundledRoots);
 }

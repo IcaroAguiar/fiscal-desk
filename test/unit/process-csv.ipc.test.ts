@@ -298,6 +298,59 @@ describe("process-csv IPC", () => {
     expect(electronMocks.dialog.showSaveDialog).not.toHaveBeenCalled();
   });
 
+  it("rejects direct auto-save when the source path was not selected in this session", async () => {
+    const handler = handlers.get("csv:auto-save-output-file");
+
+    await expect(
+      handler?.({}, { sourceFilePath: "/tmp/injetado.csv", content: "ok" }),
+    ).rejects.toThrow("não foi validado nesta sessão");
+  });
+
+  it("allows auto-save only for a source path selected by the file picker", async () => {
+    const { readFile } = await import("node:fs/promises");
+    const { writeFile } = await import("node:fs/promises");
+    vi.mocked(electronMocks.dialog.showOpenDialog).mockResolvedValue({
+      canceled: false,
+      filePaths: ["/tmp/entrada.csv"],
+    } as never);
+    vi.mocked(readFile).mockResolvedValue("cnpj\n47960950000121");
+    const pickHandler = handlers.get("csv:pick-input-file");
+    const autoSaveHandler = handlers.get("csv:auto-save-output-file");
+
+    await pickHandler?.({});
+    await autoSaveHandler?.(
+      {},
+      { sourceFilePath: "/tmp/entrada.csv", content: "ok" },
+    );
+
+    expect(writeFile).toHaveBeenCalledWith(
+      "/tmp/entrada-processado.csv",
+      "ok",
+      "utf8",
+    );
+  });
+
+  it("skips auto-save during processing when the source path was not selected in this session", async () => {
+    const handler = handlers.get("csv:process");
+    const { writeFile } = await import("node:fs/promises");
+
+    await expect(
+      handler?.(
+        { sender: { send: vi.fn() } },
+        {
+          content: "cnpj\n47960950000121",
+          provider: "mock",
+          sourceFilePath: "/tmp/nao-confiavel.csv",
+        },
+      ),
+    ).resolves.toMatchObject({
+      outputCsv: "cnpj;status\n00000000000191;SUCCESS",
+      savedPath: null,
+      warningMessage: expect.stringContaining("auto-save foi ignorado"),
+    });
+    expect(writeFile).not.toHaveBeenCalled();
+  });
+
   it("reserves the active processing slot before ledger initialization finishes", async () => {
     const handler = handlers.get("csv:process");
     const deferredSession = createDeferred<typeof ledgerMocks.session>();
@@ -426,7 +479,13 @@ describe("process-csv IPC", () => {
   it("passes xlsx delivery selection and auto-saves the generated workbook", async () => {
     const handler = handlers.get("csv:process");
     const sender = { send: vi.fn() };
-    const { writeFile } = await import("node:fs/promises");
+    const { readFile, writeFile } = await import("node:fs/promises");
+    vi.mocked(electronMocks.dialog.showOpenDialog).mockResolvedValue({
+      canceled: false,
+      filePaths: ["/tmp/fiscal-desk-test/entrada.csv"],
+    } as never);
+    vi.mocked(readFile).mockResolvedValue("cnpj\n00000000000191");
+    await handlers.get("csv:pick-input-file")?.({});
     vi.mocked(processCsv).mockResolvedValueOnce({
       delivery: {
         extension: "xlsx",

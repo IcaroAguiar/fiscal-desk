@@ -1,7 +1,7 @@
 import type { Browser, BrowserContext, Page } from "playwright";
 import { chromium } from "playwright";
 import { RECEITA_SELECTORS } from "./receita.selectors.js";
-import { resolvePackagedWindowsBrowserPath } from "./receita-browser-path.js";
+import { resolveReceitaBrowserPath } from "./receita-browser-path.js";
 
 export type ReceitaBrowserClientOptions = {
   timeout?: number;
@@ -69,8 +69,7 @@ export class ReceitaBrowserClient {
   async connect(signal?: AbortSignal): Promise<void> {
     throwIfAborted(signal);
 
-    const executablePath =
-      this.executablePath ?? resolvePackagedWindowsBrowserPath();
+    const executablePath = this.executablePath ?? resolveReceitaBrowserPath();
 
     const launchOptions: Parameters<typeof chromium.launch>[0] = {
       headless: this.headless,
@@ -289,8 +288,12 @@ export class ReceitaBrowserClient {
     try {
       const captchaElements = await this.page.$$(RECEITA_SELECTORS.captcha);
       return captchaElements.length > 0;
-    } catch {
-      return false;
+    } catch (error) {
+      if (error instanceof DOMException && error.name === "AbortError") {
+        throw error;
+      }
+
+      throw error;
     }
   }
 
@@ -314,8 +317,12 @@ export class ReceitaBrowserClient {
       }
 
       return false;
-    } catch {
-      return false;
+    } catch (error) {
+      if (error instanceof DOMException && error.name === "AbortError") {
+        throw error;
+      }
+
+      throw error;
     }
   }
 
@@ -337,8 +344,12 @@ export class ReceitaBrowserClient {
         bodyText.includes("NÃO optante") ||
         bodyText.includes("enquadrado no SIMEI")
       );
-    } catch {
-      return false;
+    } catch (error) {
+      if (error instanceof DOMException && error.name === "AbortError") {
+        throw error;
+      }
+
+      throw error;
     }
   }
 }

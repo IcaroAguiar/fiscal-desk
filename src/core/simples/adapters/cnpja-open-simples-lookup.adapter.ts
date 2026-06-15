@@ -1,7 +1,10 @@
 import type { HttpClient } from "../../infra/http-client";
 import { FetchHttpClient } from "../../infra/http-client";
 import { AbortError, RateLimiter } from "../../infra/rate-limiter";
-import { CNPJA_OPEN_RATE_LIMIT_INTERVAL_MS } from "../cnpja-open.constants";
+import {
+  CNPJA_OPEN_RATE_LIMIT_INTERVAL_MS,
+  CNPJA_OPEN_REQUEST_TIMEOUT_MS,
+} from "../cnpja-open.constants";
 import type {
   SimplesLookupOptions,
   SimplesLookupPort,
@@ -26,12 +29,19 @@ type WaitTurnPort = {
   waitTurn(signal?: AbortSignal): Promise<void>;
 };
 
+type RequestAbortContext = {
+  signal: AbortSignal;
+  clear: () => void;
+  didTimeout: () => boolean;
+};
+
 export class CnpjaOpenSimplesLookupAdapter implements SimplesLookupPort {
   constructor(
     private readonly httpClient: HttpClient = new FetchHttpClient(),
     private readonly rateLimiter: WaitTurnPort = new RateLimiter(
       CNPJA_OPEN_RATE_LIMIT_INTERVAL_MS,
     ),
+    private readonly requestTimeoutInMs: number = CNPJA_OPEN_REQUEST_TIMEOUT_MS,
   ) {}
 
   async lookup(
@@ -45,9 +55,15 @@ export class CnpjaOpenSimplesLookupAdapter implements SimplesLookupPort {
         throw new AbortError();
       }
 
+      const requestAbortContext = createRequestAbortContext(
+        options.signal,
+        this.requestTimeoutInMs,
+      );
+
       try {
         const response = await this.httpClient.get(
           `https://open.cnpja.com/office/${cnpj}`,
+          { signal: requestAbortContext.signal },
         );
 
         if (response.status >= 400) {
@@ -63,6 +79,10 @@ export class CnpjaOpenSimplesLookupAdapter implements SimplesLookupPort {
         const payload = (await response.json()) as CnpjaOfficePayload;
         return mapCnpjaOfficeResponse(payload);
       } catch (error) {
+        if (options.signal?.aborted) {
+          throw new AbortError();
+        }
+
         if (error instanceof AbortError) {
           throw error;
         }
@@ -77,8 +97,13 @@ export class CnpjaOpenSimplesLookupAdapter implements SimplesLookupPort {
           simei: null,
           source: "cnpja-open",
           status: "TEMPORARY_ERROR",
-          message: error instanceof Error ? error.message : "Falha na consulta",
+          message: mapLookupFailureMessage(
+            error,
+            requestAbortContext.didTimeout(),
+          ),
         };
+      } finally {
+        requestAbortContext.clear();
       }
     }
 
@@ -120,6 +145,48 @@ export function mapCnpjaOfficeResponse(
     status: "SUCCESS",
     raw: payload,
   };
+}
+
+function createRequestAbortContext(
+  parentSignal: AbortSignal | undefined,
+  timeoutInMs: number,
+): RequestAbortContext {
+  const controller = new AbortController();
+  let timedOut = false;
+
+  const onParentAbort = () => {
+    controller.abort();
+  };
+
+  if (parentSignal?.aborted) {
+    controller.abort();
+  } else {
+    parentSignal?.addEventListener("abort", onParentAbort, { once: true });
+  }
+
+  const timeout = setTimeout(() => {
+    timedOut = true;
+    controller.abort();
+  }, timeoutInMs);
+
+  return {
+    signal: controller.signal,
+    clear() {
+      clearTimeout(timeout);
+      parentSignal?.removeEventListener("abort", onParentAbort);
+    },
+    didTimeout() {
+      return timedOut;
+    },
+  };
+}
+
+function mapLookupFailureMessage(error: unknown, timedOut: boolean): string {
+  if (timedOut) {
+    return "Timeout na consulta ao provider";
+  }
+
+  return error instanceof Error ? error.message : "Falha na consulta";
 }
 
 export function mapCnpjaResponseError(

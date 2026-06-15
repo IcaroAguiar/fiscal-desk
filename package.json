@@ -1,6 +1,6 @@
 {
   "name": "consulta-simples-csv",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "App desktop para validar enquadramento no Simples Nacional a partir de CSV.",
   "private": false,
   "type": "module",
@@ -15,6 +15,7 @@
     "build:renderer": "vite build",
     "build:main": "tsup src/main/main.ts src/main/preload.ts --format cjs --out-dir dist-electron --external electron --external playwright --external playwright-core",
     "build:browser": "npx playwright install chromium",
+    "build:browser:win": "node scripts/ensure-playwright-browser.mjs win64 .playwright-browsers/win64",
     "postinstall": "npx playwright install chromium",
     "typecheck": "tsc --noEmit",
     "lint": "biome check .",
@@ -25,8 +26,8 @@
     "smoke:electron-ui": "pnpm build && tsx scripts/smoke-electron-ui.ts",
     "smoke:visual": "tsx scripts/smoke-visual-ui.ts",
     "dist:mac": "pnpm build && pnpm build:browser && electron-builder --mac dmg",
-    "dist:win": "pnpm build && electron-builder --win nsis --x64 --publish never",
-    "dist:win:arm64": "pnpm build && electron-builder --win nsis --arm64 --publish never",
+    "dist:win": "pnpm build && pnpm build:browser:win && electron-builder --win nsis --x64 --publish never",
+    "dist:win:arm64": "pnpm build && pnpm build:browser:win && electron-builder --win nsis --arm64 --publish never",
     "dist:dir": "pnpm build && electron-builder --dir",
     "repair:electron": "pnpm rebuild electron esbuild",
     "start": "electron ."

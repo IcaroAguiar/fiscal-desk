@@ -15,6 +15,11 @@ mac:
 win:
   target:
     - nsis
+  extraResources:
+    - from: .playwright-browsers/win64
+      to: playwright-browsers/win64
+      filter:
+        - "**/*"
 nsis:
   oneClick: false
   perMachine: false

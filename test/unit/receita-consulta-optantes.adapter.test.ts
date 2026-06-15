@@ -205,6 +205,18 @@ describe("ReceitaConsultaOptantesAdapter", () => {
     expect(result.message).toBe("Timeout waiting");
   });
 
+  it("returns TEMPORARY_ERROR when page inspection fails after waitResult", async () => {
+    mockClient.hasCaptcha.mockRejectedValue(new Error("DOM inspection failed"));
+
+    const adapter = new ReceitaConsultaOptantesAdapter();
+
+    const result = await adapter.lookup("12345678000195");
+
+    expect(result.status).toBe("TEMPORARY_ERROR");
+    expect(result.source).toBe("receita-web");
+    expect(result.message).toBe("DOM inspection failed");
+  });
+
   it("returns CANCELLED when browser flow aborts with AbortError", async () => {
     mockClient.connect.mockRejectedValue(
       new DOMException("Aborted", "AbortError"),
@@ -217,6 +229,18 @@ describe("ReceitaConsultaOptantesAdapter", () => {
     expect(result.status).toBe("CANCELLED");
     expect(result.source).toBe("system");
     expect(result.message).toContain("cancelado");
+  });
+
+  it("returns TEMPORARY_ERROR when browser connection fails unexpectedly", async () => {
+    mockClient.connect.mockRejectedValue(new Error("Launch failed"));
+
+    const adapter = new ReceitaConsultaOptantesAdapter();
+
+    const result = await adapter.lookup("12345678000195");
+
+    expect(result.status).toBe("TEMPORARY_ERROR");
+    expect(result.source).toBe("receita-web");
+    expect(result.message).toBe("Launch failed");
   });
 
   it("uses abort signal in all browser calls", async () => {

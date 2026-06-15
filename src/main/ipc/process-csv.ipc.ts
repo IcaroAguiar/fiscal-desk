@@ -62,6 +62,7 @@ type ProcessingCompletionListener = () => void;
 
 let activeProcessingSession: ProcessingSession | null = null;
 const completionListeners = new Set<ProcessingCompletionListener>();
+const allowedSourceFilePaths = new Set<string>();
 
 function getMainWindow(): BrowserWindow | undefined {
   const windows = BrowserWindow.getAllWindows();
@@ -95,10 +96,11 @@ export function registerCsvIpc(): void {
       return null;
     }
     const content = await readFile(filePath, "utf8");
+    const trustedFilePath = registerAllowedSourceFilePath(filePath);
 
     return {
-      filePath,
-      fileName: filePath.split(/[\\/]/).pop() ?? "arquivo.csv",
+      filePath: trustedFilePath,
+      fileName: trustedFilePath.split(/[\\/]/).pop() ?? "arquivo.csv",
       content,
     };
   });
@@ -227,7 +229,16 @@ export function registerCsvIpc(): void {
       _event,
       input: { content: string; sourceFilePath: string },
     ): Promise<string> => {
-      const outputPath = getAutoSaveOutputPath(input.sourceFilePath, "csv");
+      const trustedSourceFilePath = getTrustedSourceFilePath(
+        input.sourceFilePath,
+      );
+      if (!trustedSourceFilePath) {
+        throw new Error(
+          "O arquivo de origem não foi validado nesta sessão. Selecione o CSV novamente antes de usar o auto-save.",
+        );
+      }
+
+      const outputPath = getAutoSaveOutputPath(trustedSourceFilePath, "csv");
 
       await writeOutputFile(outputPath, "csv", input.content);
 
@@ -349,11 +360,21 @@ async function processCsvWithLedger(
       },
     });
 
-    const autoSaveResult = await attemptAutoSave(input.sourceFilePath ?? null, {
-      delivery: result.delivery,
-      outputCsv: result.outputCsv,
-      outputXlsx: result.outputXlsx,
-    });
+    const trustedSourceFilePath = input.sourceFilePath
+      ? getTrustedSourceFilePath(input.sourceFilePath)
+      : null;
+    const autoSaveResult =
+      input.sourceFilePath && !trustedSourceFilePath
+        ? {
+            savedPath: null,
+            warningMessage:
+              "Processamento concluído, mas o auto-save foi ignorado porque o arquivo de origem não foi validado nesta sessão.",
+          }
+        : await attemptAutoSave(trustedSourceFilePath, {
+            delivery: result.delivery,
+            outputCsv: result.outputCsv,
+            outputXlsx: result.outputXlsx,
+          });
     await executionSession.finish({
       status: result.runStatus,
       outputPath: autoSaveResult.savedPath,
@@ -457,4 +478,21 @@ function notifyProcessingCompleted(): void {
   for (const listener of completionListeners) {
     listener();
   }
+}
+
+function registerAllowedSourceFilePath(filePath: string): string {
+  const trustedFilePath = normalizeSourceFilePath(filePath);
+  allowedSourceFilePaths.add(trustedFilePath);
+  return trustedFilePath;
+}
+
+function getTrustedSourceFilePath(sourceFilePath: string): string | null {
+  const normalizedFilePath = normalizeSourceFilePath(sourceFilePath);
+  return allowedSourceFilePaths.has(normalizedFilePath)
+    ? normalizedFilePath
+    : null;
+}
+
+function normalizeSourceFilePath(filePath: string): string {
+  return path.resolve(filePath);
 }

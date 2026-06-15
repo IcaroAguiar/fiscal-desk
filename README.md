@@ -74,7 +74,7 @@ Observações importantes:
 - é uma funcionalidade experimental
 - abre navegador visível e exige supervisão humana
 - pode ser bloqueada pela proteção anti-robô do portal
-- na release Windows, depende de Google Chrome ou Microsoft Edge instalados na máquina
+- na release Windows, tenta usar Chrome ou Edge instalados e, se não encontrar, cai para o Chromium empacotado no app
 
 ## Stack
 
@@ -112,6 +112,8 @@ Build Windows local `x64`:
 ```bash
 pnpm dist:win
 ```
+
+Esse build agora prepara também um Chromium Windows dedicado para ser empacotado como fallback do provider `receita-web`.
 
 Build Windows local `arm64`:
 
