@@ -20,3 +20,27 @@ export function formatLocalPublicBaseStatusLine(state: UiState): string {
     .filter(Boolean)
     .join(" • ");
 }
+
+export function formatLocalPublicBaseOfficialSourceLine(
+  state: UiState,
+): string {
+  if (state.localPublicBaseOfficialSourceStatus === "loading") {
+    return "Consultando índice oficial da Receita...";
+  }
+
+  if (state.localPublicBaseOfficialSourceStatus === "error") {
+    return "Fonte oficial indisponível no momento.";
+  }
+
+  const source = state.localPublicBaseOfficialSource;
+
+  if (!source) {
+    return "Fonte oficial ainda não consultada.";
+  }
+
+  return [
+    `${source.fileName} ${source.sizeLabel}`,
+    `competência ${source.baseDate}`,
+    `publicado em ${source.lastModified}`,
+  ].join(" • ");
+}

@@ -68,8 +68,10 @@ describe("process CSV contracts", () => {
     expect(PROCESS_CSV_IPC_CHANNEL).toEqual({
       AUTO_SAVE_OUTPUT_FILE: "csv:auto-save-output-file",
       CANCEL_PROCESSING: "csv:cancel-processing",
+      EXPORT_PENDING_CNPJS: "csv:export-pending-cnpjs",
       LIST_EXECUTIONS: "csv:list-executions",
       LOOKUP_PROGRESS: "csv:lookup-progress",
+      PAUSE_PROCESSING: "csv:pause-processing",
       PICK_INPUT_FILE: "csv:pick-input-file",
       PROCESS: "csv:process",
       RESUME_EXECUTION: "csv:resume-execution",
@@ -181,7 +183,7 @@ describe("process CSV contracts", () => {
         occurredAt: "2026-06-13T00:00:00.000Z",
         progress: {
           completedUniqueLookups: 1,
-          currentCnpj: "00000000000191",
+          currentCnpj: "00********0191",
           elapsedMs: 10,
           estimatedRemainingMs: 0,
           totalUniqueLookups: 1,

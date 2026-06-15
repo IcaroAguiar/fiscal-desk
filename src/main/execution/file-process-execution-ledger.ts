@@ -167,6 +167,17 @@ export class FileProcessExecutionLedger {
     return this.readHistoryItem(ledgerKey);
   }
 
+  async getCheckpointedCnpjs(ledgerKey: string): Promise<Set<string>> {
+    const ledgerPath = this.resolveLedgerPathByKey(ledgerKey);
+    const document = await readLedgerDocument(ledgerPath, this.logger);
+
+    if (!document) {
+      throw new Error("Execução não encontrada no histórico local.");
+    }
+
+    return new Set(Object.keys(toSafeLookupCheckpoints(document.checkpoints)));
+  }
+
   private async readHistoryItem(
     ledgerKey: string,
   ): Promise<ProcessExecutionHistoryItem | null> {
@@ -423,6 +434,17 @@ function toHistoryItem(
     ? path.basename(document.sourceFilePath)
     : null;
   const canResume = RESUMABLE_STATUSES.has(document.status);
+  const checkpointedUniqueLookups = Object.keys(document.checkpoints).length;
+  const pendingUniqueLookups = Math.max(
+    0,
+    document.totalUniqueLookups - checkpointedUniqueLookups,
+  );
+  const canExportPending =
+    (document.status === "CANCELLED" || document.status === "FAILED") &&
+    pendingUniqueLookups > 0 &&
+    Boolean(document.sourceFilePath);
+  const hasPartialOutput =
+    document.status === "CANCELLED" && Boolean(document.outputPath);
 
   return {
     ledgerKey,
@@ -441,9 +463,12 @@ function toHistoryItem(
     completedAt: document.completedAt,
     cnpjColumn: document.operationalMetadata.cnpjColumn,
     totalUniqueLookups: document.totalUniqueLookups,
-    checkpointedUniqueLookups: Object.keys(document.checkpoints).length,
+    checkpointedUniqueLookups,
+    pendingUniqueLookups,
     summary: document.summary,
     canResume,
+    canExportPending,
+    hasPartialOutput,
     resumeBlockedReason: canResume
       ? null
       : "Execucoes concluidas com sucesso ficam apenas no historico.",

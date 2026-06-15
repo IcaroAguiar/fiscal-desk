@@ -27,6 +27,16 @@ export const PROCESS_CSV_DELIVERY_OPTION_ID = {
 export type ProcessCsvDeliveryOptionId =
   (typeof PROCESS_CSV_DELIVERY_OPTION_ID)[keyof typeof PROCESS_CSV_DELIVERY_OPTION_ID];
 
+export const PROCESS_CSV_EXECUTION_SPEED_PROFILE = {
+  CONSERVATIVE: "conservative",
+  BALANCED: "balanced",
+  FAST: "fast",
+  MAXIMUM: "maximum",
+} as const;
+
+export type ProcessCsvExecutionSpeedProfile =
+  (typeof PROCESS_CSV_EXECUTION_SPEED_PROFILE)[keyof typeof PROCESS_CSV_EXECUTION_SPEED_PROFILE];
+
 export type ProcessCsvSummary = {
   totalLinhas: number;
   totalCnpjsEncontrados: number;
@@ -41,6 +51,7 @@ export type ProcessCsvSummary = {
 export type LookupProgress = {
   completedUniqueLookups: number;
   totalUniqueLookups: number;
+  /** Masked CNPJ intended for progress UI and IPC telemetry. */
   currentCnpj: string;
   elapsedMs: number;
   estimatedRemainingMs: number;
@@ -162,8 +173,10 @@ export type ProcessCsvDomainEvent =
 export const PROCESS_CSV_IPC_CHANNEL = {
   AUTO_SAVE_OUTPUT_FILE: "csv:auto-save-output-file",
   CANCEL_PROCESSING: "csv:cancel-processing",
+  EXPORT_PENDING_CNPJS: "csv:export-pending-cnpjs",
   LIST_EXECUTIONS: "csv:list-executions",
   LOOKUP_PROGRESS: "csv:lookup-progress",
+  PAUSE_PROCESSING: "csv:pause-processing",
   PICK_INPUT_FILE: "csv:pick-input-file",
   PROCESS: "csv:process",
   RESUME_EXECUTION: "csv:resume-execution",
@@ -197,8 +210,11 @@ export type ProcessExecutionHistoryItem = {
   cnpjColumn: string | null;
   totalUniqueLookups: number;
   checkpointedUniqueLookups: number;
+  pendingUniqueLookups?: number;
   summary: ProcessCsvSummary | null;
   canResume: boolean;
+  canExportPending?: boolean;
+  hasPartialOutput?: boolean;
   resumeBlockedReason: string | null;
 };
 
@@ -206,4 +222,9 @@ export type ProcessCsvOutputDelivery = {
   format: ProcessCsvDeliveryFormat;
   extension: ProcessCsvDeliveryFormat;
   mimeType: string;
+};
+
+export type ExportPendingCnpjsResult = {
+  pendingUniqueLookups: number;
+  savedPath: string;
 };

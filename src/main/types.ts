@@ -1,4 +1,5 @@
 export type {
+  ExportPendingCnpjsResult,
   LookupProgress,
   ProcessCsvBridgeEvent,
   ProcessCsvDeliveryFormat,
@@ -8,6 +9,7 @@ export type {
   ProcessCsvExecution,
   ProcessCsvExecutionBoundary,
   ProcessCsvExecutionErrorReportedEvent,
+  ProcessCsvExecutionSpeedProfile,
   ProcessCsvExecutionStateChangedEvent,
   ProcessCsvExecutionStatus,
   ProcessCsvInputFormat,
@@ -26,6 +28,7 @@ export {
   PROCESS_CSV_DELIVERY_OPTION_ID,
   PROCESS_CSV_EVENT_KIND,
   PROCESS_CSV_EXECUTION_BOUNDARIES,
+  PROCESS_CSV_EXECUTION_SPEED_PROFILE,
   PROCESS_CSV_EXECUTION_STATUS,
   PROCESS_CSV_INPUT_FORMAT,
   PROCESS_CSV_IPC_CHANNEL,
@@ -33,6 +36,7 @@ export {
   PROCESS_CSV_TERMINAL_EXECUTION_STATUSES,
 } from "../core/app/process-csv.types";
 export type {
+  LocalPublicBaseOfficialSource,
   LocalPublicBasePreparationConsent,
   LocalPublicBasePrepareResult,
   LocalPublicBaseStatus,

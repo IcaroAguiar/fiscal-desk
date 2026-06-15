@@ -16,6 +16,7 @@ Todo PR material deve executar, no minimo:
 - `pnpm typecheck`
 - `pnpm test`
 - `pnpm test:coverage`
+- `pnpm test:e2e`
 - `pnpm smoke:real-csv`
 - `pnpm smoke:electron-ui`
 - `pnpm smoke:visual`
@@ -39,6 +40,41 @@ conforme a superficie tocada:
 | Renderer, copy, layout ou estado visivel | Teste focado de renderer quando houver e `pnpm smoke:visual`. |
 | Main, preload, IPC, execucao, entrega ou fluxo Electron | `pnpm smoke:electron-ui`. |
 | Base Publica Local, preparo ou consentimento local | Smoke Electron com Base Publica Local quando aplicavel: `FISCAL_DESK_SMOKE_PROVIDER=base-publica-local pnpm smoke:electron-ui`. |
+
+## E2E deterministico local-first
+
+O comando agregado de e2e e:
+
+```bash
+pnpm test:e2e
+```
+
+Ele executa em sequencia:
+
+- `pnpm test:coverage`;
+- `SMOKE_PROVIDER=mock pnpm smoke:real-csv`;
+- `SMOKE_PROVIDER=base-publica-local pnpm smoke:real-csv`;
+- `pnpm build`;
+- smoke Electron real com entrada CSV, provider `mock` e entrega XLSX;
+- smoke Electron real com entrada CSV, provider `base-publica-local` e entrega
+  XLSX;
+- smoke Electron real com entrada XLSX, provider `mock` e entrega XLSX;
+- smoke Electron real com entrada XLSX, provider `base-publica-local` e entrega
+  XLSX;
+- `pnpm smoke:visual`.
+
+O e2e gera `e2e-all-report.json` e `e2e-all-report.md` no diretorio definido
+por `FISCAL_DESK_E2E_OUTPUT_DIR`; sem essa variavel, usa uma pasta temporaria
+local. O CI publica esse diretorio como artifact.
+
+Exclusoes intencionais:
+
+- Receita Web live/massiva permanece assistida/experimental, com validacao
+  manual separada;
+- `cnpja-open` live permanece opt-in por depender de rede, disponibilidade e
+  rate limit;
+- publish, assinatura, notarizacao, updater real, envio de diagnostico,
+  telemetria e licenca/account continuam fora do e2e deterministico.
 
 O primeiro release nao marca como disponiveis: release publico, `dist`/publish
 distribuivel, update real, envio de diagnostico, telemetria real,
@@ -101,6 +137,13 @@ foi criado. Para fluxos que tocam entrada Excel/XLSX, o smoke deve provar
 runtime. Ele existe para impedir fechamento baseado apenas em teste unitario ou
 mock de DOM.
 
+O e2e agregado executa esse smoke nas quatro combinacoes deterministicas:
+
+- CSV + `mock`;
+- CSV + `base-publica-local`;
+- XLSX + `mock`;
+- XLSX + `base-publica-local`.
+
 ## Smoke visual
 
 Para PRs de UI, executar:
@@ -116,7 +159,9 @@ O smoke captura desktop e mobile contra o Vite local:
 - checar `overflow=false`;
 - checar que botoes principais nao ficam cortados.
 
-Screenshots podem ficar em `/private/tmp` durante a validacao local e nao devem ser commitados. No CI, o workflow publica os artefatos em `docs/qa/visual-smoke-artifacts/` dentro do pacote `pr-quality-gate`.
+Screenshots podem ficar em `/private/tmp` durante a validacao local e nao devem
+ser commitados. No CI, o e2e agregado publica os artefatos visuais em
+`docs/qa/e2e-artifacts/visual-smoke/` dentro do pacote `pr-quality-gate`.
 
 ## Regra de PR
 
@@ -128,3 +173,19 @@ Cada PR deve informar:
 - smoke real executado;
 - screenshot quando houver UI;
 - riscos residuais.
+
+## GitHub Actions
+
+O workflow `PR Quality Gate` executa `pnpm test:e2e` em Ubuntu com `xvfb-run`,
+mantendo lint, typecheck, build, gitleaks e ratchet. Isso coloca coverage,
+smoke CSV, smoke Electron e smoke visual sob um unico receipt automatizado de
+CI.
+
+O workflow `Desktop unsigned builds` executa por `workflow_dispatch` e tags
+`v*`, com matriz Windows/macOS:
+
+- Windows x64: `pnpm dist:win`, artifact `fiscal-desk-windows-x64`;
+- macOS: `pnpm dist:mac`, artifact `fiscal-desk-macos`.
+
+Esse workflow nao publica GitHub Release, nao assina, nao notariza, nao habilita
+updater real e mantem `permissions.contents: read`.

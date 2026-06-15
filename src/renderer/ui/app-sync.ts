@@ -6,11 +6,18 @@ import {
   renderStatusText,
 } from "./app-helpers";
 import { renderExecutionHistory } from "./app-history-view";
-import { formatLocalPublicBaseStatusLine } from "./app-local-public-base-copy";
+import {
+  formatLocalPublicBaseOfficialSourceLine,
+  formatLocalPublicBaseStatusLine,
+} from "./app-local-public-base-copy";
 import { syncReceitaWebAvailability } from "./app-provider";
 import type { AppRefs } from "./app-refs";
 import { syncReferenceV5A } from "./app-sync-reference";
-import { shouldDisableLocalPublicBasePrepareButton } from "./app-sync-rules";
+import {
+  shouldDisableLocalPublicBaseDiscoverButton,
+  shouldDisableLocalPublicBasePrepareButton,
+  shouldDisableLocalPublicBasePrepareOfficialButton,
+} from "./app-sync-rules";
 import {
   getCurrentCnpjLabel,
   getDeliveryFormatLabel,
@@ -54,6 +61,10 @@ export function syncUi(refs: AppRefs, state: UiState): void {
 
   if (refs.deliverySelect) {
     refs.deliverySelect.value = state.deliveryFormat;
+  }
+
+  if (refs.speedProfileSelect) {
+    refs.speedProfileSelect.value = state.executionSpeedProfile;
   }
 
   syncLocalPublicBaseNotice(refs, state);
@@ -229,6 +240,34 @@ function syncSessionRefs(refs: AppRefs, state: UiState): void {
   if (refs.executionSuggestion) {
     refs.executionSuggestion.textContent = operationalPanel.suggestionLabel;
   }
+
+  if (refs.activitySpeedLabel) {
+    refs.activitySpeedLabel.textContent = operationalPanel.speedLabel;
+  }
+
+  if (refs.activitySpeedDetail) {
+    refs.activitySpeedDetail.textContent = operationalPanel.speedDetailLabel;
+  }
+
+  if (refs.activityControlLabel) {
+    refs.activityControlLabel.textContent = operationalPanel.controlLabel;
+  }
+
+  if (refs.activitySuggestion) {
+    refs.activitySuggestion.textContent = operationalPanel.suggestionLabel;
+  }
+
+  if (refs.speedPlanLabel) {
+    refs.speedPlanLabel.textContent = operationalPanel.speedLabel;
+  }
+
+  if (refs.speedPlanDetail) {
+    refs.speedPlanDetail.textContent = operationalPanel.speedDetailLabel;
+  }
+
+  if (refs.speedControlLabel) {
+    refs.speedControlLabel.textContent = operationalPanel.controlLabel;
+  }
 }
 
 function syncCockpitRefs(refs: AppRefs, state: UiState): void {
@@ -334,6 +373,24 @@ function syncLocalPublicBaseNotice(refs: AppRefs, state: UiState): void {
     refs.localPublicBaseStatusLine.textContent =
       formatLocalPublicBaseStatusLine(state);
   }
+
+  if (refs.localPublicBaseOfficialSourceLine) {
+    refs.localPublicBaseOfficialSourceLine.textContent =
+      formatLocalPublicBaseOfficialSourceLine(state);
+  }
+
+  if (refs.receitaWebExperimentalNoticePanel) {
+    refs.receitaWebExperimentalNoticePanel.style.display =
+      state.provider === SIMPLES_PROVIDER.RECEITA_WEB_PARALLEL_EXPERIMENTAL
+        ? "flex"
+        : "none";
+  }
+
+  if (refs.receitaWebExperimentalNotice) {
+    refs.receitaWebExperimentalNotice.checked =
+      state.receitaWebExperimentalNoticeAccepted;
+    refs.receitaWebExperimentalNotice.disabled = state.status === "processing";
+  }
 }
 
 function syncExecutionRefs(refs: AppRefs, state: UiState): void {
@@ -428,7 +485,9 @@ function syncButtons(refs: AppRefs, state: UiState): void {
       !state.content ||
       (state.provider === SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL &&
         (!state.localPublicBaseNoticeAccepted ||
-          state.localPublicBaseStatus?.state !== "ready"));
+          state.localPublicBaseStatus?.state !== "ready")) ||
+      (state.provider === SIMPLES_PROVIDER.RECEITA_WEB_PARALLEL_EXPERIMENTAL &&
+        !state.receitaWebExperimentalNoticeAccepted);
     refs.processButton.textContent =
       state.status === "processing" ? "Consultando..." : "Iniciar consulta";
   }
@@ -442,8 +501,42 @@ function syncButtons(refs: AppRefs, state: UiState): void {
         : "Preparar base";
   }
 
+  if (refs.localPublicBasePrepareOfficialButton) {
+    refs.localPublicBasePrepareOfficialButton.disabled =
+      shouldDisableLocalPublicBasePrepareOfficialButton(state);
+    refs.localPublicBasePrepareOfficialButton.textContent =
+      state.localPublicBasePrepareStatus === "loading"
+        ? "Baixando..."
+        : "Baixar e preparar oficial";
+  }
+
+  if (refs.localPublicBaseDiscoverButton) {
+    refs.localPublicBaseDiscoverButton.disabled =
+      shouldDisableLocalPublicBaseDiscoverButton(state);
+    refs.localPublicBaseDiscoverButton.textContent =
+      state.localPublicBaseOfficialSourceStatus === "loading"
+        ? "Buscando fonte..."
+        : "Buscar fonte oficial";
+  }
+
   if (refs.cancelButton) {
     refs.cancelButton.disabled = state.status !== "processing";
+  }
+
+  if (refs.pauseButton) {
+    refs.pauseButton.disabled = state.status !== "processing";
+  }
+
+  if (refs.providerSelect) {
+    refs.providerSelect.disabled = state.status === "processing";
+  }
+
+  if (refs.deliverySelect) {
+    refs.deliverySelect.disabled = state.status === "processing";
+  }
+
+  if (refs.speedProfileSelect) {
+    refs.speedProfileSelect.disabled = state.status === "processing";
   }
 
   if (refs.saveButton) {

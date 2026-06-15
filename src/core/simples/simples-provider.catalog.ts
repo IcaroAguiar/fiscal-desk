@@ -72,13 +72,16 @@ const PROVIDER_CATALOG = {
     mode: "online",
     capabilities: {
       automaticFallback: true,
-      batchLookup: true,
+      batchLookup: false,
       deterministicSmoke: false,
       offlineLookup: false,
       visibleBrowser: false,
     },
     requirements: ["Rede disponível e provedor público respondendo."],
-    limits: ["Sujeito a rate limit, indisponibilidade e payload externo."],
+    limits: [
+      "Sujeito a rate limit, indisponibilidade e payload externo.",
+      "Sem paralelismo efetivo nesta release.",
+    ],
     retry: {
       cooldownMs: 30_000,
       maxAttempts: 2,
@@ -98,6 +101,26 @@ const PROVIDER_CATALOG = {
     requirements: ["Chrome ou Edge instalado e navegador visível."],
     limits: [
       "Modo assistido e experimental; sujeito a CAPTCHA e bloqueio anti-bot.",
+    ],
+    retry: DEFAULT_RETRY_POLICY,
+  },
+  [SIMPLES_PROVIDER.RECEITA_WEB_PARALLEL_EXPERIMENTAL]: {
+    name: SIMPLES_PROVIDER.RECEITA_WEB_PARALLEL_EXPERIMENTAL,
+    label: "Receita Web experimental",
+    mode: "assisted",
+    capabilities: {
+      automaticFallback: false,
+      batchLookup: true,
+      deterministicSmoke: false,
+      offlineLookup: false,
+      visibleBrowser: true,
+    },
+    requirements: [
+      "Chrome ou Edge instalado, navegador visível e confirmação explícita.",
+    ],
+    limits: [
+      "Modo avançado; abre múltiplas janelas e para em CAPTCHA ou bloqueio.",
+      "Sem promessa de sucesso em lote; prefira Base Pública Local para volume.",
     ],
     retry: DEFAULT_RETRY_POLICY,
   },

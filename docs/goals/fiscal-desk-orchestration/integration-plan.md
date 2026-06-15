@@ -518,6 +518,49 @@ Current state:
 - `skills/**` remains local/untracked and excluded by default;
 - `docs/fiscal-desk/**` remains local-only unless a separate versioning decision
   changes that;
+
+## Post PR E2E And Desktop Build Workflow Update As Of 2026-06-14
+
+Receipt:
+`results/post-pr-e2e-desktop-build-workflow-2026-06-14.md`.
+
+After the PR-preparation closeout, a new local material documentation/CI/testing
+slice was requested directly by the user: create an e2e that exercises the
+deterministic local-first functionality and adjust GitHub Actions to generate
+unsigned Windows and macOS builds.
+
+Changes made in the final integration worktree:
+
+- `pnpm test:e2e` aggregates coverage-backed tests, real CSV smoke with `mock`,
+  real CSV smoke with `base-publica-local`, runtime build, four Electron smokes
+  covering CSV/XLSX x `mock`/`base-publica-local`, and visual smoke.
+- `PR Quality Gate` runs `pnpm test:e2e` under `xvfb-run` and uploads
+  `docs/qa/e2e-artifacts/**`.
+- `Desktop unsigned builds` now runs a Windows/macOS matrix:
+  - Windows x64 through `pnpm dist:win`;
+  - macOS through `pnpm dist:mac`.
+- The build workflow still uses `permissions.contents: read` and upload-artifact
+  only; it does not publish GitHub Releases, sign, notarize or enable updater
+  real.
+
+Local validation:
+
+- `pnpm typecheck`: pass;
+- `pnpm lint`: pass;
+- `pnpm test:e2e`: pass outside sandbox after known `tsx` IPC `listen EPERM`
+  sandbox failure;
+- `git diff --check`: pass.
+
+Current state:
+
+- no material worker is active;
+- the new local changes are validated and the explicit stage set must include
+  the new `scripts/e2e-all.ts` file with the package/workflow changes;
+- PR action now requires a staging/commit decision for this update, then
+  explicit authorization for `git push` and `gh pr create`;
+- Receita Web live/massiva, `cnpja-open` live, publish, signing, notarization,
+  updater real, telemetry, diagnostic sending and license/account remain outside
+  this e2e/build workflow slice.
 - release/public distribution, updater real, diagnostics sent externally,
   telemetry, license/account, storage/network/backend, templates/models,
   PDF/Word/OCR and Receita Web live/massiva remain blocked until explicit owner
@@ -1908,3 +1951,630 @@ Material work remains blocked until the selector result is judged. Release,
 update real, diagnostics sending, telemetry, license/account, storage/network,
 templates/models, PDF/Word/OCR and Receita Web live/massiva remain blocked
 until explicit owner windows.
+
+## F9 Speed Control Core/UI Integration As Of 2026-06-14 13:10
+
+Receipts:
+
+- `phases/phase-9-velocidade-controle-base-assistida.md`
+- `results/phase-9a-speed-control-core-ui-2026-06-14.md`
+- `results/phase-9a-speed-control-core-ui-judge-decision-2026-06-14.md`
+
+Decision: `approved_for_f9a_f9b_only`.
+
+The judge opened F9 after the product/runtime gap audit showed that documented
+velocity, parallelization and user control were not materialized in the app. The
+canonical worktree now contains the first F9 material slice:
+
+- typed execution speed profiles;
+- renderer selector for `leve`, `equilibrado`, `rapido` and `maximo`;
+- IPC/preload forwarding of the selected profile;
+- provider-aware concurrency resolution in `main`;
+- bounded concurrent lookup queue in `processCsv`;
+- CNPJa Open and Receita Web fixed at concurrency `1`;
+- coordinated worker shutdown on lookup failure;
+- late cancellation reflected during output assembly/finalization.
+
+Validation:
+
+- `pnpm lint`: pass;
+- `pnpm typecheck`: pass;
+- `pnpm test`: pass, 43 files and 290 tests;
+- `pnpm smoke:visual`: pass across desktop, tablet and mobile;
+- `pnpm smoke:electron-ui`: pass with provider `mock` and XLSX delivery;
+- `git diff --check`: pass;
+- independent review found two material findings in the first implementation;
+- rework added focused regression coverage for worker failure and late
+  cancellation;
+- independent re-review confirmed both findings closed and reran the focused
+  tests.
+
+F9 remains active. The following slices are not complete and must not be marked
+done without separate owner windows:
+
+- F9C: Base Publica assisted discovery/download/streaming index;
+- F9D: pause/resume fine control and stronger partial/export workflows;
+- F9E: Receita Web parallel experimental mode, only after explicit new decision.
+
+No new material phase is automatically released by this F9A/F9B approval.
+
+## F9C1 Base Publica Official Source Discovery As Of 2026-06-14 13:25
+
+Receipts:
+
+- `results/phase-9c1-official-source-discovery-2026-06-14.md`
+
+Status: `approved_for_f9c1_only`.
+
+The canonical worktree now contains the first Base Publica assisted acquisition
+slice. It discovers the Receita Federal public CNPJ monthly index, selects the
+latest `Simples.zip`, and exposes file name, size, competence and publication
+date in the renderer through IPC/preload.
+
+This is intentionally not the full F9C delivery. It does not download, extract,
+index or prepare the official ZIP. The manual CSV upload path remains the only
+preparation path until F9C2.
+
+Source strategy:
+
+- do not require the user to download the 60GB `cnpj.tar.gz`;
+- use the monthly `Simples.zip` first because it is the data needed for
+  Consulta Simples/SIMEI;
+- keep `Empresas*.zip` and `Estabelecimentos*.zip` out of F9C1 because they are
+  larger adjacent datasets and require a separate indexing contract.
+
+Validation:
+
+- focused local-public-base/preload/view/sync tests: pass, 32 tests after
+  timeout rework;
+- `pnpm typecheck`: pass;
+- `pnpm lint`: pass;
+- `pnpm test`: pass, 43 files and 295 tests;
+- `pnpm smoke:visual`: pass;
+- `pnpm smoke:electron-ui`: pass, including renderer/main build and Electron UI
+  smoke with provider `mock`, CSV input and XLSX delivery;
+- `git diff --check`: pass.
+
+Local live source validation is not fully green: direct fetch/curl from this
+environment returned HTTP 404 from the Receita host even though the source index
+was confirmed through web research. The implementation treats that as a
+recoverable user-visible error and does not claim download/preparation success.
+
+Independent review initially found one P2: a network request that never settled
+could keep the UI in `loading`. Rework added per-request timeout,
+`AbortController`, `Promise.race` around injected `fetchText`, and a regression
+test for a never-settling request. Independent re-review found no remaining
+P0-P3 issue for that P2.
+
+Remaining F9 slices:
+
+- F9C2: assisted/resumable download and streaming index of `Simples.zip`;
+- F9D: pause/resume fine control and stronger partial/export workflows;
+- F9E: Receita Web parallel experimental mode, only after explicit new decision.
+
+## F9D1 Pause Checkpoint Control As Of 2026-06-14 13:56
+
+Artifacts:
+
+- `results/phase-9d1-pause-checkpoint-control-2026-06-14.md`
+- `results/phase-9d1-pause-checkpoint-control-judge-decision-2026-06-14.md`
+
+Decision: `approved_for_f9d1_only`.
+
+The canonical worktree now contains the first F9D control slice: `Pausar` is a
+dedicated UI action and IPC channel that requests cooperative stop, preserves
+checkpoint when progress exists and tells the user to resume from Historico.
+
+Important boundary: this is not in-memory suspension. It reuses the existing
+safe cancellation/ledger semantics and changes user-facing intent/copy so pause
+is the checkpoint path while cancel remains interruption.
+
+Evidence accepted:
+
+- focused F9D1 tests: pass, 6 files and 44 tests;
+- `pnpm lint`: pass;
+- `pnpm typecheck`: pass;
+- `pnpm test`: pass, 43 files and 299 tests;
+- `pnpm smoke:visual`: pass;
+- `pnpm smoke:electron-ui`: pass;
+- `git diff --check`: pass;
+- independent review found P2/P3/P3, rework was applied, re-review returned
+  `No findings` and ran 4 focused files with 32 tests passing.
+
+Remaining F9 slices after F9D1:
+
+- F9C2: assisted/resumable download and streaming index of `Simples.zip`;
+- F9D2: strong cancel, explicit partial export and pending redistribution;
+- F9E: Receita Web parallel experimental mode, only after explicit new decision.
+
+## F9C2 Base Publica Official Download And Streaming Index As Of 2026-06-14 14:50
+
+Artifacts:
+
+- `results/phase-9c2-official-download-streaming-index-2026-06-14.md`
+- `results/phase-9c2-official-download-streaming-index-judge-decision-2026-06-14.md`
+
+Decision: `approved_for_f9c2_only`.
+
+The canonical worktree now contains the second Base Publica assisted acquisition
+slice. It downloads and prepares the official monthly `Simples.zip` without
+requiring the 60GB `cnpj.tar.gz` bundle.
+
+Delivered behavior:
+
+- assisted/resumable download to local app data;
+- cache metadata tied to base date, file name, file URL, last modified and
+  public size label;
+- cache final and `.part` accepted only after the ZIP entry `Simples.csv` is
+  consumed and its uncompressed size and CRC32 match;
+- source discovery restricted to same origin, monthly official path and
+  `Simples.zip`, rejecting external URLs and `../`;
+- main process validates consent, rediscovers the official source and compares
+  accepted base date before download/preparation;
+- official CSV parser reads the ZIP entry as stream and indexes records by
+  CNPJ basico through the existing Base Publica Local index contract;
+- renderer exposes "Baixar e preparar oficial" only after source discovery and
+  explicit notice acceptance.
+
+Accepted evidence:
+
+- focused F9C2 tests: pass, 4 files and 50 tests;
+- `pnpm lint`: pass, 128 files;
+- `pnpm typecheck`: pass;
+- `git diff --check`: pass;
+- `pnpm test`: pass, 43 files and 316 tests;
+- `pnpm build`: pass;
+- `pnpm smoke:visual`: pass across desktop, tablet and mobile;
+- `pnpm smoke:electron-ui`: pass with provider `mock`, CSV input, XLSX output,
+  history and checkpoint.
+
+Independent review history:
+
+- first re-review blocked approval with P2 for ZIP payload corruption that could
+  pass a stream-open check, plus P3 for source URL trust and P3 for single JSON
+  persistence;
+- rework added full entry consumption, CRC32/size validation, source URL
+  allowlisting and regression tests for corrupt payload/cache/download and
+  external/traversal links;
+- second re-review returned no P0-P3 blocking findings and accepted the P3
+  single JSON persistence as residual risk outside F9C2.
+
+Residual risks accepted:
+
+- Local Base Publica persistence still materializes records in memory and
+  persists one JSON document. This is not solved by F9C2 and requires a future
+  owner window for incremental/chunked persistence before broad volume claims.
+- Download real from Receita remains subject to endpoint availability on the
+  user's machine; local validation used fixtures and mocked fetches.
+- `dependency_file_change=3` is expected for direct `yauzl` ZIP streaming and
+  its types; `magic_string_boundary=13` is limited to IPC/action contracts,
+  official file metadata and tests; `visual_surface_change=1` is covered by
+  visual and Electron smokes.
+
+Remaining F9 slices after F9C2:
+
+- F9D2: strong cancel, explicit partial export and pending redistribution;
+- F9E: Receita Web parallel experimental mode, only after explicit new
+  decision.
+
+## F9D2 Strong Cancel Partial Pending Export As Of 2026-06-14 15:06
+
+Artifacts:
+
+- `results/phase-9d2-strong-cancel-partial-pending-export-2026-06-14.md`
+- `results/phase-9d2-strong-cancel-partial-pending-export-judge-decision-2026-06-14.md`
+
+Decision: `approved_for_f9d2_only`.
+
+The canonical worktree now contains the second F9D control slice. Interrupted
+or failed executions can expose partial output and pending count in History,
+and the user can export a CSV with only CNPJs still pending.
+
+Delivered behavior:
+
+- ledger computes checkpointed CNPJs, pending unique lookups and partial-output
+  state;
+- IPC channel `csv:export-pending-cnpjs` validates `ledgerKey`, blocks active
+  processing, rereads the original source file and checks the fingerprint before
+  exporting;
+- pending CSV uses a single `cnpj` column with valid unique CNPJs not yet
+  checkpointed;
+- renderer History shows partial/pending state and the explicit
+  `Exportar pendencias` action;
+- UI actions remain disabled while processing, and rendered history does not
+  expose absolute source/output paths.
+
+Accepted evidence:
+
+- focused F9D2 tests: pass, 5 files and 51 tests;
+- `pnpm lint`: pass;
+- `pnpm typecheck`: pass;
+- `git diff --check`: pass;
+- `pnpm test`: pass, 43 files and 319 tests;
+- `pnpm build`: pass;
+- `pnpm smoke:visual`: pass across desktop, tablet and mobile;
+- `pnpm smoke:electron-ui`: pass with provider `mock`, CSV input, XLSX output,
+  history and checkpoint;
+- independent review returned no P0-P3 blocking findings and ran 6 focused
+  files with 45 tests passing.
+
+Residual risks accepted:
+
+- pending export is intentionally CNPJ-only;
+- provider/profile redistribution remains manual;
+- no automatic multi-provider queue or multiple active executions were added;
+- Receita Web remains assisted, serial and subject to CAPTCHA/bloqueio.
+
+Harness warnings are documented in the F9D2 receipt. `dependency_file_change=3`
+is inherited from F9C2 ZIP streaming; `magic_string_boundary=13` is limited to
+IPC/action contracts, official metadata and tests; `visual_surface_change=2` is
+covered by visual and Electron smokes.
+
+Remaining F9 slice after F9D2:
+
+- F9E: Receita Web parallel experimental mode, only after explicit fresh
+  decision. It is not released by F9D2.
+
+## F9E Receita Web Parallel Experimental Blocker As Of 2026-06-14 15:18
+
+Artifact:
+
+- `results/phase-9e-receita-web-parallel-experimental-blocker-2026-06-14.md`
+
+Decision: `block_pending_explicit_decision`.
+
+F9E is not released for implementation. The current approved product and runtime
+contract keeps Receita Web assisted, experimental, serial, visible-browser,
+not a batch engine, not a fallback, and not part of deterministic live smoke.
+
+Why it is blocked:
+
+- F9 itself says Receita Web stays serial/assisted unless a later explicit
+  experimental decision is made;
+- runtime still enforces one active app execution through
+  `activeProcessingSession`;
+- `resolveMaxConcurrentLookups` returns `1` for assisted/visible-browser/no
+  batch providers;
+- README and operational copy state that Receita Web has no parallelism in the
+  current release;
+- F7/F7B approved adapter-core assisted hardening only, not robust batch
+  automation;
+- multiple headed windows introduce user-computer takeover, CAPTCHA/anti-bot and
+  cleanup/cancel risks that require a separate contract.
+
+Independent judge read-only result:
+
+- agent `019ec752-e2d0-7ca0-a75d-82ce4807b7d5`;
+- Decision: `block_pending_explicit_decision`;
+- P1 findings on missing release decision, conflict with `fixed_one_assisted_no_batch`,
+  and unresolved CAPTCHA/anti-bot/takeover risk;
+- P2 findings on adapter contract and deterministic tests currently enforcing
+  serial Receita Web behavior.
+
+Conditions to unblock are documented in the blocker artifact. The next allowed
+step is a new F9E decision/contract owner window, not direct code implementation.
+
+## F9 Integrated Readiness Audit As Of 2026-06-14 15:15
+
+Artifact:
+
+- `results/phase-9-integrated-readiness-audit-2026-06-14.md`
+
+Current decision:
+
+- F9A/F9B/F9C1/F9C2/F9D1/F9D2 are integrated and validated in the single
+  canonical worktree/branch `feat/fiscal-desk-local-base-prep`;
+- F9E remains formally blocked pending explicit user/product decision.
+
+Fresh integrated gates after F9D2 and the F9E blocker:
+
+- `pnpm typecheck`: pass;
+- `pnpm test`: pass, 43 files and 319 tests;
+- `pnpm build`: pass;
+- `pnpm smoke:visual`: pass across desktop, tablet and mobile without overflow,
+  clipped buttons or overlaps;
+- `pnpm smoke:electron-ui`: pass with provider `mock`, CSV input, XLSX output,
+  history, checkpoint and visible resume text.
+
+Electron smoke run id: `06e50a9b-1194-4ffc-abd5-201e5c2349ba`.
+
+The remaining decision is not a code failure: either keep Receita Web serial for
+this release, or open a new F9E experimental contract owner window with explicit
+acceptance of multi-window headed-browser risk.
+
+## F9E Experimental Contract Window Opened As Of 2026-06-14 15:30
+
+Artifacts:
+
+- `contracts/phase-9e-receita-web-parallel-experimental-contract.md`
+- `phases/phase-9e-receita-web-parallel-experimental-contract.md`
+- `results/phase-9e-contract-window-opened-2026-06-14.md`
+
+Decision: `contract_window_opened_docs_only`.
+
+The user chose to open F9E as an experimental contract window. This does not
+release code implementation.
+
+Allowed now:
+
+- docs-only contract shaping;
+- read-only API/security/architecture review;
+- updates to orchestration state/receipts.
+
+Still blocked:
+
+- changes to `src/**` or `test/**`;
+- changing Receita Web concurrency;
+- opening multiple headed windows;
+- live Receita Web smoke or CI network validation;
+- CAPTCHA solving, anti-bot bypass, fallback/default/volume promises.
+
+The current contract preserves one active app execution, treats multiple windows
+as internal children of that execution only if a future implementation is
+approved, requires global stop on CAPTCHA/bloqueio and keeps Receita Web portal
+details inside the adapter boundary.
+
+API design review result:
+
+- artifact:
+  `results/phase-9e-contract-api-design-review-2026-06-14.md`;
+- F9E must be a separate advanced mode, not activated by `executionSpeedProfile`;
+- default `receita-web` remains assisted, visible-browser, no batch, no
+  fallback and no deterministic smoke;
+- future IPC/UI payloads must be generic and sanitized;
+- `ASSISTED_PROVIDER_STATE_CHANGED` is acceptable only with aggregate/sanitized
+  state and no portal payload.
+
+Security review result:
+
+- artifact:
+  `results/phase-9e-contract-security-review-2026-06-14.md`;
+- decision: `approve_contract_docs_only`;
+- required future gates: separate user-owned final result/checkpoint/export
+  from state/log/diagnostic/IPC/UI telemetry; freeze or explicitly approve any
+  browser anti-bot-related flags before F9E implementation; prove ephemeral
+  isolated browser context per window with deterministic doubles.
+
+Browser-to-API investigation result:
+
+- artifact:
+  `results/phase-9e-browser-to-api-investigation-2026-06-14.md`;
+- decision: `precisa_captura_manual`;
+- pre-capture state at the time: no `.o11y/<run>` trace existed in the
+  workspace and the sibling `browser-trace` skill was not installed locally;
+- current adapter evidence pointed to HTML/postback parsing rather than an
+  obvious JSON/XHR API;
+- this pre-capture finding is superseded by the later initial capture receipt
+  below, which installed `browser-trace`, executed a supervised no-CNPJ capture
+  and still observed no API endpoint.
+
+Browser-trace installation result:
+
+- artifact:
+  `results/phase-9e-browser-trace-installed-2026-06-14.md`;
+- local skill installed at `/Users/icaroaguiar/.agents/skills/browser-trace`;
+- scripts installed: `start-capture.mjs`, `capture-daemon.mjs`,
+  `stop-capture.mjs`, `bisect-cdp.mjs`;
+- all scripts passed `node --check`;
+- no Receita Web capture was run during installation.
+
+## F9E Browser-To-API Initial Capture As Of 2026-06-14 17:21
+
+Artifact:
+
+- `results/phase-9e-browser-to-api-initial-capture-2026-06-14.md`
+
+Decision: `investigation_complete_no_api_endpoint_observed`.
+
+The first live capture was intentionally minimal and supervised:
+
+- temporary Chrome profile under `/private/tmp`;
+- CDP local only;
+- initial Receita Web page loaded from the adapter URL;
+- no CNPJ typed, submitted or captured;
+- no CAPTCHA solving or anti-bot bypass;
+- `browser-to-api` run offline with origin allowlist
+  `www8.receita.fazenda.gov.br` and explicit cookie/set-cookie redaction.
+
+Evidence:
+
+- successful run `receita-web-initial-page-9225-2026-06-14`;
+- `browser-trace` observed 17 requests and 17 responses;
+- `browser-to-api` kept 2 Receita-origin page renders;
+- normalized endpoints: 0;
+- emitted API endpoints: 0;
+- report summary: `No API endpoints discovered`.
+
+Data hygiene:
+
+- the raw CDP trace triggered a possible cookie signal;
+- no cookie/header value was copied into docs;
+- raw `.o11y` artifacts were removed after extracting counts and sanitized
+  conclusion;
+- `test ! -e .o11y` confirmed the raw trace is not retained in the worktree.
+
+Conclusion: the observed initial Receita Web flow does not provide an
+API/XHR/fetch endpoint that can safely replace browser automation. F9E material
+implementation remains blocked. For this release, Receita Web should stay
+serial/assisted, and volume should route to Base Publica Local plus the existing
+speed profiles, pause/cancel and pending-export controls.
+
+## F9 Activity Controls Visibility Follow-up As Of 2026-06-14 17:10
+
+Artifact:
+
+- `results/phase-9-activity-controls-visibility-followup-2026-06-14.md`
+
+Decision: `validated_review_approved`.
+
+Context: during a 1000-CNPJ Receita Web assisted run, the Activity tab still
+looked too close to the previous implementation. The user could see slow
+progress, but the method limit, recommendation to switch to Base local and
+operator controls were not visible enough in the same active surface.
+
+Follow-up integrated in the canonical worktree:
+
+- Activity now shows `Metodo`, `Limite`, `Controle` and `Proxima acao` using
+  the same `buildOperationalPanelCopy` source as the operational panel;
+- `Pausar` and `Cancelar` are rendered inside Activity processing controls;
+- the CSS rule that hid `Cancelar` with `opacity: 0` and
+  `pointer-events: none` was removed;
+- renderer sync updates the new slots via `textContent`;
+- tests now assert Receita Web throughput guidance in Activity and direct
+  enabled/disabled states for pause/cancel controls.
+
+Validation:
+
+- focused Vitest: pass, 3 files and 27 tests;
+- `pnpm typecheck`: pass;
+- `pnpm lint`: pass;
+- scoped `git diff --check`: pass;
+- `pnpm smoke:visual`: pass;
+- `pnpm smoke:electron-ui`: pass, run
+  `2c7193c8-ad4c-4bae-8c1f-9e674e396664`.
+
+Independent review:
+
+- reviewer agent `019ec7be-903a-76d2-8db0-d159858d8408`;
+- result: `approved_candidate`;
+- no P0-P3 blocking findings;
+- reviewer confirmed no new `runId`/`checkpointPath` exposure and that Receita
+  Web remains assisted/lenta/sem paralelismo.
+
+This follow-up does not release F9E parallel Receita Web implementation. F9E
+remains limited to contract/capture investigation until a fresh judge decision.
+
+## F9 Final Closeout As Of 2026-06-14 17:27
+
+Artifact:
+
+- `results/phase-9-final-closeout-2026-06-14.md`
+
+Decision: `validated_integrated_closeout`.
+
+F9 is closed in the canonical worktree and branch
+`feat/fiscal-desk-local-base-prep`. The material speed, control and assisted
+public-base slices are integrated and verified together:
+
+- F9A/F9B execution-speed profile contract and provider-bounded concurrency;
+- F9C1/F9C2 official public-base discovery, assisted `Simples.zip` download,
+  source/ZIP validation and streaming CNPJ index;
+- F9D1/F9D2 cooperative pause, checkpoint/resume, strong cancel, partial
+  history and pending export;
+- Activity controls visibility follow-up for method/limit/control guidance and
+  visible pause/cancel actions.
+
+F9E Receita Web parallel material implementation is not part of this closeout.
+The browser-to-api capture observed no API endpoint and the only remaining
+parallelization route would be an experimental multi-window headed flow. That
+requires a new owner window, deterministic doubles, security review and explicit
+judge approval before implementation.
+
+Final integrated validation:
+
+- `pnpm lint`: pass, 128 files;
+- `pnpm typecheck`: pass;
+- `pnpm test`: pass, 43 files and 320 tests;
+- `pnpm build`: pass;
+- `git diff --check`: pass;
+- `pnpm smoke:visual`: pass for desktop, tablet and mobile;
+- `pnpm smoke:electron-ui`: pass, run
+  `ab4ad979-d52d-476d-b162-8537cc39d35a`;
+- raw `.o11y` trace hygiene: pass, no retained `.o11y` directory.
+
+The docs-only closeout alignment was revalidated with `pnpm lint`,
+`pnpm typecheck`, `pnpm test`, `pnpm build` and `git diff --check`.
+
+No material F9 worker or queue item remains releasable from this phase. Future
+Receita Web parallel work must start from a fresh F9E owner window rather than
+from the default `receita-web` provider path.
+
+## F9E Reopened And Implemented As Of 2026-06-14 19:50
+
+Artifacts:
+
+- `results/phase-9e-receita-web-public-cnpj-captcha-capture-2026-06-14.md`
+- `results/phase-9e-receita-web-parallel-experimental-implementation-2026-06-14.md`
+
+Decision: `validated_integrated_closeout`.
+
+The previous F9 closeout is superseded for F9E only. The user explicitly
+required parallelization and velocity options to be completed in this round
+before calling the core ready.
+
+Browser-to-api update:
+
+- the first capture loaded only the initial page and therefore observed no API
+  endpoint;
+- the second capture used a public real CNPJ and submitted the form;
+- Receita returned CAPTCHA/token protection before a success flow;
+- `browser-to-api` discovered one low-confidence operation,
+  `POST https://consopt.www8.receita.fazenda.gov.br/consultaoptantes`;
+- that operation is an HTML form-post with `__RequestVerificationToken`, not a
+  JSON/API success contract;
+- raw `.o11y` traces were removed after sanitized counts were extracted.
+
+Implemented runtime/UI contract:
+
+- default `receita-web` remains serial, assisted, visible-browser and without
+  batch lookup;
+- new explicit provider mode:
+  `receita-web-parallel-experimental`;
+- the experimental mode requires explicit user acknowledgement before starting
+  or resuming;
+- effective windows by speed profile:
+  - `leve`: 1;
+  - `equilibrado`: 2;
+  - `rapido`: 3;
+  - `maximo`: 3;
+- one active app execution remains enforced;
+- `CAPTCHA_REQUIRED` or `BLOCKED` requests global stop for the experimental
+  execution;
+- UI copy names the visible-window limit, CAPTCHA/bloqueio stop condition,
+  computer-occupation risk and Base Publica Local recommendation for volume.
+
+Focused validation already completed:
+
+- `pnpm lint`: pass, 128 files;
+- `pnpm typecheck`: pass;
+- focused Vitest: pass, 7 files and 56 tests.
+
+Post-review rework completed before final gates:
+
+- progress `currentCnpj` is masked before IPC/UI telemetry;
+- legacy Receita Web browser launch no longer sets the automation-disabling
+  flag or fixed user-agent;
+- experimental Receita Web resume requires explicit consent before reading the
+  original CSV/XLSX;
+- core stop coverage includes both `CAPTCHA_REQUIRED` and `BLOCKED`;
+- CNPJa Open catalog no longer advertises effective batch lookup for this
+  release.
+
+Post-review focused validation:
+
+- `pnpm typecheck`: pass;
+- `pnpm lint`: pass, 128 files;
+- focused Vitest: pass, 9 files and 92 tests.
+
+Integrated validation completed:
+
+- `pnpm lint`: pass, 128 files;
+- `pnpm typecheck`: pass;
+- `pnpm test`: pass, 43 files and 329 tests;
+- `pnpm build`: pass;
+- `git diff --check`: pass;
+- `test ! -e .o11y`: pass;
+- `pnpm smoke:visual`: pass, no overflow, clipped buttons or overlaps;
+- `pnpm smoke:electron-ui`: pass, run
+  `1da0d1f0-be65-413d-b64c-ff417799c30b`.
+
+Independent review completed:
+
+- reviewer `019ec864-5928-7c90-86e0-8ef6a394f7a4`;
+- no blocking code findings for F9E after P1/P2/P3 rework;
+- state.yaml inconsistency found, reworked and rechecked;
+- final rereview: approved with no remaining findings.
+
+Current closeout:
+
+- `results/phase-9-final-closeout-post-f9e-2026-06-14.md`.

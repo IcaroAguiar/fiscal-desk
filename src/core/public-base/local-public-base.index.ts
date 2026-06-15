@@ -20,13 +20,21 @@ export class LocalPublicBaseIndex {
   private readonly recordsByCnpj: ReadonlyMap<string, LocalPublicBaseRecord>;
 
   constructor(records: readonly LocalPublicBaseRecord[]) {
-    this.recordsByCnpj = new Map(
-      records.map((record) => [record.cnpj, record]),
-    );
+    const entries = records.flatMap((record) => [
+      [record.cnpj, record] as const,
+      ...(record.cnpjBasico ? [[record.cnpjBasico, record] as const] : []),
+    ]);
+    this.recordsByCnpj = new Map(entries);
   }
 
   findByCnpj(cnpj: string): LocalPublicBaseRecord | null {
-    return this.recordsByCnpj.get(cnpj) ?? null;
+    const normalizedCnpj = normalizeCnpj(cnpj);
+
+    return (
+      this.recordsByCnpj.get(normalizedCnpj) ??
+      this.recordsByCnpj.get(normalizedCnpj.slice(0, 8)) ??
+      null
+    );
   }
 }
 
@@ -68,6 +76,7 @@ export function prepareLocalPublicBaseFromCsv(
 
     records.set(cnpj, {
       cnpj,
+      cnpjBasico: cnpj.slice(0, 8),
       razaoSocial:
         getOptionalColumnValue(row, columns.razaoSocial) ?? "Sem razão social",
       simplesNacional,
@@ -130,7 +139,7 @@ export function createLocalPublicBaseStatus(input: {
     estimatedSizeLabel:
       input.sourceSizeBytes === undefined
         ? LOCAL_PUBLIC_BASE_STATUS.estimatedSizeLabel
-        : `${formatBytes(input.sourceSizeBytes)} no CSV de origem`,
+        : `${formatBytes(input.sourceSizeBytes)} no arquivo de origem`,
     estimatedPreparationTimeLabel:
       input.preparedRows >= 50_000
         ? "alguns minutos no computador local"
@@ -153,7 +162,7 @@ export function getLocalPublicBaseStatus(): LocalPublicBaseStatus {
 
 export function assertLocalPublicBasePreparationConsent(
   consent: LocalPublicBasePreparationConsent | undefined,
-): void {
+): asserts consent is LocalPublicBasePreparationConsent {
   if (
     consent === undefined ||
     consent.accepted !== true ||

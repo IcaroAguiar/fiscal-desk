@@ -70,7 +70,7 @@ export class ReceitaConsultaOptantesAdapter implements SimplesLookupPort {
         });
       }
 
-      const waitResult = await client.waitResult(options?.signal);
+      let waitResult = await client.waitResult(options?.signal);
       if (!waitResult.success) {
         return createReceitaWebResult({
           cnpj,
@@ -83,13 +83,35 @@ export class ReceitaConsultaOptantesAdapter implements SimplesLookupPort {
       }
 
       const hasCaptcha = await client.hasCaptcha(options?.signal);
-      const hasError = await client.hasError(options?.signal);
-      const hasResult = await client.hasResult(options?.signal);
+      let hasError = await client.hasError(options?.signal);
+      let hasResult = await client.hasResult(options?.signal);
+
+      if (hasCaptcha && !hasResult) {
+        const manualUnlockResult = await client.waitForManualCaptchaResolution(
+          options?.signal,
+        );
+
+        if (!manualUnlockResult.success) {
+          return createReceitaWebResult({
+            cnpj,
+            status: "TEMPORARY_ERROR",
+            message:
+              "Falha ao aguardar desbloqueio manual do CAPTCHA na Receita Web assistida",
+            diagnostic: createReceitaWebDiagnostic({
+              code: RECEITA_WEB_DIAGNOSTIC_CODE.WAIT_RESULT_FAILED,
+            }),
+          });
+        }
+
+        waitResult = manualUnlockResult;
+        hasError = await client.hasError(options?.signal);
+        hasResult = await client.hasResult(options?.signal);
+      }
 
       return parseReceitaResult({
         html: waitResult.html,
         cnpj,
-        hasCaptcha,
+        hasCaptcha: hasCaptcha && !hasResult,
         hasError,
         hasResult,
       });

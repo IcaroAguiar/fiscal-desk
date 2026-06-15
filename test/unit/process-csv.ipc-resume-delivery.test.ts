@@ -81,6 +81,7 @@ vi.mock("../../src/core/simples/simples-provider.factory", () => ({
     CNPJA_OPEN: "cnpja-open",
     MOCK: "mock",
     RECEITA_WEB: "receita-web",
+    RECEITA_WEB_PARALLEL_EXPERIMENTAL: "receita-web-parallel-experimental",
   },
 }));
 
@@ -183,7 +184,7 @@ describe("process-csv IPC", () => {
 
         options.onLookupProgress?.({
           completedUniqueLookups: 1,
-          currentCnpj: "00000000000191",
+          currentCnpj: "00********0191",
           elapsedMs: 25,
           estimatedRemainingMs: 0,
           totalUniqueLookups: 1,
@@ -328,6 +329,33 @@ describe("process-csv IPC", () => {
         { ledgerKey: "base-publica-local-0123456789abcdef01234567.json" },
       ),
     ).rejects.toThrow("Confirme o aviso de Data da Base");
+
+    expect(readFile).not.toHaveBeenCalled();
+    expect(ledgerMocks.startRun).not.toHaveBeenCalled();
+  });
+
+  it("rejects Receita Web experimental resume without explicit consent before reading the source CSV", async () => {
+    const handler = handlers.get("csv:resume-execution");
+    const { readFile } = await import("node:fs/promises");
+    ledgerMocks.getRun.mockResolvedValueOnce({
+      canResume: true,
+      cnpjColumn: "cnpj",
+      ledgerKey:
+        "receita-web-parallel-experimental-0123456789abcdef01234567.json",
+      providerName: "receita-web-parallel-experimental",
+      sourceFilePath: "/tmp/fiscal-desk-test/entrada.csv",
+      status: "CANCELLED",
+    });
+
+    await expect(
+      handler?.(
+        { sender: { send: vi.fn() } },
+        {
+          ledgerKey:
+            "receita-web-parallel-experimental-0123456789abcdef01234567.json",
+        },
+      ),
+    ).rejects.toThrow("Confirme o aviso do modo experimental da Receita Web");
 
     expect(readFile).not.toHaveBeenCalled();
     expect(ledgerMocks.startRun).not.toHaveBeenCalled();

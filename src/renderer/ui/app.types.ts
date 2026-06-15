@@ -1,17 +1,22 @@
 import type { SimplesProviderName } from "../../core/simples/simples-provider.names";
 import type {
+  ExportPendingCnpjsResult,
+  LocalPublicBaseOfficialSource,
   LocalPublicBasePreparationConsent,
   LocalPublicBasePrepareResult,
   LocalPublicBaseStatus,
   LookupProgress,
   ProcessCsvDeliveryFormat,
+  ProcessCsvDeliveryOptionId,
   ProcessCsvExecution,
+  ProcessCsvExecutionSpeedProfile,
   ProcessCsvInputFormat,
   ProcessCsvOutputDelivery,
   ProcessCsvRunStatus,
   ProcessCsvSummary,
   ProcessExecutionHistoryItem,
 } from "../../main/types";
+import { PROCESS_CSV_EXECUTION_SPEED_PROFILE } from "../../main/types";
 
 export type PickCsvResult = {
   filePath: string;
@@ -41,14 +46,17 @@ export type AppBridge = {
   pickCsvFile(): Promise<PickCsvResult | null>;
   processCsv(input: {
     acceptedLocalPublicBaseNotice?: boolean;
+    acceptedReceitaWebExperimentalNotice?: boolean;
     content: string | number[];
     deliveryFormat?: ProcessCsvDeliveryFormat;
+    executionSpeedProfile?: ProcessCsvExecutionSpeedProfile;
     inputFormat?: ProcessCsvInputFormat;
     provider: SimplesProviderName;
     cnpjColumn?: string;
     sourceFilePath?: string;
   }): Promise<ProcessCsvResult>;
   cancelProcessing(): Promise<boolean>;
+  pauseProcessing(): Promise<boolean>;
   saveCsvFile(defaultName: string, content: string): Promise<string | null>;
   saveOutputFile(
     defaultName: string,
@@ -63,6 +71,7 @@ export type AppBridge = {
     receitaWebAvailable: boolean;
   }>;
   getLocalPublicBaseStatus(): Promise<LocalPublicBaseStatus>;
+  discoverLocalPublicBaseOfficialSource(): Promise<LocalPublicBaseOfficialSource>;
   pickLocalPublicBaseSourceFile(): Promise<PickLocalPublicBaseSourceResult | null>;
   prepareLocalPublicBase(input: {
     content: string;
@@ -70,11 +79,20 @@ export type AppBridge = {
     sourceFileName: string;
     sourceFilePath: string;
   }): Promise<LocalPublicBasePrepareResult>;
+  prepareLocalPublicBaseOfficialSource(input: {
+    consent?: LocalPublicBasePreparationConsent;
+  }): Promise<LocalPublicBasePrepareResult>;
   listExecutions(): Promise<ProcessExecutionHistoryItem[]>;
+  exportPendingCnpjs(
+    ledgerKey: string,
+  ): Promise<ExportPendingCnpjsResult | null>;
   resumeExecution(
     ledgerKey: string,
     deliveryFormat?: ProcessCsvDeliveryFormat,
     acceptedLocalPublicBaseNotice?: boolean,
+    deliveryOptionId?: ProcessCsvDeliveryOptionId,
+    executionSpeedProfile?: ProcessCsvExecutionSpeedProfile,
+    acceptedReceitaWebExperimentalNotice?: boolean,
   ): Promise<ProcessCsvResult>;
 };
 
@@ -138,7 +156,11 @@ export type UiState = {
   inputFormat: ProcessCsvInputFormat;
   provider: SimplesProviderName;
   deliveryFormat: ProcessCsvDeliveryFormat;
+  executionSpeedProfile: ProcessCsvExecutionSpeedProfile;
   localPublicBaseNoticeAccepted: boolean;
+  receitaWebExperimentalNoticeAccepted: boolean;
+  localPublicBaseOfficialSource: LocalPublicBaseOfficialSource | null;
+  localPublicBaseOfficialSourceStatus: "idle" | "loading" | "ready" | "error";
   localPublicBaseStatus: LocalPublicBaseStatus | null;
   localPublicBasePrepareStatus: "idle" | "loading" | "success" | "error";
   receitaWebAvailable: boolean;
@@ -154,6 +176,7 @@ export type UiState = {
   progress: LookupProgress | null;
   executionHistory: ProcessExecutionHistoryItem[];
   historyStatus: "loading" | "ready" | "error";
+  processingStopIntent: "cancel" | "pause" | null;
   progressObservedAt: number | null;
   now: number;
 };
@@ -167,7 +190,11 @@ export const initialState: UiState = {
   inputFormat: "csv",
   provider: "mock",
   deliveryFormat: "csv",
+  executionSpeedProfile: PROCESS_CSV_EXECUTION_SPEED_PROFILE.BALANCED,
   localPublicBaseNoticeAccepted: false,
+  receitaWebExperimentalNoticeAccepted: false,
+  localPublicBaseOfficialSource: null,
+  localPublicBaseOfficialSourceStatus: "idle",
   localPublicBaseStatus: null,
   localPublicBasePrepareStatus: "idle",
   receitaWebAvailable: false,
@@ -183,6 +210,7 @@ export const initialState: UiState = {
   progress: null,
   executionHistory: [],
   historyStatus: "loading",
+  processingStopIntent: null,
   progressObservedAt: null,
   now: Date.now(),
 };

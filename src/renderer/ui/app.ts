@@ -16,10 +16,15 @@ import {
 } from "./app-delivery";
 import { buildCompletionMessage, extractMessage } from "./app-helpers";
 import {
+  handleDiscoverLocalPublicBaseOfficialSource,
   handlePrepareLocalPublicBase,
+  handlePrepareOfficialLocalPublicBase,
   refreshLocalPublicBaseStatus,
 } from "./app-local-public-base";
-import { prepareLocalPublicBaseResume } from "./app-provider";
+import {
+  prepareLocalPublicBaseResume,
+  prepareReceitaWebExperimentalResume,
+} from "./app-provider";
 import { collectAppRefs } from "./app-refs";
 import { syncUi as syncUiRefs } from "./app-sync";
 import { renderShell } from "./app-view";
@@ -90,6 +95,10 @@ export function mountApp(root: HTMLDivElement | null): void {
       void handleCancelProcessing();
     });
 
+    refs.pauseButton?.addEventListener("click", () => {
+      void handlePauseProcessing();
+    });
+
     refs.saveButton?.addEventListener("click", () => {
       void handleSaveFile();
     });
@@ -120,6 +129,24 @@ export function mountApp(root: HTMLDivElement | null): void {
         return;
       }
 
+      if (action.dataset.action === "prepare-official-source") {
+        if (state.status === "processing") {
+          return;
+        }
+
+        void handlePrepareOfficialLocalPublicBase(state, syncUi);
+        return;
+      }
+
+      if (action.dataset.action === "discover-official-source") {
+        if (state.status === "processing") {
+          return;
+        }
+
+        void handleDiscoverLocalPublicBaseOfficialSource(state, syncUi);
+        return;
+      }
+
       if (action.dataset.action === "resume-execution") {
         if (state.status === "processing") {
           return;
@@ -129,6 +156,19 @@ export function mountApp(root: HTMLDivElement | null): void {
 
         if (ledgerKey) {
           void handleResumeExecution(ledgerKey);
+        }
+        return;
+      }
+
+      if (action.dataset.action === "export-pending-cnpjs") {
+        if (state.status === "processing") {
+          return;
+        }
+
+        const ledgerKey = action.dataset.ledgerKey;
+
+        if (ledgerKey) {
+          void handleExportPendingCnpjs(ledgerKey);
         }
       }
     });
@@ -156,6 +196,7 @@ export function mountApp(root: HTMLDivElement | null): void {
       state.provider = (event.currentTarget as HTMLSelectElement)
         .value as SimplesProviderName;
       state.localPublicBaseNoticeAccepted = false;
+      state.receitaWebExperimentalNoticeAccepted = false;
       if (state.provider === SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL) {
         void refreshLocalPublicBaseStatus(state);
       }
@@ -172,8 +213,21 @@ export function mountApp(root: HTMLDivElement | null): void {
       syncUi();
     });
 
+    refs.speedProfileSelect?.addEventListener("change", (event) => {
+      state.executionSpeedProfile = (event.currentTarget as HTMLSelectElement)
+        .value as UiState["executionSpeedProfile"];
+      syncUi();
+    });
+
     refs.localPublicBaseNotice?.addEventListener("change", (event) => {
       state.localPublicBaseNoticeAccepted = (
+        event.currentTarget as HTMLInputElement
+      ).checked;
+      syncUi();
+    });
+
+    refs.receitaWebExperimentalNotice?.addEventListener("change", (event) => {
+      state.receitaWebExperimentalNoticeAccepted = (
         event.currentTarget as HTMLInputElement
       ).checked;
       syncUi();
@@ -231,6 +285,18 @@ export function mountApp(root: HTMLDivElement | null): void {
       return;
     }
 
+    if (
+      state.provider === SIMPLES_PROVIDER.RECEITA_WEB_PARALLEL_EXPERIMENTAL &&
+      !state.receitaWebExperimentalNoticeAccepted
+    ) {
+      state.status = "error";
+      state.message =
+        "Confirme o aviso do modo experimental da Receita Web antes de iniciar.";
+      state.activeView = "painel";
+      syncUi();
+      return;
+    }
+
     state.status = "processing";
     state.message = "Iniciando processamento...";
     state.activeView = "atividade";
@@ -238,6 +304,7 @@ export function mountApp(root: HTMLDivElement | null): void {
     state.progress = null;
     state.progressObservedAt = null;
     state.execution = null;
+    state.processingStopIntent = null;
     state.now = Date.now();
     syncUi();
 
@@ -249,8 +316,16 @@ export function mountApp(root: HTMLDivElement | null): void {
                 state.localPublicBaseNoticeAccepted,
             }
           : {}),
+        ...(state.provider ===
+        SIMPLES_PROVIDER.RECEITA_WEB_PARALLEL_EXPERIMENTAL
+          ? {
+              acceptedReceitaWebExperimentalNotice:
+                state.receitaWebExperimentalNoticeAccepted,
+            }
+          : {}),
         content: state.content,
         deliveryFormat: state.deliveryFormat,
+        executionSpeedProfile: state.executionSpeedProfile,
         inputFormat: state.inputFormat,
         provider: state.provider,
         ...(state.filePath ? { sourceFilePath: state.filePath } : {}),
@@ -261,7 +336,11 @@ export function mountApp(root: HTMLDivElement | null): void {
 
       applyProcessResult(state, result);
       state.activeView = "resultados";
-      state.message = buildCompletionMessage(result);
+      state.message = buildCompletionMessage(
+        result,
+        state.processingStopIntent,
+      );
+      state.processingStopIntent = null;
       await refreshExecutionHistory();
       syncUi();
     } catch (error) {
@@ -291,6 +370,12 @@ export function mountApp(root: HTMLDivElement | null): void {
       return;
     }
 
+    if (!prepareReceitaWebExperimentalResume(state, historyItem)) {
+      state.activeView = "painel";
+      syncUi();
+      return;
+    }
+
     state.status = "processing";
     state.message = "Retomando execução a partir do histórico local...";
     state.activeView = "atividade";
@@ -298,6 +383,7 @@ export function mountApp(root: HTMLDivElement | null): void {
     state.progress = null;
     state.progressObservedAt = null;
     state.execution = null;
+    state.processingStopIntent = null;
     state.now = Date.now();
     syncUi();
 
@@ -308,6 +394,12 @@ export function mountApp(root: HTMLDivElement | null): void {
         historyItem.providerName === SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL
           ? state.localPublicBaseNoticeAccepted
           : undefined,
+        undefined,
+        state.executionSpeedProfile,
+        historyItem.providerName ===
+          SIMPLES_PROVIDER.RECEITA_WEB_PARALLEL_EXPERIMENTAL
+          ? state.receitaWebExperimentalNoticeAccepted
+          : undefined,
       );
       state.fileName = historyItem.sourceFileName;
       state.filePath = historyItem.sourceFilePath;
@@ -317,7 +409,11 @@ export function mountApp(root: HTMLDivElement | null): void {
       state.cnpjColumn = historyItem.cnpjColumn ?? "";
       applyProcessResult(state, result);
       state.activeView = "resultados";
-      state.message = buildCompletionMessage(result);
+      state.message = buildCompletionMessage(
+        result,
+        state.processingStopIntent,
+      );
+      state.processingStopIntent = null;
       await refreshExecutionHistory();
       syncUi();
     } catch (error) {
@@ -329,19 +425,70 @@ export function mountApp(root: HTMLDivElement | null): void {
     }
   }
 
+  async function handleExportPendingCnpjs(ledgerKey: string): Promise<void> {
+    state.status = "loading";
+    state.message = "Abrindo exportação de pendências...";
+    syncUi();
+
+    try {
+      const result = await window.appBridge.exportPendingCnpjs(ledgerKey);
+
+      state.status = "idle";
+      state.activeView = "historico";
+      state.message = result
+        ? `${result.pendingUniqueLookups} CNPJ${result.pendingUniqueLookups === 1 ? "" : "s"} pendente${result.pendingUniqueLookups === 1 ? "" : "s"} exportado${result.pendingUniqueLookups === 1 ? "" : "s"}.`
+        : "Exportação de pendências cancelada.";
+      await refreshExecutionHistory();
+      syncUi();
+    } catch (error) {
+      state.status = "error";
+      state.activeView = "historico";
+      state.message = extractMessage(error, "Falha ao exportar pendências.");
+      await refreshExecutionHistory();
+      syncUi();
+    }
+  }
+
   async function handleCancelProcessing(): Promise<void> {
     if (state.status !== "processing") {
       return;
     }
 
     try {
+      state.processingStopIntent = "cancel";
       const requested = await window.appBridge.cancelProcessing();
+      if (!requested) {
+        state.processingStopIntent = null;
+      }
       state.message = requested
         ? "Cancelamento solicitado. O processamento será interrompido."
         : "Não havia processamento ativo.";
       syncUi();
     } catch (error) {
+      state.processingStopIntent = null;
       state.message = extractMessage(error, "Não foi possível cancelar.");
+      syncUi();
+    }
+  }
+
+  async function handlePauseProcessing(): Promise<void> {
+    if (state.status !== "processing") {
+      return;
+    }
+
+    try {
+      state.processingStopIntent = "pause";
+      const requested = await window.appBridge.pauseProcessing();
+      if (!requested) {
+        state.processingStopIntent = null;
+      }
+      state.message = requested
+        ? "Pausa solicitada. O processamento será interrompido com checkpoint para retomada."
+        : "Não havia processamento ativo.";
+      syncUi();
+    } catch (error) {
+      state.processingStopIntent = null;
+      state.message = extractMessage(error, "Não foi possível pausar.");
       syncUi();
     }
   }

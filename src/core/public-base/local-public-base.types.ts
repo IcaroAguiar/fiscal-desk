@@ -1,5 +1,6 @@
 export type LocalPublicBaseRecord = {
   cnpj: string;
+  cnpjBasico?: string;
   razaoSocial: string;
   simplesNacional: boolean;
   simei: boolean;
@@ -21,6 +22,17 @@ export type LocalPublicBaseStatus = {
   errorMessage: string | null;
 };
 
+export type LocalPublicBaseOfficialSource = {
+  kind: "simples";
+  baseDate: string;
+  directoryUrl: string;
+  fileName: string;
+  fileUrl: string;
+  lastModified: string;
+  sizeLabel: string;
+  sourcePageUrl: string;
+};
+
 export type LocalPublicBasePreparationConsent = {
   accepted: true;
   acceptedAt: string;
@@ -33,6 +45,13 @@ export type LocalPublicBasePrepareInput = {
   consent?: LocalPublicBasePreparationConsent;
   sourceFileName: string;
   sourceFilePath: string;
+};
+
+export type LocalPublicBasePrepareOfficialZipInput = {
+  consent?: LocalPublicBasePreparationConsent;
+  source: LocalPublicBaseOfficialSource;
+  sourceSizeBytes: number;
+  zipFilePath: string;
 };
 
 export type LocalPublicBasePrepareResult = {

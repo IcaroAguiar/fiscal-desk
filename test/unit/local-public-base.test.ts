@@ -1,7 +1,8 @@
 import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
-import { afterEach, describe, expect, it } from "vitest";
+import { Readable } from "node:stream";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
   assertLocalPublicBasePreparationConsent,
@@ -10,7 +11,19 @@ import {
   getLocalPublicBaseStatus,
   prepareLocalPublicBaseFromCsv,
 } from "../../src/core/public-base/local-public-base.index";
+import { downloadLocalPublicBaseOfficialSource } from "../../src/core/public-base/local-public-base.official-download";
+import {
+  createRecordFromOfficialSimplesRow,
+  prepareLocalPublicBaseFromOfficialSimplesStream,
+} from "../../src/core/public-base/local-public-base.official-simples";
+import {
+  discoverLocalPublicBaseOfficialSource,
+  parseApacheIndexEntries,
+  parseOfficialSourceDirectoryIndex,
+} from "../../src/core/public-base/local-public-base.official-source";
+import { prepareLocalPublicBaseFromOfficialSimplesZip } from "../../src/core/public-base/local-public-base.official-zip";
 import { LocalPublicBaseStore } from "../../src/core/public-base/local-public-base.store";
+import type { LocalPublicBaseOfficialSource } from "../../src/core/public-base/local-public-base.types";
 import { LocalPublicBaseSimplesLookupAdapter } from "../../src/core/simples/adapters/local-public-base-simples-lookup.adapter";
 
 const tempDirs: string[] = [];
@@ -22,6 +35,10 @@ const acceptedConsent = {
   baseDateAcknowledged: "2026-05-20",
   stalenessWarningAcknowledged: "A Base Pública Local pode estar defasada.",
 } as const;
+const officialSimplesZipBase64 =
+  "UEsDBAoAAAAAAC5yzlw7lekoGQAAABkAAAAVABwARi5LMDMyMDBXLlNJTVBMRVMuQ1NWVVQJAAMo4i5qKOIuanV4CwABBPUBAAAEAAAAADExMjIyMzMzO1M7MjAyMDAxMDE7O047OwpQSwECHgMKAAAAAAAucs5cO5XpKBkAAAAZAAAAFQAYAAAAAAABAAAApIEAAAAARi5LMDMyMDBXLlNJTVBMRVMuQ1NWVVQFAAMo4i5qdXgLAAEE9QEAAAQAAAAAUEsFBgAAAAABAAEAWwAAAGgAAAAAAA==";
+const officialZipWithoutSimplesBase64 =
+  "UEsDBAoAAAAAAD1yzlw7lekoGQAAABkAAAAJABwAT1VUUk8uQ1NWVVQJAANF4i5qReIuanV4CwABBPUBAAAEAAAAADExMjIyMzMzO1M7MjAyMDAxMDE7O047OwpQSwECHgMKAAAAAAA9cs5cO5XpKBkAAAAZAAAACQAYAAAAAAABAAAApIEAAAAAT1VUUk8uQ1NWVVQFAANF4i5qdXgLAAEE9QEAAAQAAAAAUEsFBgAAAAABAAEATwAAAFwAAAAAAA==";
 type CapturedWarning = {
   message: string;
   metadata: Record<string, unknown>;
@@ -36,6 +53,433 @@ afterEach(async () => {
 });
 
 describe("Base Pública Local", () => {
+  it("parses Receita Federal public CNPJ index entries", () => {
+    const entries = parseApacheIndexEntries(`
+      <a class="dir" href='2026-01/'>2026-01/</a> 2026-01-11 14:59 -
+      <a href="cnpj.tar.gz?download=1&amp;mirror=main">cnpj.tar.gz</a> 2026-01-27 12:21 60G
+    `);
+
+    expect(entries).toEqual([
+      {
+        href: "2026-01/",
+        lastModified: "2026-01-11 14:59",
+        name: "2026-01/",
+        sizeLabel: "-",
+      },
+      {
+        href: "cnpj.tar.gz?download=1&mirror=main",
+        lastModified: "2026-01-27 12:21",
+        name: "cnpj.tar.gz",
+        sizeLabel: "60G",
+      },
+    ]);
+  });
+
+  it("discovers the latest official Simples archive without requiring the 60GB bundle", async () => {
+    const rootUrl =
+      "https://arquivos.receitafederal.gov.br/dados/cnpj/dados_abertos_cnpj/";
+    const responses = new Map([
+      [
+        rootUrl,
+        [
+          '<a href="cnpj.tar.gz">cnpj.tar.gz</a> 2026-01-27 12:21 60G',
+          '<a href="2025-12/">2025-12/</a> 2025-12-14 15:37 -',
+          '<a href="2026-01/">2026-01/</a> 2026-01-11 14:59 -',
+        ].join("\n"),
+      ],
+      [
+        `${rootUrl}2026-01/`,
+        [
+          '<a href="Socios0.zip">Socios0.zip</a> 2026-01-11 14:59 203M',
+          '<a href="Simples.zip">Simples.zip</a> 2026-01-11 14:58 268M',
+        ].join("\n"),
+      ],
+    ]);
+
+    await expect(
+      discoverLocalPublicBaseOfficialSource({
+        baseUrl: rootUrl,
+        fetchText: async (url) => responses.get(url) ?? "",
+      }),
+    ).resolves.toEqual({
+      baseDate: "2026-01",
+      directoryUrl: `${rootUrl}2026-01/`,
+      fileName: "Simples.zip",
+      fileUrl: `${rootUrl}2026-01/Simples.zip`,
+      kind: "simples",
+      lastModified: "2026-01-11 14:58",
+      sizeLabel: "268M",
+      sourcePageUrl: rootUrl,
+    });
+  });
+
+  it("does not follow official source links outside the configured Receita root", async () => {
+    const rootUrl =
+      "https://arquivos.receitafederal.gov.br/dados/cnpj/dados_abertos_cnpj/";
+    const externalUrl = "https://evil.example/2026-01/";
+    const responses = new Map([
+      [
+        rootUrl,
+        [
+          `<a href="${externalUrl}">2026-01/</a> 2026-01-11 14:59 -`,
+          '<a href="2025-12/">2025-12/</a> 2025-12-14 15:37 -',
+        ].join("\n"),
+      ],
+      [
+        `${rootUrl}2025-12/`,
+        '<a href="Simples.zip">Simples.zip</a> 2025-12-14 15:37 260M',
+      ],
+    ]);
+    const fetchText = vi.fn(async (url: string) => responses.get(url) ?? "");
+
+    await expect(
+      discoverLocalPublicBaseOfficialSource({
+        baseUrl: rootUrl,
+        fetchText,
+      }),
+    ).resolves.toMatchObject({
+      baseDate: "2025-12",
+      fileUrl: `${rootUrl}2025-12/Simples.zip`,
+    });
+    expect(fetchText).not.toHaveBeenCalledWith(externalUrl, expect.anything());
+  });
+
+  it("times out official source discovery when the network request never settles", async () => {
+    vi.useFakeTimers();
+
+    try {
+      const rejection = expect(
+        discoverLocalPublicBaseOfficialSource({
+          baseUrl: "https://example.test/",
+          fetchText: async () => new Promise<string>(() => {}),
+          timeoutMs: 1,
+        }),
+      ).rejects.toThrow(
+        "Tempo limite ao consultar a fonte oficial da Base Pública Local.",
+      );
+
+      await vi.advanceTimersByTimeAsync(500);
+      await rejection;
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("returns null for monthly official directories without Simples archive", () => {
+    expect(
+      parseOfficialSourceDirectoryIndex(
+        '<a href="Empresas0.zip">Empresas0.zip</a> 2026-01-11 14:52 466M',
+        "https://example.test/2026-01/",
+        "https://example.test/",
+      ),
+    ).toBeNull();
+  });
+
+  it("rejects official Simples archive links outside the monthly Receita directory", () => {
+    expect(
+      parseOfficialSourceDirectoryIndex(
+        '<a href="https://evil.example/Simples.zip">Simples.zip</a> 2026-01-11 14:58 268M',
+        "https://example.test/2026-01/",
+        "https://example.test/",
+      ),
+    ).toBeNull();
+    expect(
+      parseOfficialSourceDirectoryIndex(
+        '<a href="../Simples.zip">Simples.zip</a> 2026-01-11 14:58 268M',
+        "https://example.test/2026-01/",
+        "https://example.test/",
+      ),
+    ).toBeNull();
+  });
+
+  it("rejects direct official directory parsing outside the configured source page", () => {
+    expect(
+      parseOfficialSourceDirectoryIndex(
+        '<a href="Simples.zip">Simples.zip</a> 2026-01-11 14:58 268M',
+        "https://evil.example/2026-01/",
+        "https://example.test/",
+      ),
+    ).toBeNull();
+  });
+
+  it("prepares official Simples rows and indexes by CNPJ básico", async () => {
+    const source = {
+      baseDate: "2026-01",
+      directoryUrl: "https://example.test/2026-01/",
+      fileName: "Simples.zip",
+      fileUrl: "https://example.test/2026-01/Simples.zip",
+      kind: "simples" as const,
+      lastModified: "2026-01-11 14:58",
+      sizeLabel: "268M",
+      sourcePageUrl: "https://example.test/",
+    };
+    const prepared = await prepareLocalPublicBaseFromOfficialSimplesStream(
+      Readable.from([
+        [
+          "11222333;S;20200101;;N;;",
+          "00987654;N;20190101;;S;20200202;",
+          "invalido;S;20200101;;N;;",
+        ].join("\n"),
+      ]),
+      {
+        consent: acceptedConsent,
+        source,
+        sourceSizeBytes: 128,
+        zipFilePath: "/tmp/Simples.zip",
+      },
+    );
+    const adapter = new LocalPublicBaseSimplesLookupAdapter(
+      createLocalPublicBaseIndexFromRecords(prepared.records),
+      prepared.status,
+    );
+
+    expect(prepared).toMatchObject({
+      acceptedRows: 2,
+      rejectedRows: 1,
+      status: {
+        baseDate: "2026-01",
+        sourceFileName: "Simples.zip",
+        state: "ready",
+      },
+    });
+    await expect(adapter.lookup("11.222.333/0001-81")).resolves.toMatchObject({
+      raw: {
+        baseDate: "2026-01",
+        razaoSocial: "CNPJ básico 11222333",
+      },
+      simei: false,
+      simplesNacional: true,
+      source: "base-publica-local",
+      status: "SUCCESS",
+    });
+  });
+
+  it("normalizes official Simples rows into synthetic head-office records", () => {
+    expect(
+      createRecordFromOfficialSimplesRow(
+        ["11222333", "S", "20200101", "", "N", "", ""],
+        "2026-01",
+      ),
+    ).toMatchObject({
+      cnpj: "11222333000181",
+      cnpjBasico: "11222333",
+      razaoSocial: "CNPJ básico 11222333",
+      simei: false,
+      simplesNacional: true,
+      updatedAt: "20200101",
+    });
+
+    expect(
+      createRecordFromOfficialSimplesRow(
+        ["11222333", "?", "20200101", "", "N", "", ""],
+        "2026-01",
+      ),
+    ).toBeNull();
+  });
+
+  it("downloads the official source into a resumable local file", async () => {
+    const directory = await mkdtemp(join(tmpdir(), "public-base-download-"));
+    tempDirs.push(directory);
+
+    const result = await downloadLocalPublicBaseOfficialSource({
+      directory,
+      fetchFile: vi.fn(async () => createOfficialZipResponse()),
+      source: createOfficialSource(),
+    });
+
+    expect(result).toMatchObject({
+      resumed: false,
+      sizeBytes: officialSimplesZipBuffer().byteLength,
+    });
+    expect(result.filePath.endsWith("2026-01-Simples.zip")).toBe(true);
+    expect(await readFile(result.filePath)).toEqual(officialSimplesZipBuffer());
+  });
+
+  it("reuses a downloaded official source only when metadata matches", async () => {
+    const directory = await mkdtemp(join(tmpdir(), "public-base-download-"));
+    const fetchFile = vi.fn(async () => createOfficialZipResponse());
+    tempDirs.push(directory);
+
+    const first = await downloadLocalPublicBaseOfficialSource({
+      directory,
+      fetchFile,
+      source: createOfficialSource(),
+    });
+    const second = await downloadLocalPublicBaseOfficialSource({
+      directory,
+      fetchFile,
+      source: createOfficialSource(),
+    });
+
+    expect(fetchFile).toHaveBeenCalledTimes(1);
+    expect(second).toEqual({
+      filePath: first.filePath,
+      resumed: false,
+      sizeBytes: officialSimplesZipBuffer().byteLength,
+    });
+  });
+
+  it("redownloads the official source when cached metadata is stale", async () => {
+    const directory = await mkdtemp(join(tmpdir(), "public-base-download-"));
+    const fetchFile = vi
+      .fn()
+      .mockResolvedValueOnce(createOfficialZipResponse())
+      .mockResolvedValueOnce(createOfficialZipResponse());
+    tempDirs.push(directory);
+
+    const first = await downloadLocalPublicBaseOfficialSource({
+      directory,
+      fetchFile,
+      source: createOfficialSource(),
+    });
+    const second = await downloadLocalPublicBaseOfficialSource({
+      directory,
+      fetchFile,
+      source: createOfficialSource({
+        lastModified: "2026-01-12 09:00",
+      }),
+    });
+
+    expect(first.filePath).toBe(second.filePath);
+    expect(fetchFile).toHaveBeenCalledTimes(2);
+    expect(await readFile(second.filePath)).toEqual(officialSimplesZipBuffer());
+  });
+
+  it("does not reuse a final official ZIP without metadata", async () => {
+    const directory = await mkdtemp(join(tmpdir(), "public-base-download-"));
+    const fetchFile = vi.fn(async () => createOfficialZipResponse());
+    tempDirs.push(directory);
+    await writeFile(join(directory, "2026-01-Simples.zip"), "stale-content");
+
+    const result = await downloadLocalPublicBaseOfficialSource({
+      directory,
+      fetchFile,
+      source: createOfficialSource(),
+    });
+
+    expect(fetchFile).toHaveBeenCalledTimes(1);
+    expect(await readFile(result.filePath)).toEqual(officialSimplesZipBuffer());
+  });
+
+  it("redownloads a cached official ZIP when metadata matches but the ZIP is invalid", async () => {
+    const directory = await mkdtemp(join(tmpdir(), "public-base-download-"));
+    const source = createOfficialSource();
+    const fetchFile = vi.fn(async () => createOfficialZipResponse());
+    tempDirs.push(directory);
+    await writeFile(join(directory, "2026-01-Simples.zip"), "not-a-zip");
+    await writeOfficialDownloadMetadataFixture(directory, source);
+
+    const result = await downloadLocalPublicBaseOfficialSource({
+      directory,
+      fetchFile,
+      source,
+    });
+
+    expect(fetchFile).toHaveBeenCalledTimes(1);
+    expect(await readFile(result.filePath)).toEqual(officialSimplesZipBuffer());
+  });
+
+  it("redownloads a cached official ZIP when metadata matches but the Simples payload CRC fails", async () => {
+    const directory = await mkdtemp(join(tmpdir(), "public-base-download-"));
+    const source = createOfficialSource();
+    const fetchFile = vi.fn(async () => createOfficialZipResponse());
+    tempDirs.push(directory);
+    await writeFile(
+      join(directory, "2026-01-Simples.zip"),
+      corruptedOfficialSimplesZipBuffer(),
+    );
+    await writeOfficialDownloadMetadataFixture(directory, source);
+
+    const result = await downloadLocalPublicBaseOfficialSource({
+      directory,
+      fetchFile,
+      source,
+    });
+
+    expect(fetchFile).toHaveBeenCalledTimes(1);
+    expect(await readFile(result.filePath)).toEqual(officialSimplesZipBuffer());
+  });
+
+  it("rejects a successful official download response that is not a readable Simples ZIP", async () => {
+    const directory = await mkdtemp(join(tmpdir(), "public-base-download-"));
+    tempDirs.push(directory);
+
+    await expect(
+      downloadLocalPublicBaseOfficialSource({
+        directory,
+        fetchFile: vi.fn(async () => new Response("not-a-zip")),
+        source: createOfficialSource(),
+      }),
+    ).rejects.toThrow("Simples.zip válido");
+  });
+
+  it("rejects a successful official download response with a corrupt Simples payload", async () => {
+    const directory = await mkdtemp(join(tmpdir(), "public-base-download-"));
+    tempDirs.push(directory);
+
+    await expect(
+      downloadLocalPublicBaseOfficialSource({
+        directory,
+        fetchFile: vi.fn(
+          async () =>
+            new Response(new Uint8Array(corruptedOfficialSimplesZipBuffer())),
+        ),
+        source: createOfficialSource(),
+      }),
+    ).rejects.toThrow("Simples.zip válido");
+  });
+
+  it("prepares the local public base from a real official ZIP entry", async () => {
+    const directory = await mkdtemp(join(tmpdir(), "public-base-zip-"));
+    tempDirs.push(directory);
+    const zipFilePath = join(directory, "Simples.zip");
+    await writeFile(
+      zipFilePath,
+      Buffer.from(officialSimplesZipBase64, "base64"),
+    );
+
+    const prepared = await prepareLocalPublicBaseFromOfficialSimplesZip({
+      consent: acceptedConsent,
+      source: createOfficialSource(),
+      sourceSizeBytes: 256,
+      zipFilePath,
+    });
+
+    expect(prepared).toMatchObject({
+      acceptedRows: 1,
+      rejectedRows: 0,
+      status: {
+        baseDate: "2026-01",
+        sourceFileName: "Simples.zip",
+        state: "ready",
+      },
+    });
+    expect(prepared.records[0]).toMatchObject({
+      cnpjBasico: "11222333",
+      simplesNacional: true,
+      simei: false,
+    });
+  });
+
+  it("rejects official ZIP files without a Simples CSV entry", async () => {
+    const directory = await mkdtemp(join(tmpdir(), "public-base-zip-"));
+    tempDirs.push(directory);
+    const zipFilePath = join(directory, "Outro.zip");
+    await writeFile(
+      zipFilePath,
+      Buffer.from(officialZipWithoutSimplesBase64, "base64"),
+    );
+
+    await expect(
+      prepareLocalPublicBaseFromOfficialSimplesZip({
+        consent: acceptedConsent,
+        source: createOfficialSource(),
+        sourceSizeBytes: 256,
+        zipFilePath,
+      }),
+    ).rejects.toThrow("CSV de Simples Nacional não encontrado");
+  });
+
   it("exposes not-prepared status before a local CSV is prepared", () => {
     const status = getLocalPublicBaseStatus();
 
@@ -399,3 +843,61 @@ describe("Base Pública Local", () => {
     expect(JSON.stringify(warnings)).not.toContain("illegal operation");
   });
 });
+
+function createOfficialSource(
+  overrides: Partial<LocalPublicBaseOfficialSource> = {},
+): LocalPublicBaseOfficialSource {
+  return {
+    baseDate: "2026-01",
+    directoryUrl: "https://example.test/2026-01/",
+    fileName: "Simples.zip",
+    fileUrl: "https://example.test/2026-01/Simples.zip",
+    kind: "simples",
+    lastModified: "2026-01-11 14:58",
+    sizeLabel: "268M",
+    sourcePageUrl: "https://example.test/",
+    ...overrides,
+  };
+}
+
+function officialSimplesZipBuffer(): Buffer {
+  return Buffer.from(officialSimplesZipBase64, "base64");
+}
+
+function corruptedOfficialSimplesZipBuffer(): Buffer {
+  const buffer = officialSimplesZipBuffer();
+  const payloadIndex = buffer.indexOf("11222333;S;");
+
+  if (payloadIndex < 0) {
+    throw new Error("Fixture ZIP oficial não contém o payload esperado.");
+  }
+
+  buffer[payloadIndex] = buffer[payloadIndex] === 0x31 ? 0x32 : 0x31;
+
+  return buffer;
+}
+
+function createOfficialZipResponse(): Response {
+  return new Response(new Uint8Array(officialSimplesZipBuffer()));
+}
+
+async function writeOfficialDownloadMetadataFixture(
+  directory: string,
+  source: LocalPublicBaseOfficialSource,
+): Promise<void> {
+  await writeFile(
+    join(directory, "2026-01-Simples.zip.metadata.json"),
+    `${JSON.stringify(
+      {
+        baseDate: source.baseDate,
+        fileName: source.fileName,
+        fileUrl: source.fileUrl,
+        kind: source.kind,
+        lastModified: source.lastModified,
+        sizeLabel: source.sizeLabel,
+      },
+      null,
+      2,
+    )}\n`,
+  );
+}

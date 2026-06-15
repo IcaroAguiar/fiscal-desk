@@ -845,6 +845,13 @@ input::placeholder {
   font-size: var(--font-size-sm);
 }
 
+.history-list__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--spacing-2);
+}
+
 .history-list__main span,
 .history-list__blocked,
 .history-empty {
@@ -2111,6 +2118,41 @@ body {
   background: var(--brand-accent-strong);
 }
 
+.activity-guidance {
+  display: grid;
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.4fr) minmax(0, 1.25fr) minmax(
+      0,
+      1.4fr
+    );
+  border-top: 1px solid var(--v5-line);
+  border-bottom: 1px solid var(--v5-line);
+}
+
+.activity-guidance > div {
+  min-width: 0;
+  padding: 12px 14px 12px 0;
+  border-right: 1px solid var(--v5-line);
+}
+
+.activity-guidance > div:not(:first-child) {
+  padding-left: 14px;
+}
+
+.activity-guidance > div:last-child {
+  border-right: 0;
+}
+
+.activity-guidance strong {
+  display: block;
+  margin-top: 7px;
+  overflow-wrap: anywhere;
+  color: var(--v5-text);
+  font-size: 0.8rem;
+  font-weight: 720;
+  letter-spacing: 0;
+  line-height: 1.35;
+}
+
 .log-list {
   display: grid;
   gap: 8px;
@@ -2695,6 +2737,39 @@ body {
   text-align: right;
 }
 
+.speed-plan {
+  display: grid;
+  grid-template-columns: minmax(0, 0.7fr) minmax(0, 1.45fr) minmax(0, 1.15fr);
+  margin-top: 14px;
+  border-top: 1px solid var(--v5-line);
+  border-bottom: 1px solid var(--v5-line);
+}
+
+.speed-plan > div {
+  min-width: 0;
+  padding: 12px 14px 12px 0;
+  border-right: 1px solid var(--v5-line);
+}
+
+.speed-plan > div:not(:first-child) {
+  padding-left: 14px;
+}
+
+.speed-plan > div:last-child {
+  border-right: 0;
+}
+
+.speed-plan strong {
+  display: block;
+  margin-top: 7px;
+  overflow-wrap: anywhere;
+  color: var(--v5-text);
+  font-size: 0.82rem;
+  font-weight: 740;
+  letter-spacing: 0;
+  line-height: 1.35;
+}
+
 .workbench-v5 .base-prep,
 .workbench-v5 .notice-check {
   margin-top: 10px;
@@ -2814,14 +2889,6 @@ body {
   height: 34px;
 }
 
-.output-actions [data-action="cancel-processing"] {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  opacity: 0;
-  pointer-events: none;
-}
-
 .provider-zone {
   display: none;
 }
@@ -2896,14 +2963,25 @@ body {
     grid-template-columns: 1fr;
   }
 
+  .activity-guidance,
+  .speed-plan {
+    grid-template-columns: 1fr;
+  }
+
   .ops-suggestions > div,
-  .ops-suggestions > div:not(:first-child) {
+  .ops-suggestions > div:not(:first-child),
+  .activity-guidance > div,
+  .activity-guidance > div:not(:first-child),
+  .speed-plan > div,
+  .speed-plan > div:not(:first-child) {
     padding: 14px 0;
     border-right: 0;
     border-bottom: 1px solid var(--v5-line);
   }
 
-  .ops-suggestions > div:last-child {
+  .ops-suggestions > div:last-child,
+  .activity-guidance > div:last-child,
+  .speed-plan > div:last-child {
     border-bottom: 0;
   }
 

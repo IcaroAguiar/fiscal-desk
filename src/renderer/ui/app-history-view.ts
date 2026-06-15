@@ -43,10 +43,22 @@ export function renderExecutionHistory(state: UiState): string {
         .map((item) => {
           const sourceName = item.sourceFileName ?? "CSV sem caminho";
           const updatedAt = formatHistoryDate(item.updatedAt);
+          const pendingUniqueLookups = getPendingUniqueLookups(item);
           const checkpointLabel = `${item.checkpointedUniqueLookups}/${item.totalUniqueLookups || "?"} CNPJs salvos para retomada`;
+          const pendingLabel =
+            pendingUniqueLookups > 0
+              ? `${pendingUniqueLookups} CNPJ${pendingUniqueLookups === 1 ? "" : "s"} pendente${pendingUniqueLookups === 1 ? "" : "s"}`
+              : "Sem pendências";
+          const partialLabel =
+            item.hasPartialOutput && item.outputPath
+              ? `Parcial salvo: ${escapeHtml(getFileName(item.outputPath))}`
+              : null;
           const resumeButton = item.canResume
             ? `<button class="button button--secondary button--compact" type="button" data-action="resume-execution" data-ledger-key="${escapeHtml(item.ledgerKey)}" ${state.status === "processing" ? "disabled" : ""}>Retomar</button>`
             : `<span class="history-list__blocked">${escapeHtml(item.resumeBlockedReason ?? "Histórico")}</span>`;
+          const exportPendingButton = item.canExportPending
+            ? `<button class="button button--ghost button--compact" type="button" data-action="export-pending-cnpjs" data-ledger-key="${escapeHtml(item.ledgerKey)}" ${state.status === "processing" ? "disabled" : ""}>Exportar pendências</button>`
+            : "";
 
           return `
             <li class="history-list__item">
@@ -54,8 +66,12 @@ export function renderExecutionHistory(state: UiState): string {
                 <strong>${escapeHtml(sourceName)}</strong>
                 <span>${escapeHtml(formatProviderMode(item.providerName))} • ${escapeHtml(formatHistoryStatus(item.status))} • ${escapeHtml(updatedAt)}</span>
                 <span>${escapeHtml(checkpointLabel)}</span>
+                <span>${escapeHtml(pendingLabel)}${partialLabel ? ` • ${partialLabel}` : ""}</span>
               </div>
-              ${resumeButton}
+              <div class="history-list__actions">
+                ${exportPendingButton}
+                ${resumeButton}
+              </div>
             </li>
           `;
         })
@@ -89,4 +105,20 @@ function formatHistoryStatus(value: string): string {
   if (value === "CANCELLED") return "cancelado";
   if (value === "PROCESSING") return "em consulta";
   return value.toLowerCase();
+}
+
+function getPendingUniqueLookups(item: {
+  checkpointedUniqueLookups: number;
+  pendingUniqueLookups?: number;
+  totalUniqueLookups: number;
+}): number {
+  if (typeof item.pendingUniqueLookups === "number") {
+    return Math.max(0, item.pendingUniqueLookups);
+  }
+
+  return Math.max(0, item.totalUniqueLookups - item.checkpointedUniqueLookups);
+}
+
+function getFileName(filePath: string): string {
+  return filePath.split(/[/\\]/).pop() ?? filePath;
 }

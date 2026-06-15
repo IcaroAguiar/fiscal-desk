@@ -25,7 +25,10 @@ export function createSimplesLookupProvider(
     return new LocalPublicBaseSimplesLookupAdapter();
   }
 
-  if (providerName === SIMPLES_PROVIDER.RECEITA_WEB) {
+  if (
+    providerName === SIMPLES_PROVIDER.RECEITA_WEB ||
+    providerName === SIMPLES_PROVIDER.RECEITA_WEB_PARALLEL_EXPERIMENTAL
+  ) {
     return new ReceitaConsultaOptantesAdapter();
   }
 

@@ -105,11 +105,25 @@ export function getLiveProgress(state: UiState): LookupProgress | null {
   };
 }
 
-export function buildCompletionMessage(result: ProcessCsvResult): string {
+export function buildCompletionMessage(
+  result: ProcessCsvResult,
+  stopIntent: UiState["processingStopIntent"] = null,
+): string {
   const deliveryLabel =
     result.delivery.format === "xlsx" ? "planilha Excel" : "CSV";
 
   if (result.runStatus === "CANCELLED") {
+    if (stopIntent === "pause") {
+      const pauseMessage = result.savedPath
+        ? `Pausa concluída. ${deliveryLabel} parcial salvo automaticamente; retome pelo Histórico.`
+        : "Pausa concluída. Retome pelo Histórico quando houver checkpoint.";
+      const warningMessage = formatPauseWarningMessage(result.warningMessage);
+
+      return warningMessage
+        ? `${pauseMessage} Aviso: ${warningMessage}`
+        : pauseMessage;
+    }
+
     return (
       result.warningMessage ??
       (result.savedPath
@@ -124,6 +138,14 @@ export function buildCompletionMessage(result: ProcessCsvResult): string {
       ? "Concluído! Arquivo salvo automaticamente."
       : "Processamento concluído.")
   );
+}
+
+function formatPauseWarningMessage(message: string | null): string | null {
+  if (!message) {
+    return null;
+  }
+
+  return message.replace(/^Processamento concluído,\s*mas\s*/i, "").trim();
 }
 
 function getLiveRemainingMs(state: UiState): number {

@@ -39,8 +39,11 @@ type ProcessCsvOptions = {
   deliveryFormat?: ProcessCsvDeliveryFormat;
   deliveryOptionId?: FiscalExportDeliveryOptionId;
   executionLedger?: ProcessExecutionLedgerSession;
+  maxConcurrentLookups?: number;
   onLookupProgress?: (progress: LookupProgress) => void;
+  requestGlobalStop?: (status: SimplesLookupResult["status"]) => void;
   signal?: AbortSignal;
+  stopOnLookupStatuses?: readonly SimplesLookupResult["status"][];
 };
 
 type ProcessCsvResult = {
@@ -128,10 +131,22 @@ export async function processCsv(
   );
   const resumedUniqueLookups = lookupCache.size;
   let completedUniqueLookups = resumedUniqueLookups;
-  let totalCnpjsEncontrados = 0;
-  let totalCnpjsValidos = 0;
   let runStatus: ProcessCsvRunStatus = "SUCCESS";
   const startedAt = Date.now();
+
+  const lookupQueueResult = await runMissingLookups({
+    completedUniqueLookups,
+    lookupCache,
+    options,
+    provider,
+    startedAt,
+    uniqueValidCnpjs,
+  });
+  completedUniqueLookups = lookupQueueResult.completedUniqueLookups;
+  runStatus = lookupQueueResult.runStatus;
+
+  let totalCnpjsEncontrados = 0;
+  let totalCnpjsValidos = 0;
   const outputColumns = [
     ...headers,
     "cnpj_original",
@@ -148,9 +163,7 @@ export async function processCsv(
   const outputRows: Array<Record<string, string>> = [];
 
   for (const [index, row] of rows.entries()) {
-    if (isCancellationBoundary(options.signal)) {
-      runStatus = "CANCELLED";
-    }
+    runStatus = markCancelledIfRequested(runStatus, options.signal);
 
     const cnpjOriginal = row[cnpjColumn] ?? "";
     const cnpjNormalizado = normalizeCnpj(cnpjOriginal);
@@ -179,9 +192,8 @@ export async function processCsv(
           ingestionIssue?.message ??
           "CNPJ inválido. Revise os 14 dígitos antes de consultar esta linha.",
       };
-    } else if (runStatus === "CANCELLED") {
-      const cachedResult = lookupCache.get(cnpjNormalizado);
-      lookupResult = cachedResult ?? {
+    } else {
+      lookupResult = lookupCache.get(cnpjNormalizado) ?? {
         cnpj: cnpjNormalizado,
         simplesNacional: null,
         simei: null,
@@ -189,55 +201,6 @@ export async function processCsv(
         status: "CANCELLED",
         message: "Processamento cancelado antes desta consulta",
       };
-    } else {
-      const cachedResult = lookupCache.get(cnpjNormalizado);
-      if (cachedResult) {
-        lookupResult = cachedResult;
-      } else {
-        try {
-          lookupResult = await provider.lookup(
-            cnpjNormalizado,
-            options.signal ? { signal: options.signal } : undefined,
-          );
-        } catch (error) {
-          if (error instanceof AbortError) {
-            runStatus = "CANCELLED";
-            lookupResult = {
-              cnpj: cnpjNormalizado,
-              simplesNacional: null,
-              simei: null,
-              source: "system",
-              status: "CANCELLED",
-              message: "Processamento cancelado antes desta consulta",
-            };
-          } else {
-            throw error;
-          }
-        }
-
-        if (lookupResult.status === "CANCELLED") {
-          runStatus = "CANCELLED";
-        }
-
-        if (runStatus === "SUCCESS") {
-          lookupCache.set(cnpjNormalizado, lookupResult);
-          if (isReusableCheckpointResult(lookupResult)) {
-            await options.executionLedger?.saveLookup(lookupResult);
-          }
-          completedUniqueLookups += 1;
-          options.onLookupProgress?.({
-            completedUniqueLookups,
-            totalUniqueLookups: uniqueValidCnpjs.length,
-            currentCnpj: cnpjNormalizado,
-            elapsedMs: Date.now() - startedAt,
-            estimatedRemainingMs: estimateObservedRemainingMs(
-              Date.now() - startedAt,
-              completedUniqueLookups,
-              uniqueValidCnpjs.length,
-            ),
-          });
-        }
-      }
     }
 
     outputRows.push({
@@ -273,7 +236,9 @@ export async function processCsv(
       ERROR_STATUSES.has(row.status as SimplesLookupResult["status"]),
     ).length,
   };
+  runStatus = markCancelledIfRequested(runStatus, options.signal);
   const outputCsv = writeCsv(outputRows, delimiter, outputColumns);
+  runStatus = markCancelledIfRequested(runStatus, options.signal);
   const outputXlsx =
     delivery.format === "xlsx"
       ? await writeXlsxWorkbook({
@@ -282,6 +247,7 @@ export async function processCsv(
           summary,
         })
       : null;
+  runStatus = markCancelledIfRequested(runStatus, options.signal);
 
   return {
     delivery,
@@ -416,6 +382,175 @@ function formatOutputMessage(
 
 function isCancellationBoundary(signal?: AbortSignal): boolean {
   return signal?.aborted === true;
+}
+
+function markCancelledIfRequested(
+  currentStatus: ProcessCsvRunStatus,
+  signal?: AbortSignal,
+): ProcessCsvRunStatus {
+  return isCancellationBoundary(signal) ? "CANCELLED" : currentStatus;
+}
+
+async function runMissingLookups(input: {
+  completedUniqueLookups: number;
+  lookupCache: Map<string, SimplesLookupResult>;
+  options: ProcessCsvOptions;
+  provider: SimplesLookupPort;
+  startedAt: number;
+  uniqueValidCnpjs: string[];
+}): Promise<{
+  completedUniqueLookups: number;
+  runStatus: ProcessCsvRunStatus;
+}> {
+  const pendingCnpjs = input.uniqueValidCnpjs.filter(
+    (cnpj) => !input.lookupCache.has(cnpj),
+  );
+  const concurrency = normalizeMaxConcurrentLookups(
+    input.options.maxConcurrentLookups,
+  );
+  let nextIndex = 0;
+  let completedUniqueLookups = input.completedUniqueLookups;
+  let runStatus: ProcessCsvRunStatus = isCancellationBoundary(
+    input.options.signal,
+  )
+    ? "CANCELLED"
+    : "SUCCESS";
+  let saveLookupChain = Promise.resolve();
+  let firstWorkerError: unknown = null;
+  const stopOnLookupStatuses = new Set(
+    input.options.stopOnLookupStatuses ?? [],
+  );
+
+  const shouldStop = (): boolean =>
+    runStatus !== "SUCCESS" || firstWorkerError !== null;
+
+  const stopOnError = (error: unknown): void => {
+    firstWorkerError ??= error;
+  };
+
+  const saveLookup = async (
+    lookupResult: SimplesLookupResult,
+  ): Promise<void> => {
+    if (!isReusableCheckpointResult(lookupResult)) {
+      return;
+    }
+
+    saveLookupChain = saveLookupChain.then(() =>
+      input.options.executionLedger?.saveLookup(lookupResult),
+    );
+    await saveLookupChain;
+  };
+
+  const runWorker = async (): Promise<void> => {
+    while (!shouldStop() && nextIndex < pendingCnpjs.length) {
+      if (isCancellationBoundary(input.options.signal)) {
+        runStatus = "CANCELLED";
+        return;
+      }
+
+      const cnpj = pendingCnpjs[nextIndex];
+      nextIndex += 1;
+
+      if (!cnpj) {
+        continue;
+      }
+
+      let lookupResult: SimplesLookupResult;
+      try {
+        lookupResult = await input.provider.lookup(
+          cnpj,
+          input.options.signal ? { signal: input.options.signal } : undefined,
+        );
+      } catch (error) {
+        if (error instanceof AbortError) {
+          runStatus = "CANCELLED";
+          return;
+        }
+
+        stopOnError(error);
+        return;
+      }
+
+      if (shouldStop()) {
+        return;
+      }
+
+      if (lookupResult.status === "CANCELLED") {
+        runStatus = "CANCELLED";
+        return;
+      }
+
+      input.lookupCache.set(cnpj, lookupResult);
+      try {
+        await saveLookup(lookupResult);
+      } catch (error) {
+        stopOnError(error);
+        return;
+      }
+
+      if (shouldStop()) {
+        return;
+      }
+
+      completedUniqueLookups += 1;
+      const elapsedMs = Date.now() - input.startedAt;
+      input.options.onLookupProgress?.({
+        completedUniqueLookups,
+        totalUniqueLookups: input.uniqueValidCnpjs.length,
+        currentCnpj: maskCnpjForProgress(cnpj),
+        elapsedMs,
+        estimatedRemainingMs: estimateObservedRemainingMs(
+          elapsedMs,
+          completedUniqueLookups,
+          input.uniqueValidCnpjs.length,
+        ),
+      });
+
+      if (stopOnLookupStatuses.has(lookupResult.status)) {
+        runStatus = "CANCELLED";
+        input.options.requestGlobalStop?.(lookupResult.status);
+        return;
+      }
+    }
+  };
+
+  const workers = Array.from(
+    { length: Math.min(concurrency, pendingCnpjs.length) },
+    () => runWorker(),
+  );
+  await Promise.allSettled(workers);
+  try {
+    await saveLookupChain;
+  } catch (error) {
+    stopOnError(error);
+  }
+
+  if (firstWorkerError) {
+    throw firstWorkerError;
+  }
+
+  return {
+    completedUniqueLookups,
+    runStatus,
+  };
+}
+
+function maskCnpjForProgress(cnpj: string): string {
+  const normalized = cnpj.replace(/\D/g, "");
+
+  if (normalized.length !== 14) {
+    return "***";
+  }
+
+  return `${normalized.slice(0, 2)}********${normalized.slice(-4)}`;
+}
+
+function normalizeMaxConcurrentLookups(value: number | undefined): number {
+  if (value === undefined || !Number.isFinite(value)) {
+    return 1;
+  }
+
+  return Math.max(1, Math.min(12, Math.floor(value)));
 }
 
 async function restoreLookupCache(

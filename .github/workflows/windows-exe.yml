@@ -1,7 +1,7 @@
-name: Windows EXE unsigned
+name: Desktop unsigned builds
 
 concurrency:
-  group: windows-exe-${{ github.ref }}
+  group: desktop-unsigned-builds-${{ github.ref }}
   cancel-in-progress: true
 
 on:
@@ -14,9 +14,31 @@ permissions:
   contents: read
 
 jobs:
-  build-windows:
-    runs-on: windows-latest
+  build-desktop:
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Windows x64 unsigned
+            os: windows-latest
+            package-command: pnpm dist:win
+            artifact-name: fiscal-desk-windows-x64
+            artifact-path: |
+              release/*.exe
+              release/*.yml
+              release/*.blockmap
+          - name: macOS unsigned DMG
+            os: macos-latest
+            package-command: pnpm dist:mac
+            artifact-name: fiscal-desk-macos
+            artifact-path: |
+              release/*.dmg
+              release/*.zip
+              release/*.yml
+              release/*.blockmap
 
     steps:
       - name: Checkout
@@ -38,28 +60,33 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Test
-        run: pnpm test
-
       - name: Typecheck
         run: pnpm typecheck
 
       - name: Lint
         run: pnpm lint
 
-      - name: Build
-        run: pnpm build
+      - name: Deterministic E2E
+        env:
+          FISCAL_DESK_E2E_OUTPUT_DIR: docs/qa/e2e-artifacts
+        run: pnpm test:e2e
 
-      - name: Package Windows
-        run: pnpm dist:win
+      - name: Package desktop app
+        run: ${{ matrix.package-command }}
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: fiscal-desk-windows
-          path: |
-            release/*.exe
-            release/*.yml
-            release/*.blockmap
+          name: ${{ matrix.artifact-name }}
+          path: ${{ matrix.artifact-path }}
           if-no-files-found: error
           retention-days: 14
+
+      - name: Upload E2E artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ${{ matrix.artifact-name }}-e2e
+          retention-days: 14
+          path: |
+            docs/qa/e2e-artifacts/**

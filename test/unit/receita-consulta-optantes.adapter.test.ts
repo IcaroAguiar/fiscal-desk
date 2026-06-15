@@ -31,6 +31,7 @@ type MockClient = {
   fillCnpj: ReturnType<typeof vi.fn>;
   submit: ReturnType<typeof vi.fn>;
   waitResult: ReturnType<typeof vi.fn>;
+  waitForManualCaptchaResolution: ReturnType<typeof vi.fn>;
   hasCaptcha: ReturnType<typeof vi.fn>;
   hasError: ReturnType<typeof vi.fn>;
   hasResult: ReturnType<typeof vi.fn>;
@@ -48,6 +49,9 @@ function createMockClient(): MockClient {
       .mockResolvedValue({ success: true, html: EMPTY_PAGE_TEXT }),
     submit: vi.fn().mockResolvedValue({ success: true, html: EMPTY_PAGE_TEXT }),
     waitResult: vi
+      .fn()
+      .mockResolvedValue({ success: true, html: EMPTY_PAGE_TEXT }),
+    waitForManualCaptchaResolution: vi
       .fn()
       .mockResolvedValue({ success: true, html: EMPTY_PAGE_TEXT }),
     hasCaptcha: vi.fn().mockResolvedValue(false),
@@ -281,6 +285,7 @@ describe("ReceitaConsultaOptantesAdapter", () => {
     expect(mockClient.fillCnpj).toHaveBeenCalledWith(TEST_LOOKUP_ID, signal);
     expect(mockClient.submit).toHaveBeenCalledWith(signal);
     expect(mockClient.waitResult).toHaveBeenCalledWith(signal);
+    expect(mockClient.waitForManualCaptchaResolution).not.toHaveBeenCalled();
     expect(mockClient.hasCaptcha).toHaveBeenCalledWith(signal);
     expect(mockClient.hasError).toHaveBeenCalledWith(signal);
     expect(mockClient.hasResult).toHaveBeenCalledWith(signal);
@@ -309,13 +314,38 @@ describe("ReceitaConsultaOptantesAdapter", () => {
 
   it("returns CAPTCHA_REQUIRED when captcha is detected", async () => {
     mockClient.hasCaptcha.mockResolvedValue(true);
+    mockClient.hasResult.mockResolvedValue(false);
 
     const adapter = new ReceitaConsultaOptantesAdapter();
 
     const result = await adapter.lookup(TEST_LOOKUP_ID);
 
+    expect(mockClient.waitForManualCaptchaResolution).toHaveBeenCalled();
     expect(result.status).toBe("CAPTCHA_REQUIRED");
     expect(result.message).toContain("CAPTCHA");
+  });
+
+  it("continues after the user manually resolves Receita Web CAPTCHA", async () => {
+    const successPageText =
+      "Situação no Simples Nacional: Optante pelo Simples Nacional. Situação no SIMEI: NÃO enquadrado no SIMEI.";
+    mockClient.hasCaptcha.mockResolvedValue(true);
+    mockClient.hasResult
+      .mockResolvedValueOnce(false)
+      .mockResolvedValueOnce(true);
+    mockClient.waitForManualCaptchaResolution.mockResolvedValue({
+      success: true,
+      html: successPageText,
+    });
+
+    const adapter = new ReceitaConsultaOptantesAdapter();
+
+    const result = await adapter.lookup(TEST_LOOKUP_ID);
+
+    expect(mockClient.waitForManualCaptchaResolution).toHaveBeenCalledWith(
+      undefined,
+    );
+    expect(result.status).toBe("SUCCESS");
+    expect(result.simplesNacional).toBe(true);
   });
 
   it("returns SUCCESS when result is parsed successfully (optante)", async () => {

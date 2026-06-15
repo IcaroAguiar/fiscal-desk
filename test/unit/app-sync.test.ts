@@ -3,7 +3,11 @@ import { describe, expect, it } from "vitest";
 import { initialState } from "../../src/renderer/ui/app.types";
 import { type AppRefs, collectAppRefs } from "../../src/renderer/ui/app-refs";
 import { syncUi } from "../../src/renderer/ui/app-sync";
-import { shouldDisableLocalPublicBasePrepareButton } from "../../src/renderer/ui/app-sync-rules";
+import {
+  shouldDisableLocalPublicBaseDiscoverButton,
+  shouldDisableLocalPublicBasePrepareButton,
+  shouldDisableLocalPublicBasePrepareOfficialButton,
+} from "../../src/renderer/ui/app-sync-rules";
 
 describe("app sync", () => {
   it("keeps Base Pública Local preparation disabled until notice acceptance survives sync", () => {
@@ -18,6 +22,40 @@ describe("app sync", () => {
       shouldDisableLocalPublicBasePrepareButton({
         ...initialState,
         localPublicBaseNoticeAccepted: true,
+        provider: "base-publica-local",
+      }),
+    ).toBe(false);
+
+    expect(
+      shouldDisableLocalPublicBaseDiscoverButton({
+        ...initialState,
+        localPublicBaseOfficialSourceStatus: "loading",
+      }),
+    ).toBe(true);
+
+    expect(
+      shouldDisableLocalPublicBasePrepareOfficialButton({
+        ...initialState,
+        localPublicBaseNoticeAccepted: true,
+        localPublicBaseOfficialSource: null,
+        provider: "base-publica-local",
+      }),
+    ).toBe(true);
+
+    expect(
+      shouldDisableLocalPublicBasePrepareOfficialButton({
+        ...initialState,
+        localPublicBaseNoticeAccepted: true,
+        localPublicBaseOfficialSource: {
+          baseDate: "2026-01",
+          directoryUrl: "https://example.test/2026-01/",
+          fileName: "Simples.zip",
+          fileUrl: "https://example.test/2026-01/Simples.zip",
+          kind: "simples",
+          lastModified: "2026-01-11 14:58",
+          sizeLabel: "268M",
+          sourcePageUrl: "https://example.test/",
+        },
         provider: "base-publica-local",
       }),
     ).toBe(false);
@@ -39,7 +77,7 @@ describe("app sync", () => {
       fileName: "clientes.csv",
       progress: {
         completedUniqueLookups: 4,
-        currentCnpj: "11222333000144",
+        currentCnpj: "11********0144",
         elapsedMs: 60_000,
         estimatedRemainingMs: 90_000,
         totalUniqueLookups: 10,
@@ -47,20 +85,41 @@ describe("app sync", () => {
       status: "processing",
     });
 
-    expect(refs.sessionEntry?.textContent).toBe("Consultando 11222333000144");
+    expect(refs.sessionEntry?.textContent).toBe("Consultando 11********0144");
     expect(refs.sessionDedupe?.textContent).toBe(
       "estimativa móvel: cerca de 1m 30s restantes.",
     );
     expect(refs.executionBlocker?.textContent).toBe(
       "Sem bloqueio sistêmico detectado.",
     );
+    expect(refs.speedPlanLabel?.textContent).toBe("Simulação rápida");
+    expect(refs.activitySpeedLabel?.textContent).toBe("Simulação rápida");
+    expect(refs.activitySpeedDetail?.textContent).toBe(
+      "Valida o fluxo sem internet; troque de base antes de consultar dados reais.",
+    );
+    expect(refs.speedControlLabel?.textContent).toBe(
+      "Use Pausar para checkpoint e retomada; Cancelar interrompe a execução.",
+    );
+    expect(refs.activityControlLabel?.textContent).toBe(
+      "Use Pausar para checkpoint e retomada; Cancelar interrompe a execução.",
+    );
     expect(refs.executionCheckpointCopy?.textContent).toBe(
       "2 CNPJs retomados do checkpoint local.",
     );
+    expect(refs.activitySuggestion?.textContent).toBe(
+      "Sugestão: simulação valida o fluxo; troque para Base local antes de dados reais.",
+    );
+    expect(refs.pauseButton?.disabled).toBe(false);
+    expect(refs.cancelButton?.disabled).toBe(false);
     expect(refs.executionRunId?.textContent).toBe("registrada");
     expect(refs.executionCheckpoint?.textContent).toBe("disponível");
     expect(refs.executionRunId?.textContent).not.toContain("run-technical-id");
     expect(refs.executionCheckpoint?.textContent).not.toContain("ledger.json");
+
+    syncUi(refs, initialState);
+
+    expect(refs.pauseButton?.disabled).toBe(true);
+    expect(refs.cancelButton?.disabled).toBe(true);
   });
 
   it("collects operational panel refs by stable data slots", () => {
@@ -78,9 +137,39 @@ describe("app sync", () => {
     expect(refs.executionBlocker).not.toBeNull();
     expect(refs.executionCheckpointCopy).not.toBeNull();
     expect(refs.executionSuggestion).not.toBeNull();
+    expect(refs.activitySpeedLabel).not.toBeNull();
+    expect(refs.activitySpeedDetail).not.toBeNull();
+    expect(refs.activityControlLabel).not.toBeNull();
+    expect(refs.activitySuggestion).not.toBeNull();
+    expect(refs.speedPlanLabel).not.toBeNull();
+    expect(refs.speedPlanDetail).not.toBeNull();
+    expect(refs.speedControlLabel).not.toBeNull();
+    expect(refs.speedProfileSelect).not.toBeNull();
+    expect(refs.pauseButton).not.toBeNull();
+    expect(refs.localPublicBaseDiscoverButton).not.toBeNull();
+    expect(refs.localPublicBasePrepareOfficialButton).not.toBeNull();
+    expect(refs.localPublicBaseOfficialSourceLine).not.toBeNull();
     expect(queries).toContain('[data-slot="execution-blocker"]');
     expect(queries).toContain('[data-slot="execution-checkpoint-copy"]');
     expect(queries).toContain('[data-slot="execution-suggestion"]');
+    expect(queries).toContain('[data-slot="activity-speed-label"]');
+    expect(queries).toContain('[data-slot="activity-speed-detail"]');
+    expect(queries).toContain('[data-slot="activity-control-label"]');
+    expect(queries).toContain('[data-slot="activity-suggestion"]');
+    expect(queries).toContain('[data-slot="speed-plan-label"]');
+    expect(queries).toContain('[data-slot="speed-plan-detail"]');
+    expect(queries).toContain('[data-slot="speed-control-label"]');
+    expect(queries).toContain('[data-field="execution-speed-profile"]');
+    expect(queries).toContain('[data-field="receita-web-experimental-notice"]');
+    expect(queries).toContain(
+      '[data-slot="receita-web-experimental-notice-panel"]',
+    );
+    expect(queries).toContain('[data-action="pause-processing"]');
+    expect(queries).toContain('[data-action="discover-official-source"]');
+    expect(queries).toContain('[data-action="prepare-official-source"]');
+    expect(queries).toContain(
+      '[data-slot="local-public-base-official-source-line"]',
+    );
   });
 });
 
@@ -108,6 +197,10 @@ function makeRefs(): AppRefs {
     }) as unknown as HTMLButtonElement;
 
   return {
+    activityControlLabel: element(),
+    activitySpeedDetail: element(),
+    activitySpeedLabel: element(),
+    activitySuggestion: element(),
     cancelButton: button(),
     columnInput: null,
     commandHint: null,
@@ -132,9 +225,12 @@ function makeRefs(): AppRefs {
     kpiProcessed: null,
     kpiTotalLines: null,
     localPublicBaseDate: null,
+    localPublicBaseDiscoverButton: null,
     localPublicBaseNotice: null,
     localPublicBaseNoticePanel: null,
+    localPublicBaseOfficialSourceLine: null,
     localPublicBasePrepareButton: null,
+    localPublicBasePrepareOfficialButton: null,
     localPublicBasePrepPanel: null,
     localPublicBaseStatusLine: null,
     localPublicBaseWarning: null,
@@ -142,6 +238,7 @@ function makeRefs(): AppRefs {
     outputPreview: null,
     outputSavePath: null,
     outputStatus: null,
+    pauseButton: button(),
     pickButton: button(),
     processButton: button(),
     progressBar: null,
@@ -157,6 +254,8 @@ function makeRefs(): AppRefs {
     protocolStatus: null,
     providerSelect: null,
     providerStatus: null,
+    receitaWebExperimentalNotice: null,
+    receitaWebExperimentalNoticePanel: null,
     queueActiveHint: null,
     queueActiveName: null,
     queueActiveStatus: null,
@@ -169,6 +268,10 @@ function makeRefs(): AppRefs {
     sessionEntry: element(),
     sessionRun: element(),
     sessionState: element(),
+    speedControlLabel: element(),
+    speedPlanDetail: element(),
+    speedPlanLabel: element(),
+    speedProfileSelect: null,
     summary: null,
     topStatusPill: null,
     viewLinks: [],

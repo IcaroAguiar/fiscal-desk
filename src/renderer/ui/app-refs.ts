@@ -1,4 +1,8 @@
 export type AppRefs = {
+  activityControlLabel: HTMLElement | null;
+  activitySpeedDetail: HTMLElement | null;
+  activitySpeedLabel: HTMLElement | null;
+  activitySuggestion: HTMLElement | null;
   cancelButton: HTMLButtonElement | null;
   columnInput: HTMLInputElement | null;
   commandHint: HTMLElement | null;
@@ -19,9 +23,12 @@ export type AppRefs = {
   fileDropzoneHint: HTMLElement | null;
   fileDropzoneTitle: HTMLElement | null;
   localPublicBaseDate: HTMLElement | null;
+  localPublicBaseDiscoverButton: HTMLButtonElement | null;
   localPublicBaseNotice: HTMLInputElement | null;
   localPublicBaseNoticePanel: HTMLElement | null;
+  localPublicBaseOfficialSourceLine: HTMLElement | null;
   localPublicBasePrepareButton: HTMLButtonElement | null;
+  localPublicBasePrepareOfficialButton: HTMLButtonElement | null;
   localPublicBasePrepPanel: HTMLElement | null;
   localPublicBaseStatusLine: HTMLElement | null;
   localPublicBaseWarning: HTMLElement | null;
@@ -33,6 +40,7 @@ export type AppRefs = {
   kpiPending: HTMLElement | null;
   kpiProcessed: HTMLElement | null;
   kpiTotalLines: HTMLElement | null;
+  pauseButton: HTMLButtonElement | null;
   pickButton: HTMLButtonElement | null;
   processButton: HTMLButtonElement | null;
   progressBar: HTMLElement | null;
@@ -59,9 +67,15 @@ export type AppRefs = {
   sessionEntry: HTMLElement | null;
   sessionRun: HTMLElement | null;
   sessionState: HTMLElement | null;
+  speedControlLabel: HTMLElement | null;
+  speedPlanDetail: HTMLElement | null;
+  speedPlanLabel: HTMLElement | null;
+  speedProfileSelect: HTMLSelectElement | null;
   summary: HTMLElement | null;
   topStatusPill: HTMLElement | null;
   runStatusPill: HTMLElement | null;
+  receitaWebExperimentalNotice: HTMLInputElement | null;
+  receitaWebExperimentalNoticePanel: HTMLElement | null;
   viewLinks: HTMLElement[];
   viewPanels: HTMLElement[];
 };
@@ -80,6 +94,21 @@ export function collectAppRefs(appRoot: HTMLElement): AppRefs {
     cancelButton: appRoot.querySelector<HTMLButtonElement>(
       '[data-action="cancel-processing"]',
     ),
+    activitySpeedLabel: appRoot.querySelector<HTMLElement>(
+      '[data-slot="activity-speed-label"]',
+    ),
+    activitySpeedDetail: appRoot.querySelector<HTMLElement>(
+      '[data-slot="activity-speed-detail"]',
+    ),
+    activityControlLabel: appRoot.querySelector<HTMLElement>(
+      '[data-slot="activity-control-label"]',
+    ),
+    activitySuggestion: appRoot.querySelector<HTMLElement>(
+      '[data-slot="activity-suggestion"]',
+    ),
+    pauseButton: appRoot.querySelector<HTMLButtonElement>(
+      '[data-action="pause-processing"]',
+    ),
     providerSelect: appRoot.querySelector<HTMLSelectElement>(
       '[data-field="provider"]',
     ),
@@ -89,8 +118,14 @@ export function collectAppRefs(appRoot: HTMLElement): AppRefs {
     deliverySelect: appRoot.querySelector<HTMLSelectElement>(
       '[data-field="delivery-format"]',
     ),
+    speedProfileSelect: appRoot.querySelector<HTMLSelectElement>(
+      '[data-field="execution-speed-profile"]',
+    ),
     localPublicBaseNotice: appRoot.querySelector<HTMLInputElement>(
       '[data-field="local-public-base-notice"]',
+    ),
+    localPublicBaseDiscoverButton: appRoot.querySelector<HTMLButtonElement>(
+      '[data-action="discover-official-source"]',
     ),
     localPublicBaseNoticePanel: appRoot.querySelector<HTMLElement>(
       '[data-slot="local-public-base-notice-panel"]',
@@ -104,11 +139,27 @@ export function collectAppRefs(appRoot: HTMLElement): AppRefs {
     localPublicBaseStatusLine: appRoot.querySelector<HTMLElement>(
       '[data-slot="local-public-base-status-line"]',
     ),
+    localPublicBaseOfficialSourceLine: appRoot.querySelector<HTMLElement>(
+      '[data-slot="local-public-base-official-source-line"]',
+    ),
     localPublicBasePrepareButton: appRoot.querySelector<HTMLButtonElement>(
       '[data-action="prepare-local-public-base"]',
     ),
+    localPublicBasePrepareOfficialButton:
+      appRoot.querySelector<HTMLButtonElement>(
+        '[data-action="prepare-official-source"]',
+      ),
     localPublicBasePrepPanel: appRoot.querySelector<HTMLElement>(
       '[data-slot="local-public-base-prep-panel"]',
+    ),
+    speedPlanLabel: appRoot.querySelector<HTMLElement>(
+      '[data-slot="speed-plan-label"]',
+    ),
+    speedPlanDetail: appRoot.querySelector<HTMLElement>(
+      '[data-slot="speed-plan-detail"]',
+    ),
+    speedControlLabel: appRoot.querySelector<HTMLElement>(
+      '[data-slot="speed-control-label"]',
     ),
     message: appRoot.querySelector<HTMLElement>('[data-slot="message"]'),
     commandSummary: appRoot.querySelector<HTMLElement>(
@@ -136,6 +187,12 @@ export function collectAppRefs(appRoot: HTMLElement): AppRefs {
     ),
     runStatusPill: appRoot.querySelector<HTMLElement>(
       '[data-slot="run-status-pill"]',
+    ),
+    receitaWebExperimentalNotice: appRoot.querySelector<HTMLInputElement>(
+      '[data-field="receita-web-experimental-notice"]',
+    ),
+    receitaWebExperimentalNoticePanel: appRoot.querySelector<HTMLElement>(
+      '[data-slot="receita-web-experimental-notice-panel"]',
     ),
     progressSection: appRoot.querySelector<HTMLElement>(
       '[data-slot="progress-section"]',

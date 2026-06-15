@@ -3,6 +3,8 @@ import { contextBridge, ipcRenderer } from "electron";
 import { PROCESS_CSV_IPC_CHANNEL } from "../core/app/process-csv.types";
 import type { SimplesProviderName } from "../core/simples/simples-provider.names";
 import type {
+  ExportPendingCnpjsResult,
+  LocalPublicBaseOfficialSource,
   LocalPublicBasePreparationConsent,
   LocalPublicBasePrepareResult,
   LocalPublicBaseStatus,
@@ -10,6 +12,7 @@ import type {
   ProcessCsvDeliveryFormat,
   ProcessCsvDeliveryOptionId,
   ProcessCsvExecution,
+  ProcessCsvExecutionSpeedProfile,
   ProcessCsvInputFormat,
   ProcessCsvOutputDelivery,
   ProcessCsvRunStatus,
@@ -32,9 +35,11 @@ type PickLocalPublicBaseSourceResult = {
 
 type ProcessCsvInput = {
   acceptedLocalPublicBaseNotice?: boolean;
+  acceptedReceitaWebExperimentalNotice?: boolean;
   content: string | number[];
   deliveryFormat?: ProcessCsvDeliveryFormat;
   deliveryOptionId?: ProcessCsvDeliveryOptionId;
+  executionSpeedProfile?: ProcessCsvExecutionSpeedProfile;
   inputFormat?: ProcessCsvInputFormat;
   provider: SimplesProviderName;
   cnpjColumn?: string;
@@ -67,6 +72,9 @@ contextBridge.exposeInMainWorld("appBridge", {
   },
   cancelProcessing: (): Promise<boolean> => {
     return ipcRenderer.invoke(PROCESS_CSV_IPC_CHANNEL.CANCEL_PROCESSING);
+  },
+  pauseProcessing: (): Promise<boolean> => {
+    return ipcRenderer.invoke(PROCESS_CSV_IPC_CHANNEL.PAUSE_PROCESSING);
   },
   saveCsvFile: (
     defaultName: string,
@@ -117,6 +125,10 @@ contextBridge.exposeInMainWorld("appBridge", {
   getLocalPublicBaseStatus: (): Promise<LocalPublicBaseStatus> => {
     return ipcRenderer.invoke("local-public-base:get-status");
   },
+  discoverLocalPublicBaseOfficialSource:
+    (): Promise<LocalPublicBaseOfficialSource> => {
+      return ipcRenderer.invoke("local-public-base:discover-official-source");
+    },
   pickLocalPublicBaseSourceFile:
     (): Promise<PickLocalPublicBaseSourceResult | null> => {
       return ipcRenderer.invoke("local-public-base:pick-source-file");
@@ -129,21 +141,42 @@ contextBridge.exposeInMainWorld("appBridge", {
   }): Promise<LocalPublicBasePrepareResult> => {
     return ipcRenderer.invoke("local-public-base:prepare", input);
   },
+  prepareLocalPublicBaseOfficialSource: (input: {
+    consent?: LocalPublicBasePreparationConsent;
+  }): Promise<LocalPublicBasePrepareResult> => {
+    return ipcRenderer.invoke(
+      "local-public-base:prepare-official-source",
+      input,
+    );
+  },
   listExecutions: (): Promise<ProcessExecutionHistoryItem[]> => {
     return ipcRenderer.invoke(PROCESS_CSV_IPC_CHANNEL.LIST_EXECUTIONS);
+  },
+  exportPendingCnpjs: (
+    ledgerKey: string,
+  ): Promise<ExportPendingCnpjsResult | null> => {
+    return ipcRenderer.invoke(PROCESS_CSV_IPC_CHANNEL.EXPORT_PENDING_CNPJS, {
+      ledgerKey,
+    });
   },
   resumeExecution: (
     ledgerKey: string,
     deliveryFormat?: ProcessCsvDeliveryFormat,
     acceptedLocalPublicBaseNotice?: boolean,
     deliveryOptionId?: ProcessCsvDeliveryOptionId,
+    executionSpeedProfile?: ProcessCsvExecutionSpeedProfile,
+    acceptedReceitaWebExperimentalNotice?: boolean,
   ): Promise<ProcessCsvResult> => {
     return ipcRenderer.invoke(PROCESS_CSV_IPC_CHANNEL.RESUME_EXECUTION, {
       ...(acceptedLocalPublicBaseNotice
         ? { acceptedLocalPublicBaseNotice }
         : {}),
+      ...(acceptedReceitaWebExperimentalNotice
+        ? { acceptedReceitaWebExperimentalNotice }
+        : {}),
       ...(deliveryFormat ? { deliveryFormat } : {}),
       ...(deliveryOptionId ? { deliveryOptionId } : {}),
+      ...(executionSpeedProfile ? { executionSpeedProfile } : {}),
       ledgerKey,
     });
   },

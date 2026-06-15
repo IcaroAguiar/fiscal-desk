@@ -20,6 +20,7 @@ vi.mock("electron", () => ({
 
 import {
   PROCESS_CSV_DELIVERY_OPTION_ID,
+  PROCESS_CSV_EXECUTION_SPEED_PROFILE,
   PROCESS_CSV_IPC_CHANNEL,
 } from "../../src/core/app/process-csv.types";
 
@@ -34,6 +35,7 @@ describe("preload appBridge", () => {
     await appBridge.processCsv({
       content: "cnpj\n00000000000191",
       deliveryOptionId: PROCESS_CSV_DELIVERY_OPTION_ID.PRESERVE_COLUMNS_CSV,
+      executionSpeedProfile: PROCESS_CSV_EXECUTION_SPEED_PROFILE.FAST,
       provider: "mock",
     });
 
@@ -42,6 +44,7 @@ describe("preload appBridge", () => {
       {
         content: "cnpj\n00000000000191",
         deliveryOptionId: PROCESS_CSV_DELIVERY_OPTION_ID.PRESERVE_COLUMNS_CSV,
+        executionSpeedProfile: PROCESS_CSV_EXECUTION_SPEED_PROFILE.FAST,
         provider: "mock",
       },
     );
@@ -77,6 +80,7 @@ describe("preload appBridge", () => {
         deliveryFormat?: string,
         acceptedLocalPublicBaseNotice?: boolean,
         deliveryOptionId?: string,
+        executionSpeedProfile?: string,
       ) => Promise<unknown>;
     };
 
@@ -85,6 +89,7 @@ describe("preload appBridge", () => {
       undefined,
       undefined,
       PROCESS_CSV_DELIVERY_OPTION_ID.CURRENT_RESULT_WORKBOOK,
+      PROCESS_CSV_EXECUTION_SPEED_PROFILE.MAXIMUM,
     );
 
     expect(electronMocks.ipcRenderer.invoke).toHaveBeenCalledWith(
@@ -92,8 +97,34 @@ describe("preload appBridge", () => {
       {
         deliveryOptionId:
           PROCESS_CSV_DELIVERY_OPTION_ID.CURRENT_RESULT_WORKBOOK,
+        executionSpeedProfile: PROCESS_CSV_EXECUTION_SPEED_PROFILE.MAXIMUM,
         ledgerKey: "mock-0123456789abcdef01234567.json",
       },
+    );
+  });
+
+  it("forwards pause processing requests through the dedicated IPC channel", async () => {
+    const appBridge = electronMocks.exposed.appBridge as {
+      pauseProcessing: () => Promise<unknown>;
+    };
+
+    await appBridge.pauseProcessing();
+
+    expect(electronMocks.ipcRenderer.invoke).toHaveBeenCalledWith(
+      PROCESS_CSV_IPC_CHANNEL.PAUSE_PROCESSING,
+    );
+  });
+
+  it("forwards pending CNPJ export requests through the dedicated IPC channel", async () => {
+    const appBridge = electronMocks.exposed.appBridge as {
+      exportPendingCnpjs: (ledgerKey: string) => Promise<unknown>;
+    };
+
+    await appBridge.exportPendingCnpjs("mock-0123456789abcdef01234567.json");
+
+    expect(electronMocks.ipcRenderer.invoke).toHaveBeenCalledWith(
+      PROCESS_CSV_IPC_CHANNEL.EXPORT_PENDING_CNPJS,
+      { ledgerKey: "mock-0123456789abcdef01234567.json" },
     );
   });
 
@@ -117,6 +148,42 @@ describe("preload appBridge", () => {
 
     expect(electronMocks.ipcRenderer.invoke).toHaveBeenCalledWith(
       "local-public-base:prepare",
+      input,
+    );
+  });
+
+  it("forwards official local public base source discovery", async () => {
+    const appBridge = electronMocks.exposed.appBridge as {
+      discoverLocalPublicBaseOfficialSource: () => Promise<unknown>;
+    };
+
+    await appBridge.discoverLocalPublicBaseOfficialSource();
+
+    expect(electronMocks.ipcRenderer.invoke).toHaveBeenCalledWith(
+      "local-public-base:discover-official-source",
+    );
+  });
+
+  it("forwards official local public base preparation input", async () => {
+    const appBridge = electronMocks.exposed.appBridge as {
+      prepareLocalPublicBaseOfficialSource: (
+        input: Record<string, unknown>,
+      ) => Promise<unknown>;
+    };
+    const input = {
+      consent: {
+        accepted: true,
+        acceptedAt: "2026-06-14T12:00:00.000Z",
+        baseDateAcknowledged: "2026-01",
+        stalenessWarningAcknowledged:
+          "Base Pública Local preparada automaticamente.",
+      },
+    };
+
+    await appBridge.prepareLocalPublicBaseOfficialSource(input);
+
+    expect(electronMocks.ipcRenderer.invoke).toHaveBeenCalledWith(
+      "local-public-base:prepare-official-source",
       input,
     );
   });

@@ -141,6 +141,36 @@ describe("ReceitaBrowserClient", () => {
 
       await expect(waitPromise).rejects.toThrow("Aborted");
     });
+
+    it("handles result wait timeout without unhandled rejection when abortable", async () => {
+      const unhandledRejections: unknown[] = [];
+      const onUnhandledRejection = (reason: unknown) => {
+        unhandledRejections.push(reason);
+      };
+
+      mockPage.waitForTimeout.mockResolvedValue(undefined);
+      mockPage.waitForFunction.mockRejectedValue(
+        new Error("Timeout 30000ms exceeded"),
+      );
+      mockPage.content.mockResolvedValue(RESULT_PAGE_TEXT);
+
+      const client = new ReceitaBrowserClient();
+      await client.connect();
+
+      const controller = new AbortController();
+      process.on("unhandledRejection", onUnhandledRejection);
+
+      try {
+        const result = await client.waitResult(controller.signal);
+        await new Promise((resolve) => setTimeout(resolve, 0));
+
+        expect(result.success).toBe(true);
+        expect(result.html).toBe(RESULT_PAGE_TEXT);
+        expect(unhandledRejections).toEqual([]);
+      } finally {
+        process.off("unhandledRejection", onUnhandledRejection);
+      }
+    });
   });
 
   describe("hasCaptcha", () => {
@@ -176,6 +206,40 @@ describe("ReceitaBrowserClient", () => {
       await expect(client.hasCaptcha(controller.signal)).rejects.toThrow(
         "Aborted",
       );
+    });
+  });
+
+  describe("waitForManualCaptchaResolution", () => {
+    it("returns current html when manual CAPTCHA resolution reveals a result", async () => {
+      mockPage.$$.mockResolvedValue([]);
+      mockPage.textContent.mockResolvedValue(
+        "Situação no Simples Nacional: Optante pelo Simples Nacional",
+      );
+      mockPage.content.mockResolvedValue(RESULT_PAGE_TEXT);
+
+      const client = new ReceitaBrowserClient();
+      await client.connect();
+
+      const result = await client.waitForManualCaptchaResolution(undefined, {
+        pollIntervalMs: 1,
+        timeoutMs: 10,
+      });
+
+      expect(result.success).toBe(true);
+      expect(result.html).toBe(RESULT_PAGE_TEXT);
+      expect(mockPage.waitForTimeout).not.toHaveBeenCalled();
+    });
+
+    it("throws AbortError when signal aborted before manual CAPTCHA wait", async () => {
+      const client = new ReceitaBrowserClient();
+      await client.connect();
+
+      const controller = new AbortController();
+      controller.abort();
+
+      await expect(
+        client.waitForManualCaptchaResolution(controller.signal),
+      ).rejects.toThrow("Aborted");
     });
   });
 

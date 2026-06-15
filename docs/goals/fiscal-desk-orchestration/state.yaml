@@ -2,7 +2,7 @@ version: 2
 goal:
   slug: fiscal-desk-orchestration
   title: Fiscal Desk Orchestration
-  status: orchestrating_active
+  status: f9e_parallel_experimental_validated_integrated_closeout
   judge_owner: codex_primary
   canonical_package: docs/goals/fiscal-desk-orchestration
   canonical_phase_source: docs/fiscal-desk/phase-orchestration.md
@@ -425,10 +425,160 @@ phases:
     judge_decision_file: results/phase-8b-local-update-diagnostic-ui-implementation-judge-decision.md
     integration_status: integrated_validated_selective
     scope_note: renderer_local_blocked_states_only_no_ipc_preload_update_network_release_package
+  f9_speed_control_base_assistida:
+    slug: fiscal-desk-f9-velocidade-controle-base-assistida
+    status: f9e_parallel_experimental_validated_integrated_closeout
+    goal_file: phases/phase-9-velocidade-controle-base-assistida.md
+    thread_id: 019ebe5c-3853-79c2-87ad-8ddace386c93
+    thread_title: Fiscal Desk F9 - Velocidade Controle Base Assistida
+    result_file: results/phase-9a-speed-control-core-ui-2026-06-14.md
+    judge_decision_file: results/phase-9a-speed-control-core-ui-judge-decision-2026-06-14.md
+    f9c1_result_file: results/phase-9c1-official-source-discovery-2026-06-14.md
+    f9c1_judge_decision_file: results/phase-9c1-official-source-discovery-judge-decision-2026-06-14.md
+    f9c2_result_file: results/phase-9c2-official-download-streaming-index-2026-06-14.md
+    f9c2_judge_decision_file: results/phase-9c2-official-download-streaming-index-judge-decision-2026-06-14.md
+    f9d1_result_file: results/phase-9d1-pause-checkpoint-control-2026-06-14.md
+    f9d1_judge_decision_file: results/phase-9d1-pause-checkpoint-control-judge-decision-2026-06-14.md
+    f9d2_result_file: results/phase-9d2-strong-cancel-partial-pending-export-2026-06-14.md
+    f9d2_judge_decision_file: results/phase-9d2-strong-cancel-partial-pending-export-judge-decision-2026-06-14.md
+    f9e_blocker_file: results/phase-9e-receita-web-parallel-experimental-blocker-2026-06-14.md
+    f9e_contract_goal_file: phases/phase-9e-receita-web-parallel-experimental-contract.md
+    f9e_contract_file: contracts/phase-9e-receita-web-parallel-experimental-contract.md
+    f9e_contract_window_file: results/phase-9e-contract-window-opened-2026-06-14.md
+    f9e_contract_api_design_review_file: results/phase-9e-contract-api-design-review-2026-06-14.md
+    f9e_contract_security_review_file: results/phase-9e-contract-security-review-2026-06-14.md
+    f9e_browser_to_api_investigation_file: results/phase-9e-browser-to-api-investigation-2026-06-14.md
+    f9e_browser_trace_install_file: results/phase-9e-browser-trace-installed-2026-06-14.md
+    f9e_browser_to_api_initial_capture_file: results/phase-9e-browser-to-api-initial-capture-2026-06-14.md
+    f9e_public_cnpj_capture_file: results/phase-9e-receita-web-public-cnpj-captcha-capture-2026-06-14.md
+    f9e_parallel_experimental_implementation_file: results/phase-9e-receita-web-parallel-experimental-implementation-2026-06-14.md
+    activity_controls_visibility_followup_file: results/phase-9-activity-controls-visibility-followup-2026-06-14.md
+    integrated_readiness_audit_file: results/phase-9-integrated-readiness-audit-2026-06-14.md
+    superseded_final_closeout_file: results/phase-9-final-closeout-2026-06-14.md
+    final_closeout_file: results/phase-9-final-closeout-post-f9e-2026-06-14.md
+    integration_status: f9e_parallel_experimental_validated_integrated_closeout
+    scope_note: speed_profile_contract_core_bounded_concurrency_official_source_discovery_download_zip_validation_streaming_index_pause_checkpoint_control_and_pending_export
+    completed_slices:
+      - f9a_speed_profile_contract
+      - f9b_core_bounded_lookup_concurrency_for_allowed_providers
+      - f9c1_base_publica_official_source_discovery_preflight
+      - f9c2_base_publica_assisted_download_and_streaming_index
+      - f9d1_pause_checkpoint_control
+      - f9d2_strong_cancel_partial_export_and_pending_redistribution
+      - f9_activity_controls_visibility_followup
+      - f9e_receita_web_parallel_experimental_implementation
+    pending_slices: []
+    deferred_slices: []
+    provider_concurrency_policy:
+      mock: profile_limited
+      base_publica_local: profile_limited
+      cnpja_open: fixed_one_due_public_rate_limit
+      receita_web: fixed_one_assisted_no_batch
+      receita_web_parallel_experimental: explicit_consent_profile_limited_1_2_3_3_stop_on_captcha_or_block
+    evidence:
+      lint: pass
+      typecheck: pass
+      test: pass
+      smoke_visual: pass
+      smoke_electron_ui: pass
+      diff_check: pass
+      independent_review: approved_no_remaining_findings_after_state_rereview_agent_019ec864_5928_7c90_86e0_8ef6a394f7a4
+      f9c1_focused_tests: pass_32_tests_after_timeout_rework
+      f9c1_typecheck: pass
+      f9c1_lint: pass
+      f9c1_full_test: pass_43_files_295_tests
+      f9c1_smoke_visual: pass
+      f9c1_smoke_electron_ui: pass
+      f9c1_local_live_discovery: blocked_by_receita_endpoint_returning_404_from_local_fetch_and_curl
+      f9c1_official_web_index_verified: cnpj_tarball_60g_and_monthly_simples_zip_268m
+      f9c1_independent_review: p2_timeout_finding_reworked_and_approved
+      f9c2_focused_tests: pass_4_files_50_tests_after_crc_and_source_trust_rework
+      f9c2_typecheck: pass
+      f9c2_lint: pass
+      f9c2_full_test: pass_43_files_316_tests
+      f9c2_build: pass
+      f9c2_smoke_visual: pass
+      f9c2_smoke_electron_ui: pass
+      f9c2_diff_check: pass
+      f9c2_independent_review: p2_zip_crc_and_p3_source_trust_reworked_no_blocking_findings
+      f9c2_residual_risk: local_public_base_index_still_materialized_as_single_json_pending_incremental_persistence_slice
+      f9d1_focused_tests: pass_6_files_44_tests_after_rework
+      f9d1_typecheck: pass
+      f9d1_lint: pass
+      f9d1_full_test: pass_43_files_299_tests
+      f9d1_smoke_visual: pass
+      f9d1_smoke_electron_ui: pass
+      f9d1_diff_check: pass
+      f9d1_independent_review: p2_p3_p3_findings_reworked_and_no_findings_on_rereview
+      f9d2_focused_tests: pass_5_files_51_tests
+      f9d2_typecheck: pass
+      f9d2_lint: pass
+      f9d2_full_test: pass_43_files_319_tests
+      f9d2_build: pass
+      f9d2_smoke_visual: pass
+      f9d2_smoke_electron_ui: pass
+      f9d2_diff_check: pass
+      f9d2_independent_review: no_p0_p3_blocking_findings_reviewer_focused_pass_6_files_45_tests
+      f9d2_residual_risk: pending_export_is_cnpj_only_and_requires_manual_reprocess_provider_selection
+      f9e_blocker: requires_fresh_explicit_decision_before_receita_web_parallel_experimental_work
+      f9e_judge_review: block_pending_explicit_decision_agent_019ec752_e2d0_7ca0_a75d_82ce4807b7d5
+      f9e_user_decision: open_contract_window_docs_only
+      f9e_contract_window: opened_docs_only_no_src_or_test_changes_allowed
+      f9e_api_design_review: reviewed_contract_docs_only_agent_019ec7a8_545e_71f2_aa9a_d230721e63b5
+      f9e_security_review: approve_contract_docs_only_with_required_future_gates_agent_019ec7ab_c906_7f53_9d56_d254061598dc
+      f9e_browser_to_api_investigation: pre_capture_precisa_captura_manual_no_o11y_trace_no_browser_trace_skill_agent_019ec7af_7555_7190_97f3_63acde10e0cb_superseded_by_initial_capture
+      f9e_browser_trace_install: installed_local_skill_syntax_checked_no_receita_capture_run
+      f9e_browser_to_api_initial_capture: investigation_complete_no_api_endpoint_observed_17_requests_17_responses_2_page_renders_0_api_endpoints_raw_o11y_removed_due_cookie_signal
+      f9e_public_cnpj_capture: captcha_blocked_no_success_flow_post_consultaoptantes_html_form_low_confidence_no_json_api_raw_o11y_removed
+      f9e_parallel_experimental_focused_tests_2026_06_14_1950: pass_7_files_56_tests
+      f9e_parallel_experimental_lint_2026_06_14_1950: pass_128_files
+      f9e_parallel_experimental_typecheck_2026_06_14_1950: pass
+      f9e_parallel_experimental_post_review_typecheck_2026_06_14_2005: pass
+      f9e_parallel_experimental_post_review_lint_2026_06_14_2005: pass_128_files
+      f9e_parallel_experimental_post_review_focused_tests_2026_06_14_2005: pass_9_files_92_tests
+      f9e_parallel_experimental_post_review_rework: progress_cnpj_masked_receita_anti_bot_flag_removed_resume_consent_blocked_stop_covered_cnpja_serial_catalog
+      f9e_parallel_experimental_integrated_lint_2026_06_14_2008: pass_128_files
+      f9e_parallel_experimental_integrated_typecheck_2026_06_14_2008: pass
+      f9e_parallel_experimental_integrated_test_2026_06_14_2008: pass_43_files_329_tests
+      f9e_parallel_experimental_integrated_build_2026_06_14_2008: pass
+      f9e_parallel_experimental_integrated_diff_check_2026_06_14_2008: pass
+      f9e_parallel_experimental_integrated_raw_o11y_hygiene_2026_06_14_2008: pass_no_o11y_directory_retained
+      f9e_parallel_experimental_integrated_smoke_visual_2026_06_14_2008: pass_no_overflow_clipped_buttons_or_overlaps
+      f9e_parallel_experimental_integrated_smoke_electron_ui_2026_06_14_2008: pass_run_1da0d1f0_be65_413d_b64c_ff417799c30b
+      f9e_parallel_experimental_current_review_2026_06_14_2008: no_code_blocker_state_inconsistency_reworked_pending_rereview_agent_019ec864_5928_7c90_86e0_8ef6a394f7a4
+      f9e_parallel_experimental_state_rereview_2026_06_14_2010: approved_no_remaining_findings_agent_019ec864_5928_7c90_86e0_8ef6a394f7a4
+      f9_final_closeout_post_f9e: validated_integrated_closeout
+      f9_activity_controls_visibility_followup_focused_tests: pass_3_files_27_tests
+      f9_activity_controls_visibility_followup_typecheck: pass
+      f9_activity_controls_visibility_followup_lint: pass
+      f9_activity_controls_visibility_followup_diff_check: pass
+      f9_activity_controls_visibility_followup_smoke_visual: pass
+      f9_activity_controls_visibility_followup_smoke_electron_ui: pass_run_2c7193c8_ad4c_4bae_8c1f_9e674e396664
+      f9_activity_controls_visibility_followup_review: approved_candidate_agent_019ec7be_903a_76d2_8db0_d159858d8408
+      f9_final_closeout: validated_integrated_closeout
+      f9_final_lint_2026_06_14_1727: pass_128_files
+      f9_final_typecheck_2026_06_14_1724: pass
+      f9_final_test_2026_06_14_1724: pass_43_files_320_tests
+      f9_final_build_2026_06_14_1724: pass
+      f9_final_diff_check_2026_06_14_1724: pass
+      f9_final_smoke_visual_2026_06_14_1724: pass
+      f9_final_smoke_electron_ui_2026_06_14_1724: pass_run_ab4ad979_d52d_476d_b162_8537cc39d35a
+      f9_final_raw_o11y_hygiene: pass_no_o11y_directory_retained
+      f9_final_lint_after_closeout_docs_2026_06_14_1730: pass_128_files
+      f9_final_typecheck_after_closeout_docs_2026_06_14_1730: pass
+      f9_final_test_after_closeout_docs_2026_06_14_1730: pass_43_files_320_tests
+      f9_final_build_after_closeout_docs_2026_06_14_1730: pass
+      f9_final_diff_check_after_closeout_docs_2026_06_14_1730: pass
+      final_integrated_typecheck_2026_06_14_1515: pass
+      final_integrated_test_2026_06_14_1515: pass_43_files_319_tests
+      final_integrated_build_2026_06_14_1515: pass
+      final_integrated_smoke_visual_2026_06_14_1515: pass
+      final_integrated_smoke_electron_ui_2026_06_14_1515: pass_run_06e50a9b_1194_4ffc_abd5_201e5c2349ba
 known_blockers:
   - dirty_worktree_with_existing_ui_and_test_changes
   - docs_fiscal_desk_is_ignored_by_git_info_exclude
   - visual_fidelity_artifacts_ignored_by_gitignore
+  - f9e_receita_web_live_success_flow_blocked_by_captcha_in_public_cnpj_capture
 versioning_decisions:
   docs_goals: include_in_f0_pr
   renderer_vite_env: include_if_required_by_typecheck
@@ -600,13 +750,13 @@ post_commit_closeout:
     - renderer_template_ui
     - reusable_delivery_models
 monitoring:
-  orchestrator_goal_active: true
+  orchestrator_goal_active: false
   observe_threads_frequently: true
-  heartbeat_automation_id: fiscal-desk-f0-monitor
-  heartbeat_interval_minutes: 30
-  last_observation_at: "2026-06-13 23:32:27 -03"
-  last_observation_file: docs/goals/fiscal-desk-orchestration/results/post-p3-pr-remote-branch-readiness-observation-2026-06-13.md
-  last_observation_status: waiting_for_explicit_push_and_pr_authorization_no_remote_branch
+  heartbeat_automation_id: removed_fiscal-desk-f0-monitor
+  heartbeat_interval_minutes: null
+  last_observation_at: "2026-06-14 11:25:11 -03"
+  last_observation_file: docs/goals/fiscal-desk-orchestration/results/post-pr-e2e-desktop-build-workflow-2026-06-14.md
+  last_observation_status: local_e2e_desktop_build_workflow_validated_pending_commit_push_and_pr_authorization
   f0_thread_status: self_approval_blocker_resolved_by_judge
   final_integration_review_status: approved_by_judge
   final_integration_review_thread_id: 019ec005-f849-7b53-ae0f-ae7c02df4f63
@@ -630,7 +780,7 @@ monitoring:
   staging_versioning_closeout_dispatch_file: results/staging-versioning-closeout-dispatch-2026-06-13.md
   staging_versioning_closeout_file: results/staging-versioning-closeout.md
   staging_versioning_closeout_judge_decision_file: results/staging-versioning-closeout-judge-decision.md
-  next_material_worker_status: blocked_pending_explicit_pr_action_approval
+  next_material_worker_status: none_active_pending_commit_push_and_pr_authorization
   last_thread_observation:
     testing_infra_coverage_gate_worker: idle_completed
     testing_infra_coverage_gate_independent_review: idle_completed_approved_candidate
@@ -695,7 +845,8 @@ monitoring:
     post_p3_branch_pr_preparation_closeout: idle_completed_approved_pr_preparation_candidate_judged
     post_p3_pr_action_readiness_observation: done_no_existing_pr_waiting_for_explicit_approval
     post_p3_pr_remote_branch_readiness_observation: done_no_remote_branch_waiting_for_explicit_push_and_pr_authorization
-    material_worker_released: none_active_pending_explicit_pr_action_approval
+    post_pr_e2e_desktop_build_workflow: local_validated_stage_set_prepared_pending_commit
+    material_worker_released: none_active_pending_commit_push_and_pr_authorization
   active_material_owner_window_after_post_local_base_regate:
     slug: post_local_base_regate_csv_input_intake_hardening
     status: approved_by_judge_integrated_validated
@@ -2132,8 +2283,8 @@ monitoring:
       - pdf_word_ocr_real
       - receita_web_live_massiva
   pending_pr_action_approval:
-    status: waiting_for_explicit_push_and_pr_authorization
-    observed_at: "2026-06-13 23:32:27 -03"
+    status: waiting_for_commit_or_staging_decision_then_explicit_push_and_pr_authorization
+    observed_at: "2026-06-14 11:25:11 -03"
     branch: feat/fiscal-desk-local-base-prep
     remote: https://github.com/IcaroAguiar/consulta-simples-csv.git
     existing_pr_query: gh pr list --head feat/fiscal-desk-local-base-prep --state all
@@ -2145,7 +2296,10 @@ monitoring:
     remote_branch_observation_file: results/post-p3-pr-remote-branch-readiness-observation-2026-06-13.md
     source_pr_preparation_receipt: results/post-p3-branch-pr-preparation-closeout-2026-06-13.md
     source_pr_preparation_judge_decision: results/post-p3-branch-pr-preparation-closeout-judge-decision-2026-06-13.md
+    current_local_update_receipt: results/post-pr-e2e-desktop-build-workflow-2026-06-14.md
+    current_local_update_status: validated_local_stage_set_prepared_pending_commit
     requires_explicit_authorization_before:
+      - commit_new_e2e_desktop_build_workflow_changes
       - git_push_origin_feat_fiscal_desk_local_base_prep
       - gh_pr_create
       - gh_pr_edit

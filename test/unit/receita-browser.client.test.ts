@@ -93,7 +93,13 @@ describe("ReceitaBrowserClient", () => {
       expect(chromium.launch).toHaveBeenCalledWith(
         expect.objectContaining({
           headless: true,
-          args: ["--disable-blink-features=AutomationControlled"],
+        }),
+      );
+      expect(chromium.launch).not.toHaveBeenCalledWith(
+        expect.objectContaining({
+          args: expect.arrayContaining([
+            "--disable-blink-features=AutomationControlled",
+          ]),
         }),
       );
 

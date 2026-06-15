@@ -1,6 +1,9 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { app, dialog, ipcMain } from "electron";
+import { assertLocalPublicBasePreparationConsent } from "../../core/public-base/local-public-base.index";
+import { downloadLocalPublicBaseOfficialSource } from "../../core/public-base/local-public-base.official-download";
+import { discoverLocalPublicBaseOfficialSource } from "../../core/public-base/local-public-base.official-source";
 import { LocalPublicBaseStore } from "../../core/public-base/local-public-base.store";
 import type { LocalPublicBasePreparationConsent } from "../../core/public-base/local-public-base.types";
 import { LocalPublicBaseSimplesLookupAdapter } from "../../core/simples/adapters/local-public-base-simples-lookup.adapter";
@@ -14,12 +17,19 @@ type PrepareLocalPublicBaseInput = {
   sourceFileName: string;
   sourceFilePath: string;
 };
+type PrepareOfficialLocalPublicBaseInput = {
+  consent?: LocalPublicBasePreparationConsent;
+};
 
 let activeLocalPublicBasePreparation: Promise<unknown> | null = null;
 
 export function registerLocalPublicBaseIpc(): void {
   ipcMain.handle("local-public-base:get-status", async () => {
     return createLocalPublicBaseStore().getStatus();
+  });
+
+  ipcMain.handle("local-public-base:discover-official-source", async () => {
+    return discoverLocalPublicBaseOfficialSource();
   });
 
   ipcMain.handle("local-public-base:pick-source-file", async () => {
@@ -70,6 +80,26 @@ export function registerLocalPublicBaseIpc(): void {
       }
     },
   );
+
+  ipcMain.handle(
+    "local-public-base:prepare-official-source",
+    async (_event, input: PrepareOfficialLocalPublicBaseInput = {}) => {
+      if (activeLocalPublicBasePreparation) {
+        throw new Error(
+          "Ja existe um preparo de Base Pública Local em andamento.",
+        );
+      }
+
+      const preparation = prepareOfficialLocalPublicBase(input);
+      activeLocalPublicBasePreparation = preparation;
+
+      try {
+        return await preparation;
+      } finally {
+        activeLocalPublicBasePreparation = null;
+      }
+    },
+  );
 }
 
 export function isLocalPublicBasePreparing(): boolean {
@@ -80,6 +110,31 @@ export function createLocalPublicBaseStore(): LocalPublicBaseStore {
   return new LocalPublicBaseStore(
     path.join(app.getPath("userData"), "public-base"),
   );
+}
+
+async function prepareOfficialLocalPublicBase(
+  input: PrepareOfficialLocalPublicBaseInput,
+) {
+  assertLocalPublicBasePreparationConsent(input.consent);
+
+  const source = await discoverLocalPublicBaseOfficialSource();
+  if (input.consent.baseDateAcknowledged !== source.baseDate) {
+    throw new Error(
+      "A fonte oficial mudou desde o aceite. Busque a fonte novamente e confirme a Data da Base antes de preparar.",
+    );
+  }
+
+  const downloaded = await downloadLocalPublicBaseOfficialSource({
+    directory: path.join(app.getPath("userData"), "public-base", "downloads"),
+    source,
+  });
+
+  return createLocalPublicBaseStore().prepareFromOfficialZip({
+    consent: input.consent,
+    source,
+    sourceSizeBytes: downloaded.sizeBytes,
+    zipFilePath: downloaded.filePath,
+  });
 }
 
 export async function createLocalPublicBaseRuntimeProvider(

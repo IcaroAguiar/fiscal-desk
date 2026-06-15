@@ -1,3 +1,4 @@
+import { PROCESS_CSV_EXECUTION_SPEED_PROFILE } from "../../core/app/process-csv.types";
 import { SIMPLES_PROVIDER } from "../../core/simples/simples-provider.names";
 import type { UiState, UiView } from "./app.types";
 import {
@@ -13,7 +14,10 @@ import { renderLocalTrustGrid } from "./app-local-trust-view";
 
 export { renderExecutionHistory } from "./app-history-view";
 
-import { formatLocalPublicBaseStatusLine } from "./app-local-public-base-copy";
+import {
+  formatLocalPublicBaseOfficialSourceLine,
+  formatLocalPublicBaseStatusLine,
+} from "./app-local-public-base-copy";
 import { renderLogList, renderQueueItems } from "./app-view-lists";
 import { button, statusPill } from "./components";
 import {
@@ -105,6 +109,9 @@ export function renderShell(state: UiState): string {
     state.status === "processing" ||
     state.status === "error";
   const operationalPanel = buildOperationalPanelCopy(state);
+  const needsReceitaWebExperimentalNotice =
+    state.provider === SIMPLES_PROVIDER.RECEITA_WEB_PARALLEL_EXPERIMENTAL &&
+    !state.receitaWebExperimentalNoticeAccepted;
 
   return `
     <main class="app-shell workbench-shell workbench-v5">
@@ -140,7 +147,7 @@ export function renderShell(state: UiState): string {
             <span class="status-token ${getProviderStatusVariant(state)}" data-slot="provider-status">${escapeHtml(getProviderStatusLabel(state))}</span>
             ${referenceMode ? "" : statusPill({ variant: getStatusPillVariant(state.status), children: statusLabel, dataSlot: "top-status-pill" })}
             <span class="sync-only" data-slot="run-status-pill" aria-hidden="true">${escapeHtml(statusLabel)}</span>
-            ${button({ variant: "primary", "data-action": "process-file", children: state.status === "processing" ? "Consultando..." : "Iniciar consulta", disabled: state.status === "processing" || state.localPublicBasePrepareStatus === "loading" || !state.content || (state.provider === SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL && (!state.localPublicBaseNoticeAccepted || state.localPublicBaseStatus?.state !== "ready")) })}
+            ${button({ variant: "primary", "data-action": "process-file", children: state.status === "processing" ? "Consultando..." : "Iniciar consulta", disabled: state.status === "processing" || state.localPublicBasePrepareStatus === "loading" || !state.content || (state.provider === SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL && (!state.localPublicBaseNoticeAccepted || state.localPublicBaseStatus?.state !== "ready")) || needsReceitaWebExperimentalNotice })}
           </div>
         </header>
 
@@ -174,6 +181,7 @@ export function renderShell(state: UiState): string {
                   <option value="${SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL}" ${state.provider === SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL ? "selected" : ""}>Base local</option>
                   <option value="${SIMPLES_PROVIDER.CNPJA_OPEN}" ${state.provider === SIMPLES_PROVIDER.CNPJA_OPEN ? "selected" : ""}>CNPJá Open</option>
                   <option value="${SIMPLES_PROVIDER.RECEITA_WEB}" ${state.provider === SIMPLES_PROVIDER.RECEITA_WEB ? "selected" : ""}>Receita Web</option>
+                  <option value="${SIMPLES_PROVIDER.RECEITA_WEB_PARALLEL_EXPERIMENTAL}" ${state.provider === SIMPLES_PROVIDER.RECEITA_WEB_PARALLEL_EXPERIMENTAL ? "selected" : ""}>Receita Web experimental</option>
                 </select>
               </label>
               <label class="field" for="cnpj-column">
@@ -188,9 +196,34 @@ export function renderShell(state: UiState): string {
                 </select>
                 <span class="field__note">O Excel separa resumo, resultados, falhas e auditoria em abas.</span>
               </label>
+              <label class="field" for="execution-speed-profile">
+                <span class="field__label">Velocidade</span>
+                <select id="execution-speed-profile" data-field="execution-speed-profile">
+                  <option value="${PROCESS_CSV_EXECUTION_SPEED_PROFILE.CONSERVATIVE}" ${state.executionSpeedProfile === PROCESS_CSV_EXECUTION_SPEED_PROFILE.CONSERVATIVE ? "selected" : ""}>Leve</option>
+                  <option value="${PROCESS_CSV_EXECUTION_SPEED_PROFILE.BALANCED}" ${state.executionSpeedProfile === PROCESS_CSV_EXECUTION_SPEED_PROFILE.BALANCED ? "selected" : ""}>Equilibrado</option>
+                  <option value="${PROCESS_CSV_EXECUTION_SPEED_PROFILE.FAST}" ${state.executionSpeedProfile === PROCESS_CSV_EXECUTION_SPEED_PROFILE.FAST ? "selected" : ""}>Rápido</option>
+                  <option value="${PROCESS_CSV_EXECUTION_SPEED_PROFILE.MAXIMUM}" ${state.executionSpeedProfile === PROCESS_CSV_EXECUTION_SPEED_PROFILE.MAXIMUM ? "selected" : ""}>Máximo</option>
+                </select>
+                <span class="field__note">O limite real depende da base escolhida e do provedor.</span>
+              </label>
               <div class="field field--readonly">
                 <span class="field__label">Retomada local</span>
                 <strong>Com checkpoint</strong>
+              </div>
+            </div>
+
+            <div class="speed-plan" aria-label="Plano de velocidade">
+              <div>
+                <span class="ops-label">Velocidade</span>
+                <strong data-slot="speed-plan-label">${escapeHtml(operationalPanel.speedLabel)}</strong>
+              </div>
+              <div>
+                <span class="ops-label">Limite do método</span>
+                <strong data-slot="speed-plan-detail">${escapeHtml(operationalPanel.speedDetailLabel)}</strong>
+              </div>
+              <div>
+                <span class="ops-label">Controle</span>
+                <strong data-slot="speed-control-label">${escapeHtml(operationalPanel.controlLabel)}</strong>
               </div>
             </div>
 
@@ -199,7 +232,10 @@ export function renderShell(state: UiState): string {
                 <span class="ops-label">Base Pública Local</span>
                 <strong data-slot="local-public-base-status-line">${escapeHtml(formatLocalPublicBaseStatusLine(state))}</strong>
                 <small>Preparada neste computador para consultas locais.</small>
+                <small data-slot="local-public-base-official-source-line">${escapeHtml(formatLocalPublicBaseOfficialSourceLine(state))}</small>
               </div>
+              ${button({ variant: "secondary", "data-action": "discover-official-source", children: state.localPublicBaseOfficialSourceStatus === "loading" ? "Buscando fonte..." : "Buscar fonte oficial", disabled: state.status === "processing" || state.localPublicBaseOfficialSourceStatus === "loading" })}
+              ${button({ variant: "secondary", "data-action": "prepare-official-source", children: state.localPublicBasePrepareStatus === "loading" ? "Baixando..." : "Baixar e preparar oficial", disabled: state.status === "processing" || state.localPublicBasePrepareStatus === "loading" || state.localPublicBaseOfficialSourceStatus === "loading" || !state.localPublicBaseNoticeAccepted || state.localPublicBaseOfficialSource === null })}
               ${button({ variant: "secondary", "data-action": "prepare-local-public-base", children: state.localPublicBasePrepareStatus === "loading" ? "Preparando..." : "Preparar base", disabled: state.status === "processing" || state.localPublicBasePrepareStatus === "loading" || (state.provider === SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL && !state.localPublicBaseNoticeAccepted) })}
             </div>
 
@@ -208,6 +244,14 @@ export function renderShell(state: UiState): string {
               <span>
                 Entendo que a Base Pública Local usa dados de <strong data-slot="local-public-base-date">${escapeHtml(state.localPublicBaseStatus?.baseDate ?? "data não informada")}</strong>.
                 <small data-slot="local-public-base-warning">${escapeHtml(state.localPublicBaseStatus?.freshnessWarning ?? "Data da Base indisponível.")}</small>
+              </span>
+            </label>
+
+            <label class="notice-check" for="receita-web-experimental-notice" data-slot="receita-web-experimental-notice-panel" ${state.provider !== SIMPLES_PROVIDER.RECEITA_WEB_PARALLEL_EXPERIMENTAL ? 'style="display:none"' : ""}>
+              <input id="receita-web-experimental-notice" data-field="receita-web-experimental-notice" type="checkbox" ${state.receitaWebExperimentalNoticeAccepted ? "checked" : ""} />
+              <span>
+                Entendo que o modo Receita Web experimental pode abrir até 3 janelas visíveis; se aparecer CAPTCHA, preciso resolver manualmente na janela.
+                <small>Sem desbloqueio manual, a execução para com parcial/pendências; para volume, prefira Base Pública Local.</small>
               </span>
             </label>
 
@@ -338,6 +382,28 @@ export function renderShell(state: UiState): string {
                 <span data-slot="progress-bar" style="width: ${getProgressPercent(state)}%"></span>
               </div>
               <span class="current-cnpj" data-slot="current-cnpj">${state.progress?.currentCnpj ?? "—"}</span>
+              <div class="activity-guidance" aria-label="Limites da execução">
+                <div>
+                  <span class="ops-label">Método</span>
+                  <strong data-slot="activity-speed-label">${escapeHtml(operationalPanel.speedLabel)}</strong>
+                </div>
+                <div>
+                  <span class="ops-label">Limite</span>
+                  <strong data-slot="activity-speed-detail">${escapeHtml(operationalPanel.speedDetailLabel)}</strong>
+                </div>
+                <div>
+                  <span class="ops-label">Controle</span>
+                  <strong data-slot="activity-control-label">${escapeHtml(operationalPanel.controlLabel)}</strong>
+                </div>
+                <div>
+                  <span class="ops-label">Próxima ação</span>
+                  <strong data-slot="activity-suggestion">${escapeHtml(operationalPanel.suggestionLabel)}</strong>
+                </div>
+              </div>
+              <div class="output-actions" data-slot="processing-controls">
+                ${referenceMode ? "" : button({ variant: "secondary", "data-action": "pause-processing", children: "Pausar", disabled: state.status !== "processing" })}
+                ${referenceMode ? "" : button({ variant: "danger", "data-action": "cancel-processing", children: "Cancelar", disabled: state.status !== "processing" })}
+              </div>
             </div>
           </section>
 
@@ -361,7 +427,6 @@ export function renderShell(state: UiState): string {
               <span class="save-path" data-slot="output-save-path">${escapeHtml(autoSavePreview ?? "")}</span>
             </div>
             <div class="output-actions">
-              ${referenceMode ? "" : button({ variant: "danger", "data-action": "cancel-processing", children: "Cancelar", disabled: state.status !== "processing" })}
               ${button({ variant: "secondary", "data-action": "save-file", children: "Exportar", disabled: !referenceMode && !state.outputDelivery })}
             </div>
           </section>
@@ -471,6 +536,12 @@ export function getProviderStatusLabel(state: UiState): string {
 
   if (state.provider === SIMPLES_PROVIDER.CNPJA_OPEN) {
     return "CNPJá Open";
+  }
+
+  if (state.provider === SIMPLES_PROVIDER.RECEITA_WEB_PARALLEL_EXPERIMENTAL) {
+    return state.receitaWebAvailable
+      ? "Receita Web experimental"
+      : "Receita Web indisponível";
   }
 
   return state.receitaWebAvailable

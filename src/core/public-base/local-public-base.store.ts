@@ -7,8 +7,10 @@ import {
   createLocalPublicBaseStatus,
   prepareLocalPublicBaseFromCsv,
 } from "./local-public-base.index";
+import { prepareLocalPublicBaseFromOfficialSimplesZip } from "./local-public-base.official-zip";
 import type {
   LocalPublicBasePrepareInput,
+  LocalPublicBasePrepareOfficialZipInput,
   LocalPublicBasePrepareResult,
   LocalPublicBaseRecord,
   LocalPublicBaseStatus,
@@ -116,6 +118,41 @@ export class LocalPublicBaseStore {
           ? null
           : (prepared.status.errorMessage ??
             "Nenhum registro válido foi encontrado no CSV selecionado."),
+      records: prepared.records,
+    };
+
+    await writeIndexDocument(this.indexPath, document);
+
+    return {
+      acceptedRows: document.preparedRows,
+      rejectedRows: document.rejectedRows,
+      status: toStatus(document),
+    };
+  }
+
+  async prepareFromOfficialZip(
+    input: LocalPublicBasePrepareOfficialZipInput,
+  ): Promise<LocalPublicBasePrepareResult> {
+    const prepared = await prepareLocalPublicBaseFromOfficialSimplesZip(input);
+
+    await mkdir(this.directory, { recursive: true });
+
+    const document: LocalPublicBaseIndexDocument = {
+      version: INDEX_VERSION,
+      state: prepared.records.length > 0 ? "ready" : "error",
+      sourceFileName: input.source.fileName,
+      sourceFilePath: input.zipFilePath,
+      preparedAt: prepared.status.preparedAt ?? new Date().toISOString(),
+      baseDate: prepared.status.baseDate,
+      estimatedRows: prepared.status.estimatedRows,
+      preparedRows: prepared.records.length,
+      rejectedRows: prepared.rejectedRows,
+      sourceSizeBytes: input.sourceSizeBytes,
+      errorMessage:
+        prepared.records.length > 0
+          ? null
+          : (prepared.status.errorMessage ??
+            "Nenhum registro válido foi encontrado no Simples.zip oficial."),
       records: prepared.records,
     };
 
@@ -250,6 +287,9 @@ function isLocalPublicBaseRecord(
   return (
     typeof candidate.cnpj === "string" &&
     validateCnpj(candidate.cnpj) &&
+    (candidate.cnpjBasico === undefined ||
+      (typeof candidate.cnpjBasico === "string" &&
+        /^\d{8}$/.test(candidate.cnpjBasico))) &&
     typeof candidate.razaoSocial === "string" &&
     typeof candidate.simplesNacional === "boolean" &&
     typeof candidate.simei === "boolean" &&

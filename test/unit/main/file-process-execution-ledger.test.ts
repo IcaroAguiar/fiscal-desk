@@ -378,7 +378,7 @@ describe("FileProcessExecutionLedger", () => {
       providerName: "mock",
       sourceFilePath,
     });
-    await interruptedRun.setTotalUniqueLookups(1);
+    await interruptedRun.setTotalUniqueLookups(2);
     await interruptedRun.saveLookup({
       cnpj: "00000000000191",
       simplesNacional: true,
@@ -388,7 +388,7 @@ describe("FileProcessExecutionLedger", () => {
     });
     await interruptedRun.finish({
       status: "CANCELLED",
-      outputPath: null,
+      outputPath: join(directory, "entrada-processado.csv"),
       summary: null,
     });
 
@@ -399,17 +399,23 @@ describe("FileProcessExecutionLedger", () => {
       canResume: true,
       checkpointPath: interruptedRun.checkpointPath,
       checkpointedUniqueLookups: 1,
+      canExportPending: true,
       cnpjColumn: "cnpj",
+      hasPartialOutput: true,
       inputFormat: "csv",
+      pendingUniqueLookups: 1,
       providerConfigVersion: "provider-config-v1",
       providerName: "mock",
       resumeBlockedReason: null,
       sourceFileName: "entrada.csv",
       sourceFilePath,
       status: "CANCELLED",
-      totalUniqueLookups: 1,
+      totalUniqueLookups: 2,
     });
     expect(history[0]?.ledgerKey).toMatch(/^mock-[a-f0-9]{24}\.json$/);
+    await expect(
+      ledger.getCheckpointedCnpjs(history[0]?.ledgerKey ?? ""),
+    ).resolves.toEqual(new Set(["00000000000191"]));
   });
 
   it("marks successful ledgers as history-only instead of resumable", async () => {

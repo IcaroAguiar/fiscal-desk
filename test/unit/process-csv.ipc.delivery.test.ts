@@ -67,6 +67,7 @@ vi.mock("../../src/core/simples/simples-provider.factory", () => ({
     CNPJA_OPEN: "cnpja-open",
     MOCK: "mock",
     RECEITA_WEB: "receita-web",
+    RECEITA_WEB_PARALLEL_EXPERIMENTAL: "receita-web-parallel-experimental",
   },
 }));
 
@@ -77,11 +78,18 @@ vi.mock(
   }),
 );
 
-import { PROCESS_CSV_DELIVERY_OPTION_ID } from "../../src/core/app/process-csv.types";
+import {
+  PROCESS_CSV_DELIVERY_OPTION_ID,
+  PROCESS_CSV_EXECUTION_SPEED_PROFILE,
+} from "../../src/core/app/process-csv.types";
 import { processCsv } from "../../src/core/app/process-csv.use-case";
 import { FISCAL_EXPORT_DELIVERY_OPTION_ID } from "../../src/core/export/export-contract";
 import { createSimplesLookupProvider } from "../../src/core/simples/simples-provider.factory";
-import { registerCsvIpc } from "../../src/main/ipc/process-csv.ipc";
+import { SIMPLES_PROVIDER } from "../../src/core/simples/simples-provider.names";
+import {
+  registerCsvIpc,
+  resolveMaxConcurrentLookups,
+} from "../../src/main/ipc/process-csv.ipc";
 
 describe("process-csv IPC delivery selection", () => {
   beforeEach(() => {
@@ -122,6 +130,92 @@ describe("process-csv IPC delivery selection", () => {
       },
     });
     registerCsvIpc();
+  });
+
+  it("resolves effective concurrency by provider and speed profile", () => {
+    expect(
+      resolveMaxConcurrentLookups(
+        SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL,
+        PROCESS_CSV_EXECUTION_SPEED_PROFILE.FAST,
+      ),
+    ).toBe(6);
+    expect(
+      resolveMaxConcurrentLookups(
+        SIMPLES_PROVIDER.CNPJA_OPEN,
+        PROCESS_CSV_EXECUTION_SPEED_PROFILE.MAXIMUM,
+      ),
+    ).toBe(1);
+    expect(
+      resolveMaxConcurrentLookups(
+        SIMPLES_PROVIDER.RECEITA_WEB,
+        PROCESS_CSV_EXECUTION_SPEED_PROFILE.MAXIMUM,
+      ),
+    ).toBe(1);
+    expect(
+      resolveMaxConcurrentLookups(
+        SIMPLES_PROVIDER.RECEITA_WEB_PARALLEL_EXPERIMENTAL,
+        PROCESS_CSV_EXECUTION_SPEED_PROFILE.CONSERVATIVE,
+      ),
+    ).toBe(1);
+    expect(
+      resolveMaxConcurrentLookups(
+        SIMPLES_PROVIDER.RECEITA_WEB_PARALLEL_EXPERIMENTAL,
+        PROCESS_CSV_EXECUTION_SPEED_PROFILE.BALANCED,
+      ),
+    ).toBe(2);
+    expect(
+      resolveMaxConcurrentLookups(
+        SIMPLES_PROVIDER.RECEITA_WEB_PARALLEL_EXPERIMENTAL,
+        PROCESS_CSV_EXECUTION_SPEED_PROFILE.FAST,
+      ),
+    ).toBe(3);
+    expect(
+      resolveMaxConcurrentLookups(
+        SIMPLES_PROVIDER.RECEITA_WEB_PARALLEL_EXPERIMENTAL,
+        PROCESS_CSV_EXECUTION_SPEED_PROFILE.MAXIMUM,
+      ),
+    ).toBe(3);
+  });
+
+  it("requires explicit consent before starting Receita Web experimental parallel mode", async () => {
+    const handler = handlers.get("csv:process");
+
+    await expect(
+      handler?.(
+        { sender: { send: vi.fn() } },
+        {
+          content: "cnpj\n00000000000191",
+          provider: SIMPLES_PROVIDER.RECEITA_WEB_PARALLEL_EXPERIMENTAL,
+        },
+      ),
+    ).rejects.toThrow("Confirme o aviso do modo experimental da Receita Web");
+
+    expect(ledgerMocks.startRun).not.toHaveBeenCalled();
+    expect(processCsv).not.toHaveBeenCalled();
+  });
+
+  it("passes Receita Web experimental consent and effective window count", async () => {
+    const handler = handlers.get("csv:process");
+
+    await handler?.(
+      { sender: { send: vi.fn() } },
+      {
+        acceptedReceitaWebExperimentalNotice: true,
+        content: "cnpj\n00000000000191",
+        executionSpeedProfile: PROCESS_CSV_EXECUTION_SPEED_PROFILE.FAST,
+        provider: SIMPLES_PROVIDER.RECEITA_WEB_PARALLEL_EXPERIMENTAL,
+      },
+    );
+
+    expect(processCsv).toHaveBeenCalledWith(
+      expect.any(Object),
+      expect.any(Object),
+      expect.objectContaining({
+        maxConcurrentLookups: 3,
+        requestGlobalStop: expect.any(Function),
+        stopOnLookupStatuses: ["CAPTCHA_REQUIRED", "BLOCKED"],
+      }),
+    );
   });
 
   it("rejects invalid delivery formats before starting processing", async () => {
@@ -170,6 +264,27 @@ describe("process-csv IPC delivery selection", () => {
       expect.objectContaining({
         deliveryOptionId: PROCESS_CSV_DELIVERY_OPTION_ID.PRESERVE_COLUMNS_CSV,
         executionLedger: ledgerMocks.session,
+      }),
+    );
+  });
+
+  it("passes execution speed profile as effective lookup concurrency", async () => {
+    const handler = handlers.get("csv:process");
+
+    await handler?.(
+      { sender: { send: vi.fn() } },
+      {
+        content: "cnpj\n00000000000191",
+        executionSpeedProfile: PROCESS_CSV_EXECUTION_SPEED_PROFILE.FAST,
+        provider: SIMPLES_PROVIDER.MOCK,
+      },
+    );
+
+    expect(processCsv).toHaveBeenCalledWith(
+      expect.any(Object),
+      expect.any(Object),
+      expect.objectContaining({
+        maxConcurrentLookups: 6,
       }),
     );
   });
