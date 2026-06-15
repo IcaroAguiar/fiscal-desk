@@ -1,6 +1,12 @@
+import ExcelJS from "exceljs";
 import { describe, expect, it } from "vitest";
-
+import { PROCESS_CSV_INPUT_FORMAT } from "../../src/core/app/process-csv.types";
 import { processCsv } from "../../src/core/app/process-csv.use-case";
+import { FISCAL_EXPORT_DELIVERY_OPTION_ID } from "../../src/core/export/export-contract";
+import {
+  createLocalPublicBaseIndexFromRecords,
+  prepareLocalPublicBaseFromCsv,
+} from "../../src/core/public-base/local-public-base.index";
 import { LocalPublicBaseSimplesLookupAdapter } from "../../src/core/simples/adapters/local-public-base-simples-lookup.adapter";
 import { MockSimplesLookupAdapter } from "../../src/core/simples/adapters/mock-simples-lookup.adapter";
 import type {
@@ -28,6 +34,25 @@ class ErrorStatusLookupAdapter implements SimplesLookupPort {
   }
 }
 
+class CountingSuccessLookupAdapter implements SimplesLookupPort {
+  readonly calls: string[] = [];
+
+  async lookup(
+    cnpj: string,
+    _options?: SimplesLookupOptions,
+  ): Promise<SimplesLookupResult> {
+    this.calls.push(cnpj);
+
+    return {
+      cnpj,
+      simplesNacional: false,
+      simei: false,
+      source: "mock",
+      status: "SUCCESS",
+    };
+  }
+}
+
 describe("processCsv", () => {
   it("enriches rows, reuses duplicate lookups, and preserves original columns", async () => {
     const csv = [
@@ -51,19 +76,78 @@ describe("processCsv", () => {
       "Empresa A;00.000.000/0001-91;00.000.000/0001-91;00000000000191;true;true;false;SUCCESS;mock;;2",
     );
     expect(result.outputCsv).toContain(
-      "Empresa B;00.000.000/0001-91;00.000.000/0001-91;00000000000191;true;true;false;SUCCESS;mock;;3",
+      "Empresa B;00.000.000/0001-91;00.000.000/0001-91;00000000000191;true;true;false;SUCCESS;mock;CNPJ repetido. A consulta será reaproveitada da primeira ocorrência válida.;3",
     );
     expect(result.outputCsv).toContain(
       "Empresa C;12.345.678/0001-95;12.345.678/0001-95;12345678000195;true;false;false;SUCCESS;mock;;4",
     );
     expect(result.outputCsv).toContain(
-      "Empresa D;123;123;123;false;;;INVALID_CNPJ;system;CNPJ invalido;5",
+      "Empresa D;123;123;123;false;;;INVALID_CNPJ;system;CNPJ inválido. Revise os 14 dígitos antes de consultar esta linha.;5",
     );
     expect(result.delivery).toMatchObject({
       extension: "csv",
       format: "csv",
     });
     expect(result.outputXlsx).toBeNull();
+  });
+
+  it("uses the fiscal ingestion batch as the unique lookup handoff while preserving every output row", async () => {
+    const csv = [
+      "nome;cpf_cnpj",
+      "Empresa A;00.000.000/0001-91",
+      "Empresa B;123",
+      "Empresa A duplicada;00.000.000/0001-91",
+      "Empresa C;12.345.678/0001-95",
+    ].join("\n");
+    const provider = new CountingSuccessLookupAdapter();
+
+    const result = await processCsv(csv, provider);
+
+    expect(provider.calls).toEqual(["00000000000191", "12345678000195"]);
+    expect(result.summary).toMatchObject({
+      totalLinhas: 4,
+      totalCnpjsEncontrados: 4,
+      totalCnpjsValidos: 3,
+      totalCnpjsUnicosConsultados: 2,
+    });
+    expect(result.outputCsv).toContain(
+      "Empresa B;123;123;123;false;;;INVALID_CNPJ;system;CNPJ inválido. Revise os 14 dígitos antes de consultar esta linha.;3",
+    );
+    expect(result.outputCsv).toContain(
+      "Empresa A duplicada;00.000.000/0001-91;00.000.000/0001-91;00000000000191;true;false;false;SUCCESS;mock;CNPJ repetido. A consulta será reaproveitada da primeira ocorrência válida.;4",
+    );
+  });
+
+  it("keeps duplicate CNPJ visible when the reused lookup has a provider message", async () => {
+    const csv = [
+      "nome;cpf_cnpj",
+      "Empresa A;11.222.333/0001-81",
+      "Empresa A duplicada;11.222.333/0001-81",
+    ].join("\n");
+    const provider = new ErrorStatusLookupAdapter({
+      "11222333000181": {
+        cnpj: "11222333000181",
+        message: "CNPJ não encontrado na base consultada.",
+        simplesNacional: null,
+        simei: null,
+        source: "mock",
+        status: "NOT_FOUND",
+      },
+    });
+
+    const result = await processCsv(csv, provider);
+
+    expect(result.summary).toMatchObject({
+      totalCnpjsEncontrados: 2,
+      totalCnpjsUnicosConsultados: 1,
+      totalErros: 2,
+    });
+    expect(result.outputCsv).toContain(
+      "Empresa A;11.222.333/0001-81;11.222.333/0001-81;11222333000181;true;;;NOT_FOUND;mock;CNPJ não encontrado na base consultada.;2",
+    );
+    expect(result.outputCsv).toContain(
+      "Empresa A duplicada;11.222.333/0001-81;11.222.333/0001-81;11222333000181;true;;;NOT_FOUND;mock;CNPJ repetido. A consulta será reaproveitada da primeira ocorrência válida. Resultado reaproveitado: CNPJ não encontrado na base consultada.;3",
+    );
   });
 
   it("can generate an Excel delivery while preserving the CSV output contract", async () => {
@@ -85,6 +169,107 @@ describe("processCsv", () => {
     expect(result.outputXlsx?.byteLength).toBeGreaterThan(1000);
   });
 
+  it("processes XLSX input through the fiscal ingestion core", async () => {
+    const xlsx = await createXlsxBuffer([
+      ["nome", "cpf_cnpj"],
+      ["Empresa A", "00.000.000/0001-91"],
+      ["Empresa B", "123"],
+      ["Empresa A duplicada", "00.000.000/0001-91"],
+      ["Empresa C", "12.345.678/0001-95"],
+    ]);
+    const provider = new CountingSuccessLookupAdapter();
+
+    const result = await processCsv(
+      {
+        content: xlsx,
+        format: PROCESS_CSV_INPUT_FORMAT.XLSX,
+        sourceFileName: "entrada.xlsx",
+      },
+      provider,
+    );
+
+    expect(provider.calls).toEqual(["00000000000191", "12345678000195"]);
+    expect(result.summary).toMatchObject({
+      totalLinhas: 4,
+      totalCnpjsEncontrados: 4,
+      totalCnpjsValidos: 3,
+      totalCnpjsUnicosConsultados: 2,
+    });
+    expect(result.outputCsv).toContain(
+      "Empresa B;123;123;123;false;;;INVALID_CNPJ;system;CNPJ inválido. Revise os 14 dígitos antes de consultar esta linha.;3",
+    );
+    expect(result.outputCsv).toContain(
+      "Empresa A duplicada;00.000.000/0001-91;00.000.000/0001-91;00000000000191;true;false;false;SUCCESS;mock;CNPJ repetido. A consulta será reaproveitada da primeira ocorrência válida.;4",
+    );
+  });
+
+  it("can resolve the current CSV delivery through the F6E1 delivery option id", async () => {
+    const csv = ["nome;cpf_cnpj", "Empresa A;00.000.000/0001-91"].join("\n");
+
+    const result = await processCsv(csv, new MockSimplesLookupAdapter(), {
+      deliveryOptionId: FISCAL_EXPORT_DELIVERY_OPTION_ID.PRESERVE_COLUMNS_CSV,
+    });
+
+    expect(result.delivery).toMatchObject({
+      extension: "csv",
+      format: "csv",
+    });
+    expect(result.outputCsv).toContain("Empresa A");
+    expect(result.outputXlsx).toBeNull();
+  });
+
+  it("can resolve the current XLSX delivery through the F6E1 delivery option id", async () => {
+    const csv = ["nome;cpf_cnpj", "Empresa A;00.000.000/0001-91"].join("\n");
+
+    const result = await processCsv(csv, new MockSimplesLookupAdapter(), {
+      deliveryOptionId:
+        FISCAL_EXPORT_DELIVERY_OPTION_ID.CURRENT_RESULT_WORKBOOK,
+    });
+
+    expect(result.delivery).toMatchObject({
+      extension: "xlsx",
+      format: "xlsx",
+    });
+    expect(result.outputCsv).toContain("Empresa A");
+    expect(result.outputXlsx?.byteLength).toBeGreaterThan(1000);
+  });
+
+  it.each([
+    {
+      deliveryOptionId: "",
+      message: "Opcao de entrega desconhecida.",
+    },
+    {
+      deliveryOptionId: "unknown-delivery-option",
+      message: "Opcao de entrega desconhecida.",
+    },
+    {
+      deliveryOptionId: FISCAL_EXPORT_DELIVERY_OPTION_ID.NORMALIZED_WORKBOOK,
+      message: "Opcao de entrega indisponivel",
+    },
+    {
+      deliveryOptionId: FISCAL_EXPORT_DELIVERY_OPTION_ID.EXECUTIVE_PDF,
+      message: "Opcao de entrega indisponivel",
+    },
+    {
+      deliveryOptionId: FISCAL_EXPORT_DELIVERY_OPTION_ID.DETAILED_JSON,
+      message: "Opcao de entrega indisponivel",
+    },
+  ])("rejects non-executable delivery option $deliveryOptionId before lookup", async ({
+    deliveryOptionId,
+    message,
+  }) => {
+    const csv = ["nome;cpf_cnpj", "Empresa A;00.000.000/0001-91"].join("\n");
+    const provider = new CountingSuccessLookupAdapter();
+
+    await expect(
+      processCsv(csv, provider, {
+        deliveryOptionId: deliveryOptionId as never,
+      }),
+    ).rejects.toThrow(message);
+    expect(provider.calls).toEqual([]);
+  });
+
   it("processes rows with the Base Pública Local provider and records Data da Base in the result", async () => {
     const csv = [
       "nome;cpf_cnpj",
@@ -92,9 +277,27 @@ describe("processCsv", () => {
       "Nao encontrado;11.222.333/0001-81",
     ].join("\n");
 
+    const prepared = prepareLocalPublicBaseFromCsv({
+      content: [
+        "cnpj;razao_social;simples_nacional;simei;data_base",
+        "00000000000191;Banco do Brasil S.A.;sim;nao;2026-05-20",
+      ].join("\n"),
+      consent: {
+        accepted: true,
+        acceptedAt: "2026-06-13T00:00:00.000Z",
+        baseDateAcknowledged: "2026-05-20",
+        stalenessWarningAcknowledged:
+          "A Base Pública Local pode estar defasada.",
+      },
+      sourceFileName: "base.csv",
+      sourceFilePath: "/tmp/base.csv",
+    });
     const result = await processCsv(
       csv,
-      new LocalPublicBaseSimplesLookupAdapter(),
+      new LocalPublicBaseSimplesLookupAdapter(
+        createLocalPublicBaseIndexFromRecords(prepared.records),
+        prepared.status,
+      ),
     );
 
     expect(result.summary.totalLinhas).toBe(2);
@@ -217,3 +420,15 @@ describe("processCsv", () => {
     expect(result.outputCsv).toContain("UNPARSABLE_RESULT");
   });
 });
+
+async function createXlsxBuffer(rows: string[][]): Promise<Uint8Array> {
+  const workbook = new ExcelJS.Workbook();
+  const worksheet = workbook.addWorksheet("entrada");
+
+  for (const row of rows) {
+    worksheet.addRow(row);
+  }
+
+  const buffer = await workbook.xlsx.writeBuffer();
+  return new Uint8Array(buffer);
+}

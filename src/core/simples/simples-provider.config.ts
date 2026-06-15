@@ -1,5 +1,6 @@
 import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
+import { getSimplesProviderNames } from "./simples-provider.catalog";
 import {
   SIMPLES_PROVIDER,
   type SimplesProviderName,
@@ -9,12 +10,7 @@ const CONFIG_FILE_NAME = "simples-provider.config.json";
 const ENV_VAR_NAME = "SIMPLES_PROVIDER";
 const DEFAULT_PROVIDER: SimplesProviderName = SIMPLES_PROVIDER.MOCK;
 
-const VALID_PROVIDERS: readonly SimplesProviderName[] = [
-  SIMPLES_PROVIDER.MOCK,
-  SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL,
-  SIMPLES_PROVIDER.CNPJA_OPEN,
-  SIMPLES_PROVIDER.RECEITA_WEB,
-] as const;
+const VALID_PROVIDERS = getSimplesProviderNames();
 
 function isValidProvider(value: unknown): value is SimplesProviderName {
   return (

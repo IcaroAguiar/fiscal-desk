@@ -116,6 +116,35 @@ describe("CnpjaOpenSimplesLookupAdapter retry", () => {
     expect(httpClient.lastOptions?.signal).toBeDefined();
   });
 
+  it("can run as a single-attempt provider for centralized fallback budget", async () => {
+    const adapter = new CnpjaOpenSimplesLookupAdapter(
+      new SequentialHttpClient([
+        {
+          status: 429,
+          json: async () => ({}),
+        },
+        {
+          status: 200,
+          json: async () => ({
+            taxId: "03426484000123",
+            company: {
+              simples: { optant: false, since: null },
+              simei: { optant: false, since: null },
+            },
+          }),
+        },
+      ]),
+      new FakeRateLimiter(),
+      5_000,
+      1,
+    );
+
+    await expect(adapter.lookup("03426484000123")).resolves.toMatchObject({
+      source: "cnpja-open",
+      status: "TEMPORARY_ERROR",
+    });
+  });
+
   it("aborts an in-flight request when the caller cancels the lookup", async () => {
     const httpClient = new AbortAwareHttpClient();
     const adapter = new CnpjaOpenSimplesLookupAdapter(

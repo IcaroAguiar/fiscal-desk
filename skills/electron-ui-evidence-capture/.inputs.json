@@ -1,0 +1,87 @@
+[
+  {
+    "tool": "read_thesis_section",
+    "args": {
+      "section": "Workflow archetypes"
+    },
+    "result_hash": "3402eb520a901eeb345636a08a32a9a0310f31e41b67e4a6fed7aec07874b544"
+  },
+  {
+    "tool": "read_thesis_section",
+    "args": {
+      "section": "Skill candidates"
+    },
+    "result_hash": "9c453dd57130e6eba20b173b5f183221ac5f1ea51c2e08c0f4e7e86b475638af"
+  },
+  {
+    "tool": "list_repo_files",
+    "args": {
+      "pattern": "scripts/*",
+      "max_results": 50
+    },
+    "result_hash": "65ff21830fd094cbb6e42e14c1248eea2e9d025188238804c30fa49cdc8300b9"
+  },
+  {
+    "tool": "read_session_full",
+    "args": {
+      "session_id": "019e5344-8f99-7243-805f-7a07ecba594c"
+    },
+    "result_hash": "d29a0939bcb51176dd565a5e2d33214ce5204806b384bd80a72cb40861cdc7b9"
+  },
+  {
+    "tool": "read_session_full",
+    "args": {
+      "session_id": "019e5343-307b-79d2-964f-6e83eabbc494"
+    },
+    "result_hash": "d29a0939bcb51176dd565a5e2d33214ce5204806b384bd80a72cb40861cdc7b9"
+  },
+  {
+    "tool": "read_session_full",
+    "args": {
+      "session_id": "019e344e-28e5-7300-8efc-56ac9e601d37"
+    },
+    "result_hash": "d29a0939bcb51176dd565a5e2d33214ce5204806b384bd80a72cb40861cdc7b9"
+  },
+  {
+    "tool": "read_repo_file",
+    "args": {
+      "file_path": "scripts/smoke-electron-ui.ts"
+    },
+    "result_hash": "3ba6747ca9705e14c0878a963acecfa1a5a12b67f6eee8d042aa421b9bf0bb27"
+  },
+  {
+    "tool": "read_repo_file",
+    "args": {
+      "file_path": "scripts/smoke-visual-ui.ts"
+    },
+    "result_hash": "ee69dbe5aebc7c0f6e40f27860db161753802025c59e9fd8e80ce2366cac6209"
+  },
+  {
+    "tool": "read_repo_file",
+    "args": {
+      "file_path": "scripts/smoke-real-csv.ts"
+    },
+    "result_hash": "df3b1839c314f1eafc70afbe844a0a0b42b53ea0743b1d818b288f8881795ea2"
+  },
+  {
+    "tool": "read_repo_file",
+    "args": {
+      "file_path": "scripts/perf-local-csv.ts"
+    },
+    "result_hash": "0d56ff73d6cbd825526ce85fe9b0d8adecf1b869aa30113006ace6f5ac53d884"
+  },
+  {
+    "tool": "read_repo_file",
+    "args": {
+      "file_path": "scripts/smoke-visual-ui.ts"
+    },
+    "result_hash": "ee69dbe5aebc7c0f6e40f27860db161753802025c59e9fd8e80ce2366cac6209"
+  },
+  {
+    "tool": "read_repo_file",
+    "args": {
+      "file_path": "scripts/smoke-visual-ui.ts"
+    },
+    "result_hash": "ee69dbe5aebc7c0f6e40f27860db161753802025c59e9fd8e80ce2366cac6209"
+  }
+]

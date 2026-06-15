@@ -3,6 +3,12 @@ import type {
   SimplesLookupStatus,
 } from "../../simples-lookup.types";
 import { RECEITA_TEXT_INDICATORS } from "./receita.selectors.js";
+import {
+  createReceitaWebDiagnostic,
+  createReceitaWebResult,
+  RECEITA_WEB_DIAGNOSTIC_CODE,
+  type ReceitaWebDiagnosticCode,
+} from "./receita-diagnostics.js";
 
 export type ParseReceitaResultInput = {
   html: string;
@@ -62,99 +68,154 @@ function classifyError(
   html: string,
   hasCaptcha: boolean,
   hasError: boolean,
-): SimplesLookupStatus {
+): {
+  status: SimplesLookupStatus;
+  code: ReceitaWebDiagnosticCode;
+} {
   // Check for CAPTCHA first - either image elements or text indicators
   if (hasCaptcha || containsText(html, RECEITA_TEXT_INDICATORS.captcha)) {
-    return "CAPTCHA_REQUIRED";
+    return {
+      status: "CAPTCHA_REQUIRED",
+      code: RECEITA_WEB_DIAGNOSTIC_CODE.CAPTCHA_REQUIRED,
+    };
   }
 
   if (containsText(html, RECEITA_TEXT_INDICATORS.blocked)) {
-    return "BLOCKED";
+    return {
+      status: "BLOCKED",
+      code: RECEITA_WEB_DIAGNOSTIC_CODE.PORTAL_BLOCKED,
+    };
   }
 
   if (containsText(html, RECEITA_TEXT_INDICATORS.notFound)) {
-    return "NOT_FOUND";
+    return {
+      status: "NOT_FOUND",
+      code: RECEITA_WEB_DIAGNOSTIC_CODE.NOT_FOUND,
+    };
   }
 
   if (containsText(html, RECEITA_TEXT_INDICATORS.invalidCnpj)) {
-    return "INVALID_CNPJ";
+    return {
+      status: "INVALID_CNPJ",
+      code: RECEITA_WEB_DIAGNOSTIC_CODE.INVALID_CNPJ,
+    };
   }
 
   if (hasError) {
-    return "TEMPORARY_ERROR";
+    return {
+      status: "TEMPORARY_ERROR",
+      code: RECEITA_WEB_DIAGNOSTIC_CODE.TEMPORARY_ERROR,
+    };
   }
 
-  return "UNPARSABLE_RESULT";
+  return {
+    status: "UNPARSABLE_RESULT",
+    code: RECEITA_WEB_DIAGNOSTIC_CODE.UNPARSABLE_RESULT,
+  };
 }
 
 export function parseReceitaResult(
   input: ParseReceitaResultInput,
 ): SimplesLookupResult {
-  const { html, cnpj, hasCaptcha, hasError } = input;
+  const { html, cnpj, hasCaptcha, hasError, hasResult } = input;
+  const htmlLength = html.length;
 
   // 1. CAPTCHA detectado (imagem ou texto)
   if (hasCaptcha || containsText(html, RECEITA_TEXT_INDICATORS.captcha)) {
-    return {
+    return createReceitaWebResult({
       cnpj,
-      simplesNacional: null,
-      simei: null,
-      source: "receita-web",
       status: "CAPTCHA_REQUIRED",
       message: "CAPTCHA detectado na página",
-      raw: { htmlLength: html.length },
-    };
+      diagnostic: createReceitaWebDiagnostic({
+        code: RECEITA_WEB_DIAGNOSTIC_CODE.CAPTCHA_REQUIRED,
+        htmlLength,
+        hasCaptcha,
+        hasError,
+        hasResult,
+      }),
+    });
   }
 
-  // 2. Verificar se há resultado de optante
+  // 2. Detectar bloqueios estruturais antes de depender de seletores de erro.
+  if (containsText(html, RECEITA_TEXT_INDICATORS.blocked)) {
+    return createReceitaWebResult({
+      cnpj,
+      status: "BLOCKED",
+      message: "Bloqueio detectado no portal da Receita",
+      diagnostic: createReceitaWebDiagnostic({
+        code: RECEITA_WEB_DIAGNOSTIC_CODE.PORTAL_BLOCKED,
+        htmlLength,
+        hasCaptcha,
+        hasError,
+        hasResult,
+      }),
+    });
+  }
+
+  // 3. Verificar se há resultado de optante
   const optantStatus = parseOptantStatus(html);
 
   // Se conseguiu extrair status de optante, retornar SUCCESS
   if (optantStatus.simplesNacional !== null || optantStatus.simei !== null) {
-    return {
+    return createReceitaWebResult({
       cnpj,
       simplesNacional: optantStatus.simplesNacional,
       simei: optantStatus.simei,
-      source: "receita-web",
       status: "SUCCESS",
-      raw: { htmlLength: html.length },
-    };
+      diagnostic: createReceitaWebDiagnostic({
+        code: RECEITA_WEB_DIAGNOSTIC_CODE.RESULT_SUCCESS,
+        htmlLength,
+        hasCaptcha,
+        hasError,
+        hasResult,
+      }),
+    });
   }
 
-  // 3. Verificar "não encontrado"
+  // 4. Verificar "não encontrado"
   if (containsText(html, RECEITA_TEXT_INDICATORS.notFound)) {
-    return {
+    return createReceitaWebResult({
       cnpj,
-      simplesNacional: null,
-      simei: null,
-      source: "receita-web",
       status: "NOT_FOUND",
       message: "CNPJ não encontrado no portal da Receita",
-      raw: { htmlLength: html.length },
-    };
+      diagnostic: createReceitaWebDiagnostic({
+        code: RECEITA_WEB_DIAGNOSTIC_CODE.NOT_FOUND,
+        htmlLength,
+        hasCaptcha,
+        hasError,
+        hasResult,
+      }),
+    });
   }
 
-  // 4. Verificar erro
+  // 5. Verificar erro
   if (hasError) {
-    const errorStatus = classifyError(html, hasCaptcha, hasError);
-    return {
+    const error = classifyError(html, hasCaptcha, hasError);
+    return createReceitaWebResult({
       cnpj,
-      simplesNacional: null,
-      simei: null,
-      source: "receita-web",
-      status: errorStatus,
-      message: `Erro detectado: ${errorStatus}`,
-      raw: { htmlLength: html.length },
-    };
+      status: error.status,
+      message: `Erro detectado: ${error.status}`,
+      diagnostic: createReceitaWebDiagnostic({
+        code: error.code,
+        htmlLength,
+        hasCaptcha,
+        hasError,
+        hasResult,
+      }),
+    });
   }
 
-  // 5. Sem estrutura reconhecida
-  return {
+  // 6. Sem estrutura reconhecida
+  return createReceitaWebResult({
     cnpj,
-    simplesNacional: null,
-    simei: null,
-    source: "receita-web",
     status: "UNPARSABLE_RESULT",
     message: "Nenhuma estrutura reconhecida na página",
-    raw: { htmlLength: html.length },
-  };
+    diagnostic: createReceitaWebDiagnostic({
+      code: RECEITA_WEB_DIAGNOSTIC_CODE.UNPARSABLE_RESULT,
+      htmlLength,
+      hasCaptcha,
+      hasError,
+      hasResult,
+    }),
+  });
 }

@@ -109,3 +109,7 @@ export function resolveReceitaBrowserPath(): string | undefined {
 
   return resolveBundledBrowserPath(...bundledRoots);
 }
+
+export function resolvePackagedWindowsBrowserPath(): string | undefined {
+  return resolveReceitaBrowserPath();
+}

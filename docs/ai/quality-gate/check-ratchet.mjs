@@ -13,6 +13,8 @@ const warnings = [];
 const improvements = [];
 const sourceExtensions = new Set([".astro",".c",".cc",".cpp",".cs",".css",".go",".java",".js",".jsx",".kt",".mjs",".php",".py",".rb",".rs",".scss",".sql",".swift",".ts",".tsx",".vue"]);
 const ignoredDirs = new Set([".cache",".git",".next",".turbo",".venv","build","coverage","dist","node_modules","target","vendor"]);
+const diffMode = process.env.QUALITY_GATE_DIFF_MODE || "default";
+const usesWorktreeDiff = diffMode === "worktree";
 
 function readJson(path) { try { return JSON.parse(readFileSync(join(root, path), "utf8")); } catch { return null; } }
 function git(args, options = {}) {
@@ -47,6 +49,11 @@ function baseRef() {
 }
 
 function changedFiles() {
+  if (usesWorktreeDiff) {
+    const tracked = git(["diff", "--name-only", "HEAD", "--"], { required: true });
+    const untracked = git(["ls-files", "--others", "--exclude-standard"], { required: true });
+    return [...tracked.split(/\r?\n/), ...untracked.split(/\r?\n/)].filter(Boolean);
+  }
   const base = baseRef();
   if (!base) return [];
   const output = git(["diff", "--name-only", base + "...HEAD"], { required: true });
@@ -106,9 +113,17 @@ function coverageMetric() {
   return json?.total?.lines?.pct === undefined ? null : Number(json.total.lines.pct);
 }
 function changedLineMap() {
+  if (usesWorktreeDiff) {
+    const output = git(["diff", "--unified=0", "HEAD", "--"], { required: true });
+    return parseChangedLineMap(output);
+  }
+
   const base = baseRef();
   if (!base) return new Map();
   const output = git(["diff", "--unified=0", base + "...HEAD"], { required: true });
+  return parseChangedLineMap(output);
+}
+function parseChangedLineMap(output) {
   const map = new Map();
   let currentFile = "";
   for (const line of output.split(/\r?\n/)) {
@@ -329,7 +344,7 @@ const markdown = [
   improvements.length ? improvements.map((item) => "- **" + item.type + " / " + item.rule + "**: " + item.recommendation + " (source: " + item.source + ")").join("\n") : "- None",
   "",
 ].join("\n");
-const report = { status: failures.length ? "fail" : "pass", generatedAt: new Date().toISOString(), failures, warnings, improvements, metrics: { coverage, prCoverage, duplication, code, review, feedback, rows }, changedFiles: files };
+const report = { status: failures.length ? "fail" : "pass", generatedAt: new Date().toISOString(), diffMode, failures, warnings, improvements, metrics: { coverage, prCoverage, duplication, code, review, feedback, rows }, changedFiles: files };
 mkdirSync(gateDir, { recursive: true });
 writeFileSync(join(gateDir, "quality-gate-report.json"), JSON.stringify(report, null, 2) + "\n");
 writeFileSync(join(gateDir, "quality-gate-report.md"), markdown + "\n");

@@ -2,7 +2,12 @@ import {
   SIMPLES_PROVIDER,
   type SimplesProviderName,
 } from "../../core/simples/simples-provider.names";
-import { initialState, type PickCsvResult, type UiState } from "./app.types";
+import {
+  initialState,
+  type PickCsvResult,
+  type UiState,
+  type VisualFixture,
+} from "./app.types";
 import {
   applyProcessResult,
   getDefaultOutputFileName,
@@ -10,7 +15,17 @@ import {
   resetOutputState,
 } from "./app-delivery";
 import { buildCompletionMessage, extractMessage } from "./app-helpers";
-import { prepareLocalPublicBaseResume } from "./app-provider";
+import {
+  handleDiscoverLocalPublicBaseOfficialSource,
+  handlePrepareLocalPublicBase,
+  handlePrepareOfficialLocalPublicBase,
+  refreshLocalPublicBaseStatus,
+} from "./app-local-public-base";
+import {
+  prepareLocalPublicBaseResume,
+  prepareReceitaWebExperimentalResume,
+} from "./app-provider";
+import { collectAppRefs } from "./app-refs";
 import { syncUi as syncUiRefs } from "./app-sync";
 import { renderShell } from "./app-view";
 
@@ -20,82 +35,13 @@ export function mountApp(root: HTMLDivElement | null): void {
   }
 
   const appRoot = root;
-  const state: UiState = { ...initialState };
+  const state: UiState = {
+    ...initialState,
+    visualFixture: getDevVisualFixture(),
+  };
   appRoot.innerHTML = renderShell(state);
 
-  const refs = {
-    pickButton: appRoot.querySelector<HTMLButtonElement>(
-      '[data-action="pick-file"]',
-    ),
-    processButton: appRoot.querySelector<HTMLButtonElement>(
-      '[data-action="process-file"]',
-    ),
-    saveButton: appRoot.querySelector<HTMLButtonElement>(
-      '[data-action="save-file"]',
-    ),
-    cancelButton: appRoot.querySelector<HTMLButtonElement>(
-      '[data-action="cancel-processing"]',
-    ),
-    providerSelect: appRoot.querySelector<HTMLSelectElement>(
-      '[data-field="provider"]',
-    ),
-    columnInput: appRoot.querySelector<HTMLInputElement>(
-      '[data-field="cnpj-column"]',
-    ),
-    deliverySelect: appRoot.querySelector<HTMLSelectElement>(
-      '[data-field="delivery-format"]',
-    ),
-    localPublicBaseNotice: appRoot.querySelector<HTMLInputElement>(
-      '[data-field="local-public-base-notice"]',
-    ),
-    localPublicBaseNoticePanel: appRoot.querySelector<HTMLElement>(
-      '[data-slot="local-public-base-notice-panel"]',
-    ),
-    localPublicBaseDate: appRoot.querySelector<HTMLElement>(
-      '[data-slot="local-public-base-date"]',
-    ),
-    localPublicBaseWarning: appRoot.querySelector<HTMLElement>(
-      '[data-slot="local-public-base-warning"]',
-    ),
-    message: appRoot.querySelector<HTMLElement>('[data-slot="message"]'),
-    commandSummary: appRoot.querySelector<HTMLElement>(
-      '[data-slot="command-summary"]',
-    ),
-    commandHint: appRoot.querySelector<HTMLElement>(
-      '[data-slot="command-hint"]',
-    ),
-    summary: appRoot.querySelector<HTMLElement>('[data-slot="summary"]'),
-    outputStatus: appRoot.querySelector<HTMLElement>(
-      '[data-slot="output-status"]',
-    ),
-    dedupeLabel: appRoot.querySelector<HTMLElement>(
-      '[data-slot="dedupe-label"]',
-    ),
-    progressLine: appRoot.querySelector<HTMLElement>(
-      '[data-slot="progress-line"]',
-    ),
-    progressBar: appRoot.querySelector<HTMLElement>(
-      '[data-slot="progress-bar"]',
-    ),
-    currentCnpj: appRoot.querySelector<HTMLElement>(
-      '[data-slot="current-cnpj"]',
-    ),
-    executionStatus: appRoot.querySelector<HTMLElement>(
-      '[data-slot="execution-status"]',
-    ),
-    executionRunId: appRoot.querySelector<HTMLElement>(
-      '[data-slot="execution-run-id"]',
-    ),
-    executionResume: appRoot.querySelector<HTMLElement>(
-      '[data-slot="execution-resume"]',
-    ),
-    executionCheckpoint: appRoot.querySelector<HTMLElement>(
-      '[data-slot="execution-checkpoint"]',
-    ),
-    executionHistory: appRoot.querySelector<HTMLElement>(
-      '[data-slot="execution-history"]',
-    ),
-  };
+  const refs = collectAppRefs(appRoot);
 
   void initializeDefaults();
   void refreshExecutionHistory();
@@ -149,6 +95,10 @@ export function mountApp(root: HTMLDivElement | null): void {
       void handleCancelProcessing();
     });
 
+    refs.pauseButton?.addEventListener("click", () => {
+      void handlePauseProcessing();
+    });
+
     refs.saveButton?.addEventListener("click", () => {
       void handleSaveFile();
     });
@@ -170,6 +120,33 @@ export function mountApp(root: HTMLDivElement | null): void {
         return;
       }
 
+      if (action.dataset.action === "prepare-local-public-base") {
+        if (state.status === "processing") {
+          return;
+        }
+
+        void handlePrepareLocalPublicBase(state, syncUi);
+        return;
+      }
+
+      if (action.dataset.action === "prepare-official-source") {
+        if (state.status === "processing") {
+          return;
+        }
+
+        void handlePrepareOfficialLocalPublicBase(state, syncUi);
+        return;
+      }
+
+      if (action.dataset.action === "discover-official-source") {
+        if (state.status === "processing") {
+          return;
+        }
+
+        void handleDiscoverLocalPublicBaseOfficialSource(state, syncUi);
+        return;
+      }
+
       if (action.dataset.action === "resume-execution") {
         if (state.status === "processing") {
           return;
@@ -180,13 +157,49 @@ export function mountApp(root: HTMLDivElement | null): void {
         if (ledgerKey) {
           void handleResumeExecution(ledgerKey);
         }
+        return;
       }
+
+      if (action.dataset.action === "export-pending-cnpjs") {
+        if (state.status === "processing") {
+          return;
+        }
+
+        const ledgerKey = action.dataset.ledgerKey;
+
+        if (ledgerKey) {
+          void handleExportPendingCnpjs(ledgerKey);
+        }
+      }
+    });
+
+    appRoot.addEventListener("click", (event) => {
+      const target = event.target as HTMLElement;
+      const viewLink = target.closest<HTMLElement>("[data-view]");
+
+      if (!viewLink) {
+        return;
+      }
+
+      const nextView = viewLink.dataset.view;
+
+      if (!isUiView(nextView)) {
+        return;
+      }
+
+      event.preventDefault();
+      state.activeView = nextView;
+      syncUi();
     });
 
     refs.providerSelect?.addEventListener("change", (event) => {
       state.provider = (event.currentTarget as HTMLSelectElement)
         .value as SimplesProviderName;
       state.localPublicBaseNoticeAccepted = false;
+      state.receitaWebExperimentalNoticeAccepted = false;
+      if (state.provider === SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL) {
+        void refreshLocalPublicBaseStatus(state);
+      }
       syncUi();
     });
 
@@ -200,8 +213,21 @@ export function mountApp(root: HTMLDivElement | null): void {
       syncUi();
     });
 
+    refs.speedProfileSelect?.addEventListener("change", (event) => {
+      state.executionSpeedProfile = (event.currentTarget as HTMLSelectElement)
+        .value as UiState["executionSpeedProfile"];
+      syncUi();
+    });
+
     refs.localPublicBaseNotice?.addEventListener("change", (event) => {
       state.localPublicBaseNoticeAccepted = (
+        event.currentTarget as HTMLInputElement
+      ).checked;
+      syncUi();
+    });
+
+    refs.receitaWebExperimentalNotice?.addEventListener("change", (event) => {
+      state.receitaWebExperimentalNoticeAccepted = (
         event.currentTarget as HTMLInputElement
       ).checked;
       syncUi();
@@ -211,6 +237,7 @@ export function mountApp(root: HTMLDivElement | null): void {
   async function handlePickFile(): Promise<void> {
     state.status = "loading";
     state.message = "Abrindo seletor de arquivo...";
+    state.activeView = "painel";
     syncUi();
 
     try {
@@ -237,6 +264,7 @@ export function mountApp(root: HTMLDivElement | null): void {
     state.fileName = result.fileName;
     state.filePath = result.filePath;
     state.content = result.content;
+    state.inputFormat = result.inputFormat;
     resetOutputState(state);
     state.summary = null;
     state.execution = null;
@@ -244,24 +272,39 @@ export function mountApp(root: HTMLDivElement | null): void {
     state.progressObservedAt = null;
     state.now = Date.now();
     state.status = "idle";
-    state.message = `Arquivo "${result.fileName}" pronto. Revise provedor e coluna antes de iniciar.`;
+    state.activeView = "fila";
+    state.message = `Arquivo "${result.fileName}" pronto. Revise a base de consulta, o formato e a coluna antes de iniciar.`;
     syncUi();
   }
 
   async function handleProcessFile(): Promise<void> {
     if (!state.content) {
       state.status = "error";
-      state.message = "Selecione um CSV antes de processar.";
+      state.message = "Selecione uma planilha CSV ou Excel antes de processar.";
+      syncUi();
+      return;
+    }
+
+    if (
+      state.provider === SIMPLES_PROVIDER.RECEITA_WEB_PARALLEL_EXPERIMENTAL &&
+      !state.receitaWebExperimentalNoticeAccepted
+    ) {
+      state.status = "error";
+      state.message =
+        "Confirme o aviso do modo experimental da Receita Web antes de iniciar.";
+      state.activeView = "painel";
       syncUi();
       return;
     }
 
     state.status = "processing";
     state.message = "Iniciando processamento...";
+    state.activeView = "atividade";
     resetOutputState(state);
     state.progress = null;
     state.progressObservedAt = null;
     state.execution = null;
+    state.processingStopIntent = null;
     state.now = Date.now();
     syncUi();
 
@@ -273,8 +316,17 @@ export function mountApp(root: HTMLDivElement | null): void {
                 state.localPublicBaseNoticeAccepted,
             }
           : {}),
+        ...(state.provider ===
+        SIMPLES_PROVIDER.RECEITA_WEB_PARALLEL_EXPERIMENTAL
+          ? {
+              acceptedReceitaWebExperimentalNotice:
+                state.receitaWebExperimentalNoticeAccepted,
+            }
+          : {}),
         content: state.content,
         deliveryFormat: state.deliveryFormat,
+        executionSpeedProfile: state.executionSpeedProfile,
+        inputFormat: state.inputFormat,
         provider: state.provider,
         ...(state.filePath ? { sourceFilePath: state.filePath } : {}),
         ...(state.cnpjColumn.trim()
@@ -283,11 +335,17 @@ export function mountApp(root: HTMLDivElement | null): void {
       });
 
       applyProcessResult(state, result);
-      state.message = buildCompletionMessage(result);
+      state.activeView = "resultados";
+      state.message = buildCompletionMessage(
+        result,
+        state.processingStopIntent,
+      );
+      state.processingStopIntent = null;
       await refreshExecutionHistory();
       syncUi();
     } catch (error) {
       state.status = "error";
+      state.activeView = "atividade";
       state.message = extractMessage(error, "Falha ao processar o CSV.");
       await refreshExecutionHistory();
       syncUi();
@@ -307,16 +365,25 @@ export function mountApp(root: HTMLDivElement | null): void {
     }
 
     if (!prepareLocalPublicBaseResume(state, historyItem)) {
+      state.activeView = "painel";
+      syncUi();
+      return;
+    }
+
+    if (!prepareReceitaWebExperimentalResume(state, historyItem)) {
+      state.activeView = "painel";
       syncUi();
       return;
     }
 
     state.status = "processing";
     state.message = "Retomando execução a partir do histórico local...";
+    state.activeView = "atividade";
     resetOutputState(state);
     state.progress = null;
     state.progressObservedAt = null;
     state.execution = null;
+    state.processingStopIntent = null;
     state.now = Date.now();
     syncUi();
 
@@ -327,19 +394,56 @@ export function mountApp(root: HTMLDivElement | null): void {
         historyItem.providerName === SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL
           ? state.localPublicBaseNoticeAccepted
           : undefined,
+        undefined,
+        state.executionSpeedProfile,
+        historyItem.providerName ===
+          SIMPLES_PROVIDER.RECEITA_WEB_PARALLEL_EXPERIMENTAL
+          ? state.receitaWebExperimentalNoticeAccepted
+          : undefined,
       );
       state.fileName = historyItem.sourceFileName;
       state.filePath = historyItem.sourceFilePath;
       state.content = null;
+      state.inputFormat = historyItem.inputFormat ?? "csv";
       state.provider = historyItem.providerName;
       state.cnpjColumn = historyItem.cnpjColumn ?? "";
       applyProcessResult(state, result);
-      state.message = buildCompletionMessage(result);
+      state.activeView = "resultados";
+      state.message = buildCompletionMessage(
+        result,
+        state.processingStopIntent,
+      );
+      state.processingStopIntent = null;
       await refreshExecutionHistory();
       syncUi();
     } catch (error) {
       state.status = "error";
+      state.activeView = "atividade";
       state.message = extractMessage(error, "Falha ao retomar a execução.");
+      await refreshExecutionHistory();
+      syncUi();
+    }
+  }
+
+  async function handleExportPendingCnpjs(ledgerKey: string): Promise<void> {
+    state.status = "loading";
+    state.message = "Abrindo exportação de pendências...";
+    syncUi();
+
+    try {
+      const result = await window.appBridge.exportPendingCnpjs(ledgerKey);
+
+      state.status = "idle";
+      state.activeView = "historico";
+      state.message = result
+        ? `${result.pendingUniqueLookups} CNPJ${result.pendingUniqueLookups === 1 ? "" : "s"} pendente${result.pendingUniqueLookups === 1 ? "" : "s"} exportado${result.pendingUniqueLookups === 1 ? "" : "s"}.`
+        : "Exportação de pendências cancelada.";
+      await refreshExecutionHistory();
+      syncUi();
+    } catch (error) {
+      state.status = "error";
+      state.activeView = "historico";
+      state.message = extractMessage(error, "Falha ao exportar pendências.");
       await refreshExecutionHistory();
       syncUi();
     }
@@ -351,13 +455,40 @@ export function mountApp(root: HTMLDivElement | null): void {
     }
 
     try {
+      state.processingStopIntent = "cancel";
       const requested = await window.appBridge.cancelProcessing();
+      if (!requested) {
+        state.processingStopIntent = null;
+      }
       state.message = requested
         ? "Cancelamento solicitado. O processamento será interrompido."
         : "Não havia processamento ativo.";
       syncUi();
     } catch (error) {
+      state.processingStopIntent = null;
       state.message = extractMessage(error, "Não foi possível cancelar.");
+      syncUi();
+    }
+  }
+
+  async function handlePauseProcessing(): Promise<void> {
+    if (state.status !== "processing") {
+      return;
+    }
+
+    try {
+      state.processingStopIntent = "pause";
+      const requested = await window.appBridge.pauseProcessing();
+      if (!requested) {
+        state.processingStopIntent = null;
+      }
+      state.message = requested
+        ? "Pausa solicitada. O processamento será interrompido com checkpoint para retomada."
+        : "Não havia processamento ativo.";
+      syncUi();
+    } catch (error) {
+      state.processingStopIntent = null;
+      state.message = extractMessage(error, "Não foi possível pausar.");
       syncUi();
     }
   }
@@ -416,5 +547,69 @@ export function mountApp(root: HTMLDivElement | null): void {
 
   function syncUi(): void {
     syncUiRefs(refs, state);
+    syncInputFormatCopy();
   }
+
+  function syncInputFormatCopy(): void {
+    const inputFormatLabel = state.inputFormat === "xlsx" ? "XLSX" : "CSV";
+    const fileTitle = appRoot.querySelector<HTMLElement>(
+      '[data-slot="file-dropzone-title"]',
+    );
+    const fileHint = appRoot.querySelector<HTMLElement>(
+      '[data-slot="file-dropzone-hint"]',
+    );
+    const fileIcon = appRoot.querySelector<HTMLElement>(".file-dropzone__icon");
+    const pickButton = appRoot.querySelector<HTMLButtonElement>(
+      '[data-action="pick-file"]',
+    );
+    const protocolEntryHint = appRoot.querySelector<HTMLElement>(
+      '[data-slot="protocol-entry-hint"]',
+    );
+
+    if (fileTitle && !state.fileName) {
+      fileTitle.textContent = "Arquivo CSV ou Excel";
+    }
+
+    if (fileHint && !state.fileName) {
+      fileHint.textContent =
+        "Selecione uma planilha com CNPJs. O resultado fica ao lado do arquivo original.";
+    }
+
+    if (fileIcon) {
+      fileIcon.textContent = inputFormatLabel;
+    }
+
+    if (pickButton) {
+      pickButton.textContent = state.fileName
+        ? "Trocar planilha"
+        : "Selecionar planilha";
+    }
+
+    if (protocolEntryHint && !state.fileName) {
+      protocolEntryHint.textContent =
+        "Selecione uma planilha CSV ou Excel para preparar a consulta.";
+    }
+  }
+}
+
+function isUiView(value: string | undefined): value is UiState["activeView"] {
+  return (
+    value === "painel" ||
+    value === "fila" ||
+    value === "resultados" ||
+    value === "atividade" ||
+    value === "historico"
+  );
+}
+
+function getDevVisualFixture(): VisualFixture | null {
+  if (!import.meta.env.DEV) {
+    return null;
+  }
+
+  const candidate = (
+    window as Window & { __FISCAL_DESK_VISUAL_FIXTURE__?: VisualFixture }
+  ).__FISCAL_DESK_VISUAL_FIXTURE__;
+
+  return candidate?.scenario === "reference-v5-a" ? candidate : null;
 }

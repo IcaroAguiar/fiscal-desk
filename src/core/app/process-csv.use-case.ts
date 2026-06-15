@@ -1,10 +1,23 @@
 import { normalizeCnpj } from "../cnpj/normalize-cnpj";
 import { validateCnpj } from "../cnpj/validate-cnpj";
 import { writeCsv } from "../export/csv-writer";
+import type { FiscalExportDeliveryOptionId } from "../export/export-contract";
 import { writeXlsxWorkbook } from "../export/xlsx-writer";
 import { AbortError } from "../infra/rate-limiter";
 import { readCsv } from "../ingestion/csv-reader";
 import { detectCnpjColumn } from "../ingestion/detect-cnpj-column";
+import {
+  ingestFiscalCsv,
+  ingestFiscalXlsx,
+} from "../ingestion/fiscal-ingestion";
+import {
+  FISCAL_INGESTION_INPUT_FORMAT,
+  FISCAL_INGESTION_ISSUE_KIND,
+  FISCAL_INGESTION_SOURCE_KIND,
+  type FiscalIngestionBatch,
+  type FiscalIngestionIssue,
+} from "../ingestion/ingestion-contract";
+import { readXlsx } from "../ingestion/xlsx-reader";
 import type { SimplesLookupPort } from "../simples/simples-lookup.port";
 import type { SimplesLookupResult } from "../simples/simples-lookup.types";
 import { estimateObservedRemainingMs } from "./eta";
@@ -12,22 +25,25 @@ import type {
   LookupProgress,
   ProcessCsvDeliveryFormat,
   ProcessCsvExecution,
+  ProcessCsvInputFormat,
   ProcessCsvOutputDelivery,
   ProcessCsvRunStatus,
   ProcessCsvSummary,
 } from "./process-csv.types";
-import {
-  getProcessCsvOutputDelivery,
-  parseProcessCsvDeliveryFormat,
-} from "./process-csv-delivery";
+import { PROCESS_CSV_INPUT_FORMAT } from "./process-csv.types";
+import { resolveProcessCsvOutputDelivery } from "./process-csv-delivery";
 import type { ProcessExecutionLedgerSession } from "./process-execution-ledger.port";
 
 type ProcessCsvOptions = {
   cnpjColumn?: string;
   deliveryFormat?: ProcessCsvDeliveryFormat;
+  deliveryOptionId?: FiscalExportDeliveryOptionId;
   executionLedger?: ProcessExecutionLedgerSession;
+  maxConcurrentLookups?: number;
   onLookupProgress?: (progress: LookupProgress) => void;
+  requestGlobalStop?: (status: SimplesLookupResult["status"]) => void;
   signal?: AbortSignal;
+  stopOnLookupStatuses?: readonly SimplesLookupResult["status"][];
 };
 
 type ProcessCsvResult = {
@@ -37,6 +53,23 @@ type ProcessCsvResult = {
   summary: ProcessCsvSummary;
   runStatus: ProcessCsvRunStatus;
   execution: ProcessCsvExecution | null;
+};
+
+export type ProcessCsvSourceInput =
+  | string
+  | {
+      content: string | Buffer | ArrayBuffer | Uint8Array | number[];
+      format?: ProcessCsvInputFormat;
+      sourceFileName?: string;
+      sourceFilePath?: string;
+    };
+
+type ParsedProcessInput = {
+  delimiter: ReturnType<typeof readCsv>["delimiter"];
+  headers: string[];
+  ingestionBatch: FiscalIngestionBatch;
+  rowLineNumbers: number[];
+  rows: Array<Record<string, string>>;
 };
 
 const ERROR_STATUSES = new Set<SimplesLookupResult["status"]>([
@@ -56,21 +89,40 @@ const CHECKPOINT_REUSABLE_STATUSES = new Set<SimplesLookupResult["status"]>([
 ]);
 
 export async function processCsv(
-  inputCsv: string,
+  input: ProcessCsvSourceInput,
   provider: SimplesLookupPort,
   options: ProcessCsvOptions = {},
 ): Promise<ProcessCsvResult> {
-  const { delimiter, headers, rowLineNumbers, rows } = readCsv(inputCsv);
+  const delivery = resolveProcessCsvOutputDelivery({
+    ...(options.deliveryFormat
+      ? { deliveryFormat: options.deliveryFormat }
+      : {}),
+    ...(Object.hasOwn(options, "deliveryOptionId")
+      ? { deliveryOptionId: options.deliveryOptionId }
+      : {}),
+  });
+  const parsedInput = await parseProcessInput(input, options);
+  const { delimiter, headers, ingestionBatch, rowLineNumbers, rows } =
+    parsedInput;
   const cnpjColumn = detectCnpjColumn(
     headers,
     options.cnpjColumn ? { override: options.cnpjColumn } : {},
   );
 
   if (!cnpjColumn) {
-    throw new Error("Nenhuma coluna de CNPJ suportada foi encontrada");
+    throw new Error(
+      "Nenhuma coluna de CNPJ suportada foi encontrada. Use um cabeçalho como CNPJ, CPF/CNPJ, documento ou informe a coluna manualmente.",
+    );
   }
 
-  const uniqueValidCnpjs = collectUniqueValidCnpjs(rows, cnpjColumn);
+  const ingestionIssueByRow = new Map(
+    ingestionBatch.issues
+      .filter((issue) => issue.rowNumber !== null)
+      .map((issue) => [issue.rowNumber as number, issue]),
+  );
+  const uniqueValidCnpjs = ingestionBatch.entries.map(
+    (entry) => entry.cnpjNormalizado,
+  );
   await options.executionLedger?.setTotalUniqueLookups(uniqueValidCnpjs.length);
 
   const lookupCache = await restoreLookupCache(
@@ -79,10 +131,22 @@ export async function processCsv(
   );
   const resumedUniqueLookups = lookupCache.size;
   let completedUniqueLookups = resumedUniqueLookups;
-  let totalCnpjsEncontrados = 0;
-  let totalCnpjsValidos = 0;
   let runStatus: ProcessCsvRunStatus = "SUCCESS";
   const startedAt = Date.now();
+
+  const lookupQueueResult = await runMissingLookups({
+    completedUniqueLookups,
+    lookupCache,
+    options,
+    provider,
+    startedAt,
+    uniqueValidCnpjs,
+  });
+  completedUniqueLookups = lookupQueueResult.completedUniqueLookups;
+  runStatus = lookupQueueResult.runStatus;
+
+  let totalCnpjsEncontrados = 0;
+  let totalCnpjsValidos = 0;
   const outputColumns = [
     ...headers,
     "cnpj_original",
@@ -99,16 +163,20 @@ export async function processCsv(
   const outputRows: Array<Record<string, string>> = [];
 
   for (const [index, row] of rows.entries()) {
-    if (isCancellationBoundary(options.signal)) {
-      runStatus = "CANCELLED";
-    }
+    runStatus = markCancelledIfRequested(runStatus, options.signal);
 
     const cnpjOriginal = row[cnpjColumn] ?? "";
     const cnpjNormalizado = normalizeCnpj(cnpjOriginal);
     const cnpjValido = validateCnpj(cnpjNormalizado);
+    const rowNumber = rowLineNumbers[index] ?? index + 1;
+    const ingestionIssue = ingestionIssueByRow.get(rowNumber);
 
     if (cnpjOriginal) {
       totalCnpjsEncontrados += 1;
+    }
+
+    if (cnpjValido) {
+      totalCnpjsValidos += 1;
     }
 
     let lookupResult: SimplesLookupResult;
@@ -120,11 +188,12 @@ export async function processCsv(
         simei: null,
         source: "system",
         status: "INVALID_CNPJ",
-        message: "CNPJ invalido",
+        message:
+          ingestionIssue?.message ??
+          "CNPJ inválido. Revise os 14 dígitos antes de consultar esta linha.",
       };
-    } else if (runStatus === "CANCELLED") {
-      const cachedResult = lookupCache.get(cnpjNormalizado);
-      lookupResult = cachedResult ?? {
+    } else {
+      lookupResult = lookupCache.get(cnpjNormalizado) ?? {
         cnpj: cnpjNormalizado,
         simplesNacional: null,
         simei: null,
@@ -132,57 +201,6 @@ export async function processCsv(
         status: "CANCELLED",
         message: "Processamento cancelado antes desta consulta",
       };
-    } else {
-      totalCnpjsValidos += 1;
-
-      const cachedResult = lookupCache.get(cnpjNormalizado);
-      if (cachedResult) {
-        lookupResult = cachedResult;
-      } else {
-        try {
-          lookupResult = await provider.lookup(
-            cnpjNormalizado,
-            options.signal ? { signal: options.signal } : undefined,
-          );
-        } catch (error) {
-          if (error instanceof AbortError) {
-            runStatus = "CANCELLED";
-            lookupResult = {
-              cnpj: cnpjNormalizado,
-              simplesNacional: null,
-              simei: null,
-              source: "system",
-              status: "CANCELLED",
-              message: "Processamento cancelado antes desta consulta",
-            };
-          } else {
-            throw error;
-          }
-        }
-
-        if (lookupResult.status === "CANCELLED") {
-          runStatus = "CANCELLED";
-        }
-
-        if (runStatus === "SUCCESS") {
-          lookupCache.set(cnpjNormalizado, lookupResult);
-          if (isReusableCheckpointResult(lookupResult)) {
-            await options.executionLedger?.saveLookup(lookupResult);
-          }
-          completedUniqueLookups += 1;
-          options.onLookupProgress?.({
-            completedUniqueLookups,
-            totalUniqueLookups: uniqueValidCnpjs.length,
-            currentCnpj: cnpjNormalizado,
-            elapsedMs: Date.now() - startedAt,
-            estimatedRemainingMs: estimateObservedRemainingMs(
-              Date.now() - startedAt,
-              completedUniqueLookups,
-              uniqueValidCnpjs.length,
-            ),
-          });
-        }
-      }
     }
 
     outputRows.push({
@@ -194,8 +212,8 @@ export async function processCsv(
       simei: toCsvValue(lookupResult.simei),
       status: lookupResult.status,
       fonte: lookupResult.source,
-      mensagem: lookupResult.message ?? "",
-      linha: String(rowLineNumbers[index] ?? index + 1),
+      mensagem: formatOutputMessage(lookupResult, ingestionIssue),
+      linha: String(rowNumber),
     });
   }
 
@@ -218,19 +236,21 @@ export async function processCsv(
       ERROR_STATUSES.has(row.status as SimplesLookupResult["status"]),
     ).length,
   };
+  runStatus = markCancelledIfRequested(runStatus, options.signal);
   const outputCsv = writeCsv(outputRows, delimiter, outputColumns);
-  const deliveryFormat = parseProcessCsvDeliveryFormat(options.deliveryFormat);
+  runStatus = markCancelledIfRequested(runStatus, options.signal);
   const outputXlsx =
-    deliveryFormat === "xlsx"
+    delivery.format === "xlsx"
       ? await writeXlsxWorkbook({
           columns: outputColumns,
           rows: outputRows,
           summary,
         })
       : null;
+  runStatus = markCancelledIfRequested(runStatus, options.signal);
 
   return {
-    delivery: getProcessCsvOutputDelivery(deliveryFormat),
+    delivery,
     outputCsv,
     outputXlsx,
     summary,
@@ -248,6 +268,93 @@ export async function processCsv(
   };
 }
 
+async function parseProcessInput(
+  input: ProcessCsvSourceInput,
+  options: ProcessCsvOptions,
+): Promise<ParsedProcessInput> {
+  const source = normalizeProcessInput(input);
+
+  if (source.format === PROCESS_CSV_INPUT_FORMAT.XLSX) {
+    const bytes = normalizeBinaryInput(source.content);
+    const { headers, rowLineNumbers, rows } = await readXlsx(bytes);
+    const ingestionBatch = await ingestFiscalXlsx(bytes, {
+      ...(options.cnpjColumn ? { cnpjColumn: options.cnpjColumn } : {}),
+      format: FISCAL_INGESTION_INPUT_FORMAT.XLSX,
+      sourceKind: source.sourceFilePath
+        ? FISCAL_INGESTION_SOURCE_KIND.LOCAL_FILE
+        : FISCAL_INGESTION_SOURCE_KIND.TEXT_BUFFER,
+      sourceLabel:
+        source.sourceFileName ?? source.sourceFilePath ?? "entrada.xlsx",
+    });
+
+    return {
+      delimiter: ";",
+      headers,
+      ingestionBatch,
+      rowLineNumbers,
+      rows,
+    };
+  }
+
+  if (typeof source.content !== "string") {
+    throw new Error("Entrada CSV precisa ser texto UTF-8.");
+  }
+
+  const { delimiter, headers, rowLineNumbers, rows } = readCsv(source.content);
+  const ingestionBatch = ingestFiscalCsv(source.content, {
+    ...(options.cnpjColumn ? { cnpjColumn: options.cnpjColumn } : {}),
+    format: FISCAL_INGESTION_INPUT_FORMAT.CSV,
+    sourceKind: source.sourceFilePath
+      ? FISCAL_INGESTION_SOURCE_KIND.LOCAL_FILE
+      : FISCAL_INGESTION_SOURCE_KIND.TEXT_BUFFER,
+    sourceLabel:
+      source.sourceFileName ?? source.sourceFilePath ?? "entrada.csv",
+  });
+
+  return {
+    delimiter,
+    headers,
+    ingestionBatch,
+    rowLineNumbers,
+    rows,
+  };
+}
+
+function normalizeProcessInput(input: ProcessCsvSourceInput): {
+  content: string | Buffer | ArrayBuffer | Uint8Array | number[];
+  format: ProcessCsvInputFormat;
+  sourceFileName?: string;
+  sourceFilePath?: string;
+} {
+  if (typeof input === "string") {
+    return {
+      content: input,
+      format: PROCESS_CSV_INPUT_FORMAT.CSV,
+    };
+  }
+
+  return {
+    content: input.content,
+    format: input.format ?? PROCESS_CSV_INPUT_FORMAT.CSV,
+    ...(input.sourceFileName ? { sourceFileName: input.sourceFileName } : {}),
+    ...(input.sourceFilePath ? { sourceFilePath: input.sourceFilePath } : {}),
+  };
+}
+
+function normalizeBinaryInput(
+  input: string | Buffer | ArrayBuffer | Uint8Array | number[],
+): Buffer | ArrayBuffer | Uint8Array {
+  if (typeof input === "string") {
+    throw new Error("Entrada XLSX precisa ser binaria.");
+  }
+
+  if (Array.isArray(input)) {
+    return Uint8Array.from(input);
+  }
+
+  return input;
+}
+
 function toCsvValue(value: boolean | null): string {
   if (value === null) {
     return "";
@@ -256,26 +363,194 @@ function toCsvValue(value: boolean | null): string {
   return String(value);
 }
 
-function collectUniqueValidCnpjs(
-  rows: Array<Record<string, string>>,
-  cnpjColumn: string,
-): string[] {
-  const uniqueValid = new Set<string>();
+function formatOutputMessage(
+  lookupResult: SimplesLookupResult,
+  ingestionIssue?: FiscalIngestionIssue,
+): string {
+  const lookupMessage = lookupResult.message?.trim() ?? "";
 
-  for (const row of rows) {
-    const cnpjOriginal = row[cnpjColumn] ?? "";
-    const cnpjNormalizado = normalizeCnpj(cnpjOriginal);
-
-    if (validateCnpj(cnpjNormalizado)) {
-      uniqueValid.add(cnpjNormalizado);
+  if (ingestionIssue?.kind === FISCAL_INGESTION_ISSUE_KIND.DUPLICATE_CNPJ) {
+    if (lookupMessage) {
+      return `${ingestionIssue.message} Resultado reaproveitado: ${lookupMessage}`;
     }
+
+    return ingestionIssue.message;
   }
 
-  return Array.from(uniqueValid);
+  return lookupMessage || ingestionIssue?.message || "";
 }
 
 function isCancellationBoundary(signal?: AbortSignal): boolean {
   return signal?.aborted === true;
+}
+
+function markCancelledIfRequested(
+  currentStatus: ProcessCsvRunStatus,
+  signal?: AbortSignal,
+): ProcessCsvRunStatus {
+  return isCancellationBoundary(signal) ? "CANCELLED" : currentStatus;
+}
+
+async function runMissingLookups(input: {
+  completedUniqueLookups: number;
+  lookupCache: Map<string, SimplesLookupResult>;
+  options: ProcessCsvOptions;
+  provider: SimplesLookupPort;
+  startedAt: number;
+  uniqueValidCnpjs: string[];
+}): Promise<{
+  completedUniqueLookups: number;
+  runStatus: ProcessCsvRunStatus;
+}> {
+  const pendingCnpjs = input.uniqueValidCnpjs.filter(
+    (cnpj) => !input.lookupCache.has(cnpj),
+  );
+  const concurrency = normalizeMaxConcurrentLookups(
+    input.options.maxConcurrentLookups,
+  );
+  let nextIndex = 0;
+  let completedUniqueLookups = input.completedUniqueLookups;
+  let runStatus: ProcessCsvRunStatus = isCancellationBoundary(
+    input.options.signal,
+  )
+    ? "CANCELLED"
+    : "SUCCESS";
+  let saveLookupChain = Promise.resolve();
+  let firstWorkerError: unknown = null;
+  const stopOnLookupStatuses = new Set(
+    input.options.stopOnLookupStatuses ?? [],
+  );
+
+  const shouldStop = (): boolean =>
+    runStatus !== "SUCCESS" || firstWorkerError !== null;
+
+  const stopOnError = (error: unknown): void => {
+    firstWorkerError ??= error;
+  };
+
+  const saveLookup = async (
+    lookupResult: SimplesLookupResult,
+  ): Promise<void> => {
+    if (!isReusableCheckpointResult(lookupResult)) {
+      return;
+    }
+
+    saveLookupChain = saveLookupChain.then(() =>
+      input.options.executionLedger?.saveLookup(lookupResult),
+    );
+    await saveLookupChain;
+  };
+
+  const runWorker = async (): Promise<void> => {
+    while (!shouldStop() && nextIndex < pendingCnpjs.length) {
+      if (isCancellationBoundary(input.options.signal)) {
+        runStatus = "CANCELLED";
+        return;
+      }
+
+      const cnpj = pendingCnpjs[nextIndex];
+      nextIndex += 1;
+
+      if (!cnpj) {
+        continue;
+      }
+
+      let lookupResult: SimplesLookupResult;
+      try {
+        lookupResult = await input.provider.lookup(
+          cnpj,
+          input.options.signal ? { signal: input.options.signal } : undefined,
+        );
+      } catch (error) {
+        if (error instanceof AbortError) {
+          runStatus = "CANCELLED";
+          return;
+        }
+
+        stopOnError(error);
+        return;
+      }
+
+      if (shouldStop()) {
+        return;
+      }
+
+      if (lookupResult.status === "CANCELLED") {
+        runStatus = "CANCELLED";
+        return;
+      }
+
+      input.lookupCache.set(cnpj, lookupResult);
+      try {
+        await saveLookup(lookupResult);
+      } catch (error) {
+        stopOnError(error);
+        return;
+      }
+
+      if (shouldStop()) {
+        return;
+      }
+
+      completedUniqueLookups += 1;
+      const elapsedMs = Date.now() - input.startedAt;
+      input.options.onLookupProgress?.({
+        completedUniqueLookups,
+        totalUniqueLookups: input.uniqueValidCnpjs.length,
+        currentCnpj: maskCnpjForProgress(cnpj),
+        elapsedMs,
+        estimatedRemainingMs: estimateObservedRemainingMs(
+          elapsedMs,
+          completedUniqueLookups,
+          input.uniqueValidCnpjs.length,
+        ),
+      });
+
+      if (stopOnLookupStatuses.has(lookupResult.status)) {
+        runStatus = "CANCELLED";
+        input.options.requestGlobalStop?.(lookupResult.status);
+        return;
+      }
+    }
+  };
+
+  const workers = Array.from(
+    { length: Math.min(concurrency, pendingCnpjs.length) },
+    () => runWorker(),
+  );
+  await Promise.allSettled(workers);
+  try {
+    await saveLookupChain;
+  } catch (error) {
+    stopOnError(error);
+  }
+
+  if (firstWorkerError) {
+    throw firstWorkerError;
+  }
+
+  return {
+    completedUniqueLookups,
+    runStatus,
+  };
+}
+
+function maskCnpjForProgress(cnpj: string): string {
+  const normalized = cnpj.replace(/\D/g, "");
+
+  if (normalized.length !== 14) {
+    return "***";
+  }
+
+  return `${normalized.slice(0, 2)}********${normalized.slice(-4)}`;
+}
+
+function normalizeMaxConcurrentLookups(value: number | undefined): number {
+  if (value === undefined || !Number.isFinite(value)) {
+    return 1;
+  }
+
+  return Math.max(1, Math.min(12, Math.floor(value)));
 }
 
 async function restoreLookupCache(

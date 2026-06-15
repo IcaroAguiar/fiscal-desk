@@ -1,5 +1,5 @@
-appId: com.icaroaguiar.consulta-simples-csv
-productName: Consulta Simples CSV
+appId: com.icaroaguiar.fiscal-desk
+productName: Fiscal Desk
 directories:
   output: release
 files:

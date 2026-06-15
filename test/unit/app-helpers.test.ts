@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 
-import { extractMessage } from "../../src/renderer/ui/app-helpers";
+import {
+  buildCompletionMessage,
+  extractMessage,
+} from "../../src/renderer/ui/app-helpers";
 
 describe("extractMessage", () => {
   it("returns friendly guidance for xlsx content sent as csv", () => {
@@ -43,9 +46,90 @@ describe("extractMessage", () => {
     );
   });
 
+  it("preserves missing cnpj column guidance from core errors", () => {
+    const coreMessage =
+      "Nenhuma coluna de CNPJ suportada foi encontrada. Use um cabeçalho como CNPJ, CPF/CNPJ, documento ou informe a coluna manualmente.";
+    const error = new Error(
+      `Error invoking remote method 'csv:process': Error: ${coreMessage}`,
+    );
+
+    expect(extractMessage(error, "Falha ao processar o CSV.")).toBe(
+      coreMessage,
+    );
+  });
+
   it("falls back when the error is unknown", () => {
     expect(
       extractMessage(new Error("socket hang up"), "Falha ao salvar o CSV."),
     ).toBe("Falha ao salvar o CSV.");
+  });
+});
+
+describe("buildCompletionMessage", () => {
+  it("uses pause copy for cancelled runs intentionally stopped for checkpoint resume", () => {
+    expect(
+      buildCompletionMessage(
+        {
+          delivery: {
+            extension: "xlsx",
+            format: "xlsx",
+            mimeType:
+              "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+          },
+          execution: null,
+          outputCsv: "",
+          outputXlsx: null,
+          runStatus: "CANCELLED",
+          savedPath: "/tmp/entrada-processado.xlsx",
+          summary: {
+            totalCnpjsEncontrados: 1,
+            totalCnpjsRetomados: 0,
+            totalCnpjsUnicosConsultados: 1,
+            totalCnpjsValidos: 1,
+            totalErros: 0,
+            totalLinhas: 1,
+            totalNaoOptantesSimples: 0,
+            totalOptantesSimples: 1,
+          },
+          warningMessage: null,
+        },
+        "pause",
+      ),
+    ).toContain("Pausa concluída");
+  });
+
+  it("keeps pause and history guidance when a paused run also has an auto-save warning", () => {
+    const message = buildCompletionMessage(
+      {
+        delivery: {
+          extension: "xlsx",
+          format: "xlsx",
+          mimeType:
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        },
+        execution: null,
+        outputCsv: "",
+        outputXlsx: null,
+        runStatus: "CANCELLED",
+        savedPath: null,
+        summary: {
+          totalCnpjsEncontrados: 1,
+          totalCnpjsRetomados: 0,
+          totalCnpjsUnicosConsultados: 1,
+          totalCnpjsValidos: 1,
+          totalErros: 0,
+          totalLinhas: 1,
+          totalNaoOptantesSimples: 0,
+          totalOptantesSimples: 1,
+        },
+        warningMessage: "Processamento concluído, mas o auto-save falhou.",
+      },
+      "pause",
+    );
+
+    expect(message).toContain("Pausa concluída");
+    expect(message).toMatch(/[Rr]etome pelo Histórico/);
+    expect(message).toContain("auto-save falhou");
+    expect(message).not.toContain("Processamento concluído");
   });
 });

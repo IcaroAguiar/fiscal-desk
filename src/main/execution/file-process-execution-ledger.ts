@@ -3,17 +3,22 @@ import { mkdir, readdir, readFile, rename, writeFile } from "node:fs/promises";
 import path from "node:path";
 import type {
   ProcessCsvExecutionStatus,
+  ProcessCsvInputFormat,
   ProcessCsvSummary,
   ProcessExecutionHistoryItem,
 } from "../../core/app/process-csv.types";
-import type { ProcessExecutionLedgerSession } from "../../core/app/process-execution-ledger.port";
+import { PROCESS_CSV_INPUT_FORMAT } from "../../core/app/process-csv.types";
 import type { SimplesLookupResult } from "../../core/simples/simples-lookup.types";
 import type { SimplesProviderName } from "../../core/simples/simples-provider.names";
+import { FileProcessExecutionSession } from "./file-process-execution-ledger-session";
+
+export { FileProcessExecutionSession } from "./file-process-execution-ledger-session";
 
 const LEDGER_VERSION = 1;
 const CHECKPOINT_POLICY_VERSION = "stable-results-v1";
 const CNPJ_NORMALIZER_VERSION = "normalize-cnpj-v1";
 const CSV_PARSER_VERSION = "csv-reader-v1";
+const XLSX_PARSER_VERSION = "xlsx-reader-v1";
 const DEFAULT_PROVIDER_CONFIG_VERSION = "provider-config-v1";
 const INPUT_FINGERPRINT_ALGORITHM = "sha256";
 const RESUMABLE_STATUSES = new Set<ProcessCsvExecutionStatus>([
@@ -47,6 +52,7 @@ type LedgerOperationalMetadata = {
   cnpjNormalizerVersion: string;
   csvParserVersion: string;
   elapsedMs: number | null;
+  inputFormat: ProcessCsvInputFormat;
   ledgerVersion: typeof LEDGER_VERSION;
   provider: {
     configVersion: string;
@@ -54,7 +60,7 @@ type LedgerOperationalMetadata = {
   };
 };
 
-type LedgerDocument = {
+export type LedgerDocument = {
   version: typeof LEDGER_VERSION;
   runId: string;
   inputFingerprint: string;
@@ -73,7 +79,9 @@ type LedgerDocument = {
 
 export type StartProcessExecutionInput = {
   cnpjColumn?: string;
-  inputCsv: string;
+  inputContent?: string | Uint8Array | number[];
+  inputCsv?: string;
+  inputFormat?: ProcessCsvInputFormat;
   providerName: SimplesProviderName;
   providerConfigVersion?: string;
   sourceFilePath?: string;
@@ -112,7 +120,7 @@ export class FileProcessExecutionLedger {
       previous.providerName === input.providerName &&
       previous.inputFingerprint === inputFingerprint &&
       RESUMABLE_STATUSES.has(previous.status)
-        ? previous.checkpoints
+        ? toSafeLookupCheckpoints(previous.checkpoints)
         : {};
     const document: LedgerDocument = {
       version: LEDGER_VERSION,
@@ -159,6 +167,17 @@ export class FileProcessExecutionLedger {
     return this.readHistoryItem(ledgerKey);
   }
 
+  async getCheckpointedCnpjs(ledgerKey: string): Promise<Set<string>> {
+    const ledgerPath = this.resolveLedgerPathByKey(ledgerKey);
+    const document = await readLedgerDocument(ledgerPath, this.logger);
+
+    if (!document) {
+      throw new Error("Execução não encontrada no histórico local.");
+    }
+
+    return new Set(Object.keys(toSafeLookupCheckpoints(document.checkpoints)));
+  }
+
   private async readHistoryItem(
     ledgerKey: string,
   ): Promise<ProcessExecutionHistoryItem | null> {
@@ -187,82 +206,22 @@ export class FileProcessExecutionLedger {
   }
 }
 
-export class FileProcessExecutionSession
-  implements ProcessExecutionLedgerSession
-{
-  constructor(
-    private readonly ledgerPath: string,
-    private document: LedgerDocument,
-  ) {}
-
-  get runId(): string {
-    return this.document.runId;
-  }
-
-  get checkpointPath(): string {
-    return this.ledgerPath;
-  }
-
-  async setTotalUniqueLookups(totalUniqueLookups: number): Promise<void> {
-    this.document = {
-      ...this.document,
-      totalUniqueLookups,
-      updatedAt: new Date().toISOString(),
-    };
-    await writeLedgerDocument(this.ledgerPath, this.document);
-  }
-
-  async restoreLookup(cnpj: string): Promise<SimplesLookupResult | null> {
-    return this.document.checkpoints[cnpj]?.result ?? null;
-  }
-
-  async saveLookup(result: SimplesLookupResult): Promise<void> {
-    this.document = {
-      ...this.document,
-      updatedAt: new Date().toISOString(),
-      checkpoints: {
-        ...this.document.checkpoints,
-        [result.cnpj]: {
-          completedAt: new Date().toISOString(),
-          result,
-        },
-      },
-    };
-    await writeLedgerDocument(this.ledgerPath, this.document);
-  }
-
-  async finish(input: FinishProcessExecutionInput): Promise<void> {
-    const now = new Date().toISOString();
-    this.document = {
-      ...this.document,
-      status: input.status,
-      outputPath: input.outputPath,
-      summary: input.summary,
-      updatedAt: now,
-      completedAt: now,
-      operationalMetadata: {
-        ...this.document.operationalMetadata,
-        elapsedMs: Math.max(
-          0,
-          Date.parse(now) - Date.parse(this.document.startedAt),
-        ),
-      },
-    };
-    await writeLedgerDocument(this.ledgerPath, this.document);
-  }
-}
-
 export function createInputFingerprint(
   input: StartProcessExecutionInput,
 ): string {
+  const inputFormat = normalizeInputFormat(input.inputFormat);
+  const parserVersion = resolveParserVersion(inputFormat);
   return createHash(INPUT_FINGERPRINT_ALGORITHM)
     .update(
       JSON.stringify({
         checkpointPolicyVersion: CHECKPOINT_POLICY_VERSION,
         cnpjColumn: normalizeOptionalText(input.cnpjColumn),
         cnpjNormalizerVersion: CNPJ_NORMALIZER_VERSION,
-        csvParserVersion: CSV_PARSER_VERSION,
-        inputCsv: input.inputCsv,
+        csvParserVersion: parserVersion,
+        inputContentHash: createInputContentHash(
+          input.inputContent ?? input.inputCsv ?? "",
+        ),
+        inputFormat,
         ledgerVersion: LEDGER_VERSION,
         providerConfigVersion:
           input.providerConfigVersion ?? DEFAULT_PROVIDER_CONFIG_VERSION,
@@ -282,8 +241,8 @@ async function readLedgerDocument(
 
     if (!isLedgerDocument(parsed)) {
       logger.warn("[csv] ledger local invalido descartado", {
-        checkpointPath: ledgerPath,
-        reason: "estrutura ou versao incompatível",
+        ledgerKey: path.basename(ledgerPath),
+        reason: "incompatible_structure",
       });
       return null;
     }
@@ -295,14 +254,14 @@ async function readLedgerDocument(
     }
 
     logger.warn("[csv] ledger local invalido descartado", {
-      checkpointPath: ledgerPath,
-      reason: error instanceof Error ? error.message : "erro desconhecido",
+      ledgerKey: path.basename(ledgerPath),
+      reason: toSafeLedgerReadFailureReason(error),
     });
     return null;
   }
 }
 
-async function writeLedgerDocument(
+export async function writeLedgerDocument(
   ledgerPath: string,
   document: LedgerDocument,
 ): Promise<void> {
@@ -326,8 +285,11 @@ function createOperationalMetadata(
     },
     cnpjColumn: normalizeOptionalText(input.cnpjColumn),
     cnpjNormalizerVersion: CNPJ_NORMALIZER_VERSION,
-    csvParserVersion: CSV_PARSER_VERSION,
+    csvParserVersion: resolveParserVersion(
+      normalizeInputFormat(input.inputFormat),
+    ),
     elapsedMs,
+    inputFormat: normalizeInputFormat(input.inputFormat),
     ledgerVersion: LEDGER_VERSION,
     provider: {
       configVersion:
@@ -337,10 +299,130 @@ function createOperationalMetadata(
   };
 }
 
+function normalizeInputFormat(
+  value: ProcessCsvInputFormat | undefined,
+): ProcessCsvInputFormat {
+  return value === PROCESS_CSV_INPUT_FORMAT.XLSX
+    ? PROCESS_CSV_INPUT_FORMAT.XLSX
+    : PROCESS_CSV_INPUT_FORMAT.CSV;
+}
+
+function resolveParserVersion(inputFormat: ProcessCsvInputFormat) {
+  return inputFormat === PROCESS_CSV_INPUT_FORMAT.XLSX
+    ? XLSX_PARSER_VERSION
+    : CSV_PARSER_VERSION;
+}
+
+function createInputContentHash(input: string | Uint8Array | number[]): string {
+  const hash = createHash(INPUT_FINGERPRINT_ALGORITHM);
+
+  if (typeof input === "string") {
+    hash.update(input, TEXT_ENCODING);
+    return hash.digest("hex");
+  }
+
+  hash.update(Buffer.from(input));
+  return hash.digest("hex");
+}
+
 function normalizeOptionalText(value: string | undefined): string | null {
   const normalized = value?.trim();
 
   return normalized ? normalized : null;
+}
+
+export function toSafeLookupCheckpointResult(
+  result: unknown,
+): SimplesLookupResult | null {
+  if (!isSafeReusableLookupResult(result)) {
+    return null;
+  }
+
+  return {
+    cnpj: result.cnpj,
+    simplesNacional: result.simplesNacional,
+    simei: result.simei,
+    source: result.source,
+    status: result.status,
+  };
+}
+
+function toSafeLookupCheckpoints(
+  checkpoints: Record<string, LookupCheckpoint>,
+): Record<string, LookupCheckpoint> {
+  const safeCheckpoints: Record<string, LookupCheckpoint> = {};
+
+  for (const [checkpointKey, checkpoint] of Object.entries(checkpoints)) {
+    if (!isLookupCheckpoint(checkpoint)) {
+      continue;
+    }
+
+    const checkpointResult = toSafeLookupCheckpointResult(checkpoint.result);
+
+    if (!checkpointResult || checkpointResult.cnpj !== checkpointKey) {
+      continue;
+    }
+
+    safeCheckpoints[checkpointKey] = {
+      completedAt: checkpoint.completedAt,
+      result: checkpointResult,
+    };
+  }
+
+  return safeCheckpoints;
+}
+
+function isSafeReusableLookupResult(
+  result: unknown,
+): result is SimplesLookupResult {
+  if (!result || typeof result !== "object") {
+    return false;
+  }
+
+  const candidate = result as Partial<SimplesLookupResult>;
+
+  return (
+    typeof candidate.cnpj === "string" &&
+    /^\d{14}$/.test(candidate.cnpj) &&
+    typeof candidate.source === "string" &&
+    isReusableCheckpointStatus(candidate.status) &&
+    (typeof candidate.simplesNacional === "boolean" ||
+      candidate.simplesNacional === null) &&
+    (typeof candidate.simei === "boolean" || candidate.simei === null)
+  );
+}
+
+function isLookupCheckpoint(value: unknown): value is LookupCheckpoint {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+
+  const candidate = value as Partial<LookupCheckpoint>;
+
+  return typeof candidate.completedAt === "string" && "result" in candidate;
+}
+
+function isReusableCheckpointStatus(
+  value: unknown,
+): value is SimplesLookupResult["status"] {
+  return (
+    typeof value === "string" &&
+    REUSABLE_CHECKPOINT_STATUSES.includes(
+      value as SimplesLookupResult["status"],
+    )
+  );
+}
+
+function toSafeLedgerReadFailureReason(error: unknown): string {
+  if (error instanceof SyntaxError) {
+    return "invalid_json";
+  }
+
+  if (isNodeErrorWithCode(error)) {
+    return `read_failed_${error.code.toLowerCase()}`;
+  }
+
+  return "read_failed";
 }
 
 function toHistoryItem(
@@ -352,11 +434,24 @@ function toHistoryItem(
     ? path.basename(document.sourceFilePath)
     : null;
   const canResume = RESUMABLE_STATUSES.has(document.status);
+  const checkpointedUniqueLookups = Object.keys(document.checkpoints).length;
+  const pendingUniqueLookups = Math.max(
+    0,
+    document.totalUniqueLookups - checkpointedUniqueLookups,
+  );
+  const canExportPending =
+    (document.status === "CANCELLED" || document.status === "FAILED") &&
+    pendingUniqueLookups > 0 &&
+    Boolean(document.sourceFilePath);
+  const hasPartialOutput =
+    document.status === "CANCELLED" && Boolean(document.outputPath);
 
   return {
     ledgerKey,
     runId: document.runId,
     status: document.status,
+    inputFormat:
+      document.operationalMetadata.inputFormat ?? PROCESS_CSV_INPUT_FORMAT.CSV,
     providerName: document.providerName,
     providerConfigVersion: document.operationalMetadata.provider.configVersion,
     sourceFilePath: document.sourceFilePath,
@@ -368,9 +463,12 @@ function toHistoryItem(
     completedAt: document.completedAt,
     cnpjColumn: document.operationalMetadata.cnpjColumn,
     totalUniqueLookups: document.totalUniqueLookups,
-    checkpointedUniqueLookups: Object.keys(document.checkpoints).length,
+    checkpointedUniqueLookups,
+    pendingUniqueLookups,
     summary: document.summary,
     canResume,
+    canExportPending,
+    hasPartialOutput,
     resumeBlockedReason: canResume
       ? null
       : "Execucoes concluidas com sucesso ficam apenas no historico.",
@@ -412,5 +510,14 @@ function isNoEntryError(error: unknown): boolean {
     typeof error === "object" &&
     "code" in error &&
     error.code === "ENOENT"
+  );
+}
+
+function isNodeErrorWithCode(error: unknown): error is { code: string } {
+  return (
+    error !== null &&
+    typeof error === "object" &&
+    "code" in error &&
+    typeof error.code === "string"
   );
 }

@@ -3,6 +3,7 @@ import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
+import ExcelJS from "exceljs";
 import { _electron as electron, type ElectronApplication } from "playwright";
 import { createServer, type ViteDevServer } from "vite";
 
@@ -15,6 +16,10 @@ import {
 } from "../src/main/runtime-env";
 import type { ProcessExecutionHistoryItem } from "../src/main/types";
 import {
+  PROCESS_CSV_INPUT_FORMAT,
+  type ProcessCsvInputFormat,
+} from "../src/core/app/process-csv.types";
+import {
   SIMPLES_PROVIDER,
   type SimplesProviderName,
 } from "../src/core/simples/simples-provider.names";
@@ -22,15 +27,26 @@ import {
 const fixturePath = fileURLToPath(
   new URL("../test/fixtures/smoke/cnpjs-publicos-reais.csv", import.meta.url),
 );
+const localPublicBaseFixturePath = fileURLToPath(
+  new URL("../test/fixtures/smoke/base-publica-local.csv", import.meta.url),
+);
 const smokeProvider = resolveSmokeProvider(process.env.FISCAL_DESK_SMOKE_PROVIDER);
+const smokeInputFormat = resolveSmokeInputFormat(
+  process.env.FISCAL_DESK_SMOKE_INPUT_FORMAT,
+);
 const tempDir = await mkdtemp(join(tmpdir(), "fiscal-desk-electron-smoke-"));
 const userDataDir = join(tempDir, "user-data");
-const sourceFilePath = join(tempDir, "entrada.csv");
+const sourceFilePath = join(tempDir, `entrada.${smokeInputFormat}`);
 const fixtureCsv = await readFile(fixturePath, "utf8");
+const localPublicBaseCsv = await readFile(localPublicBaseFixturePath, "utf8");
+const sourceContent = await createSmokeInputFile(
+  sourceFilePath,
+  fixtureCsv,
+  smokeInputFormat,
+);
 let server: ViteDevServer | null = null;
 let electronApp: ElectronApplication | null = null;
 
-await writeFile(sourceFilePath, fixtureCsv, "utf8");
 await seedInterruptedExecution();
 
 try {
@@ -58,10 +74,34 @@ try {
 
   const page = await electronApp.firstWindow();
   await page.waitForSelector("text=Fiscal Desk", { timeout: 20_000 });
+  if (smokeProvider === SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL) {
+    await page.evaluate(
+      async ({ content, sourceFilePath }) => {
+        const result = await window.appBridge.prepareLocalPublicBase({
+          content,
+          consent: {
+            accepted: true,
+            acceptedAt: new Date().toISOString(),
+            baseDateAcknowledged: "2026-05-20",
+            stalenessWarningAcknowledged:
+              "Fixture local de smoke com Data da Base 2026-05-20.",
+          },
+          sourceFileName: "base-publica-local.csv",
+          sourceFilePath,
+        });
+
+        if (result.status.state !== "ready") {
+          throw new Error("Base Publica Local nao ficou pronta no smoke.");
+        }
+      },
+      { content: localPublicBaseCsv, sourceFilePath: localPublicBaseFixturePath },
+    );
+  }
   if (smokeProvider !== SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL) {
     await page.selectOption('[data-field="provider"]', smokeProvider);
   }
   await page.selectOption('[data-field="delivery-format"]', "xlsx");
+  await page.click('[data-view="historico"]');
   await page.waitForSelector('[data-action="resume-execution"]', {
     timeout: 20_000,
   });
@@ -80,13 +120,15 @@ try {
         notice.style.display !== "none"
       );
     });
+    await page.click('[data-view="painel"]');
     await page.check('[data-field="local-public-base-notice"]');
+    await page.click('[data-view="historico"]');
     await page.click('[data-action="resume-execution"]');
   }
   await page.waitForFunction(() =>
     document
       .querySelector('[data-slot="execution-resume"]')
-      ?.textContent?.includes("1 retomadas"),
+      ?.textContent?.includes("1 CNPJ retomado"),
   );
   const history = await page.evaluate(() => window.appBridge.listExecutions());
   const latestHistory = history[0];
@@ -107,6 +149,7 @@ try {
         app: "electron",
         provider: smokeProvider,
         deliveryFormat: "xlsx",
+        inputFormat: smokeInputFormat,
         sourceFilePath,
         savedPath: latestHistory.outputPath,
         checkpointPath: latestHistory.checkpointPath,
@@ -183,7 +226,8 @@ async function seedInterruptedExecution(): Promise<void> {
   );
   const run = await ledger.startRun({
     cnpjColumn: "cnpj",
-    inputCsv: fixtureCsv,
+    inputContent: sourceContent,
+    inputFormat: smokeInputFormat,
     providerName: smokeProvider,
     sourceFilePath,
   });
@@ -209,4 +253,38 @@ function resolveSmokeProvider(value: string | undefined): SimplesProviderName {
   }
 
   return SIMPLES_PROVIDER.MOCK;
+}
+
+function resolveSmokeInputFormat(
+  value: string | undefined,
+): ProcessCsvInputFormat {
+  return value === PROCESS_CSV_INPUT_FORMAT.XLSX
+    ? PROCESS_CSV_INPUT_FORMAT.XLSX
+    : PROCESS_CSV_INPUT_FORMAT.CSV;
+}
+
+async function createSmokeInputFile(
+  filePath: string,
+  csv: string,
+  inputFormat: ProcessCsvInputFormat,
+): Promise<string | Uint8Array> {
+  if (inputFormat === PROCESS_CSV_INPUT_FORMAT.CSV) {
+    await writeFile(filePath, csv, "utf8");
+    return csv;
+  }
+
+  const workbook = new ExcelJS.Workbook();
+  const worksheet = workbook.addWorksheet("entrada");
+
+  for (const row of csv
+    .trim()
+    .split(/\r?\n/)
+    .map((line) => line.split(";"))) {
+    worksheet.addRow(row);
+  }
+
+  const bytes = await workbook.xlsx.writeBuffer();
+  const content = new Uint8Array(bytes);
+  await writeFile(filePath, content);
+  return content;
 }

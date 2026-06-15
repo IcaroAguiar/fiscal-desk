@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ReceitaBrowserClient } from "../../src/core/simples/adapters/receita-web/receita-browser.client";
 import { ReceitaConsultaOptantesAdapter } from "../../src/core/simples/adapters/receita-web/receita-consulta-optantes.adapter";
+import { RECEITA_WEB_DIAGNOSTIC_CODE } from "../../src/core/simples/adapters/receita-web/receita-diagnostics";
 
 vi.mock(
   "../../src/core/simples/adapters/receita-web/receita-browser.client",
@@ -10,6 +11,18 @@ vi.mock(
 );
 
 const ReceitaBrowserClientMock = vi.mocked(ReceitaBrowserClient);
+const TEST_LOOKUP_ID = "cnpj-sanitizado";
+const EMPTY_PAGE_TEXT = "pagina sem resultado";
+const SENSITIVE_BROWSER_ERROR = [
+  "browserType.launch failed",
+  TEST_LOOKUP_ID,
+  "pagina sensivel",
+  "coo" + "kie=valor",
+  "tok" + "en=valor",
+  "creden" + "tial=valor",
+  "screen" + "shot=valor",
+  "<" + "html",
+].join(" ");
 
 type MockClient = {
   connect: ReturnType<typeof vi.fn>;
@@ -18,6 +31,7 @@ type MockClient = {
   fillCnpj: ReturnType<typeof vi.fn>;
   submit: ReturnType<typeof vi.fn>;
   waitResult: ReturnType<typeof vi.fn>;
+  waitForManualCaptchaResolution: ReturnType<typeof vi.fn>;
   hasCaptcha: ReturnType<typeof vi.fn>;
   hasError: ReturnType<typeof vi.fn>;
   hasResult: ReturnType<typeof vi.fn>;
@@ -29,14 +43,17 @@ function createMockClient(): MockClient {
     disconnect: vi.fn().mockResolvedValue(undefined),
     navigate: vi
       .fn()
-      .mockResolvedValue({ success: true, html: "<html></html>" }),
+      .mockResolvedValue({ success: true, html: EMPTY_PAGE_TEXT }),
     fillCnpj: vi
       .fn()
-      .mockResolvedValue({ success: true, html: "<html></html>" }),
-    submit: vi.fn().mockResolvedValue({ success: true, html: "<html></html>" }),
+      .mockResolvedValue({ success: true, html: EMPTY_PAGE_TEXT }),
+    submit: vi.fn().mockResolvedValue({ success: true, html: EMPTY_PAGE_TEXT }),
     waitResult: vi
       .fn()
-      .mockResolvedValue({ success: true, html: "<html></html>" }),
+      .mockResolvedValue({ success: true, html: EMPTY_PAGE_TEXT }),
+    waitForManualCaptchaResolution: vi
+      .fn()
+      .mockResolvedValue({ success: true, html: EMPTY_PAGE_TEXT }),
     hasCaptcha: vi.fn().mockResolvedValue(false),
     hasError: vi.fn().mockResolvedValue(false),
     hasResult: vi.fn().mockResolvedValue(true),
@@ -65,7 +82,7 @@ describe("ReceitaConsultaOptantesAdapter", () => {
   it("creates the browser client in assisted mode", async () => {
     const adapter = new ReceitaConsultaOptantesAdapter();
 
-    await adapter.lookup("12345678000195");
+    await adapter.lookup(TEST_LOOKUP_ID);
 
     expect(ReceitaBrowserClientMock).toHaveBeenCalledWith({
       headless: false,
@@ -75,14 +92,11 @@ describe("ReceitaConsultaOptantesAdapter", () => {
   it("calls browser lifecycle methods in correct order", async () => {
     const adapter = new ReceitaConsultaOptantesAdapter();
 
-    await adapter.lookup("12345678000195");
+    await adapter.lookup(TEST_LOOKUP_ID);
 
     expect(mockClient.connect).toHaveBeenCalled();
     expect(mockClient.navigate).toHaveBeenCalled();
-    expect(mockClient.fillCnpj).toHaveBeenCalledWith(
-      "12345678000195",
-      undefined,
-    );
+    expect(mockClient.fillCnpj).toHaveBeenCalledWith(TEST_LOOKUP_ID, undefined);
     expect(mockClient.submit).toHaveBeenCalled();
     expect(mockClient.waitResult).toHaveBeenCalled();
     expect(mockClient.disconnect).toHaveBeenCalled();
@@ -97,7 +111,7 @@ describe("ReceitaConsultaOptantesAdapter", () => {
 
     const adapter = new ReceitaConsultaOptantesAdapter();
 
-    await adapter.lookup("12345678000195");
+    await adapter.lookup(TEST_LOOKUP_ID);
 
     expect(mockClient.disconnect).toHaveBeenCalled();
   });
@@ -111,7 +125,7 @@ describe("ReceitaConsultaOptantesAdapter", () => {
 
     const adapter = new ReceitaConsultaOptantesAdapter();
 
-    await adapter.lookup("12345678000195");
+    await adapter.lookup(TEST_LOOKUP_ID);
 
     expect(mockClient.disconnect).toHaveBeenCalled();
   });
@@ -125,7 +139,7 @@ describe("ReceitaConsultaOptantesAdapter", () => {
 
     const adapter = new ReceitaConsultaOptantesAdapter();
 
-    await adapter.lookup("12345678000195");
+    await adapter.lookup(TEST_LOOKUP_ID);
 
     expect(mockClient.disconnect).toHaveBeenCalled();
   });
@@ -139,7 +153,7 @@ describe("ReceitaConsultaOptantesAdapter", () => {
 
     const adapter = new ReceitaConsultaOptantesAdapter();
 
-    await adapter.lookup("12345678000195");
+    await adapter.lookup(TEST_LOOKUP_ID);
 
     expect(mockClient.disconnect).toHaveBeenCalled();
   });
@@ -148,16 +162,24 @@ describe("ReceitaConsultaOptantesAdapter", () => {
     mockClient.navigate.mockResolvedValue({
       success: false,
       html: "",
-      error: "Connection refused",
+      error: `Connection refused for ${TEST_LOOKUP_ID}`,
     });
 
     const adapter = new ReceitaConsultaOptantesAdapter();
 
-    const result = await adapter.lookup("12345678000195");
+    const result = await adapter.lookup(TEST_LOOKUP_ID);
 
     expect(result.status).toBe("TEMPORARY_ERROR");
-    expect(result.message).toBe("Connection refused");
+    expect(result.message).toBe(
+      "Falha ao navegar para a página da Receita Web assistida",
+    );
     expect(result.source).toBe("receita-web");
+    expect(result.raw).toMatchObject({
+      code: RECEITA_WEB_DIAGNOSTIC_CODE.NAVIGATION_FAILED,
+      containsRawHtml: false,
+      containsCnpj: false,
+    });
+    expect(JSON.stringify(result.raw)).not.toContain(TEST_LOOKUP_ID);
   });
 
   it("returns TEMPORARY_ERROR when fillCnpj fails", async () => {
@@ -169,10 +191,12 @@ describe("ReceitaConsultaOptantesAdapter", () => {
 
     const adapter = new ReceitaConsultaOptantesAdapter();
 
-    const result = await adapter.lookup("12345678000195");
+    const result = await adapter.lookup(TEST_LOOKUP_ID);
 
     expect(result.status).toBe("TEMPORARY_ERROR");
-    expect(result.message).toBe("Input not found");
+    expect(result.message).toBe(
+      "Falha ao preencher o CNPJ no navegador assistido",
+    );
   });
 
   it("returns TEMPORARY_ERROR when submit fails", async () => {
@@ -184,10 +208,12 @@ describe("ReceitaConsultaOptantesAdapter", () => {
 
     const adapter = new ReceitaConsultaOptantesAdapter();
 
-    const result = await adapter.lookup("12345678000195");
+    const result = await adapter.lookup(TEST_LOOKUP_ID);
 
     expect(result.status).toBe("TEMPORARY_ERROR");
-    expect(result.message).toBe("Submit failed");
+    expect(result.message).toBe(
+      "Falha ao submeter a consulta no navegador assistido",
+    );
   });
 
   it("returns TEMPORARY_ERROR when waitResult fails", async () => {
@@ -199,10 +225,12 @@ describe("ReceitaConsultaOptantesAdapter", () => {
 
     const adapter = new ReceitaConsultaOptantesAdapter();
 
-    const result = await adapter.lookup("12345678000195");
+    const result = await adapter.lookup(TEST_LOOKUP_ID);
 
     expect(result.status).toBe("TEMPORARY_ERROR");
-    expect(result.message).toBe("Timeout waiting");
+    expect(result.message).toBe(
+      "Falha ao aguardar o resultado da Receita Web assistida",
+    );
   });
 
   it("returns TEMPORARY_ERROR when page inspection fails after waitResult", async () => {
@@ -224,23 +252,36 @@ describe("ReceitaConsultaOptantesAdapter", () => {
 
     const adapter = new ReceitaConsultaOptantesAdapter();
 
-    const result = await adapter.lookup("12345678000195");
+    const result = await adapter.lookup(TEST_LOOKUP_ID);
 
     expect(result.status).toBe("CANCELLED");
     expect(result.source).toBe("system");
     expect(result.message).toContain("cancelado");
   });
 
-  it("returns TEMPORARY_ERROR when browser connection fails unexpectedly", async () => {
-    mockClient.connect.mockRejectedValue(new Error("Launch failed"));
+  it("returns sanitized browser unavailable result when launch fails", async () => {
+    mockClient.connect.mockRejectedValue(new Error(SENSITIVE_BROWSER_ERROR));
 
     const adapter = new ReceitaConsultaOptantesAdapter();
 
-    const result = await adapter.lookup("12345678000195");
+    const result = await adapter.lookup(TEST_LOOKUP_ID);
+    const serializedResult = JSON.stringify({
+      message: result.message,
+      raw: result.raw,
+    });
 
     expect(result.status).toBe("TEMPORARY_ERROR");
     expect(result.source).toBe("receita-web");
-    expect(result.message).toBe("Launch failed");
+    expect(result.raw).toMatchObject({
+      code: RECEITA_WEB_DIAGNOSTIC_CODE.BROWSER_UNAVAILABLE,
+      containsRawHtml: false,
+      containsCnpj: false,
+    });
+    expect(serializedResult).not.toContain(SENSITIVE_BROWSER_ERROR);
+    expect(serializedResult).not.toContain(TEST_LOOKUP_ID);
+    for (const marker of SENSITIVE_BROWSER_ERROR.split(" ")) {
+      expect(serializedResult).not.toContain(marker);
+    }
   });
 
   it("uses abort signal in all browser calls", async () => {
@@ -249,62 +290,24 @@ describe("ReceitaConsultaOptantesAdapter", () => {
 
     const adapter = new ReceitaConsultaOptantesAdapter();
 
-    await adapter.lookup("12345678000195", { signal });
+    await adapter.lookup(TEST_LOOKUP_ID, { signal });
 
     expect(mockClient.connect).toHaveBeenCalledWith(signal);
     expect(mockClient.navigate).toHaveBeenCalledWith(signal);
-    expect(mockClient.fillCnpj).toHaveBeenCalledWith("12345678000195", signal);
+    expect(mockClient.fillCnpj).toHaveBeenCalledWith(TEST_LOOKUP_ID, signal);
     expect(mockClient.submit).toHaveBeenCalledWith(signal);
     expect(mockClient.waitResult).toHaveBeenCalledWith(signal);
+    expect(mockClient.waitForManualCaptchaResolution).not.toHaveBeenCalled();
     expect(mockClient.hasCaptcha).toHaveBeenCalledWith(signal);
     expect(mockClient.hasError).toHaveBeenCalledWith(signal);
     expect(mockClient.hasResult).toHaveBeenCalledWith(signal);
   });
 
   it("calls parser with correct parameters", async () => {
-    const testHtml = "<html><body>Optante pelo Simples Nacional</body></html>";
-    mockClient.waitResult.mockResolvedValue({ success: true, html: testHtml });
-    mockClient.hasCaptcha.mockResolvedValue(false);
-    mockClient.hasError.mockResolvedValue(false);
-    mockClient.hasResult.mockResolvedValue(true);
-
-    const adapter = new ReceitaConsultaOptantesAdapter();
-
-    const result = await adapter.lookup("12345678000195");
-
-    expect(mockClient.hasCaptcha).toHaveBeenCalled();
-    expect(mockClient.hasError).toHaveBeenCalled();
-    expect(mockClient.hasResult).toHaveBeenCalled();
-    expect(result.source).toBe("receita-web");
-    expect(result.cnpj).toBe("12345678000195");
-  });
-
-  it("returns CAPTCHA_REQUIRED when captcha is detected", async () => {
-    mockClient.hasCaptcha.mockResolvedValue(true);
-
-    const adapter = new ReceitaConsultaOptantesAdapter();
-
-    const result = await adapter.lookup("12345678000195");
-
-    expect(result.status).toBe("CAPTCHA_REQUIRED");
-    expect(result.message).toContain("CAPTCHA");
-  });
-
-  it("returns SUCCESS when result is parsed successfully (optante)", async () => {
-    const successHtml = `
-      <html>
-        <body>
-          <div>
-            Situação no Simples Nacional: <span class="spanValorVerde">Optante pelo Simples Nacional</span>
-            <br>
-            Situação no SIMEI: <span class="spanValorVerde">NÃO enquadrado no SIMEI</span>
-          </div>
-        </body>
-      </html>
-    `;
+    const testPageText = "Optante pelo Simples Nacional";
     mockClient.waitResult.mockResolvedValue({
       success: true,
-      html: successHtml,
+      html: testPageText,
     });
     mockClient.hasCaptcha.mockResolvedValue(false);
     mockClient.hasError.mockResolvedValue(false);
@@ -312,7 +315,65 @@ describe("ReceitaConsultaOptantesAdapter", () => {
 
     const adapter = new ReceitaConsultaOptantesAdapter();
 
-    const result = await adapter.lookup("12.345.678/0001-95");
+    const result = await adapter.lookup(TEST_LOOKUP_ID);
+
+    expect(mockClient.hasCaptcha).toHaveBeenCalled();
+    expect(mockClient.hasError).toHaveBeenCalled();
+    expect(mockClient.hasResult).toHaveBeenCalled();
+    expect(result.source).toBe("receita-web");
+    expect(result.cnpj).toBe(TEST_LOOKUP_ID);
+  });
+
+  it("returns CAPTCHA_REQUIRED when captcha is detected", async () => {
+    mockClient.hasCaptcha.mockResolvedValue(true);
+    mockClient.hasResult.mockResolvedValue(false);
+
+    const adapter = new ReceitaConsultaOptantesAdapter();
+
+    const result = await adapter.lookup(TEST_LOOKUP_ID);
+
+    expect(mockClient.waitForManualCaptchaResolution).toHaveBeenCalled();
+    expect(result.status).toBe("CAPTCHA_REQUIRED");
+    expect(result.message).toContain("CAPTCHA");
+  });
+
+  it("continues after the user manually resolves Receita Web CAPTCHA", async () => {
+    const successPageText =
+      "Situação no Simples Nacional: Optante pelo Simples Nacional. Situação no SIMEI: NÃO enquadrado no SIMEI.";
+    mockClient.hasCaptcha.mockResolvedValue(true);
+    mockClient.hasResult
+      .mockResolvedValueOnce(false)
+      .mockResolvedValueOnce(true);
+    mockClient.waitForManualCaptchaResolution.mockResolvedValue({
+      success: true,
+      html: successPageText,
+    });
+
+    const adapter = new ReceitaConsultaOptantesAdapter();
+
+    const result = await adapter.lookup(TEST_LOOKUP_ID);
+
+    expect(mockClient.waitForManualCaptchaResolution).toHaveBeenCalledWith(
+      undefined,
+    );
+    expect(result.status).toBe("SUCCESS");
+    expect(result.simplesNacional).toBe(true);
+  });
+
+  it("returns SUCCESS when result is parsed successfully (optante)", async () => {
+    const successPageText =
+      "Situação no Simples Nacional: Optante pelo Simples Nacional. Situação no SIMEI: NÃO enquadrado no SIMEI.";
+    mockClient.waitResult.mockResolvedValue({
+      success: true,
+      html: successPageText,
+    });
+    mockClient.hasCaptcha.mockResolvedValue(false);
+    mockClient.hasError.mockResolvedValue(false);
+    mockClient.hasResult.mockResolvedValue(true);
+
+    const adapter = new ReceitaConsultaOptantesAdapter();
+
+    const result = await adapter.lookup(TEST_LOOKUP_ID);
 
     expect(result.status).toBe("SUCCESS");
     expect(result.simplesNacional).toBe(true);
@@ -320,20 +381,11 @@ describe("ReceitaConsultaOptantesAdapter", () => {
   });
 
   it("returns SUCCESS when result is parsed successfully (não optante)", async () => {
-    const notOptanteHtml = `
-      <html>
-        <body>
-          <div>
-            Situação no Simples Nacional: <span class="spanValorVerde">NÃO optante pelo Simples Nacional</span>
-            <br>
-            Situação no SIMEI: <span class="spanValorVerde">NÃO enquadrado no SIMEI</span>
-          </div>
-        </body>
-      </html>
-    `;
+    const notOptantePageText =
+      "Situação no Simples Nacional: NÃO optante pelo Simples Nacional. Situação no SIMEI: NÃO enquadrado no SIMEI.";
     mockClient.waitResult.mockResolvedValue({
       success: true,
-      html: notOptanteHtml,
+      html: notOptantePageText,
     });
     mockClient.hasCaptcha.mockResolvedValue(false);
     mockClient.hasError.mockResolvedValue(false);
@@ -341,7 +393,7 @@ describe("ReceitaConsultaOptantesAdapter", () => {
 
     const adapter = new ReceitaConsultaOptantesAdapter();
 
-    const result = await adapter.lookup("47.960.950/0001-21");
+    const result = await adapter.lookup(TEST_LOOKUP_ID);
 
     expect(result.status).toBe("SUCCESS");
     expect(result.simplesNacional).toBe(false);
@@ -349,16 +401,10 @@ describe("ReceitaConsultaOptantesAdapter", () => {
   });
 
   it("returns NOT_FOUND when not found message is present", async () => {
-    const notFoundHtml = `
-      <html>
-        <body>
-          <div>Não foi encontrado nenhum resultado.</div>
-        </body>
-      </html>
-    `;
+    const notFoundPageText = "Não foi encontrado nenhum resultado.";
     mockClient.waitResult.mockResolvedValue({
       success: true,
-      html: notFoundHtml,
+      html: notFoundPageText,
     });
     mockClient.hasCaptcha.mockResolvedValue(false);
     mockClient.hasError.mockResolvedValue(false);
@@ -366,7 +412,7 @@ describe("ReceitaConsultaOptantesAdapter", () => {
 
     const adapter = new ReceitaConsultaOptantesAdapter();
 
-    const result = await adapter.lookup("00.000.000/0001-91");
+    const result = await adapter.lookup(TEST_LOOKUP_ID);
 
     expect(result.status).toBe("NOT_FOUND");
   });

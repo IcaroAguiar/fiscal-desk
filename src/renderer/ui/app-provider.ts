@@ -6,19 +6,30 @@ export function syncReceitaWebAvailability(
   providerSelect: HTMLSelectElement,
   state: UiState,
 ): void {
-  const receitaWebOption = providerSelect.querySelector<HTMLOptionElement>(
-    'option[value="receita-web"]',
+  const shouldHide = !state.receitaWebAvailable;
+  const receitaWebOptions = [
+    SIMPLES_PROVIDER.RECEITA_WEB,
+    SIMPLES_PROVIDER.RECEITA_WEB_PARALLEL_EXPERIMENTAL,
+  ].map((providerName) =>
+    providerSelect.querySelector<HTMLOptionElement>(
+      `option[value="${providerName}"]`,
+    ),
   );
 
-  if (!receitaWebOption) {
-    return;
+  for (const option of receitaWebOptions) {
+    if (!option) {
+      continue;
+    }
+
+    option.disabled = shouldHide;
+    option.hidden = shouldHide;
   }
 
-  const shouldHide = !state.receitaWebAvailable;
-  receitaWebOption.disabled = shouldHide;
-  receitaWebOption.hidden = shouldHide;
-
-  if (shouldHide && state.provider === "receita-web") {
+  if (
+    shouldHide &&
+    (state.provider === SIMPLES_PROVIDER.RECEITA_WEB ||
+      state.provider === SIMPLES_PROVIDER.RECEITA_WEB_PARALLEL_EXPERIMENTAL)
+  ) {
     state.provider = "mock";
   }
 }
@@ -43,6 +54,33 @@ export function prepareLocalPublicBaseResume(
   state.status = "idle";
   state.message =
     "Confirme o aviso de Data da Base antes de retomar esta execução.";
+
+  return false;
+}
+
+export function prepareReceitaWebExperimentalResume(
+  state: UiState,
+  historyItem: ProcessExecutionHistoryItem,
+): boolean {
+  if (
+    historyItem.providerName !==
+    SIMPLES_PROVIDER.RECEITA_WEB_PARALLEL_EXPERIMENTAL
+  ) {
+    return true;
+  }
+
+  if (
+    state.provider === SIMPLES_PROVIDER.RECEITA_WEB_PARALLEL_EXPERIMENTAL &&
+    state.receitaWebExperimentalNoticeAccepted
+  ) {
+    return true;
+  }
+
+  state.provider = SIMPLES_PROVIDER.RECEITA_WEB_PARALLEL_EXPERIMENTAL;
+  state.receitaWebExperimentalNoticeAccepted = false;
+  state.status = "idle";
+  state.message =
+    "Confirme o aviso do modo experimental da Receita Web antes de retomar.";
 
   return false;
 }

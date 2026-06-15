@@ -1,22 +1,38 @@
+import { PROCESS_CSV_EXECUTION_SPEED_PROFILE } from "../../core/app/process-csv.types";
 import { SIMPLES_PROVIDER } from "../../core/simples/simples-provider.names";
-import type { UiState } from "./app.types";
+import type { UiState, UiView } from "./app.types";
 import {
   escapeHtml,
   getLiveProgress,
   getStatusPillVariant,
   renderStatusLabel,
+  renderStatusText,
   renderSummary,
 } from "./app-helpers";
+import { renderExecutionHistory } from "./app-history-view";
+import { renderLocalTrustGrid } from "./app-local-trust-view";
+
+export { renderExecutionHistory } from "./app-history-view";
+
+import {
+  formatLocalPublicBaseOfficialSourceLine,
+  formatLocalPublicBaseStatusLine,
+} from "./app-local-public-base-copy";
+import { renderLogList, renderQueueItems } from "./app-view-lists";
 import { button, statusPill } from "./components";
 import {
-  buildDedupeLabel,
-  formatCommandBarSummary,
+  buildOperationalPanelCopy,
+  formatExecutionResume,
   formatProgressLine,
   formatProviderHint,
+  formatProviderMode,
+  getOperationalToneClass,
   previewAutoSavePath,
 } from "./operational-copy";
 
 export function renderShell(state: UiState): string {
+  const referenceMode = isReferenceV5A(state);
+  const visualFixture = state.visualFixture;
   const autoSavePreview = state.savedPath
     ? state.savedPath.split(/[/\\]/).pop()
     : state.filePath
@@ -25,254 +41,440 @@ export function renderShell(state: UiState): string {
           .pop()
       : null;
 
+  const statusLabel = renderStatusLabel(state.status);
+  const entryFileBadge = referenceMode
+    ? (visualFixture?.fileStatus ?? "aguardando arquivo")
+    : (state.fileName ?? "aguardando arquivo");
+  const entryTitle = referenceMode
+    ? (visualFixture?.entryTitle ?? "Arquivo de CNPJs")
+    : state.fileName
+      ? state.fileName
+      : "Arquivo CSV ou Excel";
+  const entryHint = referenceMode
+    ? (visualFixture?.entryHint ?? "Arraste aqui ou selecione no computador.")
+    : state.fileName
+      ? formatProviderHint(state.fileName, state.provider)
+      : "Selecione uma planilha com CNPJs. O resultado fica ao lado do arquivo original.";
+  const outputStatus = referenceMode
+    ? (visualFixture?.outputText ??
+      "O arquivo final aparece após uma consulta concluída.")
+    : renderStatusText(state);
+  const outputFormatLabel = referenceMode
+    ? (visualFixture?.outputFormat ?? "csv")
+    : getDeliveryFormatLabel(state.deliveryFormat);
+  const activeQueueLabel = state.fileName ?? "Nenhum arquivo selecionado";
+  const activeQueueHint = state.summary
+    ? "Consulta concluída"
+    : state.fileName
+      ? `Pronto para consultar ${getInputFormatLabel(state.inputFormat)}`
+      : "Escolha uma planilha para iniciar.";
+  const activeQueueStatus = state.summary
+    ? "concluído"
+    : state.fileName
+      ? "pronto para iniciar"
+      : "aguardando";
+  const protocolStatus = referenceMode
+    ? (visualFixture?.fileStatus ?? activeQueueStatus)
+    : activeQueueStatus;
+  const protocolEntry = referenceMode
+    ? (visualFixture?.entryTitle ?? "Arquivo de CNPJs")
+    : (state.fileName ?? "Sem arquivo selecionado");
+  const protocolEntryHint = referenceMode
+    ? (visualFixture?.entryHint ?? "Arquivo aguardando seleção.")
+    : state.fileName
+      ? "Entrada carregada neste computador."
+      : "Selecione uma planilha CSV ou Excel para preparar a consulta.";
+  const protocolBase = referenceMode
+    ? (visualFixture?.providerPrimaryStatus ??
+      formatProviderMode(state.provider))
+    : formatProviderMode(state.provider);
+  const protocolBaseHint = referenceMode
+    ? (visualFixture?.providerSecondaryStatus ?? "Modo informado.")
+    : formatProviderHint(state.fileName, state.provider);
+  const protocolOutput = referenceMode
+    ? (visualFixture?.outputFormat ?? "CSV")
+    : (autoSavePreview ?? getDeliveryFormatLabel(state.deliveryFormat));
+  const protocolOutputHint = referenceMode
+    ? (visualFixture?.outputText ?? "Arquivo final após conclusão.")
+    : autoSavePreview
+      ? "Nome previsto para o arquivo final."
+      : "O arquivo final fica ao lado da planilha original.";
+  const protocolResume = state.execution
+    ? formatExecutionResume(state)
+    : "Disponível quando houver checkpoint";
+  const hasOperationalSignals =
+    Boolean(state.fileName) ||
+    Boolean(state.summary) ||
+    Boolean(state.progress) ||
+    state.status === "processing" ||
+    state.status === "error";
+  const operationalPanel = buildOperationalPanelCopy(state);
+  const needsReceitaWebExperimentalNotice =
+    state.provider === SIMPLES_PROVIDER.RECEITA_WEB_PARALLEL_EXPERIMENTAL &&
+    !state.receitaWebExperimentalNoticeAccepted;
+
   return `
-    <main class="app-shell">
-      <header class="topbar">
-        <div class="brand-lockup">
-          <span class="brand-mark" aria-hidden="true">FD</span>
-          <div class="brand-lockup__copy">
+    <main class="app-shell workbench-shell workbench-v5">
+      <aside class="sidebar" aria-label="Navegação principal">
+        <div>
+          <div class="brand-stack">
+            <span class="brand-mark" aria-hidden="true">FD</span>
             <strong>Fiscal Desk</strong>
-            <span class="brand-subtitle">Consulta local de CNPJs em lote</span>
           </div>
+          <nav class="sidebar-nav" aria-label="Módulos">
+            ${renderViewLink("Consulta", "painel", state.activeView, "sidebar-nav__item", "sidebar")}
+            ${renderViewLink("Histórico", "historico", state.activeView, "sidebar-nav__item", "sidebar")}
+          </nav>
         </div>
-        ${statusPill({ variant: getStatusPillVariant(state.status), children: renderStatusLabel(state.status) })}
-      </header>
-
-      <section class="intro">
-        <div class="intro__card">
-          <div class="intro__header">
-            <div>
-              <span class="intro__eyebrow">Execução local-first</span>
-              <h1 class="intro__title">Prepare, consulte e salve lotes de CNPJs sem sair do seu computador.</h1>
-            </div>
-            <div class="intro__badges">
-              <span class="intro__badge">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
-                CSV local
-              </span>
-              <span class="intro__badge">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                ETA em tempo real
-              </span>
-              <span class="intro__badge">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-                CSV ou Excel
-              </span>
-            </div>
-          </div>
-          <p class="intro__text">
-            Esta versão mantém entrada CSV confiável: você escolhe o arquivo, define provedor e formato de entrega,
-            acompanha o processamento e recebe uma cópia salva ao lado do original. Excel já está disponível como
-            Planilha de Resultado; Base Pública Local entra como consulta resiliente com Data da Base explícita.
-          </p>
-          <div class="release-strip" aria-label="Recursos desta versão">
-            <div>
-              <span class="ops-label">Disponível agora</span>
-              <strong>CSV, Excel, deduplicação e saída automática</strong>
-            </div>
-            <div>
-              <span class="ops-label">Em evolução</span>
-              <strong>Base local com aviso de defasagem</strong>
-            </div>
-            <div>
-              <span class="ops-label">Transparência</span>
-              <strong>Provedores com limites explícitos</strong>
-            </div>
-          </div>
+        <div class="sidebar-footer">
+          <span class="status-token status-token--success">Pronto neste computador</span>
+          <span>Base local: ${escapeHtml(state.localPublicBaseStatus?.baseDate ?? "pendente")}</span>
         </div>
-      </section>
+      </aside>
 
-      <section class="workspace">
-        <div class="panel panel--primary">
-          <div class="panel__header">
-            <h2>Nova execução</h2>
-            <span class="panel__badge" data-slot="file-badge">${state.fileName ?? "Nenhum arquivo"}</span>
+      <section class="workbench-main" aria-label="Workbench Fiscal Desk">
+        <header class="ops-topbar">
+          <div class="ops-topbar__main">
+            <h1>Consulta fiscal</h1>
+            <nav class="ops-tabs" aria-label="Visões">
+              ${renderViewLink("Painel", "painel", state.activeView, "ops-tabs__item", "tab")}
+              ${renderViewLink("Arquivo", "fila", state.activeView, "ops-tabs__item", "tab")}
+              ${renderViewLink("Resultado", "resultados", state.activeView, "ops-tabs__item", "tab")}
+              ${renderViewLink("Atividade", "atividade", state.activeView, "ops-tabs__item", "tab")}
+            </nav>
           </div>
-
-          <div class="command-bar">
-            <div class="command-bar__context">
-              <span class="command-bar__label">Entrada</span>
-              <span class="command-bar__file" data-slot="command-summary">${
-                state.fileName
-                  ? escapeHtml(
-                      formatCommandBarSummary(state.fileName, state.provider),
-                    )
-                  : "Nenhum arquivo selecionado"
-              }</span>
-              <span class="command-bar__hint" data-slot="command-hint">${formatProviderHint(state.fileName, state.provider)}</span>
-            </div>
-            <div class="command-bar__actions">
-              ${button({ variant: "ghost", "data-action": "pick-file", children: "Selecionar CSV" })}
-              ${button({ variant: "primary", "data-action": "process-file", children: state.status === "processing" ? "Processando..." : "Iniciar execução", disabled: state.status === "processing" || !state.content })}
-              ${button({ variant: "danger", "data-action": "cancel-processing", children: "Cancelar", disabled: state.status !== "processing" })}
-              ${button({ variant: "secondary", "data-action": "save-file", children: "Salvar cópia", disabled: !state.outputDelivery })}
-            </div>
+          <div class="ops-topbar__status">
+            <span class="status-token ${getProviderStatusVariant(state)}" data-slot="provider-status">${escapeHtml(getProviderStatusLabel(state))}</span>
+            ${referenceMode ? "" : statusPill({ variant: getStatusPillVariant(state.status), children: statusLabel, dataSlot: "top-status-pill" })}
+            <span class="sync-only" data-slot="run-status-pill" aria-hidden="true">${escapeHtml(statusLabel)}</span>
+            ${button({ variant: "primary", "data-action": "process-file", children: state.status === "processing" ? "Consultando..." : "Iniciar consulta", disabled: state.status === "processing" || state.localPublicBasePrepareStatus === "loading" || !state.content || (state.provider === SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL && (!state.localPublicBaseNoticeAccepted || state.localPublicBaseStatus?.state !== "ready")) || needsReceitaWebExperimentalNotice })}
           </div>
+        </header>
 
-          <div class="controls-row">
-            <label class="field" for="provider">
-              <span class="field__label">
-                Provedor
-                <span class="field__hint" title="mock: dados simulados, sem rede | base pública local: amostra local com Data da Base | cnpja-open: consulta real ao serviço | receita-web: navegador visível e supervisão do usuário">?</span>
-              </span>
-              <select id="provider" data-field="provider">
-                <option value="${SIMPLES_PROVIDER.MOCK}" ${state.provider === SIMPLES_PROVIDER.MOCK ? "selected" : ""}>Simulação local — offline</option>
-                <option value="${SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL}" ${state.provider === SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL ? "selected" : ""}>Base Pública Local — Data da Base</option>
-                <option value="${SIMPLES_PROVIDER.CNPJA_OPEN}" ${state.provider === SIMPLES_PROVIDER.CNPJA_OPEN ? "selected" : ""}>CNPJá Open — consulta real</option>
-                <option value="${SIMPLES_PROVIDER.RECEITA_WEB}" ${state.provider === SIMPLES_PROVIDER.RECEITA_WEB ? "selected" : ""}>Receita Web — assistido e experimental</option>
-              </select>
-              ${
-                state.provider === SIMPLES_PROVIDER.RECEITA_WEB
-                  ? '<span class="field__note">Abre navegador visível, pode ser bloqueado por proteção anti-robô, exige supervisão humana em lotes grandes e no Windows depende de Chrome ou Edge instalados.</span>'
-                  : state.provider === SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL
-                    ? `<span class="field__note">Base ${escapeHtml(state.localPublicBaseStatus?.baseDate ?? "indisponível")} • ${escapeHtml(state.localPublicBaseStatus?.estimatedSizeLabel ?? "tamanho não informado")} • ${escapeHtml(state.localPublicBaseStatus?.diskUsageLabel ?? "uso de disco não informado")}.</span>`
-                    : ""
-              }
-            </label>
-
-            <label class="field" for="cnpj-column">
-              <span class="field__label">Coluna de CNPJ</span>
-              <input
-                id="cnpj-column"
-                data-field="cnpj-column"
-                type="text"
-                placeholder="Detectada automaticamente"
-                value="${escapeHtml(state.cnpjColumn)}"
-              />
-            </label>
-
-            <label class="field" for="delivery-format">
-              <span class="field__label">Entrega</span>
-              <select id="delivery-format" data-field="delivery-format">
-                <option value="csv" ${state.deliveryFormat === "csv" ? "selected" : ""}>CSV compatível</option>
-                <option value="xlsx" ${state.deliveryFormat === "xlsx" ? "selected" : ""}>Excel com abas</option>
-              </select>
-              <span class="field__note">CSV preserva compatibilidade. Excel gera Resumo, Resultados, Falhas, Divergências e Auditoria.</span>
-            </label>
-          </div>
-
-          <label class="notice-check" for="local-public-base-notice" data-slot="local-public-base-notice-panel" ${state.provider !== SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL ? 'style="display:none"' : ""}>
-            <input
-              id="local-public-base-notice"
-              data-field="local-public-base-notice"
-              type="checkbox"
-              ${state.localPublicBaseNoticeAccepted ? "checked" : ""}
-            />
-            <span>
-              Entendo que a Base Pública Local usa dados de <strong data-slot="local-public-base-date">${escapeHtml(state.localPublicBaseStatus?.baseDate ?? "data não informada")}</strong>, pode estar defasada e deve ser confirmada em casos sensíveis.
-              <small data-slot="local-public-base-warning">${escapeHtml(state.localPublicBaseStatus?.freshnessWarning ?? "Data da Base indisponível.")}</small>
-            </span>
-          </label>
-
-          <div class="progress-section" ${state.status !== "processing" && !state.summary ? 'style="display:none"' : ""}>
-            <div class="progress-header">
-              <span class="ops-label">Progresso</span>
-              <strong data-slot="progress-line">${formatProgressLine(state.progress)}</strong>
-            </div>
-            <div class="ops-progress__track">
-              <span data-slot="progress-bar"></span>
-            </div>
-            <span class="current-cnpj" data-slot="current-cnpj">${
-              state.progress?.currentCnpj ?? "—"
-            }</span>
-          </div>
-
-          <p class="message" data-slot="message">${escapeHtml(state.message)}</p>
-        </div>
-
-        <aside class="panel panel--secondary">
-          <div class="panel__header">
-            <h2>Painel da execução</h2>
-          </div>
-          <div class="summary" data-slot="summary">${renderSummary(state.summary)}</div>
-
-          <div class="dedupe-info">
-            <span class="ops-label">Deduplicação aplicada</span>
-            <strong data-slot="dedupe-label">${
-              state.summary
-                ? buildDedupeLabel(state.summary)
-                : "Aguardando processamento"
-            }</strong>
-          </div>
-
-          <div class="execution-ledger">
-            <div>
-              <span class="ops-label">Ledger local</span>
-              <strong data-slot="execution-status">${
-                state.execution?.status ?? "Aguardando"
-              }</strong>
-            </div>
-            <div>
-              <span class="ops-label">Execução</span>
-              <strong data-slot="execution-run-id">${
-                state.execution?.runId.slice(0, 8) ?? "—"
-              }</strong>
-            </div>
-            <div>
-              <span class="ops-label">Retomada</span>
-              <strong data-slot="execution-resume">${
-                state.execution
-                  ? `${state.execution.resumedUniqueLookups} retomadas de checkpoint`
-                  : "Sem retomada ativa"
-              }</strong>
-            </div>
-            <div>
-              <span class="ops-label">Checkpoint</span>
-              <span class="save-path" data-slot="execution-checkpoint">${
-                state.execution?.checkpointPath
-                  ? escapeHtml(
-                      state.execution.checkpointPath.split(/[/\\]/).pop() ??
-                        "ledger.json",
-                    )
-                  : "—"
-              }</span>
-            </div>
-          </div>
-
-          <div class="execution-history">
-            <div class="execution-history__header">
+        <section class="operations-grid" id="nova-execucao">
+          <section class="entry-zone t-panel-slide" data-view-panel="painel" data-open="${state.activeView === "painel" ? "true" : "false"}">
+            <div class="zone-head">
               <div>
-                <span class="ops-label">Histórico local</span>
-                <strong>Execuções recentes</strong>
+                <h2>Arquivo de entrada ${renderHelp("Como funciona", "Use uma planilha CSV ou Excel com uma coluna de CNPJ. O app identifica a coluna quando possível.")}</h2>
+                <p class="body">Selecione a planilha que será consultada.</p>
               </div>
+              <span class="status-token status-token--warning" data-slot="file-badge">${escapeHtml(entryFileBadge)}</span>
+            </div>
+
+            <div class="file-dropzone">
+              <span class="file-dropzone__icon" aria-hidden="true">${state.inputFormat === "xlsx" ? "XLSX" : "CSV"}</span>
+              <div>
+                <strong data-slot="file-dropzone-title">${escapeHtml(entryTitle)}</strong>
+                <span data-slot="file-dropzone-hint">${escapeHtml(entryHint)}</span>
+              </div>
+              ${button({ variant: "secondary", "data-action": "pick-file", children: state.fileName && !referenceMode ? "Trocar planilha" : "Selecionar planilha" })}
+            </div>
+          </section>
+
+          <section class="config-zone t-panel-slide" aria-label="Configuração" data-view-panel="painel" data-open="${state.activeView === "painel" ? "true" : "false"}">
+            <h2>Ajustes ${renderHelp("Como escolher", "Comece com Simulação. A Base local consulta dados preparados neste computador; Receita Web exige acompanhamento manual.")}</h2>
+            <div class="config-grid">
+              <label class="field" for="provider">
+                <span class="field__label">Base de consulta</span>
+                <select id="provider" data-field="provider">
+                  <option value="${SIMPLES_PROVIDER.MOCK}" ${state.provider === SIMPLES_PROVIDER.MOCK ? "selected" : ""}>Simulação</option>
+                  <option value="${SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL}" ${state.provider === SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL ? "selected" : ""}>Base local</option>
+                  <option value="${SIMPLES_PROVIDER.CNPJA_OPEN}" ${state.provider === SIMPLES_PROVIDER.CNPJA_OPEN ? "selected" : ""}>CNPJá Open</option>
+                  <option value="${SIMPLES_PROVIDER.RECEITA_WEB}" ${state.provider === SIMPLES_PROVIDER.RECEITA_WEB ? "selected" : ""}>Receita Web</option>
+                  <option value="${SIMPLES_PROVIDER.RECEITA_WEB_PARALLEL_EXPERIMENTAL}" ${state.provider === SIMPLES_PROVIDER.RECEITA_WEB_PARALLEL_EXPERIMENTAL ? "selected" : ""}>Receita Web experimental</option>
+                </select>
+              </label>
+              <label class="field" for="cnpj-column">
+                <span class="field__label">Coluna de CNPJ</span>
+                <input id="cnpj-column" data-field="cnpj-column" type="text" placeholder="auto" value="${escapeHtml(state.cnpjColumn)}" />
+              </label>
+              <label class="field" for="delivery-format">
+                <span class="field__label">Arquivo final</span>
+                <select id="delivery-format" data-field="delivery-format">
+                  <option value="csv" ${state.deliveryFormat === "csv" ? "selected" : ""}>CSV</option>
+                  <option value="xlsx" ${state.deliveryFormat === "xlsx" ? "selected" : ""}>Excel com abas</option>
+                </select>
+                <span class="field__note">O Excel separa resumo, resultados, falhas e auditoria em abas.</span>
+              </label>
+              <label class="field" for="execution-speed-profile">
+                <span class="field__label">Velocidade</span>
+                <select id="execution-speed-profile" data-field="execution-speed-profile">
+                  <option value="${PROCESS_CSV_EXECUTION_SPEED_PROFILE.CONSERVATIVE}" ${state.executionSpeedProfile === PROCESS_CSV_EXECUTION_SPEED_PROFILE.CONSERVATIVE ? "selected" : ""}>Leve</option>
+                  <option value="${PROCESS_CSV_EXECUTION_SPEED_PROFILE.BALANCED}" ${state.executionSpeedProfile === PROCESS_CSV_EXECUTION_SPEED_PROFILE.BALANCED ? "selected" : ""}>Equilibrado</option>
+                  <option value="${PROCESS_CSV_EXECUTION_SPEED_PROFILE.FAST}" ${state.executionSpeedProfile === PROCESS_CSV_EXECUTION_SPEED_PROFILE.FAST ? "selected" : ""}>Rápido</option>
+                  <option value="${PROCESS_CSV_EXECUTION_SPEED_PROFILE.MAXIMUM}" ${state.executionSpeedProfile === PROCESS_CSV_EXECUTION_SPEED_PROFILE.MAXIMUM ? "selected" : ""}>Máximo</option>
+                </select>
+                <span class="field__note">O limite real depende da base escolhida e do provedor.</span>
+              </label>
+              <div class="field field--readonly">
+                <span class="field__label">Retomada local</span>
+                <strong>Com checkpoint</strong>
+              </div>
+            </div>
+
+            <div class="speed-plan" aria-label="Plano de velocidade">
+              <div>
+                <span class="ops-label">Velocidade</span>
+                <strong data-slot="speed-plan-label">${escapeHtml(operationalPanel.speedLabel)}</strong>
+              </div>
+              <div>
+                <span class="ops-label">Limite do método</span>
+                <strong data-slot="speed-plan-detail">${escapeHtml(operationalPanel.speedDetailLabel)}</strong>
+              </div>
+              <div>
+                <span class="ops-label">Controle</span>
+                <strong data-slot="speed-control-label">${escapeHtml(operationalPanel.controlLabel)}</strong>
+              </div>
+            </div>
+
+            <div class="base-prep" id="base-local" data-slot="local-public-base-prep-panel" ${state.provider !== SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL ? 'style="display:none"' : ""}>
+              <div>
+                <span class="ops-label">Base Pública Local</span>
+                <strong data-slot="local-public-base-status-line">${escapeHtml(formatLocalPublicBaseStatusLine(state))}</strong>
+                <small>Preparada neste computador para consultas locais.</small>
+                <small data-slot="local-public-base-official-source-line">${escapeHtml(formatLocalPublicBaseOfficialSourceLine(state))}</small>
+              </div>
+              ${button({ variant: "secondary", "data-action": "discover-official-source", children: state.localPublicBaseOfficialSourceStatus === "loading" ? "Buscando fonte..." : "Buscar fonte oficial", disabled: state.status === "processing" || state.localPublicBaseOfficialSourceStatus === "loading" })}
+              ${button({ variant: "secondary", "data-action": "prepare-official-source", children: state.localPublicBasePrepareStatus === "loading" ? "Baixando..." : "Baixar e preparar oficial", disabled: state.status === "processing" || state.localPublicBasePrepareStatus === "loading" || state.localPublicBaseOfficialSourceStatus === "loading" || !state.localPublicBaseNoticeAccepted || state.localPublicBaseOfficialSource === null })}
+              ${button({ variant: "secondary", "data-action": "prepare-local-public-base", children: state.localPublicBasePrepareStatus === "loading" ? "Preparando..." : "Preparar base", disabled: state.status === "processing" || state.localPublicBasePrepareStatus === "loading" || (state.provider === SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL && !state.localPublicBaseNoticeAccepted) })}
+            </div>
+
+            <label class="notice-check" for="local-public-base-notice" data-slot="local-public-base-notice-panel" ${state.provider !== SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL ? 'style="display:none"' : ""}>
+              <input id="local-public-base-notice" data-field="local-public-base-notice" type="checkbox" ${state.localPublicBaseNoticeAccepted ? "checked" : ""} />
+              <span>
+                Entendo que a Base Pública Local usa dados de <strong data-slot="local-public-base-date">${escapeHtml(state.localPublicBaseStatus?.baseDate ?? "data não informada")}</strong>.
+                <small data-slot="local-public-base-warning">${escapeHtml(state.localPublicBaseStatus?.freshnessWarning ?? "Data da Base indisponível.")}</small>
+              </span>
+            </label>
+
+            <label class="notice-check" for="receita-web-experimental-notice" data-slot="receita-web-experimental-notice-panel" ${state.provider !== SIMPLES_PROVIDER.RECEITA_WEB_PARALLEL_EXPERIMENTAL ? 'style="display:none"' : ""}>
+              <input id="receita-web-experimental-notice" data-field="receita-web-experimental-notice" type="checkbox" ${state.receitaWebExperimentalNoticeAccepted ? "checked" : ""} />
+              <span>
+                Entendo que o modo Receita Web experimental pode abrir até 3 janelas visíveis; se aparecer CAPTCHA, preciso resolver manualmente na janela.
+                <small>Sem desbloqueio manual, a execução para com parcial/pendências; para volume, prefira Base Pública Local.</small>
+              </span>
+            </label>
+
+            <div class="command-bar command-bar--workbench">
+              <p class="message" data-slot="message">${escapeHtml(state.message)}</p>
+            </div>
+          </section>
+
+          <section class="protocol-zone t-panel-slide" aria-label="Mesa de consulta" data-view-panel="painel" data-open="${state.activeView === "painel" ? "true" : "false"}">
+            <div class="zone-head">
+              <div>
+                <h2>Mesa de consulta</h2>
+                <p class="body">Estado local antes da consulta.</p>
+              </div>
+              <span class="status-token ${state.summary ? "status-token--success" : "status-token--warning"}" data-slot="protocol-status">${escapeHtml(protocolStatus)}</span>
+            </div>
+            <div class="protocol-list">
+              <div class="protocol-item">
+                <span class="ops-label">Entrada</span>
+                <strong data-slot="protocol-entry">${escapeHtml(protocolEntry)}</strong>
+                <p class="body" data-slot="protocol-entry-hint">${escapeHtml(protocolEntryHint)}</p>
+              </div>
+              <div class="protocol-item">
+                <span class="ops-label">Base</span>
+                <strong data-slot="protocol-base">${escapeHtml(protocolBase)}</strong>
+                <p class="body" data-slot="protocol-base-hint">${escapeHtml(protocolBaseHint)}</p>
+              </div>
+              <div class="protocol-item">
+                <span class="ops-label">Saída</span>
+                <strong data-slot="protocol-output">${escapeHtml(protocolOutput)}</strong>
+                <p class="body" data-slot="protocol-output-hint">${escapeHtml(protocolOutputHint)}</p>
+              </div>
+              <div class="protocol-item">
+                <span class="ops-label">Retomada</span>
+                <strong data-slot="protocol-resume">${escapeHtml(protocolResume)}</strong>
+                <p class="body">Aparece apenas quando a consulta gerar checkpoint.</p>
+              </div>
+            </div>
+          </section>
+
+          <aside class="queue-zone t-panel-slide" data-view-panel="fila" data-open="${state.activeView === "fila" ? "true" : "false"}" hidden>
+            <div class="zone-head">
+              <h2>Arquivo selecionado ${renderHelp("Como funciona", "Quando um arquivo é selecionado, ele fica pronto para iniciar a consulta.")}</h2>
+              <span class="status-token" data-slot="queue-count">${referenceMode ? (visualFixture?.queueCount ?? "3 itens") : state.fileName ? "1 item" : "0 itens"}</span>
+            </div>
+            ${renderQueueItems(referenceMode, activeQueueLabel, activeQueueHint, activeQueueStatus, state)}
+          </aside>
+
+          <section class="kpi-strip t-panel-slide" aria-label="Indicadores do lote" data-view-panel="painel" data-progressive="after-file" data-open="${state.activeView === "painel" && hasOperationalSignals ? "true" : "false"}" ${hasOperationalSignals ? "" : "hidden"}>
+            <div>
+              <span class="ops-label">Hoje</span>
+              <strong data-slot="kpi-total-lines">${referenceMode ? (visualFixture?.kpis[0]?.value ?? "0") : (state.summary?.totalLinhas ?? 0)}</strong>
+              <p class="body">${referenceMode ? "consultas" : "linhas"}</p>
+            </div>
+            <div>
+              <span class="ops-label">Processados</span>
+              <strong data-slot="kpi-processed">${referenceMode ? (visualFixture?.kpis[1]?.value ?? "0") : (state.summary?.totalCnpjsUnicosConsultados ?? 0)}</strong>
+              <p class="body">CNPJs</p>
+            </div>
+            <div>
+              <span class="ops-label">Pendentes</span>
+              <strong data-slot="kpi-pending">${referenceMode ? (visualFixture?.kpis[2]?.value ?? "0") : state.progress ? Math.max(0, state.progress.totalUniqueLookups - state.progress.completedUniqueLookups) : 0}</strong>
+              <p class="body">${referenceMode ? "linhas" : "na fila"}</p>
+            </div>
+            <div>
+              <span class="ops-label">Erros</span>
+              <strong data-slot="kpi-errors">${referenceMode ? (visualFixture?.kpis[3]?.value ?? "0") : (state.summary?.totalErros ?? 0)}</strong>
+              <p class="body">revisar</p>
+            </div>
+          </section>
+
+          <section class="session-zone t-panel-slide" aria-label="Sessão local" data-view-panel="painel" data-open="${state.activeView === "painel" ? "true" : "false"}">
+            <div class="zone-head">
+              <h2>Painel de Execução</h2>
+              <span class="status-token ${getOperationalToneClass(operationalPanel.blockerTone)}" data-slot="session-state">${escapeHtml(state.execution?.status ?? "Aguardando")}</span>
+            </div>
+            <div class="session-grid">
+              <div>
+                <span class="ops-label">Agora</span>
+                <strong data-slot="session-entry">${escapeHtml(operationalPanel.currentItemLabel)}</strong>
+              </div>
+              <div>
+                <span class="ops-label">ETA</span>
+                <strong data-slot="session-dedupe">${escapeHtml(operationalPanel.etaLabel)}</strong>
+              </div>
+              <div>
+                <span class="ops-label">Falhas</span>
+                <strong data-slot="session-run">${escapeHtml(operationalPanel.failureLabel)}</strong>
+              </div>
+              <div>
+                <span class="ops-label">Último salvamento</span>
+                <strong data-slot="session-checkpoint">${escapeHtml(operationalPanel.lastSaveLabel)}</strong>
+              </div>
+            </div>
+            <div class="ops-suggestions" aria-label="Sugestões assistidas">
+              <div>
+                <span class="ops-label">Bloqueios</span>
+                <strong class="status-token ${getOperationalToneClass(operationalPanel.blockerTone)}" data-slot="execution-blocker">${escapeHtml(operationalPanel.blockerLabel)}</strong>
+              </div>
+              <div>
+                <span class="ops-label">Retomada</span>
+                <strong data-slot="execution-checkpoint-copy">${escapeHtml(operationalPanel.checkpointLabel)}</strong>
+              </div>
+              <div>
+                <span class="ops-label">Sugestão assistida</span>
+                <strong data-slot="execution-suggestion">${escapeHtml(operationalPanel.suggestionLabel)}</strong>
+              </div>
+            </div>
+            ${renderLocalTrustGrid()}
+          </section>
+
+          <section class="history-zone t-panel-slide" id="historico" data-view-panel="historico" data-open="${state.activeView === "historico" ? "true" : "false"}" hidden>
+            <div class="zone-head">
+              <h2>Consultas recentes</h2>
               <button class="button button--ghost button--compact" type="button" data-action="refresh-history">Atualizar</button>
             </div>
-            <div data-slot="execution-history">
-              ${renderExecutionHistory(state)}
-            </div>
-          </div>
+            <div data-slot="execution-history">${renderExecutionHistory(state)}</div>
+          </section>
 
-          <div class="save-info" ${!autoSavePreview ? 'style="display:none"' : ""}>
-            <span class="ops-label">Arquivo de saída</span>
-            <span class="save-path">${escapeHtml(autoSavePreview ?? "")}</span>
-          </div>
+          <section class="run-zone t-panel-slide" data-view-panel="atividade" data-open="${state.activeView === "atividade" ? "true" : "false"}" hidden>
+            <div class="summary" data-slot="summary">${renderSummary(state.summary)}</div>
+            <div class="progress-section" data-slot="progress-section" ${state.status !== "processing" && !state.summary ? 'style="display:none"' : ""}>
+              <div class="progress-header">
+                <span class="ops-label">Progresso</span>
+                <strong data-slot="progress-line">${getProgressLineLabel(state)}</strong>
+              </div>
+              <div class="ops-progress__track">
+                <span data-slot="progress-bar" style="width: ${getProgressPercent(state)}%"></span>
+              </div>
+              <span class="current-cnpj" data-slot="current-cnpj">${state.progress?.currentCnpj ?? "—"}</span>
+              <div class="activity-guidance" aria-label="Limites da execução">
+                <div>
+                  <span class="ops-label">Método</span>
+                  <strong data-slot="activity-speed-label">${escapeHtml(operationalPanel.speedLabel)}</strong>
+                </div>
+                <div>
+                  <span class="ops-label">Limite</span>
+                  <strong data-slot="activity-speed-detail">${escapeHtml(operationalPanel.speedDetailLabel)}</strong>
+                </div>
+                <div>
+                  <span class="ops-label">Controle</span>
+                  <strong data-slot="activity-control-label">${escapeHtml(operationalPanel.controlLabel)}</strong>
+                </div>
+                <div>
+                  <span class="ops-label">Próxima ação</span>
+                  <strong data-slot="activity-suggestion">${escapeHtml(operationalPanel.suggestionLabel)}</strong>
+                </div>
+              </div>
+              <div class="output-actions" data-slot="processing-controls">
+                ${referenceMode ? "" : button({ variant: "secondary", "data-action": "pause-processing", children: "Pausar", disabled: state.status !== "processing" })}
+                ${referenceMode ? "" : button({ variant: "danger", "data-action": "cancel-processing", children: "Cancelar", disabled: state.status !== "processing" })}
+              </div>
+            </div>
+          </section>
 
-          <div class="info-items">
-            <div class="info-item">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
-              Use <strong>Simulação local</strong> para testar sem consumir API.
+          <section class="log-zone t-panel-slide" data-view-panel="atividade" data-open="${state.activeView === "atividade" ? "true" : "false"}" hidden>
+            <div class="zone-head">
+              <h2>Atividade</h2>
+              <span class="status-token">tempo real</span>
             </div>
-            <div class="info-item">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5h16"/><path d="M4 12h16"/><path d="M4 19h16"/><path d="M8 5v14"/></svg>
-              <strong>Base Pública Local</strong> roda sem consulta online por item e sempre mostra a Data da Base.
+            ${renderLogList(state)}
+          </section>
+
+          <section class="output-zone t-panel-slide" data-view-panel="resultados" data-open="${state.activeView === "resultados" ? "true" : "false"}" hidden>
+            <div class="zone-head">
+              <h2>Resultado</h2>
+              <span class="status-token" data-slot="delivery-format-badge">${escapeHtml(outputFormatLabel)}</span>
             </div>
-            <div class="info-item">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l8 4v6c0 5-3.5 8-8 8s-8-3-8-8V7l8-4z"/><path d="M9 12l2 2 4-4"/></svg>
-              <strong>Receita Web</strong> é assistida e experimental: funciona melhor com navegador visível, no Windows usa Chrome ou Edge instalados e não deve ser tratada como automação massiva.
+            <p class="body" data-slot="output-status">${escapeHtml(outputStatus)}</p>
+            <p class="body" data-slot="output-preview">${referenceMode ? "" : autoSavePreview ? escapeHtml(autoSavePreview) : "O arquivo final aparecerá depois da consulta."}</p>
+            <div class="save-info" data-slot="save-info" ${!autoSavePreview ? 'style="display:none"' : ""}>
+              <span class="ops-label">Arquivo de saída</span>
+              <span class="save-path" data-slot="output-save-path">${escapeHtml(autoSavePreview ?? "")}</span>
             </div>
-            <div class="info-item">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
-              O arquivo é salvo automaticamente ao lado do original.
+            <div class="output-actions">
+              ${button({ variant: "secondary", "data-action": "save-file", children: "Exportar", disabled: !referenceMode && !state.outputDelivery })}
             </div>
-            <div class="info-item">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-              CNPJs duplicados são contados mas consultados apenas uma vez.
+          </section>
+
+          <section class="provider-zone sync-zone" id="provedores" aria-hidden="true">
+            <div class="zone-head"><h2>Provedores</h2><button class="button button--ghost button--compact" type="button" disabled>Testar</button></div>
+            <div class="provider-list">
+              <div><strong>Base local</strong><span class="status-token status-token--success">Preparável</span></div>
+              <div><strong>Simulação</strong><span class="status-token">Offline</span></div>
+              <div><strong>CNPJá Open</strong><span class="status-token status-token--warning">Externo</span></div>
+              <div><strong>Receita Web</strong><span class="status-token status-token--danger">Assistido</span></div>
             </div>
-          </div>
-        </aside>
+          </section>
+        </section>
       </section>
     </main>
   `;
+}
+
+export function isReferenceV5A(state: UiState): boolean {
+  return state.visualFixture?.scenario === "reference-v5-a";
+}
+
+function renderHelp(label: string, text?: string): string {
+  const triggerLabel = text ? label : "Ajuda";
+  const helpText = text ?? label;
+
+  return `
+    <span class="help">
+      <button class="help__trigger" type="button" aria-label="${escapeHtml(`${triggerLabel}: ${helpText}`)}">${escapeHtml(triggerLabel)}</button>
+      <span class="help__popover" role="tooltip">${escapeHtml(helpText)}</span>
+    </span>
+  `;
+}
+
+function renderViewLink(
+  label: string,
+  view: UiView,
+  activeView: UiView,
+  className: string,
+  kind: "sidebar" | "tab",
+): string {
+  const active = view === activeView;
+  const activeClass = active ? ` ${className}--active` : "";
+  const href = view === "historico" ? "#historico" : "#nova-execucao";
+  const aria = active ? ' aria-current="page"' : "";
+
+  return `<a class="${className}${activeClass}" href="${href}" data-view="${view}" data-view-surface="${kind}"${aria}>${escapeHtml(label)}</a>`;
 }
 
 export function getProgressPercent(state: UiState): number {
@@ -291,59 +493,78 @@ export function getProgressPercent(state: UiState): number {
       : 0;
 }
 
+export function getProgressLineLabel(state: UiState): string {
+  const progress = getLiveProgress(state);
+
+  if (progress) {
+    return formatProgressLine(progress);
+  }
+
+  if (state.summary) {
+    return `${state.summary.totalCnpjsUnicosConsultados} de ${state.summary.totalCnpjsUnicosConsultados} CNPJs únicos concluídos.`;
+  }
+
+  return formatProgressLine(null);
+}
+
 export function getCurrentCnpjLabel(state: UiState): string {
-  return getLiveProgress(state)?.currentCnpj ?? "—";
+  return (
+    getLiveProgress(state)?.currentCnpj ?? (state.summary ? "Concluído" : "—")
+  );
 }
 
-export function renderExecutionHistory(state: UiState): string {
-  if (state.historyStatus === "loading") {
-    return '<p class="history-empty">Carregando histórico local...</p>';
-  }
-
-  if (state.historyStatus === "error") {
-    return '<p class="history-empty">Não foi possível carregar o histórico local.</p>';
-  }
-
-  if (state.executionHistory.length === 0) {
-    return '<p class="history-empty">Nenhuma execução registrada neste perfil.</p>';
-  }
-
-  return `
-    <ol class="history-list">
-      ${state.executionHistory
-        .map((item) => {
-          const sourceName = item.sourceFileName ?? "CSV sem caminho";
-          const updatedAt = formatHistoryDate(item.updatedAt);
-          const checkpointLabel = `${item.checkpointedUniqueLookups}/${item.totalUniqueLookups || "?"} checkpoints`;
-          const resumeButton = item.canResume
-            ? `<button class="button button--secondary button--compact" type="button" data-action="resume-execution" data-ledger-key="${escapeHtml(item.ledgerKey)}" ${state.status === "processing" ? "disabled" : ""}>Retomar</button>`
-            : `<span class="history-list__blocked">${escapeHtml(item.resumeBlockedReason ?? "Histórico")}</span>`;
-
-          return `
-            <li class="history-list__item">
-              <div class="history-list__main">
-                <strong>${escapeHtml(sourceName)}</strong>
-                <span>${escapeHtml(item.providerName)} • ${escapeHtml(item.status)} • ${escapeHtml(updatedAt)}</span>
-                <span>${escapeHtml(checkpointLabel)}</span>
-              </div>
-              ${resumeButton}
-            </li>
-          `;
-        })
-        .join("")}
-    </ol>
-  `;
+export function getDeliveryFormatLabel(
+  deliveryFormat: UiState["deliveryFormat"],
+): string {
+  return deliveryFormat === "xlsx" ? "Excel com abas" : "CSV";
 }
 
-function formatHistoryDate(value: string): string {
-  const timestamp = Date.parse(value);
+function getInputFormatLabel(inputFormat: UiState["inputFormat"]): string {
+  return inputFormat === "xlsx" ? "XLSX" : "CSV";
+}
 
-  if (Number.isNaN(timestamp)) {
-    return value;
+export function getProviderStatusLabel(state: UiState): string {
+  if (state.provider === SIMPLES_PROVIDER.MOCK) {
+    return "Simulação";
   }
 
-  return new Intl.DateTimeFormat("pt-BR", {
-    dateStyle: "short",
-    timeStyle: "short",
-  }).format(timestamp);
+  if (state.provider === SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL) {
+    return state.localPublicBaseStatus?.state === "ready"
+      ? "Base local pronta"
+      : "Base local pendente";
+  }
+
+  if (state.provider === SIMPLES_PROVIDER.CNPJA_OPEN) {
+    return "CNPJá Open";
+  }
+
+  if (state.provider === SIMPLES_PROVIDER.RECEITA_WEB_PARALLEL_EXPERIMENTAL) {
+    return state.receitaWebAvailable
+      ? "Receita Web experimental"
+      : "Receita Web indisponível";
+  }
+
+  return state.receitaWebAvailable
+    ? "Receita Web disponível"
+    : "Receita Web indisponível";
+}
+
+export function getProviderStatusVariant(state: UiState): string {
+  if (state.provider === SIMPLES_PROVIDER.MOCK) {
+    return "status-token--success";
+  }
+
+  if (state.provider === SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL) {
+    return state.localPublicBaseStatus?.state === "ready"
+      ? "status-token--success"
+      : "status-token--warning";
+  }
+
+  if (state.provider === SIMPLES_PROVIDER.CNPJA_OPEN) {
+    return "status-token--warning";
+  }
+
+  return state.receitaWebAvailable
+    ? "status-token--warning"
+    : "status-token--danger";
 }

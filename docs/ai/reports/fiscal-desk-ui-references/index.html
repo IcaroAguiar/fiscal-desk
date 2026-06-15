@@ -1,0 +1,428 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Fiscal Desk - referências operacionais V5</title>
+    <style>
+      :root {
+        --bg: #f5f2ec;
+        --paper: #fffdf8;
+        --ink: #25231f;
+        --muted: #706a62;
+        --line: rgba(37, 35, 31, 0.12);
+        --green: #1f3527;
+        --soft-green: #dceee0;
+        --amber: #f1dfbf;
+        --red: #f2d7d2;
+        --shadow: 0 24px 80px rgba(37, 35, 31, 0.08);
+        --sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+
+      * { box-sizing: border-box; }
+      html { scroll-behavior: smooth; }
+
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--ink);
+        font-family: var(--sans);
+      }
+
+      .layout {
+        display: grid;
+        grid-template-columns: 260px minmax(0, 1fr);
+        min-height: 100vh;
+      }
+
+      aside {
+        position: sticky;
+        top: 0;
+        height: 100vh;
+        padding: 24px 18px;
+        border-right: 1px solid var(--line);
+        background: #efebe4;
+      }
+
+      .brand {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        margin-bottom: 28px;
+        font-weight: 850;
+      }
+
+      .mark {
+        display: grid;
+        width: 34px;
+        height: 34px;
+        place-items: center;
+        border-radius: 10px;
+        background: var(--green);
+        color: #fffdf8;
+        font-size: 12px;
+      }
+
+      nav {
+        display: grid;
+        gap: 6px;
+      }
+
+      nav a {
+        min-height: 36px;
+        padding: 10px;
+        border-radius: 10px;
+        color: var(--muted);
+        font-size: 13px;
+        font-weight: 760;
+        text-decoration: none;
+      }
+
+      nav a:hover,
+      nav a:first-child {
+        background: var(--paper);
+        color: var(--ink);
+      }
+
+      .note {
+        position: absolute;
+        right: 18px;
+        bottom: 22px;
+        left: 18px;
+        padding-top: 16px;
+        border-top: 1px solid var(--line);
+        color: var(--muted);
+        font-size: 12px;
+        line-height: 1.45;
+      }
+
+      main {
+        min-width: 0;
+        padding: 38px clamp(18px, 5vw, 70px) 72px;
+      }
+
+      section {
+        max-width: 1260px;
+        margin: 0 0 44px;
+      }
+
+      h1,
+      h2,
+      h3,
+      p {
+        margin: 0;
+      }
+
+      h1 {
+        max-width: 900px;
+        font-size: clamp(2.2rem, 5vw, 4.8rem);
+        line-height: 0.96;
+        letter-spacing: -0.04em;
+      }
+
+      h2 {
+        font-size: clamp(1.6rem, 3vw, 2.7rem);
+        line-height: 1;
+        letter-spacing: -0.03em;
+      }
+
+      .lead {
+        max-width: 760px;
+        margin-top: 16px;
+        color: var(--muted);
+        font-size: 1rem;
+        line-height: 1.6;
+      }
+
+      .eyebrow {
+        margin-bottom: 10px;
+        color: var(--muted);
+        font-size: 11px;
+        font-weight: 850;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 12px;
+        margin-top: 18px;
+      }
+
+      .box {
+        padding: 16px;
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        background: rgba(255, 253, 248, 0.76);
+      }
+
+      .box h3 {
+        margin-bottom: 8px;
+        font-size: 1rem;
+      }
+
+      .box p,
+      li {
+        color: var(--muted);
+        font-size: 0.9rem;
+        line-height: 1.5;
+      }
+
+      .box ul {
+        margin: 0;
+        padding-left: 18px;
+      }
+
+      .shot-card {
+        display: grid;
+        grid-template-columns: 0.36fr 0.64fr;
+        gap: 18px;
+        margin-top: 18px;
+        padding: 18px;
+        border: 1px solid var(--line);
+        border-radius: 20px;
+        background: rgba(255, 253, 248, 0.82);
+        box-shadow: 0 12px 38px rgba(37, 35, 31, 0.04);
+      }
+
+      .shot-copy {
+        display: grid;
+        align-content: start;
+        gap: 12px;
+      }
+
+      .pill-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        min-height: 26px;
+        padding: 0 9px;
+        border-radius: 999px;
+        background: rgba(37, 35, 31, 0.06);
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 760;
+      }
+
+      .pill.ok { background: var(--soft-green); color: #265d3e; }
+      .pill.warn { background: var(--amber); color: #735321; }
+      .pill.err { background: var(--red); color: #8b4036; }
+
+      .shots {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 160px;
+        gap: 12px;
+        align-items: start;
+      }
+
+      .frame {
+        overflow: hidden;
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        background: var(--paper);
+        box-shadow: var(--shadow);
+      }
+
+      .frame img {
+        display: block;
+        width: 100%;
+        height: auto;
+      }
+
+      .baseline {
+        display: grid;
+        grid-template-columns: 1fr 270px;
+        gap: 14px;
+        margin-top: 18px;
+      }
+
+      @media (max-width: 960px) {
+        .layout,
+        .grid,
+        .shot-card,
+        .shots,
+        .baseline {
+          grid-template-columns: 1fr;
+        }
+
+        aside {
+          position: static;
+          height: auto;
+          border-right: 0;
+          border-bottom: 1px solid var(--line);
+        }
+
+        .note {
+          position: static;
+          margin-top: 18px;
+        }
+
+        main {
+          padding: 28px 12px 56px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="layout">
+      <aside>
+        <div class="brand"><span class="mark">FD</span><span>Fiscal Desk</span></div>
+        <nav aria-label="Seções">
+          <a href="#direcao">Direção V5</a>
+          <a href="#referencias">Referências LazyWeb</a>
+          <a href="#baseline">Baseline atual</a>
+          <a href="#v5">V5 borderless</a>
+          <a href="#v3">V3 aprovada</a>
+          <a href="#decisao">Decisão</a>
+        </nav>
+        <p class="note">A V3 definiu o cockpit. A V5 aplica borderless estrito: sem cards fechados, só linhas sutis e marcações abertas.</p>
+      </aside>
+      <main>
+        <section id="direcao">
+          <p class="eyebrow">Conceito corrigido</p>
+          <h1>Workbench operacional borderless para execução fiscal local.</h1>
+          <p class="lead">A direção agora combina cockpit operacional, orientação de fluxo e acabamento premium sem formar cards: divisões abertas, marcações sutis, botões outline/ghost, KPIs em faixas e status textuais.</p>
+        </section>
+
+        <section id="referencias">
+          <p class="eyebrow">LazyWeb cruzado com o produto</p>
+          <h2>O que as referências realmente indicam</h2>
+          <div class="grid">
+            <article class="box">
+              <h3>Cockpit operacional</h3>
+              <p>Fondo, Glean e dashboards fiscais apontam para status, histórico, ações e métricas sempre visíveis. Não é uma home editorial.</p>
+            </article>
+            <article class="box">
+              <h3>Importação guiada</h3>
+              <p>Chameleon e OneSchema servem para o fluxo de upload, mapeamento e revisão, mas como parte do workbench.</p>
+            </article>
+            <article class="box">
+              <h3>Jobs e observabilidade</h3>
+              <p>Windmill, Cockroach jobs e operações similares indicam fila, progresso, eventos, erros e saída parcial.</p>
+            </article>
+            <article class="box">
+              <h3>Data workbench</h3>
+              <p>Tabelas densas são necessárias para revisão e resultado. Premium aqui é legibilidade, não vazio.</p>
+            </article>
+            <article class="box">
+              <h3>Enterprise workspace</h3>
+              <p>Rippling e Remote ajudam na sidebar, navegação persistente e shell de produto multi-módulo.</p>
+            </article>
+            <article class="box">
+              <h3>Raycast como limite</h3>
+              <p>Comando rápido é útil, mas não pode apagar painel, fila e operação. Deve virar atalho, não tela principal.</p>
+            </article>
+          </div>
+        </section>
+
+        <section id="baseline">
+          <p class="eyebrow">Comparação</p>
+          <h2>Baseline atual</h2>
+          <p class="lead">A tela atual funciona, mas ainda precisa consolidar informação operacional e reduzir aparência de composição genérica.</p>
+          <div class="baseline">
+            <div class="frame"><img src="assets/current-desktop-success.png" alt="Tela atual desktop" /></div>
+            <div class="frame"><img src="assets/current-mobile-success.png" alt="Tela atual mobile" /></div>
+          </div>
+        </section>
+
+        <section id="v5">
+          <p class="eyebrow">Novas imagens</p>
+          <h2>V5 borderless / lines only</h2>
+
+          <article class="shot-card">
+            <div class="shot-copy">
+              <h3>A · Cockpit borderless</h3>
+              <p>Refinamento da tela inicial escolhida. Mantém painel, fila, histórico e log, mas remove containers fechados e usa apenas linhas abertas.</p>
+              <div class="pill-row"><span class="pill ok">tela inicial</span><span class="pill">lines only</span><span class="pill">ghost/outline</span></div>
+            </div>
+            <div class="shots">
+              <a class="frame" href="operations-v5/v5-a.png"><img src="operations-v5/v5-a.png" alt="Cockpit borderless desktop" /></a>
+              <a class="frame" href="operations-v5/v5-a-mobile.png"><img src="operations-v5/v5-a-mobile.png" alt="Cockpit borderless mobile" /></a>
+            </div>
+          </article>
+
+          <article class="shot-card">
+            <div class="shot-copy">
+              <h3>B · Revisão borderless</h3>
+              <p>Estado pós-upload com tabela densa e orientação lateral, usando separadores abertos e status textual sem badges preenchidos.</p>
+              <div class="pill-row"><span class="pill">revisão</span><span class="pill">tabela</span><span class="pill warn">pré-execução</span></div>
+            </div>
+            <div class="shots">
+              <a class="frame" href="operations-v5/v5-b.png"><img src="operations-v5/v5-b.png" alt="Revisão borderless desktop" /></a>
+              <a class="frame" href="operations-v5/v5-b-mobile.png"><img src="operations-v5/v5-b-mobile.png" alt="Revisão borderless mobile" /></a>
+            </div>
+          </article>
+
+          <article class="shot-card">
+            <div class="shot-copy">
+              <h3>C · Monitor borderless</h3>
+              <p>Estado de execução com lotes, progresso, eventos e saída parcial. Mantém orientação por linhas, indicadores e hierarquia.</p>
+              <div class="pill-row"><span class="pill">execução</span><span class="pill">observabilidade</span><span class="pill err">controle</span></div>
+            </div>
+            <div class="shots">
+              <a class="frame" href="operations-v5/v5-c.png"><img src="operations-v5/v5-c.png" alt="Monitor borderless desktop" /></a>
+              <a class="frame" href="operations-v5/v5-c-mobile.png"><img src="operations-v5/v5-c-mobile.png" alt="Monitor borderless mobile" /></a>
+            </div>
+          </article>
+        </section>
+
+        <section id="v3">
+          <p class="eyebrow">Base aprovada</p>
+          <h2>V3 operacional</h2>
+
+          <article class="shot-card">
+            <div class="shot-copy">
+              <h3>A · Cockpit de execuções</h3>
+              <p>Melhor candidata para tela inicial. Mostra entrada, fila, métricas, últimas execuções, saída e log no mesmo shell.</p>
+              <div class="pill-row"><span class="pill ok">recomendada</span><span class="pill">painel inicial</span><span class="pill">operação diária</span></div>
+            </div>
+            <div class="shots">
+              <a class="frame" href="operations-v3/ops-a.png"><img src="operations-v3/ops-a.png" alt="Cockpit de execuções desktop" /></a>
+              <a class="frame" href="operations-v3/ops-a-mobile.png"><img src="operations-v3/ops-a-mobile.png" alt="Cockpit de execuções mobile" /></a>
+            </div>
+          </article>
+
+          <article class="shot-card">
+            <div class="shot-copy">
+              <h3>B · Revisão + fila</h3>
+              <p>Melhor para o momento depois do upload: tabela central, configuração lateral, métricas e decisão de executar.</p>
+              <div class="pill-row"><span class="pill">revisão</span><span class="pill">tabela densa</span><span class="pill warn">pré-execução</span></div>
+            </div>
+            <div class="shots">
+              <a class="frame" href="operations-v3/ops-b.png"><img src="operations-v3/ops-b.png" alt="Revisão e fila desktop" /></a>
+              <a class="frame" href="operations-v3/ops-b-mobile.png"><img src="operations-v3/ops-b-mobile.png" alt="Revisão e fila mobile" /></a>
+            </div>
+          </article>
+
+          <article class="shot-card">
+            <div class="shot-copy">
+              <h3>C · Monitor de lote</h3>
+              <p>Melhor para execução em andamento: lista de lotes, progresso, timeline, eventos, saída parcial e ações de controle.</p>
+              <div class="pill-row"><span class="pill">execução</span><span class="pill">observabilidade</span><span class="pill err">controle de erro</span></div>
+            </div>
+            <div class="shots">
+              <a class="frame" href="operations-v3/ops-c.png"><img src="operations-v3/ops-c.png" alt="Monitor de lote desktop" /></a>
+              <a class="frame" href="operations-v3/ops-c-mobile.png"><img src="operations-v3/ops-c-mobile.png" alt="Monitor de lote mobile" /></a>
+            </div>
+          </article>
+        </section>
+
+        <section id="decisao">
+          <p class="eyebrow">Recomendação</p>
+          <h2>Aprovar uma combinação, não uma tela isolada.</h2>
+          <div class="grid">
+            <article class="box"><h3>Tela inicial</h3><p>Usar A como shell principal do app.</p></article>
+            <article class="box"><h3>Depois do upload</h3><p>Usar B como estado de revisão dentro do shell.</p></article>
+            <article class="box"><h3>Durante execução</h3><p>Usar C como estado de monitoramento e logs.</p></article>
+          </div>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>

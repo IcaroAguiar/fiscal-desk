@@ -5,6 +5,7 @@ import { MockSimplesLookupAdapter } from "../../src/core/simples/adapters/mock-s
 import { ReceitaConsultaOptantesAdapter } from "../../src/core/simples/adapters/receita-web/receita-consulta-optantes.adapter";
 import type { SimplesLookupPort } from "../../src/core/simples/simples-lookup.port";
 import { createSimplesLookupProvider } from "../../src/core/simples/simples-provider.factory";
+import { SIMPLES_PROVIDER } from "../../src/core/simples/simples-provider.names";
 
 vi.mock("../../src/core/simples/adapters/mock-simples-lookup.adapter", () => ({
   MockSimplesLookupAdapter: vi.fn(),
@@ -90,6 +91,20 @@ describe("createSimplesLookupProvider", () => {
     );
 
     const result = createSimplesLookupProvider("receita-web");
+
+    expect(ReceitaConsultaOptantesAdapter).toHaveBeenCalled();
+    expect(result).toBe(receitaInstance);
+  });
+
+  it("returns ReceitaConsultaOptantesAdapter for Receita Web experimental provider", () => {
+    const receitaInstance = createMockAdapter();
+    ReceitaConsultaOptantesAdapterMock.mockImplementation(
+      () => receitaInstance as unknown as ReceitaConsultaOptantesAdapter,
+    );
+
+    const result = createSimplesLookupProvider(
+      SIMPLES_PROVIDER.RECEITA_WEB_PARALLEL_EXPERIMENTAL,
+    );
 
     expect(ReceitaConsultaOptantesAdapter).toHaveBeenCalled();
     expect(result).toBe(receitaInstance);

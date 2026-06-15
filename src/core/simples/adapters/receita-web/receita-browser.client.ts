@@ -15,6 +15,22 @@ export type ReceitaNavigationResult = {
   error?: string;
 };
 
+export type ReceitaManualCaptchaResolutionOptions = {
+  pollIntervalMs?: number;
+  timeoutMs?: number;
+};
+
+const RECEITA_BROWSER_ERROR_MESSAGE = {
+  BROWSER_NOT_CONNECTED: "browser_not_connected",
+  CNPJ_INPUT_NOT_FOUND: "cnpj_input_not_found",
+  NAVIGATION_FAILED: "navigation_failed",
+  FILL_FAILED: "fill_failed",
+  SUBMIT_FAILED: "submit_failed",
+  WAIT_RESULT_FAILED: "wait_result_failed",
+} as const;
+const DEFAULT_MANUAL_CAPTCHA_TIMEOUT_MS = 120_000;
+const DEFAULT_MANUAL_CAPTCHA_POLL_INTERVAL_MS = 1_000;
+
 function throwIfAborted(signal?: AbortSignal): void {
   if (signal?.aborted) {
     throw new DOMException("Aborted", "AbortError");
@@ -40,9 +56,10 @@ async function raceWithAbort<T>(
       };
 
       signal.addEventListener("abort", onAbort, { once: true });
-      void promise.finally(() => {
-        signal.removeEventListener("abort", onAbort);
-      });
+      void promise.then(
+        () => signal.removeEventListener("abort", onAbort),
+        () => signal.removeEventListener("abort", onAbort),
+      );
     }),
   ]);
 }
@@ -73,7 +90,6 @@ export class ReceitaBrowserClient {
 
     const launchOptions: Parameters<typeof chromium.launch>[0] = {
       headless: this.headless,
-      args: ["--disable-blink-features=AutomationControlled"],
     };
 
     if (executablePath) {
@@ -85,10 +101,7 @@ export class ReceitaBrowserClient {
 
     try {
       browser = await chromium.launch(launchOptions);
-      context = await browser.newContext({
-        userAgent:
-          "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-      });
+      context = await browser.newContext();
 
       this.browser = browser;
       this.context = context;
@@ -129,7 +142,11 @@ export class ReceitaBrowserClient {
 
   async navigate(signal?: AbortSignal): Promise<ReceitaNavigationResult> {
     if (!this.page) {
-      return { success: false, html: "", error: "Browser not connected" };
+      return {
+        success: false,
+        html: "",
+        error: RECEITA_BROWSER_ERROR_MESSAGE.BROWSER_NOT_CONNECTED,
+      };
     }
 
     throwIfAborted(signal);
@@ -159,9 +176,11 @@ export class ReceitaBrowserClient {
         throw error;
       }
 
-      const message =
-        error instanceof Error ? error.message : "Navigation failed";
-      return { success: false, html: "", error: message };
+      return {
+        success: false,
+        html: "",
+        error: RECEITA_BROWSER_ERROR_MESSAGE.NAVIGATION_FAILED,
+      };
     }
   }
 
@@ -170,7 +189,11 @@ export class ReceitaBrowserClient {
     signal?: AbortSignal,
   ): Promise<ReceitaNavigationResult> {
     if (!this.page) {
-      return { success: false, html: "", error: "Browser not connected" };
+      return {
+        success: false,
+        html: "",
+        error: RECEITA_BROWSER_ERROR_MESSAGE.BROWSER_NOT_CONNECTED,
+      };
     }
 
     throwIfAborted(signal);
@@ -179,7 +202,11 @@ export class ReceitaBrowserClient {
       const cnpjInput = await this.page.$(RECEITA_SELECTORS.cnpjInput);
 
       if (!cnpjInput) {
-        return { success: false, html: "", error: "CNPJ input not found" };
+        return {
+          success: false,
+          html: "",
+          error: RECEITA_BROWSER_ERROR_MESSAGE.CNPJ_INPUT_NOT_FOUND,
+        };
       }
 
       await cnpjInput.fill("");
@@ -194,15 +221,21 @@ export class ReceitaBrowserClient {
         throw error;
       }
 
-      const message =
-        error instanceof Error ? error.message : "Fill CNPJ failed";
-      return { success: false, html: "", error: message };
+      return {
+        success: false,
+        html: "",
+        error: RECEITA_BROWSER_ERROR_MESSAGE.FILL_FAILED,
+      };
     }
   }
 
   async submit(signal?: AbortSignal): Promise<ReceitaNavigationResult> {
     if (!this.page) {
-      return { success: false, html: "", error: "Browser not connected" };
+      return {
+        success: false,
+        html: "",
+        error: RECEITA_BROWSER_ERROR_MESSAGE.BROWSER_NOT_CONNECTED,
+      };
     }
 
     throwIfAborted(signal);
@@ -228,14 +261,21 @@ export class ReceitaBrowserClient {
         throw error;
       }
 
-      const message = error instanceof Error ? error.message : "Submit failed";
-      return { success: false, html: "", error: message };
+      return {
+        success: false,
+        html: "",
+        error: RECEITA_BROWSER_ERROR_MESSAGE.SUBMIT_FAILED,
+      };
     }
   }
 
   async waitResult(signal?: AbortSignal): Promise<ReceitaNavigationResult> {
     if (!this.page) {
-      return { success: false, html: "", error: "Browser not connected" };
+      return {
+        success: false,
+        html: "",
+        error: RECEITA_BROWSER_ERROR_MESSAGE.BROWSER_NOT_CONNECTED,
+      };
     }
 
     throwIfAborted(signal);
@@ -272,9 +312,72 @@ export class ReceitaBrowserClient {
         throw error;
       }
 
-      const message =
-        error instanceof Error ? error.message : "Wait result failed";
-      return { success: false, html: "", error: message };
+      return {
+        success: false,
+        html: "",
+        error: RECEITA_BROWSER_ERROR_MESSAGE.WAIT_RESULT_FAILED,
+      };
+    }
+  }
+
+  async waitForManualCaptchaResolution(
+    signal?: AbortSignal,
+    options: ReceitaManualCaptchaResolutionOptions = {},
+  ): Promise<ReceitaNavigationResult> {
+    if (!this.page) {
+      return {
+        success: false,
+        html: "",
+        error: RECEITA_BROWSER_ERROR_MESSAGE.BROWSER_NOT_CONNECTED,
+      };
+    }
+
+    throwIfAborted(signal);
+
+    const timeoutMs = options.timeoutMs ?? DEFAULT_MANUAL_CAPTCHA_TIMEOUT_MS;
+    const pollIntervalMs =
+      options.pollIntervalMs ?? DEFAULT_MANUAL_CAPTCHA_POLL_INTERVAL_MS;
+    const startedAt = Date.now();
+
+    try {
+      while (Date.now() - startedAt < timeoutMs) {
+        throwIfAborted(signal);
+
+        const hasCaptcha = await this.hasCaptcha(signal);
+        const hasResult = await this.hasResult(signal);
+
+        if (!hasCaptcha && hasResult) {
+          return {
+            success: true,
+            html: await this.page.content(),
+          };
+        }
+
+        const remainingMs = Math.max(0, timeoutMs - (Date.now() - startedAt));
+        if (remainingMs <= 0) {
+          break;
+        }
+
+        await raceWithAbort(
+          this.page.waitForTimeout(Math.min(pollIntervalMs, remainingMs)),
+          signal,
+        );
+      }
+
+      return {
+        success: true,
+        html: await this.page.content(),
+      };
+    } catch (error) {
+      if (error instanceof DOMException && error.name === "AbortError") {
+        throw error;
+      }
+
+      return {
+        success: false,
+        html: "",
+        error: RECEITA_BROWSER_ERROR_MESSAGE.WAIT_RESULT_FAILED,
+      };
     }
   }
 

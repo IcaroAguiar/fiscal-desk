@@ -3,6 +3,7 @@ export const SIMPLES_PROVIDER = {
   CNPJA_OPEN: "cnpja-open",
   MOCK: "mock",
   RECEITA_WEB: "receita-web",
+  RECEITA_WEB_PARALLEL_EXPERIMENTAL: "receita-web-parallel-experimental",
 } as const;
 
 export type SimplesProviderName =

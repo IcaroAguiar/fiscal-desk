@@ -986,14 +986,14 @@ details.report-card summary {
       </div>
       <aside class="hero-panel" aria-label="Metadata do report">
         <dl class="metadata-list">
-          <div class="metadata-row"><dt>Status</dt><dd><span class="status-pill status-partial">parcial</span></dd></div>
+          <div class="metadata-row"><dt>Status</dt><dd><span class="status-pill status-done">feito</span></dd></div>
           <div class="metadata-row"><dt>Preset</dt><dd>Implementação</dd></div>
           <div class="metadata-row"><dt>Atualizado</dt><dd>2026-05-21T01:41:29-03:00</dd></div>
           <div class="metadata-row"><dt>Kit</dt><dd>0.1.0</dd></div>
         </dl>
       </aside>
     </section>
-    <section class="report-section" id="metricas" data-search-item><div class="section-body"><div class="metric-grid"><article class="metric-card" data-search-item data-status="partial"><strong>PR #5</strong><span>em preparação</span></article><article class="metric-card" data-search-item data-status="done"><strong>182</strong><span>testes automatizados passando</span></article><article class="metric-card" data-search-item data-status="done"><strong>Local</strong><span>consulta sem rede por item</span></article><article class="metric-card" data-search-item data-status="done"><strong>22.8k/s</strong><span>linhas por segundo no perf XLSX local</span></article><article class="metric-card" data-search-item data-status="done"><strong>2</strong><span>arquivos grandes preservados no ratchet</span></article></div></div></section>
+    <section class="report-section" id="metricas" data-search-item><div class="section-body"><div class="metric-grid"><article class="metric-card" data-search-item data-status="done"><strong>PR #5</strong><span>mergeada em main</span></article><article class="metric-card" data-search-item data-status="done"><strong>182</strong><span>testes automatizados passando</span></article><article class="metric-card" data-search-item data-status="done"><strong>Local</strong><span>consulta sem rede por item</span></article><article class="metric-card" data-search-item data-status="done"><strong>22.8k/s</strong><span>linhas por segundo no perf XLSX local</span></article><article class="metric-card" data-search-item data-status="done"><strong>2</strong><span>arquivos grandes preservados no ratchet</span></article></div></div></section>
     <div class="report-layout">
       <nav class="toc" aria-label="Indice do report">
         <p class="toc-title">Conteúdo</p>
@@ -1114,13 +1114,13 @@ details.report-card summary {
 
         </article></div></div>
   </section>
-<section class="report-section" id="plano" data-search-item data-status="partial">
+<section class="report-section" id="plano" data-search-item data-status="done">
     <header class="section-heading">
       <div>
         <p class="eyebrow">Execução</p>
         <h2>Estado e próximo passo</h2>
       </div>
-      <span class="status-pill status-partial">parcial</span>
+      <span class="status-pill status-done">feito</span>
     </header>
     <div class="section-body"><div class="kanban"><section class="kanban-column" data-search-item>
         <header><span>Feito localmente</span><span>2</span></header>
@@ -1134,19 +1134,19 @@ details.report-card summary {
                 <div class="chip-row"><span class="chip">evidência</span></div>
               </article></div>
       </section><section class="kanban-column" data-search-item>
-        <header><span>Antes do merge</span><span>3</span></header>
-        <div class="kanban-cards"><article class="report-card" data-search-item data-status="partial">
+        <header><span>Merge e pós-merge</span><span>3</span></header>
+        <div class="kanban-cards"><article class="report-card" data-search-item data-status="done">
                 <h4>Review independente</h4>
-                <p>Reviewer independente fechou o finding funcional; follow-up pediu apenas alinhamento final do report.</p>
+                <p>Reviewer independente fechou o finding funcional, revalidou o report e não apontou novos bloqueantes.</p>
                 <div class="chip-row"><span class="chip">review</span></div>
-              </article><article class="report-card" data-search-item data-status="info">
-                <h4>Abrir PR #5</h4>
-                <p>Depois do reviewer, abrir PR com evidência de gates e acompanhar checks remotos.</p>
-                <div class="chip-row"><span class="chip">PR</span></div>
-              </article><article class="report-card" data-search-item data-status="info">
-                <h4>Merge autorizado após gates</h4>
-                <p>Pela autorização operacional do usuário, merge pode seguir quando PR, review, checks e smoke estiverem verdes.</p>
+              </article><article class="report-card" data-search-item data-status="done">
+                <h4>PR #5 mergeada</h4>
+                <p>Merge por squash confirmado em `main` com commit `96f2068482cbe8bd7ca7295d4b9755d40cc45454`.</p>
                 <div class="chip-row"><span class="chip">merge</span></div>
+              </article><article class="report-card" data-search-item data-status="done">
+                <h4>Smoke pós-merge</h4>
+                <p>`FISCAL_DESK_SMOKE_PROVIDER=base-publica-local pnpm smoke:electron-ui` passou no commit mergeado.</p>
+                <div class="chip-row"><span class="chip">smoke</span></div>
               </article></div>
       </section><section class="kanban-column" data-search-item>
         <header><span>Depois</span><span>2</span></header>
@@ -1218,8 +1218,8 @@ details.report-card summary {
 
         </article><article class="report-card" data-search-item data-status="partial">
           <div class="chip-row"><span class="status-pill status-partial">parcial</span></div>
-          <h4>Review remoto pendente</h4>
-          <p>Review independente local fechou o finding funcional e apontou somente alinhamento documental final; PR remoto/checks ainda serão abertos e acompanhados.</p>
+          <h4>Base real ainda não preparada</h4>
+          <p>O corte valida contrato, UX e smoke com fixture pequena. Download/preparo de base pública completa continua fora deste PR.</p>
 
         </article></div></div>
   </section></div>

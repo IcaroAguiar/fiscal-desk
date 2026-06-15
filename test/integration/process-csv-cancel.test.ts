@@ -50,9 +50,33 @@ describe("processCsv cancellation", () => {
     });
 
     expect(result.runStatus).toBe("CANCELLED");
+    expect(result.summary.totalCnpjsValidos).toBe(3);
     expect(result.summary.totalCnpjsUnicosConsultados).toBe(1);
     expect(result.summary.totalErros).toBe(0);
     expect(adapter.calls).toHaveLength(1);
     expect(result.outputCsv).toContain("CANCELLED");
+  });
+
+  it("marks the run as cancelled when the signal aborts after lookups but before finalization", async () => {
+    const csv = [
+      "nome;cpf_cnpj",
+      "Empresa A;11.222.333/0001-81",
+      "Empresa B;03.426.484/0001-23",
+    ].join("\n");
+    const adapter = new SlowFakeLookupAdapter();
+    const controller = new AbortController();
+
+    const result = await processCsv(csv, adapter, {
+      signal: controller.signal,
+      onLookupProgress(progress) {
+        if (progress.completedUniqueLookups === progress.totalUniqueLookups) {
+          controller.abort();
+        }
+      },
+    });
+
+    expect(result.runStatus).toBe("CANCELLED");
+    expect(result.summary.totalCnpjsUnicosConsultados).toBe(2);
+    expect(adapter.calls).toHaveLength(2);
   });
 });

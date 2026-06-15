@@ -1,16 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const handlers = new Map<string, (...args: unknown[]) => unknown>();
-
 const createDeferred = <T>() => {
   let resolve!: (value: T) => void;
-  let reject!: (error: unknown) => void;
-  const promise = new Promise<T>((promiseResolve, promiseReject) => {
-    resolve = promiseResolve;
-    reject = promiseReject;
+  const promise = new Promise<T>((nextResolve) => {
+    resolve = nextResolve;
   });
 
-  return { promise, reject, resolve };
+  return { promise, resolve };
 };
 
 const electronMocks = vi.hoisted(() => ({
@@ -35,6 +32,7 @@ const electronMocks = vi.hoisted(() => ({
 
 const ledgerMocks = vi.hoisted(() => ({
   getRun: vi.fn(),
+  getCheckpointedCnpjs: vi.fn(),
   listRuns: vi.fn(),
   startRun: vi.fn(),
   finish: vi.fn(),
@@ -64,6 +62,7 @@ vi.mock("../../src/core/app/process-csv.use-case", () => ({
 vi.mock("../../src/main/execution/file-process-execution-ledger", () => ({
   createInputFingerprint: vi.fn(() => "0123456789abcdef01234567abcdef"),
   FileProcessExecutionLedger: vi.fn(() => ({
+    getCheckpointedCnpjs: ledgerMocks.getCheckpointedCnpjs,
     getRun: ledgerMocks.getRun,
     listRuns: ledgerMocks.listRuns,
     startRun: ledgerMocks.startRun,
@@ -108,6 +107,7 @@ describe("process-csv IPC", () => {
     vi.clearAllMocks();
     electronMocks.app.isPackaged = false;
     ledgerMocks.getRun.mockResolvedValue(null);
+    ledgerMocks.getCheckpointedCnpjs.mockResolvedValue(new Set());
     ledgerMocks.listRuns.mockResolvedValue([]);
     ledgerMocks.startRun.mockResolvedValue(ledgerMocks.session);
     vi.mocked(createSimplesLookupProvider).mockReturnValue({
@@ -169,8 +169,8 @@ describe("process-csv IPC", () => {
 
     expect(defaults).toMatchObject({
       localPublicBaseStatus: {
-        baseDate: "2026-05-20",
-        state: "ready",
+        baseDate: null,
+        state: "not-prepared",
       },
       provider: "mock",
       receitaWebAvailable: false,
@@ -192,8 +192,8 @@ describe("process-csv IPC", () => {
 
     expect(defaults).toMatchObject({
       localPublicBaseStatus: {
-        baseDate: "2026-05-20",
-        state: "ready",
+        baseDate: null,
+        state: "not-prepared",
       },
       provider: "mock",
       receitaWebAvailable: true,
@@ -230,25 +230,145 @@ describe("process-csv IPC", () => {
     ).rejects.toThrow("disponível apenas no Windows");
   });
 
-  it("rejects invalid delivery formats before starting processing", async () => {
-    const handler = handlers.get("csv:process");
+  it("picks XLSX input as bytes with explicit input format", async () => {
+    const handler = handlers.get("csv:pick-input-file");
+    const { readFile } = await import("node:fs/promises");
+    electronMocks.dialog.showOpenDialog.mockResolvedValueOnce({
+      canceled: false,
+      filePaths: ["/tmp/fiscal-desk-test/entrada.xlsx"],
+    });
+    vi.mocked(readFile).mockResolvedValueOnce(Buffer.from([80, 75, 3, 4]));
 
-    await expect(
-      handler?.(
-        { sender: { send: vi.fn() } },
-        {
-          content: "cnpj\n00000000000191",
-          deliveryFormat: "pdf",
-          provider: "mock",
-        },
-      ),
-    ).rejects.toThrow("Formato de entrega invalido");
+    await expect(handler?.()).resolves.toEqual({
+      content: [80, 75, 3, 4],
+      fileName: "entrada.xlsx",
+      filePath: "/tmp/fiscal-desk-test/entrada.xlsx",
+      inputFormat: "xlsx",
+    });
 
-    expect(ledgerMocks.startRun).not.toHaveBeenCalled();
-    expect(processCsv).not.toHaveBeenCalled();
+    expect(electronMocks.dialog.showOpenDialog).toHaveBeenCalledWith(
+      expect.objectContaining({
+        filters: [{ name: "Planilhas", extensions: ["csv", "xlsx"] }],
+      }),
+    );
+    expect(readFile).toHaveBeenCalledWith("/tmp/fiscal-desk-test/entrada.xlsx");
   });
 
-  it("rejects Base Pública Local processing without Data da Base consent before ledger side effects", async () => {
+  it("pauses active processing through a dedicated IPC channel and aborts the current signal", async () => {
+    const processHandler = handlers.get("csv:process");
+    const pauseHandler = handlers.get("csv:pause-processing");
+    const deferredResult =
+      createDeferred<Awaited<ReturnType<typeof processCsv>>>();
+    vi.mocked(processCsv).mockReturnValueOnce(deferredResult.promise);
+
+    const processing = processHandler?.(
+      { sender: { send: vi.fn() } },
+      { content: "cnpj\n00000000000191", provider: "mock" },
+    );
+    await vi.waitFor(() => expect(processCsv).toHaveBeenCalledTimes(1));
+
+    expect(pauseHandler?.()).toBe(true);
+    const processOptions = vi.mocked(processCsv).mock.calls[0]?.[2];
+    expect(processOptions?.signal?.aborted).toBe(true);
+
+    deferredResult.resolve({
+      delivery: {
+        extension: "csv",
+        format: "csv",
+        mimeType: "text/csv;charset=utf-8",
+      },
+      execution: {
+        checkpointPath: ledgerMocks.session.checkpointPath,
+        completedUniqueLookups: 1,
+        resumedUniqueLookups: 0,
+        runId: ledgerMocks.session.runId,
+        status: "CANCELLED",
+        totalUniqueLookups: 1,
+      },
+      outputCsv: "cnpj;status\n00000000000191;CANCELLED",
+      outputXlsx: null,
+      runStatus: "CANCELLED",
+      summary: {
+        totalCnpjsEncontrados: 1,
+        totalCnpjsRetomados: 0,
+        totalCnpjsUnicosConsultados: 1,
+        totalCnpjsValidos: 1,
+        totalErros: 0,
+        totalLinhas: 1,
+        totalNaoOptantesSimples: 0,
+        totalOptantesSimples: 0,
+      },
+    });
+
+    await expect(processing).resolves.toMatchObject({
+      runStatus: "CANCELLED",
+    });
+  });
+
+  it("exports pending CNPJs from an interrupted execution", async () => {
+    const handler = handlers.get("csv:export-pending-cnpjs");
+    const { readFile, writeFile } = await import("node:fs/promises");
+    ledgerMocks.getRun.mockResolvedValueOnce({
+      canExportPending: true,
+      canResume: true,
+      checkpointPath: "/tmp/fiscal-desk-test/ledger.json",
+      checkpointedUniqueLookups: 1,
+      cnpjColumn: "cnpj",
+      completedAt: "2026-06-14T12:01:00.000Z",
+      hasPartialOutput: true,
+      inputFormat: "csv",
+      ledgerKey: "mock-0123456789abcdef01234567.json",
+      outputPath: "/tmp/fiscal-desk-test/entrada-processado.csv",
+      pendingUniqueLookups: 1,
+      providerConfigVersion: "provider-config-v1",
+      providerName: "mock",
+      resumeBlockedReason: null,
+      runId: "run-cancelled",
+      sourceFileName: "entrada.csv",
+      sourceFilePath: "/tmp/fiscal-desk-test/entrada.csv",
+      startedAt: "2026-06-14T12:00:00.000Z",
+      status: "CANCELLED",
+      summary: null,
+      totalUniqueLookups: 2,
+      updatedAt: "2026-06-14T12:01:00.000Z",
+    });
+    ledgerMocks.getCheckpointedCnpjs.mockResolvedValueOnce(
+      new Set(["11222333000181"]),
+    );
+    vi.mocked(readFile).mockResolvedValueOnce(
+      "cnpj\n11222333000181\n47960950000121\n11222333000181",
+    );
+    electronMocks.dialog.showSaveDialog.mockResolvedValueOnce({
+      canceled: false,
+      filePath: "/tmp/fiscal-desk-test/entrada-pendencias.csv",
+    });
+
+    const result = await handler?.(
+      {},
+      { ledgerKey: "mock-0123456789abcdef01234567.json" },
+    );
+
+    expect(result).toEqual({
+      pendingUniqueLookups: 1,
+      savedPath: "/tmp/fiscal-desk-test/entrada-pendencias.csv",
+    });
+    expect(electronMocks.dialog.showSaveDialog).toHaveBeenCalledWith(
+      expect.objectContaining({
+        defaultPath: "/tmp/fiscal-desk-test/entrada-pendencias.csv",
+        filters: [{ name: "CSV", extensions: ["csv"] }],
+      }),
+    );
+    expect(writeFile).toHaveBeenCalledWith(
+      "/tmp/fiscal-desk-test/entrada-pendencias.csv",
+      expect.stringContaining("47960950000121"),
+      "utf8",
+    );
+    expect(String(vi.mocked(writeFile).mock.calls.at(-1)?.[1])).not.toContain(
+      "11222333000181",
+    );
+  });
+
+  it("rejects Base Pública Local before ledger side effects without consent or prepared base", async () => {
     const handler = handlers.get("csv:process");
 
     await expect(
@@ -260,6 +380,17 @@ describe("process-csv IPC", () => {
         },
       ),
     ).rejects.toThrow("Confirme o aviso de Data da Base");
+
+    await expect(
+      handler?.(
+        { sender: { send: vi.fn() } },
+        {
+          acceptedLocalPublicBaseNotice: true,
+          content: "cnpj\n00000000000191",
+          provider: "base-publica-local",
+        },
+      ),
+    ).rejects.toThrow("Prepare a Base Pública Local");
 
     expect(ledgerMocks.startRun).not.toHaveBeenCalled();
     expect(processCsv).not.toHaveBeenCalled();
@@ -461,13 +592,18 @@ describe("process-csv IPC", () => {
     expect(readFile).toHaveBeenCalledWith(sourceFilePath, "utf8");
     expect(ledgerMocks.startRun).toHaveBeenCalledWith({
       cnpjColumn: "cnpj",
-      inputCsv: content,
+      inputContent: content,
+      inputFormat: "csv",
       providerConfigVersion: "provider-config-v1",
       providerName: "mock",
       sourceFilePath,
     });
     expect(processCsv).toHaveBeenCalledWith(
-      content,
+      {
+        content,
+        format: "csv",
+        sourceFilePath,
+      },
       expect.any(Object),
       expect.objectContaining({
         cnpjColumn: "cnpj",
@@ -532,7 +668,11 @@ describe("process-csv IPC", () => {
     });
 
     expect(processCsv).toHaveBeenCalledWith(
-      "cnpj\n00000000000191",
+      {
+        content: "cnpj\n00000000000191",
+        format: "csv",
+        sourceFilePath: "/tmp/fiscal-desk-test/entrada.csv",
+      },
       expect.any(Object),
       expect.objectContaining({
         deliveryFormat: "xlsx",
