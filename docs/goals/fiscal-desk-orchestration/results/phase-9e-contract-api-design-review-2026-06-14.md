@@ -6,7 +6,7 @@ Data: 2026-06-14
 
 ## Reviewer
 
-API designer read-only: `019ec7a8-545e-71f2-aa9a-d230721e63b5`.
+API designer read-only receipt recorded; local agent id omitted.
 
 ## Decision
 

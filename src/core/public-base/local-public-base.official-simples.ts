@@ -156,7 +156,7 @@ function resolveOfficialUpdatedAt(row: readonly string[]): string | null {
   );
 }
 
-function createSyntheticHeadOfficeCnpj(cnpjBasico: string): string {
+export function createSyntheticHeadOfficeCnpj(cnpjBasico: string): string {
   const base = `${cnpjBasico}0001`;
   const firstDigit = calculateCnpjDigit(
     base,

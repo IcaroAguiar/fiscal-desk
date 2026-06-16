@@ -16,7 +16,13 @@ import type {
 const DEFAULT_FRESHNESS_WARNING =
   "A Base Pública Local pode estar defasada; use como consulta resiliente e confirme casos sensíveis em provedor online.";
 
-export class LocalPublicBaseIndex {
+export type LocalPublicBaseLookupIndex = {
+  findByCnpj(
+    cnpj: string,
+  ): LocalPublicBaseRecord | Promise<LocalPublicBaseRecord | null> | null;
+};
+
+export class LocalPublicBaseIndex implements LocalPublicBaseLookupIndex {
   private readonly recordsByCnpj: ReadonlyMap<string, LocalPublicBaseRecord>;
 
   constructor(records: readonly LocalPublicBaseRecord[]) {

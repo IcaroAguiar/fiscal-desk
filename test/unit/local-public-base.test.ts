@@ -19,6 +19,7 @@ import {
 import {
   discoverLocalPublicBaseOfficialSource,
   parseApacheIndexEntries,
+  parseNextcloudWebDavEntries,
   parseOfficialSourceDirectoryIndex,
 } from "../../src/core/public-base/local-public-base.official-source";
 import { prepareLocalPublicBaseFromOfficialSimplesZip } from "../../src/core/public-base/local-public-base.official-zip";
@@ -43,6 +44,34 @@ type CapturedWarning = {
   message: string;
   metadata: Record<string, unknown>;
 };
+
+function createWebDavResponse(
+  entries: Array<{
+    href: string;
+    isDirectory: boolean;
+    name: string;
+    size?: number;
+  }>,
+): string {
+  return `<?xml version="1.0"?>
+    <d:multistatus xmlns:d="DAV:">
+      ${entries
+        .map(
+          (entry) => `<d:response>
+            <d:href>${entry.href}</d:href>
+            <d:propstat>
+              <d:prop>
+                <d:displayname>${entry.name}</d:displayname>
+                <d:getlastmodified>Mon, 15 Jun 2026 10:00:00 GMT</d:getlastmodified>
+                <d:getcontentlength>${entry.size ?? 0}</d:getcontentlength>
+                <d:resourcetype>${entry.isDirectory ? "<d:collection/>" : ""}</d:resourcetype>
+              </d:prop>
+            </d:propstat>
+          </d:response>`,
+        )
+        .join("\n")}
+    </d:multistatus>`;
+}
 
 afterEach(async () => {
   await Promise.all(
@@ -111,6 +140,145 @@ describe("Base Pública Local", () => {
       sizeLabel: "268M",
       sourcePageUrl: rootUrl,
     });
+  });
+
+  it("discovers official Simples archive from the Receita public Nextcloud share", async () => {
+    const shareUrl = "https://arquivos.receitafederal.gov.br/";
+    const token = "public-share-token";
+    const encodedToken = Buffer.from(JSON.stringify(token)).toString("base64");
+    const responses = new Map([
+      [
+        shareUrl,
+        `<input id="initial-state-files_sharing-sharingToken" value="${encodedToken}">`,
+      ],
+      [
+        `${shareUrl}public.php/webdav/`,
+        createWebDavResponse([
+          { href: "/public.php/webdav/", isDirectory: true, name: "" },
+          {
+            href: "/public.php/webdav/Dados/",
+            isDirectory: true,
+            name: "Dados",
+          },
+        ]),
+      ],
+      [
+        `${shareUrl}public.php/webdav/Dados/`,
+        createWebDavResponse([
+          {
+            href: "/public.php/webdav/Dados/",
+            isDirectory: true,
+            name: "Dados",
+          },
+          {
+            href: "/public.php/webdav/Dados/Cadastros/",
+            isDirectory: true,
+            name: "Cadastros",
+          },
+        ]),
+      ],
+      [
+        `${shareUrl}public.php/webdav/Dados/Cadastros/`,
+        createWebDavResponse([
+          {
+            href: "/public.php/webdav/Dados/Cadastros/",
+            isDirectory: true,
+            name: "Cadastros",
+          },
+          {
+            href: "/public.php/webdav/Dados/Cadastros/CNPJ/",
+            isDirectory: true,
+            name: "CNPJ",
+          },
+        ]),
+      ],
+      [
+        `${shareUrl}public.php/webdav/Dados/Cadastros/CNPJ/`,
+        createWebDavResponse([
+          {
+            href: "/public.php/webdav/Dados/Cadastros/CNPJ/",
+            isDirectory: true,
+            name: "CNPJ",
+          },
+          {
+            href: "/public.php/webdav/Dados/Cadastros/CNPJ/2026-05/",
+            isDirectory: true,
+            name: "2026-05",
+          },
+          {
+            href: "/public.php/webdav/Dados/Cadastros/CNPJ/2026-06/",
+            isDirectory: true,
+            name: "2026-06",
+          },
+        ]),
+      ],
+      [
+        `${shareUrl}public.php/webdav/Dados/Cadastros/CNPJ/2026-06/`,
+        createWebDavResponse([
+          {
+            href: "/public.php/webdav/Dados/Cadastros/CNPJ/2026-06/",
+            isDirectory: true,
+            name: "2026-06",
+          },
+          {
+            href: "/public.php/webdav/Dados/Cadastros/CNPJ/2026-06/Simples.zip",
+            isDirectory: false,
+            name: "Simples.zip",
+            size: 281018368,
+          },
+        ]),
+      ],
+    ]);
+
+    const fetchText = vi.fn(async (url: string) => responses.get(url) ?? "");
+
+    await expect(
+      discoverLocalPublicBaseOfficialSource({ fetchText }),
+    ).resolves.toMatchObject({
+      baseDate: "2026-06",
+      fileName: "Simples.zip",
+      fileUrl: expect.stringContaining(`/index.php/s/${token}/download`),
+      kind: "simples",
+      sizeLabel: "268M",
+      sourcePageUrl: shareUrl,
+    });
+    expect(fetchText).toHaveBeenCalledWith(
+      `${shareUrl}public.php/webdav/`,
+      expect.objectContaining({
+        headers: expect.objectContaining({ Depth: "1" }),
+        method: "PROPFIND",
+      }),
+    );
+  });
+
+  it("parses Nextcloud public WebDAV entries", () => {
+    expect(
+      parseNextcloudWebDavEntries(
+        createWebDavResponse([
+          { href: "/public.php/webdav/CNPJ/", isDirectory: true, name: "CNPJ" },
+          {
+            href: "/public.php/webdav/CNPJ/Simples.zip",
+            isDirectory: false,
+            name: "Simples.zip",
+            size: 1024 * 1024,
+          },
+        ]),
+        "",
+      ),
+    ).toEqual([
+      expect.objectContaining({
+        isDirectory: true,
+        name: "CNPJ",
+        path: "CNPJ",
+        sizeLabel: "-",
+      }),
+      expect.objectContaining({
+        isDirectory: false,
+        name: "Simples.zip",
+        path: "CNPJ/Simples.zip",
+        sizeLabel: "1M",
+      }),
+    ]);
   });
 
   it("does not follow official source links outside the configured Receita root", async () => {
@@ -295,6 +463,33 @@ describe("Base Pública Local", () => {
     expect(await readFile(result.filePath)).toEqual(officialSimplesZipBuffer());
   });
 
+  it("downloads Receita public Nextcloud sources through the WebDAV file endpoint", async () => {
+    const directory = await mkdtemp(join(tmpdir(), "public-base-download-"));
+    const fetchFile = vi.fn(async () => createOfficialZipResponse());
+    tempDirs.push(directory);
+
+    const result = await downloadLocalPublicBaseOfficialSource({
+      directory,
+      fetchFile,
+      source: createOfficialSource({
+        directoryUrl:
+          "https://arquivos.receitafederal.gov.br/public.php/webdav/Dados/Cadastros/CNPJ/2026-06/",
+        fileUrl:
+          "https://arquivos.receitafederal.gov.br/index.php/s/public-share-token/download?path=%2FDados%2FCadastros%2FCNPJ%2F2026-06&files=Simples.zip",
+      }),
+    });
+
+    expect(result.sizeBytes).toBe(officialSimplesZipBuffer().byteLength);
+    expect(fetchFile).toHaveBeenCalledWith(
+      "https://arquivos.receitafederal.gov.br/public.php/webdav/Dados/Cadastros/CNPJ/2026-06/Simples.zip",
+      expect.objectContaining({
+        headers: expect.objectContaining({
+          Authorization: expect.stringMatching(/^Basic /),
+        }),
+      }),
+    );
+  });
+
   it("reuses a downloaded official source only when metadata matches", async () => {
     const directory = await mkdtemp(join(tmpdir(), "public-base-download-"));
     const fetchFile = vi.fn(async () => createOfficialZipResponse());
@@ -458,6 +653,59 @@ describe("Base Pública Local", () => {
       cnpjBasico: "11222333",
       simplesNacional: true,
       simei: false,
+    });
+  });
+
+  it("persists official preparation as disk-backed shards instead of an in-memory JSON record list", async () => {
+    const directory = await mkdtemp(join(tmpdir(), "public-base-official-"));
+    tempDirs.push(directory);
+    const zipFilePath = join(directory, "Simples.zip");
+    await writeFile(
+      zipFilePath,
+      Buffer.from(officialSimplesZipBase64, "base64"),
+    );
+    const store = new LocalPublicBaseStore(directory);
+
+    const result = await store.prepareFromOfficialZip({
+      consent: acceptedConsent,
+      source: createOfficialSource(),
+      sourceSizeBytes: 256,
+      zipFilePath,
+    });
+    const rawDocument = JSON.parse(
+      await readFile(join(directory, localPublicBaseIndexFileName), "utf8"),
+    ) as Record<string, unknown>;
+    const prepared = await store.loadPreparedBase();
+    const record = await prepared?.index.findByCnpj("11222333");
+    const adapter = new LocalPublicBaseSimplesLookupAdapter(
+      prepared?.index ?? createLocalPublicBaseIndexFromRecords([]),
+      prepared?.status ?? getLocalPublicBaseStatus(),
+    );
+
+    expect(result).toMatchObject({
+      acceptedRows: 1,
+      rejectedRows: 0,
+      status: {
+        baseDate: "2026-01",
+        state: "ready",
+      },
+    });
+    expect(rawDocument).toMatchObject({
+      storage: "official-simples-shards",
+      officialIndexDirectory: "official-simples-index",
+      records: [],
+    });
+    expect(record).toMatchObject({
+      cnpjBasico: "11222333",
+      simplesNacional: true,
+      simei: false,
+    });
+    await expect(adapter.lookup(record?.cnpj ?? "")).resolves.toMatchObject({
+      source: "base-publica-local",
+      status: "SUCCESS",
+      raw: {
+        baseDate: "2026-01",
+      },
     });
   });
 

@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import {
   COMPARISON_MODE,
   compareProcessedCsvWithProvider,
+  completeProcessedCsvWithProvider,
 } from "../../src/core/comparison/provider-comparison";
 import type { SimplesLookupPort } from "../../src/core/simples/simples-lookup.port";
 import type { SimplesLookupResult } from "../../src/core/simples/simples-lookup.types";
@@ -135,6 +136,75 @@ describe("provider comparison", () => {
     expect(provider.lookup).toHaveBeenCalledTimes(1);
     expect(result.rows).toHaveLength(1);
     expect(result.rows[0]?.cnpj_normalizado).toBe("00000000000191");
+  });
+
+  it("completes NOT_FOUND rows with another provider without overwriting original results", async () => {
+    const provider = createProvider();
+    const csv = [
+      "cnpj_normalizado;simples_nacional;simei;status;fonte;mensagem",
+      "00000000000191;;;NOT_FOUND;base-publica-local;nao achou na base local",
+      "33000167000101;Sim;Não;SUCCESS;base-publica-local;resultado original",
+    ].join("\n");
+
+    const result = await completeProcessedCsvWithProvider(csv, provider);
+
+    expect(provider.lookup).toHaveBeenCalledTimes(1);
+    expect(provider.lookup).toHaveBeenCalledWith("00000000000191", undefined);
+    expect(result.summary).toMatchObject({
+      totalCandidates: 1,
+      totalCompleted: 1,
+      totalFoundByComplement: 1,
+      totalInputRows: 2,
+    });
+    expect(result.outputCsv).toContain("complemento_status");
+    expect(result.outputCsv).toContain("complemento_decisao");
+    expect(result.rows[0]).toMatchObject({
+      complemento_decisao: "preenchido_por_complemento",
+      complemento_fonte: "receita-web",
+      complemento_simples_nacional: "Sim",
+      complemento_simei: "Não",
+      complemento_status: "SUCCESS",
+      mensagem: "nao achou na base local",
+      status: "NOT_FOUND",
+    });
+    expect(result.rows[1]).toMatchObject({
+      complemento_decisao: "nao_aplicavel",
+      status: "SUCCESS",
+    });
+  });
+
+  it("applies a deduplicated completion lookup to every matching NOT_FOUND row for the CNPJ", async () => {
+    const provider = createProvider();
+    const csv = [
+      "cnpj_normalizado;simples_nacional;simei;status;fonte;mensagem",
+      "00000000000191;;;NOT_FOUND;base-publica-local;primeira linha",
+      "00000000000191;;;NOT_FOUND;base-publica-local;segunda linha",
+      "00000000000191;Sim;Não;SUCCESS;base-publica-local;resultado original",
+    ].join("\n");
+
+    const result = await completeProcessedCsvWithProvider(csv, provider);
+
+    expect(provider.lookup).toHaveBeenCalledTimes(1);
+    expect(result.summary).toMatchObject({
+      totalCandidates: 1,
+      totalCompleted: 1,
+      totalFoundByComplement: 1,
+      totalInputRows: 3,
+    });
+    expect(result.rows[0]).toMatchObject({
+      complemento_decisao: "preenchido_por_complemento",
+      complemento_status: "SUCCESS",
+      mensagem: "primeira linha",
+    });
+    expect(result.rows[1]).toMatchObject({
+      complemento_decisao: "preenchido_por_complemento",
+      complemento_status: "SUCCESS",
+      mensagem: "segunda linha",
+    });
+    expect(result.rows[2]).toMatchObject({
+      complemento_decisao: "nao_aplicavel",
+      status: "SUCCESS",
+    });
   });
 });
 

@@ -62,8 +62,30 @@ export type ProviderComparisonResult = {
   };
 };
 
+export type ProcessedCsvCompletionOptions = {
+  limit?: number;
+  onProgress?: (progress: ProviderComparisonProgress) => void;
+  signal?: AbortSignal;
+  statuses?: readonly string[];
+};
+
+export type ProcessedCsvCompletionResult = {
+  delimiter: CsvDelimiter;
+  outputCsv: string;
+  rows: Array<Record<string, string>>;
+  summary: {
+    totalInputRows: number;
+    totalCandidates: number;
+    totalCompleted: number;
+    totalFoundByComplement: number;
+    totalStillNotFound: number;
+    totalInconclusive: number;
+  };
+};
+
 type ProcessedRowCandidate = {
   cnpj: string;
+  rowIndex?: number;
   original: {
     fonte: string;
     mensagem: string;
@@ -98,6 +120,15 @@ const ERROR_LIKE_STATUSES = new Set([
   "TEMPORARY_ERROR",
   "UNPARSABLE_RESULT",
 ]);
+const DEFAULT_COMPLETION_STATUSES = ["NOT_FOUND"] as const;
+const COMPLETION_COLUMNS = [
+  "complemento_status",
+  "complemento_fonte",
+  "complemento_simples_nacional",
+  "complemento_simei",
+  "complemento_mensagem",
+  "complemento_decisao",
+] as const;
 
 export async function compareProcessedCsvWithProvider(
   inputCsv: string,
@@ -160,12 +191,96 @@ export async function compareProcessedCsvWithProvider(
   };
 }
 
+export async function completeProcessedCsvWithProvider(
+  inputCsv: string,
+  provider: SimplesLookupPort,
+  options: ProcessedCsvCompletionOptions = {},
+): Promise<ProcessedCsvCompletionResult> {
+  const parsed = readCsv(inputCsv);
+  const completionStatuses = new Set(
+    (options.statuses ?? DEFAULT_COMPLETION_STATUSES).map((status) =>
+      status.toUpperCase(),
+    ),
+  );
+  const candidates = selectCompletionCandidates(
+    collectCandidates(parsed.rows, { includeRowIndex: true }),
+    completionStatuses,
+    options.limit,
+  );
+  const reconsultaByCnpj = new Map<string, SimplesLookupResult>();
+
+  for (const [index, candidate] of candidates.entries()) {
+    throwIfAborted(options.signal);
+    options.onProgress?.({
+      completed: index,
+      currentCnpj: candidate.cnpj,
+      total: candidates.length,
+    });
+
+    reconsultaByCnpj.set(
+      candidate.cnpj,
+      await provider.lookup(
+        candidate.cnpj,
+        options.signal ? { signal: options.signal } : undefined,
+      ),
+    );
+    options.onProgress?.({
+      completed: index + 1,
+      currentCnpj: candidate.cnpj,
+      total: candidates.length,
+    });
+  }
+
+  const candidateCnpjs = new Set(candidates.map((candidate) => candidate.cnpj));
+  const outputRows = parsed.rows.map((row) => {
+    const cnpj = normalizeCnpj(
+      readFirstValue(row, ["cnpj_normalizado", "cnpj", "CNPJ", "documento"]),
+    );
+    const status = readFirstValue(row, ["status"]).toUpperCase();
+    const reconsulta =
+      candidateCnpjs.has(cnpj) && completionStatuses.has(status)
+        ? reconsultaByCnpj.get(cnpj)
+        : undefined;
+
+    return {
+      ...row,
+      ...createCompletionColumns(reconsulta),
+    };
+  });
+  const outputCsv = writeCsv(outputRows, parsed.delimiter, [
+    ...parsed.headers,
+    ...COMPLETION_COLUMNS,
+  ]);
+
+  return {
+    delimiter: parsed.delimiter,
+    outputCsv,
+    rows: outputRows,
+    summary: {
+      totalInputRows: parsed.rows.length,
+      totalCandidates: candidates.length,
+      totalCompleted: reconsultaByCnpj.size,
+      totalFoundByComplement: [...reconsultaByCnpj.values()].filter(
+        (result) => result.status === "SUCCESS",
+      ).length,
+      totalStillNotFound: [...reconsultaByCnpj.values()].filter(
+        (result) => result.status === "NOT_FOUND",
+      ).length,
+      totalInconclusive: [...reconsultaByCnpj.values()].filter(
+        (result) =>
+          result.status !== "SUCCESS" && result.status !== "NOT_FOUND",
+      ).length,
+    },
+  };
+}
+
 function collectCandidates(
   rows: Array<Record<string, string>>,
+  options: { includeRowIndex?: boolean } = {},
 ): ProcessedRowCandidate[] {
   const candidates = new Map<string, ProcessedRowCandidate>();
 
-  for (const row of rows) {
+  for (const [rowIndex, row] of rows.entries()) {
     const cnpj = normalizeCnpj(
       readFirstValue(row, ["cnpj_normalizado", "cnpj", "CNPJ", "documento"]),
     );
@@ -176,6 +291,7 @@ function collectCandidates(
 
     candidates.set(cnpj, {
       cnpj,
+      ...(options.includeRowIndex ? { rowIndex } : {}),
       original: {
         fonte: readFirstValue(row, ["fonte", "source", "provider"]),
         mensagem: readFirstValue(row, ["mensagem", "message"]),
@@ -189,6 +305,20 @@ function collectCandidates(
   }
 
   return [...candidates.values()];
+}
+
+function selectCompletionCandidates(
+  candidates: ProcessedRowCandidate[],
+  statuses: ReadonlySet<string>,
+  limit?: number,
+): ProcessedRowCandidate[] {
+  const selected = candidates.filter((candidate) =>
+    statuses.has(candidate.original.status.toUpperCase()),
+  );
+
+  return limit === undefined
+    ? selected
+    : selected.slice(0, normalizeLimit(limit));
 }
 
 function selectCandidates(
@@ -303,7 +433,45 @@ function formatNullableBoolean(value: boolean | null): string {
     return "";
   }
 
-  return String(value);
+  return value ? "Sim" : "Não";
+}
+
+function createCompletionColumns(
+  reconsulta: SimplesLookupResult | undefined,
+): Record<(typeof COMPLETION_COLUMNS)[number], string> {
+  if (!reconsulta) {
+    return {
+      complemento_decisao: "nao_aplicavel",
+      complemento_fonte: "",
+      complemento_mensagem: "",
+      complemento_simei: "",
+      complemento_simples_nacional: "",
+      complemento_status: "",
+    };
+  }
+
+  return {
+    complemento_decisao: decideCompletion(reconsulta),
+    complemento_fonte: reconsulta.source,
+    complemento_mensagem: reconsulta.message ?? "",
+    complemento_simei: formatNullableBoolean(reconsulta.simei),
+    complemento_simples_nacional: formatNullableBoolean(
+      reconsulta.simplesNacional,
+    ),
+    complemento_status: reconsulta.status,
+  };
+}
+
+function decideCompletion(result: SimplesLookupResult): string {
+  if (result.status === "SUCCESS") {
+    return "preenchido_por_complemento";
+  }
+
+  if (result.status === "NOT_FOUND") {
+    return "nao_encontrado_no_complemento";
+  }
+
+  return "inconclusivo";
 }
 
 function readFirstValue(

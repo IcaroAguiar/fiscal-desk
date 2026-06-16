@@ -25,6 +25,14 @@ describe("app view execution history", () => {
     expect(html).toContain("Equilibrado");
     expect(html).toContain("Máximo");
     expect(html).toContain("Base Pública Local");
+    expect(html).toContain(
+      `value="base-publica-local"  hidden disabled>Base local`,
+    );
+    expect(html).toContain(
+      "base oficial do Governo Federal a partir do Simples.zip publicado pela Receita",
+    );
+    expect(html).toContain("confiável para a Data da Base exibida");
+    expect(html).toContain("O risco principal é temporal");
     expect(html).toContain('data-field="local-public-base-notice"');
     expect(html).toContain('data-action="discover-official-source"');
     expect(html).toContain('data-action="prepare-official-source"');
@@ -377,6 +385,10 @@ describe("app view execution history", () => {
     expect(html).toContain("Parcial salvo: entrada-processado.csv");
     expect(html).toContain('data-action="export-pending-cnpjs"');
     expect(html).toContain("Exportar pendências");
+    expect(html).toContain('data-field="completion-provider"');
+    expect(html).toContain('value="cnpja-open"');
+    expect(html).toContain('value="receita-web"');
+    expect(html).toContain("Complementar não encontrados");
     expect(html).toContain('data-action="resume-execution"');
   });
 
@@ -413,6 +425,8 @@ describe("app view execution history", () => {
     const html = renderExecutionHistory(state);
 
     expect(html).not.toContain('data-action="resume-execution"');
+    expect(html).toContain('data-field="completion-provider"');
+    expect(html).toContain("Complementar não encontrados");
     expect(html).toContain("ficam apenas no historico");
   });
 

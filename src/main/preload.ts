@@ -3,6 +3,7 @@ import { contextBridge, ipcRenderer } from "electron";
 import { PROCESS_CSV_IPC_CHANNEL } from "../core/app/process-csv.types";
 import type { SimplesProviderName } from "../core/simples/simples-provider.names";
 import type {
+  CompleteProcessedCsvResult,
   ExportPendingCnpjsResult,
   LocalPublicBaseOfficialSource,
   LocalPublicBasePreparationConsent,
@@ -157,6 +158,23 @@ contextBridge.exposeInMainWorld("appBridge", {
   ): Promise<ExportPendingCnpjsResult | null> => {
     return ipcRenderer.invoke(PROCESS_CSV_IPC_CHANNEL.EXPORT_PENDING_CNPJS, {
       ledgerKey,
+    });
+  },
+  completeProcessedCsv: (
+    ledgerKey: string,
+    provider: SimplesProviderName,
+    acceptedLocalPublicBaseNotice?: boolean,
+    acceptedReceitaWebExperimentalNotice?: boolean,
+  ): Promise<CompleteProcessedCsvResult | null> => {
+    return ipcRenderer.invoke(PROCESS_CSV_IPC_CHANNEL.COMPLETE_PROCESSED_CSV, {
+      ...(acceptedLocalPublicBaseNotice
+        ? { acceptedLocalPublicBaseNotice }
+        : {}),
+      ...(acceptedReceitaWebExperimentalNotice
+        ? { acceptedReceitaWebExperimentalNotice }
+        : {}),
+      ledgerKey,
+      provider,
     });
   },
   resumeExecution: (

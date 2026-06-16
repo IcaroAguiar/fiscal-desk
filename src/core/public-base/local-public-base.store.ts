@@ -1,13 +1,15 @@
 import { randomUUID } from "node:crypto";
-import { mkdir, readFile, rename, stat, writeFile } from "node:fs/promises";
+import { mkdir, readFile, rename, rm, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { validateCnpj } from "../cnpj/validate-cnpj";
 import {
   createLocalPublicBaseIndexFromRecords,
   createLocalPublicBaseStatus,
+  type LocalPublicBaseLookupIndex,
   prepareLocalPublicBaseFromCsv,
 } from "./local-public-base.index";
-import { prepareLocalPublicBaseFromOfficialSimplesZip } from "./local-public-base.official-zip";
+import { OfficialSimplesDiskIndex } from "./local-public-base.official-disk-index";
+import { prepareOfficialSimplesDiskIndexFromZip } from "./local-public-base.official-zip";
 import type {
   LocalPublicBasePrepareInput,
   LocalPublicBasePrepareOfficialZipInput,
@@ -18,9 +20,10 @@ import type {
 
 const INDEX_VERSION = 1;
 const INDEX_FILE_NAME = "local-public-base-index.json";
+const OFFICIAL_INDEX_DIRECTORY_NAME = "official-simples-index";
 const TEXT_ENCODING = "utf8";
 
-type LocalPublicBaseIndexDocument = {
+type LocalPublicBaseIndexDocumentBase = {
   version: typeof INDEX_VERSION;
   state: Exclude<LocalPublicBaseStatus["state"], "not-prepared">;
   sourceFileName: string;
@@ -32,8 +35,22 @@ type LocalPublicBaseIndexDocument = {
   rejectedRows: number;
   sourceSizeBytes: number;
   errorMessage: string | null;
+};
+
+type LocalPublicBaseRecordsIndexDocument = LocalPublicBaseIndexDocumentBase & {
+  storage?: "records";
   records: LocalPublicBaseRecord[];
 };
+
+type LocalPublicBaseOfficialIndexDocument = LocalPublicBaseIndexDocumentBase & {
+  storage: "official-simples-shards";
+  officialIndexDirectory: string;
+  records: [];
+};
+
+type LocalPublicBaseIndexDocument =
+  | LocalPublicBaseRecordsIndexDocument
+  | LocalPublicBaseOfficialIndexDocument;
 
 type LocalPublicBaseLogger = {
   warn(message: string, metadata: Record<string, unknown>): void;
@@ -68,18 +85,14 @@ export class LocalPublicBaseStore {
     return toStatus(document);
   }
 
-  async loadIndex(): Promise<ReturnType<
-    typeof createLocalPublicBaseIndexFromRecords
-  > | null> {
+  async loadIndex(): Promise<LocalPublicBaseLookupIndex | null> {
     const document = await this.readDocument();
 
-    return document?.state === "ready"
-      ? createLocalPublicBaseIndexFromRecords(document.records)
-      : null;
+    return document?.state === "ready" ? this.createIndex(document) : null;
   }
 
   async loadPreparedBase(): Promise<{
-    index: ReturnType<typeof createLocalPublicBaseIndexFromRecords>;
+    index: LocalPublicBaseLookupIndex;
     status: LocalPublicBaseStatus;
   } | null> {
     const document = await this.readDocument();
@@ -89,7 +102,7 @@ export class LocalPublicBaseStore {
     }
 
     return {
-      index: createLocalPublicBaseIndexFromRecords(document.records),
+      index: this.createIndex(document),
       status: toStatus(document),
     };
   }
@@ -133,27 +146,46 @@ export class LocalPublicBaseStore {
   async prepareFromOfficialZip(
     input: LocalPublicBasePrepareOfficialZipInput,
   ): Promise<LocalPublicBasePrepareResult> {
-    const prepared = await prepareLocalPublicBaseFromOfficialSimplesZip(input);
-
     await mkdir(this.directory, { recursive: true });
+    const temporaryIndexDirectory = path.join(
+      this.directory,
+      `${OFFICIAL_INDEX_DIRECTORY_NAME}.${process.pid}.${randomUUID()}.tmp`,
+    );
+    const prepared = await prepareOfficialSimplesDiskIndexFromZip({
+      ...input,
+      outputDirectory: temporaryIndexDirectory,
+    });
+    const finalIndexDirectory = path.join(
+      this.directory,
+      OFFICIAL_INDEX_DIRECTORY_NAME,
+    );
+
+    if (prepared.acceptedRows > 0) {
+      await rm(finalIndexDirectory, { force: true, recursive: true });
+      await rename(temporaryIndexDirectory, finalIndexDirectory);
+    } else {
+      await rm(temporaryIndexDirectory, { force: true, recursive: true });
+    }
 
     const document: LocalPublicBaseIndexDocument = {
       version: INDEX_VERSION,
-      state: prepared.records.length > 0 ? "ready" : "error",
+      storage: "official-simples-shards",
+      state: prepared.acceptedRows > 0 ? "ready" : "error",
       sourceFileName: input.source.fileName,
       sourceFilePath: input.zipFilePath,
       preparedAt: prepared.status.preparedAt ?? new Date().toISOString(),
       baseDate: prepared.status.baseDate,
       estimatedRows: prepared.status.estimatedRows,
-      preparedRows: prepared.records.length,
+      preparedRows: prepared.acceptedRows,
       rejectedRows: prepared.rejectedRows,
       sourceSizeBytes: input.sourceSizeBytes,
       errorMessage:
-        prepared.records.length > 0
+        prepared.acceptedRows > 0
           ? null
           : (prepared.status.errorMessage ??
             "Nenhum registro válido foi encontrado no Simples.zip oficial."),
-      records: prepared.records,
+      officialIndexDirectory: OFFICIAL_INDEX_DIRECTORY_NAME,
+      records: [],
     };
 
     await writeIndexDocument(this.indexPath, document);
@@ -167,6 +199,16 @@ export class LocalPublicBaseStore {
 
   private get indexPath(): string {
     return path.join(this.directory, INDEX_FILE_NAME);
+  }
+
+  private createIndex(document: LocalPublicBaseIndexDocument) {
+    if (document.storage === "official-simples-shards") {
+      return new OfficialSimplesDiskIndex(
+        path.join(this.directory, document.officialIndexDirectory),
+      );
+    }
+
+    return createLocalPublicBaseIndexFromRecords(document.records);
   }
 
   private async readDocument(): Promise<LocalPublicBaseIndexDocument | null> {
@@ -257,7 +299,7 @@ function isIndexDocument(
 
   const candidate = value as Partial<LocalPublicBaseIndexDocument>;
 
-  return (
+  const hasCommonFields =
     candidate.version === INDEX_VERSION &&
     (candidate.state === "ready" || candidate.state === "error") &&
     typeof candidate.sourceFileName === "string" &&
@@ -268,11 +310,31 @@ function isIndexDocument(
     typeof candidate.rejectedRows === "number" &&
     typeof candidate.sourceSizeBytes === "number" &&
     (typeof candidate.errorMessage === "string" ||
-      candidate.errorMessage === null) &&
+      candidate.errorMessage === null);
+
+  if (!hasCommonFields) {
+    return false;
+  }
+
+  if (candidate.storage === "official-simples-shards") {
+    return (
+      typeof candidate.officialIndexDirectory === "string" &&
+      isSafeRelativeDirectory(candidate.officialIndexDirectory) &&
+      Array.isArray(candidate.records) &&
+      candidate.records.length === 0
+    );
+  }
+
+  return (
+    (candidate.storage === undefined || candidate.storage === "records") &&
     Array.isArray(candidate.records) &&
     candidate.records.every(isLocalPublicBaseRecord) &&
     (candidate.state === "error" || candidate.records.length > 0)
   );
+}
+
+function isSafeRelativeDirectory(value: string): boolean {
+  return value.length > 0 && !path.isAbsolute(value) && !value.includes("..");
 }
 
 function isLocalPublicBaseRecord(

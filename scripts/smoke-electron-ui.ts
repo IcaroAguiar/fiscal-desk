@@ -96,6 +96,8 @@ try {
       },
       { content: localPublicBaseCsv, sourceFilePath: localPublicBaseFixturePath },
     );
+    await page.reload();
+    await page.waitForSelector("text=Fiscal Desk", { timeout: 20_000 });
   }
   if (smokeProvider !== SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL) {
     await page.selectOption('[data-field="provider"]', smokeProvider);
@@ -137,9 +139,11 @@ try {
     throw new Error("Historico local nao refletiu a execucao retomada.");
   }
 
-  assertElectronSmokeHistory(latestHistory);
-  await access(latestHistory.outputPath ?? "");
-  await assertXlsxOutput(latestHistory.outputPath ?? "");
+  const uiMessage = await page
+    .locator('[data-slot="message"]')
+    .textContent();
+
+  assertElectronSmokeHistory(latestHistory, uiMessage);
   await access(latestHistory.checkpointPath);
 
   console.log(
@@ -155,9 +159,8 @@ try {
         checkpointPath: latestHistory.checkpointPath,
         runId: latestHistory.runId,
         historyCount: history.length,
-        uiResumeText: await page
-          .locator('[data-slot="execution-resume"]')
-          .textContent(),
+        uiMessage,
+        uiResumeText: await page.locator('[data-slot="execution-resume"]').textContent(),
         summary: latestHistory.summary,
       },
       null,
@@ -169,17 +172,24 @@ try {
   await server?.close();
 }
 
-function assertElectronSmokeHistory(history: ProcessExecutionHistoryItem): void {
+function assertElectronSmokeHistory(
+  history: ProcessExecutionHistoryItem,
+  uiMessage: string | null,
+): void {
   if (history.status !== "SUCCESS") {
     throw new Error(`Esperado SUCCESS, recebido ${history.status}`);
   }
 
-  if (!history.outputPath) {
-    throw new Error("Smoke Electron nao gerou auto-save.");
+  if (history.outputPath !== null) {
+    throw new Error(
+      `Smoke Electron nao deve auto-salvar sem file picker, recebido ${history.outputPath}`,
+    );
   }
 
-  if (!history.outputPath.endsWith(".xlsx")) {
-    throw new Error(`Esperado auto-save XLSX, recebido ${history.outputPath}`);
+  if (!uiMessage?.includes("auto-save foi ignorado")) {
+    throw new Error(
+      `Smoke Electron nao informou bloqueio de auto-save: ${uiMessage}`,
+    );
   }
 
   if (!history.checkpointPath) {
@@ -208,15 +218,6 @@ function assertElectronSmokeHistory(history: ProcessExecutionHistoryItem): void 
     throw new Error(
       `Esperado 3 CNPJs unicos, recebido ${history.summary.totalCnpjsUnicosConsultados}`,
     );
-  }
-}
-
-async function assertXlsxOutput(outputPath: string): Promise<void> {
-  const bytes = await readFile(outputPath);
-  const signature = bytes.subarray(0, 4).toString("hex");
-
-  if (signature !== "504b0304") {
-    throw new Error(`Arquivo XLSX nao possui assinatura ZIP valida: ${signature}`);
   }
 }
 

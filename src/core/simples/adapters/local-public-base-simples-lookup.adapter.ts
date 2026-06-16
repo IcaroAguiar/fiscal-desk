@@ -4,7 +4,7 @@ import { LOCAL_PUBLIC_BASE_SOURCE } from "../../public-base/local-public-base.fi
 import {
   createLocalPublicBaseIndex,
   getLocalPublicBaseStatus,
-  type LocalPublicBaseIndex,
+  type LocalPublicBaseLookupIndex,
 } from "../../public-base/local-public-base.index";
 import type { LocalPublicBaseStatus } from "../../public-base/local-public-base.types";
 import type { SimplesLookupPort } from "../simples-lookup.port";
@@ -12,7 +12,7 @@ import type { SimplesLookupResult } from "../simples-lookup.types";
 
 export class LocalPublicBaseSimplesLookupAdapter implements SimplesLookupPort {
   constructor(
-    private readonly index: LocalPublicBaseIndex = createLocalPublicBaseIndex(),
+    private readonly index: LocalPublicBaseLookupIndex = createLocalPublicBaseIndex(),
     private readonly status: LocalPublicBaseStatus = getLocalPublicBaseStatus(),
   ) {}
 
@@ -34,7 +34,7 @@ export class LocalPublicBaseSimplesLookupAdapter implements SimplesLookupPort {
       };
     }
 
-    const record = this.index.findByCnpj(normalizedCnpj);
+    const record = await this.index.findByCnpj(normalizedCnpj);
 
     if (!record) {
       return {

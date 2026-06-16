@@ -852,6 +852,26 @@ input::placeholder {
   gap: var(--spacing-2);
 }
 
+.history-list__completion {
+  align-items: center;
+  display: inline-flex;
+  gap: var(--spacing-2);
+}
+
+.history-list__completion span {
+  color: var(--semantic-muted);
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.history-list__completion select {
+  min-height: 2rem;
+  min-width: 9.5rem;
+  padding: var(--spacing-1) var(--spacing-2);
+}
+
 .history-list__main span,
 .history-list__blocked,
 .history-empty {
@@ -2413,7 +2433,10 @@ body {
 }
 
 .operations-grid {
-  grid-template-columns: minmax(420px, 1fr) 300px 316px;
+  grid-template-columns: minmax(420px, 1fr) minmax(340px, 380px) minmax(
+      320px,
+      360px
+    );
   grid-template-areas:
     "entry config protocol"
     "kpis kpis protocol"
@@ -2739,7 +2762,7 @@ body {
 
 .speed-plan {
   display: grid;
-  grid-template-columns: minmax(0, 0.7fr) minmax(0, 1.45fr) minmax(0, 1.15fr);
+  grid-template-columns: 1fr;
   margin-top: 14px;
   border-top: 1px solid var(--v5-line);
   border-bottom: 1px solid var(--v5-line);
@@ -2747,22 +2770,23 @@ body {
 
 .speed-plan > div {
   min-width: 0;
-  padding: 12px 14px 12px 0;
-  border-right: 1px solid var(--v5-line);
+  padding: 12px 0;
+  border-right: 0;
+  border-bottom: 1px solid var(--v5-line);
 }
 
 .speed-plan > div:not(:first-child) {
-  padding-left: 14px;
+  padding-left: 0;
 }
 
 .speed-plan > div:last-child {
-  border-right: 0;
+  border-bottom: 0;
 }
 
 .speed-plan strong {
   display: block;
   margin-top: 7px;
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
   color: var(--v5-text);
   font-size: 0.82rem;
   font-weight: 740;
@@ -2774,6 +2798,48 @@ body {
 .workbench-v5 .notice-check {
   margin-top: 10px;
   padding-top: 10px;
+}
+
+.workbench-v5 .base-prep {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  min-width: 0;
+}
+
+.workbench-v5 .base-prep__copy {
+  min-width: 0;
+}
+
+.workbench-v5 .base-prep__copy strong,
+.workbench-v5 .base-prep__copy small {
+  display: block;
+  overflow-wrap: break-word;
+  line-height: 1.4;
+}
+
+.workbench-v5 .base-prep__copy strong {
+  margin-top: 6px;
+}
+
+.workbench-v5 .base-prep__copy small {
+  margin-top: 6px;
+  color: var(--v5-muted);
+}
+
+.workbench-v5 .base-prep__actions {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+  min-width: 0;
+}
+
+.workbench-v5 .base-prep__actions .button {
+  justify-content: center;
+  width: 100%;
+  min-height: 36px;
+  height: auto;
+  white-space: normal;
 }
 
 .workbench-v5 .command-bar {

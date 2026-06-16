@@ -34,6 +34,26 @@ export function syncReceitaWebAvailability(
   }
 }
 
+export function syncLocalPublicBaseAvailability(
+  providerSelect: HTMLSelectElement,
+  state: UiState,
+): void {
+  const option = providerSelect.querySelector<HTMLOptionElement>(
+    `option[value="${SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL}"]`,
+  );
+  const isPrepared = state.localPublicBaseStatus?.state === "ready";
+
+  if (option) {
+    option.disabled = !isPrepared;
+    option.hidden = !isPrepared;
+  }
+
+  if (!isPrepared && state.provider === SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL) {
+    state.provider = SIMPLES_PROVIDER.MOCK;
+    state.localPublicBaseNoticeAccepted = false;
+  }
+}
+
 export function prepareLocalPublicBaseResume(
   state: UiState,
   historyItem: ProcessExecutionHistoryItem,

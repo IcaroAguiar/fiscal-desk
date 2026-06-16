@@ -368,6 +368,84 @@ describe("process-csv IPC", () => {
     );
   });
 
+  it("completes NOT_FOUND rows from a processed CSV using the selected provider", async () => {
+    const handler = handlers.get("csv:complete-processed-csv");
+    const { readFile, writeFile } = await import("node:fs/promises");
+    const lookup = vi.fn(async () => ({
+      cnpj: "00000000000191",
+      simplesNacional: true,
+      simei: false,
+      source: "receita-web",
+      status: "SUCCESS" as const,
+    }));
+    vi.mocked(createSimplesLookupProvider).mockReturnValueOnce({ lookup });
+    ledgerMocks.getRun.mockResolvedValueOnce({
+      canExportPending: false,
+      canResume: false,
+      checkpointPath: "/tmp/fiscal-desk-test/ledger.json",
+      checkpointedUniqueLookups: 2,
+      cnpjColumn: "cnpj",
+      completedAt: "2026-06-15T12:01:00.000Z",
+      hasPartialOutput: false,
+      inputFormat: "csv",
+      ledgerKey: "mock-0123456789abcdef01234567.json",
+      outputPath: "/tmp/fiscal-desk-test/entrada-processado.csv",
+      pendingUniqueLookups: 0,
+      providerConfigVersion: "provider-config-v1",
+      providerName: "base-publica-local",
+      resumeBlockedReason: "Histórico concluído",
+      runId: "run-success",
+      sourceFileName: "entrada.csv",
+      sourceFilePath: "/tmp/fiscal-desk-test/entrada.csv",
+      startedAt: "2026-06-15T12:00:00.000Z",
+      status: "SUCCESS",
+      summary: null,
+      totalUniqueLookups: 2,
+      updatedAt: "2026-06-15T12:01:00.000Z",
+    });
+    vi.mocked(readFile).mockResolvedValueOnce(
+      [
+        "cnpj_normalizado;simples_nacional;simei;status;fonte;mensagem",
+        "00000000000191;;;NOT_FOUND;base-publica-local;nao achou",
+        "33000167000101;Não;Não;SUCCESS;base-publica-local;ok",
+      ].join("\n"),
+    );
+    electronMocks.dialog.showSaveDialog.mockResolvedValueOnce({
+      canceled: false,
+      filePath: "/tmp/fiscal-desk-test/entrada-processado-complementado.csv",
+    });
+
+    const result = await handler?.(
+      {},
+      {
+        ledgerKey: "mock-0123456789abcdef01234567.json",
+        provider: "receita-web",
+      },
+    );
+
+    expect(result).toEqual({
+      completedLookups: 1,
+      foundByComplement: 1,
+      savedPath: "/tmp/fiscal-desk-test/entrada-processado-complementado.csv",
+    });
+    expect(lookup).toHaveBeenCalledWith("00000000000191", undefined);
+    expect(electronMocks.dialog.showSaveDialog).toHaveBeenCalledWith(
+      expect.objectContaining({
+        defaultPath:
+          "/tmp/fiscal-desk-test/entrada-processado-complementado.csv",
+        filters: [{ name: "CSV", extensions: ["csv"] }],
+      }),
+    );
+    expect(writeFile).toHaveBeenCalledWith(
+      "/tmp/fiscal-desk-test/entrada-processado-complementado.csv",
+      expect.stringContaining("complemento_status"),
+      "utf8",
+    );
+    expect(String(vi.mocked(writeFile).mock.calls.at(-1)?.[1])).toContain(
+      "preenchido_por_complemento",
+    );
+  });
+
   it("rejects Base Pública Local before ledger side effects without consent or prepared base", async () => {
     const handler = handlers.get("csv:process");
 

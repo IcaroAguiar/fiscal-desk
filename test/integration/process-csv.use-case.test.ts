@@ -73,16 +73,16 @@ describe("processCsv", () => {
     expect(result.summary.totalCnpjsUnicosConsultados).toBe(2);
     expect(result.outputCsv).toContain("simples_nacional");
     expect(result.outputCsv).toContain(
-      "Empresa A;00.000.000/0001-91;00.000.000/0001-91;00000000000191;true;true;false;SUCCESS;mock;;2",
+      "Empresa A;00.000.000/0001-91;00.000.000/0001-91;00000000000191;Sim;Sim;Não;SUCCESS;mock;;2",
     );
     expect(result.outputCsv).toContain(
-      "Empresa B;00.000.000/0001-91;00.000.000/0001-91;00000000000191;true;true;false;SUCCESS;mock;CNPJ repetido. A consulta será reaproveitada da primeira ocorrência válida.;3",
+      "Empresa B;00.000.000/0001-91;00.000.000/0001-91;00000000000191;Sim;Sim;Não;SUCCESS;mock;CNPJ repetido. A consulta será reaproveitada da primeira ocorrência válida.;3",
     );
     expect(result.outputCsv).toContain(
-      "Empresa C;12.345.678/0001-95;12.345.678/0001-95;12345678000195;true;false;false;SUCCESS;mock;;4",
+      "Empresa C;12.345.678/0001-95;12.345.678/0001-95;12345678000195;Sim;Não;Não;SUCCESS;mock;;4",
     );
     expect(result.outputCsv).toContain(
-      "Empresa D;123;123;123;false;;;INVALID_CNPJ;system;CNPJ inválido. Revise os 14 dígitos antes de consultar esta linha.;5",
+      "Empresa D;123;123;123;Não;;;INVALID_CNPJ;system;CNPJ inválido. Revise os 14 dígitos antes de consultar esta linha.;5",
     );
     expect(result.delivery).toMatchObject({
       extension: "csv",
@@ -111,10 +111,10 @@ describe("processCsv", () => {
       totalCnpjsUnicosConsultados: 2,
     });
     expect(result.outputCsv).toContain(
-      "Empresa B;123;123;123;false;;;INVALID_CNPJ;system;CNPJ inválido. Revise os 14 dígitos antes de consultar esta linha.;3",
+      "Empresa B;123;123;123;Não;;;INVALID_CNPJ;system;CNPJ inválido. Revise os 14 dígitos antes de consultar esta linha.;3",
     );
     expect(result.outputCsv).toContain(
-      "Empresa A duplicada;00.000.000/0001-91;00.000.000/0001-91;00000000000191;true;false;false;SUCCESS;mock;CNPJ repetido. A consulta será reaproveitada da primeira ocorrência válida.;4",
+      "Empresa A duplicada;00.000.000/0001-91;00.000.000/0001-91;00000000000191;Sim;Não;Não;SUCCESS;mock;CNPJ repetido. A consulta será reaproveitada da primeira ocorrência válida.;4",
     );
   });
 
@@ -143,10 +143,10 @@ describe("processCsv", () => {
       totalErros: 2,
     });
     expect(result.outputCsv).toContain(
-      "Empresa A;11.222.333/0001-81;11.222.333/0001-81;11222333000181;true;;;NOT_FOUND;mock;CNPJ não encontrado na base consultada.;2",
+      "Empresa A;11.222.333/0001-81;11.222.333/0001-81;11222333000181;Sim;;;NOT_FOUND;mock;CNPJ não encontrado na base consultada.;2",
     );
     expect(result.outputCsv).toContain(
-      "Empresa A duplicada;11.222.333/0001-81;11.222.333/0001-81;11222333000181;true;;;NOT_FOUND;mock;CNPJ repetido. A consulta será reaproveitada da primeira ocorrência válida. Resultado reaproveitado: CNPJ não encontrado na base consultada.;3",
+      "Empresa A duplicada;11.222.333/0001-81;11.222.333/0001-81;11222333000181;Sim;;;NOT_FOUND;mock;CNPJ repetido. A consulta será reaproveitada da primeira ocorrência válida. Resultado reaproveitado: CNPJ não encontrado na base consultada.;3",
     );
   });
 
@@ -196,10 +196,10 @@ describe("processCsv", () => {
       totalCnpjsUnicosConsultados: 2,
     });
     expect(result.outputCsv).toContain(
-      "Empresa B;123;123;123;false;;;INVALID_CNPJ;system;CNPJ inválido. Revise os 14 dígitos antes de consultar esta linha.;3",
+      "Empresa B;123;123;123;Não;;;INVALID_CNPJ;system;CNPJ inválido. Revise os 14 dígitos antes de consultar esta linha.;3",
     );
     expect(result.outputCsv).toContain(
-      "Empresa A duplicada;00.000.000/0001-91;00.000.000/0001-91;00000000000191;true;false;false;SUCCESS;mock;CNPJ repetido. A consulta será reaproveitada da primeira ocorrência válida.;4",
+      "Empresa A duplicada;00.000.000/0001-91;00.000.000/0001-91;00000000000191;Sim;Não;Não;SUCCESS;mock;CNPJ repetido. A consulta será reaproveitada da primeira ocorrência válida.;4",
     );
   });
 
@@ -328,7 +328,7 @@ describe("processCsv", () => {
       true,
     );
     expect(result.outputCsv).toContain(
-      "Empresa A\t00.000.000/0001-91\t00.000.000/0001-91\t00000000000191\ttrue\ttrue\tfalse\tSUCCESS\tmock\t\t2",
+      "Empresa A\t00.000.000/0001-91\t00.000.000/0001-91\t00000000000191\tSim\tSim\tNão\tSUCCESS\tmock\t\t2",
     );
   });
 
@@ -343,7 +343,7 @@ describe("processCsv", () => {
     expect(result.summary.totalCnpjsUnicosConsultados).toBe(2);
     expect(result.outputCsv.startsWith("cnpj;cnpj_original")).toBe(true);
     expect(result.outputCsv).toContain(
-      "00.000.000/0001-91;00.000.000/0001-91;00000000000191;true;true;false;SUCCESS;mock;;2",
+      "00.000.000/0001-91;00.000.000/0001-91;00000000000191;Sim;Sim;Não;SUCCESS;mock;;2",
     );
   });
 
@@ -368,10 +368,10 @@ describe("processCsv", () => {
     );
     expect(result.outputCsv).not.toContain("Tabela 1");
     expect(result.outputCsv).toContain(
-      "513441;PRESMET;23.843.196/0001-81;PRESMET;PRESMET;Normal;23.843.196/0001-81;23843196000181;true;",
+      "513441;PRESMET;23.843.196/0001-81;PRESMET;PRESMET;Normal;23.843.196/0001-81;23843196000181;Sim;",
     );
     expect(result.outputCsv).toContain(
-      "513656;BRASIL TELERADIO;05.051.624/0001-51;BRASIL;BRASIL;Simples Nacional;05.051.624/0001-51;05051624000151;true;",
+      "513656;BRASIL TELERADIO;05.051.624/0001-51;BRASIL;BRASIL;Simples Nacional;05.051.624/0001-51;05051624000151;Sim;",
     );
     expect(result.outputCsv).toContain(";mock;;4");
     expect(result.outputCsv).toContain(";mock;;5");

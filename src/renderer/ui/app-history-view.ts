@@ -1,3 +1,4 @@
+import { SIMPLES_PROVIDER } from "../../core/simples/simples-provider.names";
 import type { UiState } from "./app.types";
 import { escapeHtml } from "./app-helpers";
 import { formatProviderMode } from "./operational-copy";
@@ -59,6 +60,17 @@ export function renderExecutionHistory(state: UiState): string {
           const exportPendingButton = item.canExportPending
             ? `<button class="button button--ghost button--compact" type="button" data-action="export-pending-cnpjs" data-ledger-key="${escapeHtml(item.ledgerKey)}" ${state.status === "processing" ? "disabled" : ""}>Exportar pendências</button>`
             : "";
+          const completeButton = item.outputPath
+            ? `
+              <label class="history-list__completion">
+                <span>Complementar com</span>
+                <select data-field="completion-provider" data-ledger-key="${escapeHtml(item.ledgerKey)}" ${state.status === "processing" ? "disabled" : ""}>
+                  ${renderCompletionProviderOptions(state)}
+                </select>
+              </label>
+              <button class="button button--ghost button--compact" type="button" data-action="complete-processed-csv" data-ledger-key="${escapeHtml(item.ledgerKey)}" ${state.status === "processing" ? "disabled" : ""}>Complementar não encontrados</button>
+            `
+            : "";
 
           return `
             <li class="history-list__item">
@@ -69,6 +81,7 @@ export function renderExecutionHistory(state: UiState): string {
                 <span>${escapeHtml(pendingLabel)}${partialLabel ? ` • ${partialLabel}` : ""}</span>
               </div>
               <div class="history-list__actions">
+                ${completeButton}
                 ${exportPendingButton}
                 ${resumeButton}
               </div>
@@ -78,6 +91,49 @@ export function renderExecutionHistory(state: UiState): string {
         .join("")}
     </ol>
   `;
+}
+
+function renderCompletionProviderOptions(state: UiState): string {
+  const localBaseReady = state.localPublicBaseStatus?.state === "ready";
+  const defaultProvider = state.receitaWebAvailable
+    ? SIMPLES_PROVIDER.RECEITA_WEB
+    : SIMPLES_PROVIDER.CNPJA_OPEN;
+
+  return [
+    renderProviderOption(
+      SIMPLES_PROVIDER.CNPJA_OPEN,
+      "CNPJá Open",
+      defaultProvider === SIMPLES_PROVIDER.CNPJA_OPEN,
+    ),
+    renderProviderOption(
+      SIMPLES_PROVIDER.RECEITA_WEB,
+      "Receita Web",
+      defaultProvider === SIMPLES_PROVIDER.RECEITA_WEB,
+      !state.receitaWebAvailable,
+    ),
+    renderProviderOption(
+      SIMPLES_PROVIDER.RECEITA_WEB_PARALLEL_EXPERIMENTAL,
+      "Receita Web experimental",
+      false,
+      !state.receitaWebAvailable,
+    ),
+    renderProviderOption(
+      SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL,
+      "Base local",
+      false,
+      !localBaseReady,
+    ),
+    renderProviderOption(SIMPLES_PROVIDER.MOCK, "Simulação", false),
+  ].join("");
+}
+
+function renderProviderOption(
+  value: string,
+  label: string,
+  selected: boolean,
+  disabled = false,
+): string {
+  return `<option value="${escapeHtml(value)}" ${selected ? "selected" : ""} ${disabled ? "disabled hidden" : ""}>${escapeHtml(label)}</option>`;
 }
 
 function getReferenceStatusVariant(status: string): string {

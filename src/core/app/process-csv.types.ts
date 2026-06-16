@@ -173,6 +173,7 @@ export type ProcessCsvDomainEvent =
 export const PROCESS_CSV_IPC_CHANNEL = {
   AUTO_SAVE_OUTPUT_FILE: "csv:auto-save-output-file",
   CANCEL_PROCESSING: "csv:cancel-processing",
+  COMPLETE_PROCESSED_CSV: "csv:complete-processed-csv",
   EXPORT_PENDING_CNPJS: "csv:export-pending-cnpjs",
   LIST_EXECUTIONS: "csv:list-executions",
   LOOKUP_PROGRESS: "csv:lookup-progress",
@@ -226,5 +227,11 @@ export type ProcessCsvOutputDelivery = {
 
 export type ExportPendingCnpjsResult = {
   pendingUniqueLookups: number;
+  savedPath: string;
+};
+
+export type CompleteProcessedCsvResult = {
+  completedLookups: number;
+  foundByComplement: number;
   savedPath: string;
 };

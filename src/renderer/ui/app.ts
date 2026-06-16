@@ -170,6 +170,22 @@ export function mountApp(root: HTMLDivElement | null): void {
         if (ledgerKey) {
           void handleExportPendingCnpjs(ledgerKey);
         }
+        return;
+      }
+
+      if (action.dataset.action === "complete-processed-csv") {
+        if (state.status === "processing") {
+          return;
+        }
+
+        const ledgerKey = action.dataset.ledgerKey;
+
+        if (ledgerKey) {
+          void handleCompleteProcessedCsv(
+            ledgerKey,
+            resolveCompletionProvider(action),
+          );
+        }
       }
     });
 
@@ -447,6 +463,107 @@ export function mountApp(root: HTMLDivElement | null): void {
       await refreshExecutionHistory();
       syncUi();
     }
+  }
+
+  async function handleCompleteProcessedCsv(
+    ledgerKey: string,
+    provider: SimplesProviderName,
+  ): Promise<void> {
+    if (!prepareCompletionProviderNotice(provider)) {
+      state.activeView = "painel";
+      syncUi();
+      return;
+    }
+
+    state.status = "loading";
+    state.message = `Complementando linhas não encontradas com ${provider}...`;
+    syncUi();
+
+    try {
+      const result = await window.appBridge.completeProcessedCsv(
+        ledgerKey,
+        provider,
+        provider === SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL
+          ? state.localPublicBaseNoticeAccepted
+          : undefined,
+        provider === SIMPLES_PROVIDER.RECEITA_WEB_PARALLEL_EXPERIMENTAL
+          ? state.receitaWebExperimentalNoticeAccepted
+          : undefined,
+      );
+
+      state.status = "idle";
+      state.activeView = "historico";
+      state.message = result
+        ? `${result.completedLookups} CNPJ${result.completedLookups === 1 ? "" : "s"} reconsultado${result.completedLookups === 1 ? "" : "s"}; ${result.foundByComplement} preenchido${result.foundByComplement === 1 ? "" : "s"} pelo complemento.`
+        : "Complementação cancelada.";
+      await refreshExecutionHistory();
+      syncUi();
+    } catch (error) {
+      state.status = "error";
+      state.activeView = "historico";
+      state.message = extractMessage(error, "Falha ao complementar resultado.");
+      await refreshExecutionHistory();
+      syncUi();
+    }
+  }
+
+  function prepareCompletionProviderNotice(
+    provider: SimplesProviderName,
+  ): boolean {
+    if (
+      provider === SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL &&
+      !state.localPublicBaseNoticeAccepted
+    ) {
+      state.provider = SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL;
+      state.status = "idle";
+      state.message =
+        "Confirme o aviso de Data da Base antes de complementar com a Base Pública Local.";
+
+      return false;
+    }
+
+    if (
+      provider === SIMPLES_PROVIDER.RECEITA_WEB_PARALLEL_EXPERIMENTAL &&
+      !state.receitaWebExperimentalNoticeAccepted
+    ) {
+      state.provider = SIMPLES_PROVIDER.RECEITA_WEB_PARALLEL_EXPERIMENTAL;
+      state.status = "idle";
+      state.message =
+        "Confirme o aviso do modo experimental da Receita Web antes de complementar.";
+
+      return false;
+    }
+
+    return true;
+  }
+
+  function resolveCompletionProvider(action: HTMLElement): SimplesProviderName {
+    const historyItem = action.closest<HTMLElement>(".history-list__item");
+    const select = historyItem?.querySelector<HTMLSelectElement>(
+      'select[data-field="completion-provider"]',
+    );
+
+    return normalizeUiProvider(select?.value);
+  }
+
+  function normalizeUiProvider(value: string | undefined): SimplesProviderName {
+    if (value === SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL) {
+      return SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL;
+    }
+
+    if (value === SIMPLES_PROVIDER.CNPJA_OPEN) {
+      return SIMPLES_PROVIDER.CNPJA_OPEN;
+    }
+
+    if (value === SIMPLES_PROVIDER.RECEITA_WEB) {
+      return SIMPLES_PROVIDER.RECEITA_WEB;
+    }
+
+    if (value === SIMPLES_PROVIDER.RECEITA_WEB_PARALLEL_EXPERIMENTAL) {
+      return SIMPLES_PROVIDER.RECEITA_WEB_PARALLEL_EXPERIMENTAL;
+    }
+
+    return SIMPLES_PROVIDER.MOCK;
   }
 
   async function handleCancelProcessing(): Promise<void> {

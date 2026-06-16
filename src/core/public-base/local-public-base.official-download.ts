@@ -35,6 +35,11 @@ type OfficialDownloadMetadata = {
   sizeLabel: string;
 };
 
+type OfficialDownloadRequest = {
+  headers: Record<string, string>;
+  url: string;
+};
+
 export async function downloadLocalPublicBaseOfficialSource(
   input: DownloadInput,
 ): Promise<LocalPublicBaseOfficialDownloadResult> {
@@ -79,10 +84,18 @@ export async function downloadLocalPublicBaseOfficialSource(
     await unlink(partialMetadataPath).catch(() => undefined);
   }
 
-  const response = await (input.fetchFile ?? fetch)(input.source.fileUrl, {
+  const downloadRequest = createOfficialDownloadRequest(input.source);
+  const response = await (input.fetchFile ?? fetch)(downloadRequest.url, {
     ...(effectivePartialSize > 0
-      ? { headers: { Range: `bytes=${effectivePartialSize}-` } }
-      : {}),
+      ? {
+          headers: {
+            ...downloadRequest.headers,
+            Range: `bytes=${effectivePartialSize}-`,
+          },
+        }
+      : Object.keys(downloadRequest.headers).length > 0
+        ? { headers: downloadRequest.headers }
+        : {}),
   });
 
   if (!response.ok) {
@@ -163,6 +176,48 @@ function createOfficialDownloadMetadata(
     lastModified: source.lastModified,
     sizeLabel: source.sizeLabel,
   };
+}
+
+function createOfficialDownloadRequest(
+  source: LocalPublicBaseOfficialSource,
+): OfficialDownloadRequest {
+  const nextcloudToken = extractNextcloudPublicShareTokenFromUrl(
+    source.fileUrl,
+  );
+
+  if (nextcloudToken && source.directoryUrl.includes("/public.php/webdav/")) {
+    return {
+      headers: {
+        Authorization: createBasicAuthHeader(nextcloudToken),
+      },
+      url: new URL(
+        path.basename(source.fileName),
+        source.directoryUrl,
+      ).toString(),
+    };
+  }
+
+  return {
+    headers: {},
+    url: source.fileUrl,
+  };
+}
+
+function extractNextcloudPublicShareTokenFromUrl(
+  fileUrl: string,
+): string | null {
+  try {
+    const url = new URL(fileUrl);
+    const match = url.pathname.match(/\/s\/([^/]+)\//);
+
+    return match?.[1] ?? null;
+  } catch {
+    return null;
+  }
+}
+
+function createBasicAuthHeader(username: string): string {
+  return `Basic ${Buffer.from(`${username}:`).toString("base64")}`;
 }
 
 async function matchesOfficialDownloadMetadata(

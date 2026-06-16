@@ -112,6 +112,10 @@ export function renderShell(state: UiState): string {
   const needsReceitaWebExperimentalNotice =
     state.provider === SIMPLES_PROVIDER.RECEITA_WEB_PARALLEL_EXPERIMENTAL &&
     !state.receitaWebExperimentalNoticeAccepted;
+  const isLocalPublicBaseReady = state.localPublicBaseStatus?.state === "ready";
+  const shouldShowLocalPublicBasePreparation =
+    state.provider === SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL ||
+    !isLocalPublicBaseReady;
 
   return `
     <main class="app-shell workbench-shell workbench-v5">
@@ -178,7 +182,7 @@ export function renderShell(state: UiState): string {
                 <span class="field__label">Base de consulta</span>
                 <select id="provider" data-field="provider">
                   <option value="${SIMPLES_PROVIDER.MOCK}" ${state.provider === SIMPLES_PROVIDER.MOCK ? "selected" : ""}>Simulação</option>
-                  <option value="${SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL}" ${state.provider === SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL ? "selected" : ""}>Base local</option>
+                  <option value="${SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL}" ${state.provider === SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL ? "selected" : ""} ${isLocalPublicBaseReady ? "" : "hidden disabled"}>Base local</option>
                   <option value="${SIMPLES_PROVIDER.CNPJA_OPEN}" ${state.provider === SIMPLES_PROVIDER.CNPJA_OPEN ? "selected" : ""}>CNPJá Open</option>
                   <option value="${SIMPLES_PROVIDER.RECEITA_WEB}" ${state.provider === SIMPLES_PROVIDER.RECEITA_WEB ? "selected" : ""}>Receita Web</option>
                   <option value="${SIMPLES_PROVIDER.RECEITA_WEB_PARALLEL_EXPERIMENTAL}" ${state.provider === SIMPLES_PROVIDER.RECEITA_WEB_PARALLEL_EXPERIMENTAL ? "selected" : ""}>Receita Web experimental</option>
@@ -227,22 +231,25 @@ export function renderShell(state: UiState): string {
               </div>
             </div>
 
-            <div class="base-prep" id="base-local" data-slot="local-public-base-prep-panel" ${state.provider !== SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL ? 'style="display:none"' : ""}>
-              <div>
+            <div class="base-prep" id="base-local" data-slot="local-public-base-prep-panel" ${shouldShowLocalPublicBasePreparation ? "" : 'style="display:none"'}>
+              <div class="base-prep__copy">
                 <span class="ops-label">Base Pública Local</span>
                 <strong data-slot="local-public-base-status-line">${escapeHtml(formatLocalPublicBaseStatusLine(state))}</strong>
-                <small>Preparada neste computador para consultas locais.</small>
+                <small>Buscamos e preparamos a base oficial do Governo Federal a partir do Simples.zip publicado pela Receita. Ela é confiável para a Data da Base exibida.</small>
+                <small>O risco principal é temporal: a Data da Base pode estar defasada em relação ao dia de hoje. Para decisões sensíveis, confira casos específicos em fonte online.</small>
                 <small data-slot="local-public-base-official-source-line">${escapeHtml(formatLocalPublicBaseOfficialSourceLine(state))}</small>
               </div>
-              ${button({ variant: "secondary", "data-action": "discover-official-source", children: state.localPublicBaseOfficialSourceStatus === "loading" ? "Buscando fonte..." : "Buscar fonte oficial", disabled: state.status === "processing" || state.localPublicBaseOfficialSourceStatus === "loading" })}
-              ${button({ variant: "secondary", "data-action": "prepare-official-source", children: state.localPublicBasePrepareStatus === "loading" ? "Baixando..." : "Baixar e preparar oficial", disabled: state.status === "processing" || state.localPublicBasePrepareStatus === "loading" || state.localPublicBaseOfficialSourceStatus === "loading" || !state.localPublicBaseNoticeAccepted || state.localPublicBaseOfficialSource === null })}
-              ${button({ variant: "secondary", "data-action": "prepare-local-public-base", children: state.localPublicBasePrepareStatus === "loading" ? "Preparando..." : "Preparar base", disabled: state.status === "processing" || state.localPublicBasePrepareStatus === "loading" || (state.provider === SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL && !state.localPublicBaseNoticeAccepted) })}
+              <div class="base-prep__actions">
+                ${button({ variant: "secondary", "data-action": "discover-official-source", children: state.localPublicBaseOfficialSourceStatus === "loading" ? "Buscando fonte..." : "Buscar fonte oficial", disabled: state.status === "processing" || state.localPublicBaseOfficialSourceStatus === "loading" })}
+                ${button({ variant: "secondary", "data-action": "prepare-official-source", children: state.localPublicBasePrepareStatus === "loading" ? "Baixando..." : "Baixar e preparar oficial", disabled: state.status === "processing" || state.localPublicBasePrepareStatus === "loading" || state.localPublicBaseOfficialSourceStatus === "loading" || !state.localPublicBaseNoticeAccepted || state.localPublicBaseOfficialSource === null })}
+                ${button({ variant: "secondary", "data-action": "prepare-local-public-base", children: state.localPublicBasePrepareStatus === "loading" ? "Preparando..." : "Preparar base", disabled: state.status === "processing" || state.localPublicBasePrepareStatus === "loading" || !state.localPublicBaseNoticeAccepted })}
+              </div>
             </div>
 
-            <label class="notice-check" for="local-public-base-notice" data-slot="local-public-base-notice-panel" ${state.provider !== SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL ? 'style="display:none"' : ""}>
+            <label class="notice-check" for="local-public-base-notice" data-slot="local-public-base-notice-panel" ${shouldShowLocalPublicBasePreparation ? "" : 'style="display:none"'}>
               <input id="local-public-base-notice" data-field="local-public-base-notice" type="checkbox" ${state.localPublicBaseNoticeAccepted ? "checked" : ""} />
               <span>
-                Entendo que a Base Pública Local usa dados de <strong data-slot="local-public-base-date">${escapeHtml(state.localPublicBaseStatus?.baseDate ?? "data não informada")}</strong>.
+                Entendo que a Base Pública Local usa a base oficial do Governo Federal válida para a Data da Base <strong data-slot="local-public-base-date">${escapeHtml(state.localPublicBaseStatus?.baseDate ?? "data não informada")}</strong>.
                 <small data-slot="local-public-base-warning">${escapeHtml(state.localPublicBaseStatus?.freshnessWarning ?? "Data da Base indisponível.")}</small>
               </span>
             </label>

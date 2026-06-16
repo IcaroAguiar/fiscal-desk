@@ -9,6 +9,7 @@ import {
   powerSaveBlocker,
 } from "electron";
 import {
+  type CompleteProcessedCsvResult,
   type ExportPendingCnpjsResult,
   PROCESS_CSV_EXECUTION_SPEED_PROFILE,
   PROCESS_CSV_INPUT_FORMAT,
@@ -18,6 +19,7 @@ import {
 } from "../../core/app/process-csv.types";
 import { processCsv } from "../../core/app/process-csv.use-case";
 import { parseProcessCsvDeliveryFormat } from "../../core/app/process-csv-delivery";
+import { completeProcessedCsvWithProvider } from "../../core/comparison/provider-comparison";
 import { writeCsv } from "../../core/export/csv-writer";
 import {
   ingestFiscalCsv,
@@ -78,6 +80,12 @@ type ResumeProcessExecutionInput = {
 };
 type ExportPendingCnpjsInput = {
   ledgerKey: string;
+};
+type CompleteProcessedCsvInput = {
+  acceptedLocalPublicBaseNotice?: boolean;
+  acceptedReceitaWebExperimentalNotice?: boolean;
+  ledgerKey: string;
+  provider?: string;
 };
 type SaveOutputInput = {
   content: string | number[];
@@ -219,6 +227,12 @@ export function registerCsvIpc(): void {
     PROCESS_CSV_IPC_CHANNEL.EXPORT_PENDING_CNPJS,
     async (_event, input: ExportPendingCnpjsInput) => {
       return exportPendingCnpjs(input);
+    },
+  );
+  ipcMain.handle(
+    PROCESS_CSV_IPC_CHANNEL.COMPLETE_PROCESSED_CSV,
+    async (_event, input: CompleteProcessedCsvInput) => {
+      return completeProcessedCsv(input);
     },
   );
   ipcMain.handle(PROCESS_CSV_IPC_CHANNEL.CANCEL_PROCESSING, () => {
@@ -569,6 +583,78 @@ async function exportPendingCnpjs(
   };
 }
 
+async function completeProcessedCsv(
+  input: CompleteProcessedCsvInput,
+): Promise<CompleteProcessedCsvResult | null> {
+  if (!input || typeof input.ledgerKey !== "string") {
+    throw new Error("Histórico inválido para complementar resultado.");
+  }
+
+  const ledger = createExecutionLedger();
+  const execution = await ledger.getRun(input.ledgerKey);
+
+  if (!execution) {
+    throw new Error("Execução não encontrada no histórico local.");
+  }
+
+  if (!execution.outputPath) {
+    throw new Error(
+      "Esta execução não registra um CSV processado salvo. Salve ou processe o arquivo novamente antes de complementar.",
+    );
+  }
+
+  const providerName = normalizeProvider(input.provider);
+
+  if (
+    providerName === SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL &&
+    input.acceptedLocalPublicBaseNotice !== true
+  ) {
+    throw new Error(
+      "Confirme o aviso de Data da Base antes de complementar com a Base Pública Local.",
+    );
+  }
+
+  if (
+    providerName === SIMPLES_PROVIDER.RECEITA_WEB_PARALLEL_EXPERIMENTAL &&
+    input.acceptedReceitaWebExperimentalNotice !== true
+  ) {
+    throw new Error(
+      "Confirme o aviso do modo experimental da Receita Web antes de complementar com múltiplas janelas.",
+    );
+  }
+
+  const provider = await createRuntimeProvider(providerName);
+  const processedCsv = await readFile(execution.outputPath, "utf8");
+  const completion = await completeProcessedCsvWithProvider(
+    processedCsv,
+    provider,
+  );
+
+  if (completion.summary.totalCandidates === 0) {
+    throw new Error(
+      "Não há linhas NOT_FOUND válidas para complementar neste CSV processado.",
+    );
+  }
+
+  const result = await dialog.showSaveDialog({
+    title: "Salvar CSV complementado",
+    defaultPath: getCompletedCsvOutputPath(execution.outputPath),
+    filters: [{ name: "CSV", extensions: ["csv"] }],
+  });
+
+  if (result.canceled || !result.filePath) {
+    return null;
+  }
+
+  await writeOutputFile(result.filePath, "csv", completion.outputCsv);
+
+  return {
+    completedLookups: completion.summary.totalCompleted,
+    foundByComplement: completion.summary.totalFoundByComplement,
+    savedPath: result.filePath,
+  };
+}
+
 function resolveInputFormatFromPath(filePath: string): ProcessCsvInputFormat {
   return path.extname(filePath).toLowerCase() === ".xlsx"
     ? PROCESS_CSV_INPUT_FORMAT.XLSX
@@ -736,6 +822,12 @@ function getPendingCnpjsOutputPath(sourceFilePath: string): string {
   const parsedPath = path.parse(sourceFilePath);
 
   return path.join(parsedPath.dir, `${parsedPath.name}-pendencias.csv`);
+}
+
+function getCompletedCsvOutputPath(sourceFilePath: string): string {
+  const parsedPath = path.parse(sourceFilePath);
+
+  return path.join(parsedPath.dir, `${parsedPath.name}-complementado.csv`);
 }
 
 function createExecutionLedger(): FileProcessExecutionLedger {

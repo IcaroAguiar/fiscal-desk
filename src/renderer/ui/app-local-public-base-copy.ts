@@ -4,7 +4,7 @@ export function formatLocalPublicBaseStatusLine(state: UiState): string {
   const status = state.localPublicBaseStatus;
 
   if (!status || status.state === "not-prepared") {
-    return "Base ainda não preparada neste perfil.";
+    return "Base oficial do Governo Federal ainda não preparada neste perfil.";
   }
 
   if (status.state === "error") {
@@ -12,9 +12,9 @@ export function formatLocalPublicBaseStatusLine(state: UiState): string {
   }
 
   return [
+    `Fonte oficial do Governo Federal para a Data da Base ${status.baseDate ?? "não informada"}`,
     `${status.preparedRows} registros preparados`,
     `${status.rejectedRows} rejeitados`,
-    `Data da Base: ${status.baseDate ?? "não informada"}`,
     status.sourceFileName ? `Origem: ${status.sourceFileName}` : null,
   ]
     .filter(Boolean)
@@ -25,22 +25,23 @@ export function formatLocalPublicBaseOfficialSourceLine(
   state: UiState,
 ): string {
   if (state.localPublicBaseOfficialSourceStatus === "loading") {
-    return "Consultando índice oficial da Receita...";
+    return "Consultando a base oficial do Governo Federal...";
   }
 
   if (state.localPublicBaseOfficialSourceStatus === "error") {
-    return "Fonte oficial indisponível no momento.";
+    return "Base oficial do Governo Federal indisponível nesta rede; use Preparar base com CSV local confiável.";
   }
 
   const source = state.localPublicBaseOfficialSource;
 
   if (!source) {
-    return "Fonte oficial ainda não consultada.";
+    return "Base oficial do Governo Federal ainda não consultada.";
   }
 
   return [
+    `Base oficial do Governo Federal localizada`,
+    `Data da Base ${source.baseDate}`,
     `${source.fileName} ${source.sizeLabel}`,
-    `competência ${source.baseDate}`,
-    `publicado em ${source.lastModified}`,
+    `publicação ${source.lastModified}`,
   ].join(" • ");
 }

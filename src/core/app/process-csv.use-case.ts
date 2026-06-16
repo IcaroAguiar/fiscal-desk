@@ -207,9 +207,11 @@ export async function processCsv(
       ...row,
       cnpj_original: cnpjOriginal,
       cnpj_normalizado: cnpjNormalizado,
-      cnpj_valido: String(cnpjValido),
-      simples_nacional: toCsvValue(lookupResult.simplesNacional),
-      simei: toCsvValue(lookupResult.simei),
+      cnpj_valido: formatBooleanForUser(cnpjValido),
+      simples_nacional: formatNullableBooleanForUser(
+        lookupResult.simplesNacional,
+      ),
+      simei: formatNullableBooleanForUser(lookupResult.simei),
       status: lookupResult.status,
       fonte: lookupResult.source,
       mensagem: formatOutputMessage(lookupResult, ingestionIssue),
@@ -218,10 +220,10 @@ export async function processCsv(
   }
 
   const totalOptantesSimples = outputRows.filter(
-    (row) => row.simples_nacional === "true",
+    (row) => row.simples_nacional === "Sim",
   ).length;
   const totalNaoOptantesSimples = outputRows.filter(
-    (row) => row.simples_nacional === "false",
+    (row) => row.simples_nacional === "Não",
   ).length;
 
   const summary = {
@@ -355,12 +357,16 @@ function normalizeBinaryInput(
   return input;
 }
 
-function toCsvValue(value: boolean | null): string {
+function formatBooleanForUser(value: boolean): string {
+  return value ? "Sim" : "Não";
+}
+
+function formatNullableBooleanForUser(value: boolean | null): string {
   if (value === null) {
     return "";
   }
 
-  return String(value);
+  return formatBooleanForUser(value);
 }
 
 function formatOutputMessage(

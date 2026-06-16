@@ -97,7 +97,7 @@ describe("processCsv execution ledger resume", () => {
       resumedUniqueLookups: 1,
     });
     expect(result.outputCsv).toContain(
-      "Empresa A;00.000.000/0001-91;00.000.000/0001-91;00000000000191;true;true;false;SUCCESS;mock;;2",
+      "Empresa A;00.000.000/0001-91;00.000.000/0001-91;00000000000191;Sim;Sim;Não;SUCCESS;mock;;2",
     );
   });
 

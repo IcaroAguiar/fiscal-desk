@@ -128,6 +128,28 @@ describe("preload appBridge", () => {
     );
   });
 
+  it("forwards processed CSV completion requests with the selected provider", async () => {
+    const appBridge = electronMocks.exposed.appBridge as {
+      completeProcessedCsv: (
+        ledgerKey: string,
+        provider: string,
+      ) => Promise<unknown>;
+    };
+
+    await appBridge.completeProcessedCsv(
+      "mock-0123456789abcdef01234567.json",
+      "cnpja-open",
+    );
+
+    expect(electronMocks.ipcRenderer.invoke).toHaveBeenCalledWith(
+      PROCESS_CSV_IPC_CHANNEL.COMPLETE_PROCESSED_CSV,
+      {
+        ledgerKey: "mock-0123456789abcdef01234567.json",
+        provider: "cnpja-open",
+      },
+    );
+  });
+
   it("forwards local public base preparation input", async () => {
     const appBridge = electronMocks.exposed.appBridge as {
       prepareLocalPublicBase: (

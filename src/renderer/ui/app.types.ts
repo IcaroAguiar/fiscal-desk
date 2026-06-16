@@ -1,5 +1,6 @@
 import type { SimplesProviderName } from "../../core/simples/simples-provider.names";
 import type {
+  CompleteProcessedCsvResult,
   ExportPendingCnpjsResult,
   LocalPublicBaseOfficialSource,
   LocalPublicBasePreparationConsent,
@@ -86,6 +87,12 @@ export type AppBridge = {
   exportPendingCnpjs(
     ledgerKey: string,
   ): Promise<ExportPendingCnpjsResult | null>;
+  completeProcessedCsv(
+    ledgerKey: string,
+    provider: SimplesProviderName,
+    acceptedLocalPublicBaseNotice?: boolean,
+    acceptedReceitaWebExperimentalNotice?: boolean,
+  ): Promise<CompleteProcessedCsvResult | null>;
   resumeExecution(
     ledgerKey: string,
     deliveryFormat?: ProcessCsvDeliveryFormat,

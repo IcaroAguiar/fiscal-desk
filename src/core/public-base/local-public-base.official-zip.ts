@@ -2,6 +2,10 @@ import { stat } from "node:fs/promises";
 import type { Readable } from "node:stream";
 import { crc32 } from "node:zlib";
 import { type Entry, open, type ZipFile } from "yauzl";
+import {
+  type OfficialDiskIndexPrepareResult,
+  prepareOfficialSimplesDiskIndexFromStream,
+} from "./local-public-base.official-disk-index";
 import { prepareLocalPublicBaseFromOfficialSimplesStream } from "./local-public-base.official-simples";
 import type {
   LocalPublicBasePrepareOfficialZipInput,
@@ -27,6 +31,29 @@ export async function prepareLocalPublicBaseFromOfficialSimplesZip(
     const stream = await openEntryReadStream(zipFile, entry);
 
     return await prepareLocalPublicBaseFromOfficialSimplesStream(stream, {
+      ...input,
+      sourceSizeBytes,
+    });
+  } finally {
+    zipFile.close();
+  }
+}
+
+export async function prepareOfficialSimplesDiskIndexFromZip(
+  input: Omit<LocalPublicBasePrepareOfficialZipInput, "sourceSizeBytes"> & {
+    outputDirectory: string;
+    sourceSizeBytes?: number;
+  },
+): Promise<OfficialDiskIndexPrepareResult> {
+  const sourceSizeBytes =
+    input.sourceSizeBytes ?? (await stat(input.zipFilePath)).size;
+  const zipFile = await openZip(input.zipFilePath);
+
+  try {
+    const entry = await findSimplesCsvEntry(zipFile);
+    const stream = await openEntryReadStream(zipFile, entry);
+
+    return await prepareOfficialSimplesDiskIndexFromStream(stream, {
       ...input,
       sourceSizeBytes,
     });
@@ -135,7 +162,7 @@ function isSimplesCsvEntry(entry: Entry): boolean {
 
   return (
     !fileName.endsWith("/") &&
-    fileName.includes("simples") &&
-    fileName.endsWith(".csv")
+    (fileName.endsWith(".csv") || fileName.includes(".csv.")) &&
+    fileName.includes("simples")
   );
 }

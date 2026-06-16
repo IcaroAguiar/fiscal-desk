@@ -10,7 +10,10 @@ import {
   formatLocalPublicBaseOfficialSourceLine,
   formatLocalPublicBaseStatusLine,
 } from "./app-local-public-base-copy";
-import { syncReceitaWebAvailability } from "./app-provider";
+import {
+  syncLocalPublicBaseAvailability,
+  syncReceitaWebAvailability,
+} from "./app-provider";
 import type { AppRefs } from "./app-refs";
 import { syncReferenceV5A } from "./app-sync-reference";
 import {
@@ -51,6 +54,7 @@ export function syncUi(refs: AppRefs, state: UiState): void {
   }
 
   if (refs.providerSelect) {
+    syncLocalPublicBaseAvailability(refs.providerSelect, state);
     syncReceitaWebAvailability(refs.providerSelect, state);
     refs.providerSelect.value = state.provider;
   }
@@ -344,14 +348,18 @@ function syncCockpitRefs(refs: AppRefs, state: UiState): void {
 }
 
 function syncLocalPublicBaseNotice(refs: AppRefs, state: UiState): void {
+  const shouldShowLocalPublicBasePreparation =
+    state.provider === SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL ||
+    state.localPublicBaseStatus?.state !== "ready";
+
   if (refs.localPublicBaseNoticePanel) {
     refs.localPublicBaseNoticePanel.style.display =
-      state.provider === SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL ? "flex" : "none";
+      shouldShowLocalPublicBasePreparation ? "flex" : "none";
   }
 
   if (refs.localPublicBasePrepPanel) {
     refs.localPublicBasePrepPanel.style.display =
-      state.provider === SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL ? "flex" : "none";
+      shouldShowLocalPublicBasePreparation ? "grid" : "none";
   }
 
   if (refs.localPublicBaseNotice) {
