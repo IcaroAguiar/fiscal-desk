@@ -28,6 +28,7 @@ await new Promise((resolve, reject) => {
     ["exec", "playwright", "install", "chromium"],
     {
       env,
+      shell: process.platform === "win32",
       stdio: "inherit",
     },
   );
