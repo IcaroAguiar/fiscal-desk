@@ -536,10 +536,7 @@ describe("process-csv IPC", () => {
     const autoSaveHandler = handlers.get("csv:auto-save-output-file");
 
     await pickHandler?.({});
-    await autoSaveHandler?.(
-      {},
-      { sourceFilePath, content: "ok" },
-    );
+    await autoSaveHandler?.({}, { sourceFilePath, content: "ok" });
 
     expect(writeFile).toHaveBeenCalledWith(
       resolve("/tmp/entrada-processado.csv"),
