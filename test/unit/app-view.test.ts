@@ -53,13 +53,13 @@ describe("app view execution history", () => {
   it("requires Receita Web experimental notice before processing", () => {
     const blockedHtml = renderShell({
       ...initialState,
-      content: "cnpj\n00000000000191",
+      content: "cnpj\n11222333000181",
       fileName: "clientes.csv",
       provider: "receita-web-parallel-experimental",
     });
     const acceptedHtml = renderShell({
       ...initialState,
-      content: "cnpj\n00000000000191",
+      content: "cnpj\n11222333000181",
       fileName: "clientes.csv",
       provider: "receita-web-parallel-experimental",
       receitaWebExperimentalNoticeAccepted: true,

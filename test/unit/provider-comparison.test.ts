@@ -9,31 +9,31 @@ import type { SimplesLookupPort } from "../../src/core/simples/simples-lookup.po
 import type { SimplesLookupResult } from "../../src/core/simples/simples-lookup.types";
 
 const RESULT_BY_CNPJ: Record<string, SimplesLookupResult> = {
-  "00000000000191": {
-    cnpj: "00000000000191",
+  "11222333000181": {
+    cnpj: "11222333000181",
     simplesNacional: true,
     simei: false,
     source: "receita-web",
     status: "SUCCESS",
   },
-  "00360305000104": {
-    cnpj: "00360305000104",
+  "12345678000195": {
+    cnpj: "12345678000195",
     simplesNacional: null,
     simei: null,
     source: "receita-web",
     status: "CAPTCHA_REQUIRED",
     message: "CAPTCHA detectado",
   },
-  "03426484000123": {
-    cnpj: "03426484000123",
+  "44555666000181": {
+    cnpj: "44555666000181",
     simplesNacional: null,
     simei: null,
     source: "receita-web",
     status: "BLOCKED",
     message: "Bloqueado pelo portal",
   },
-  "33000167000101": {
-    cnpj: "33000167000101",
+  "98765432000198": {
+    cnpj: "98765432000198",
     simplesNacional: false,
     simei: false,
     source: "receita-web",
@@ -46,10 +46,10 @@ describe("provider comparison", () => {
     const provider = createProvider();
     const csv = [
       "empresa;cnpj_normalizado;simples_nacional;simei;status;fonte;mensagem",
-      "A;00000000000191;true;false;SUCCESS;base-publica-local;original ok",
-      "B;33000167000101;true;false;SUCCESS;base-publica-local;original diverge",
-      "C;00360305000104;;;TEMPORARY_ERROR;base-publica-local;erro original",
-      "A duplicado;00000000000191;true;false;SUCCESS;base-publica-local;duplicado",
+      "A;11222333000181;true;false;SUCCESS;base-publica-local;original ok",
+      "B;98765432000198;true;false;SUCCESS;base-publica-local;original diverge",
+      "C;12345678000195;;;TEMPORARY_ERROR;base-publica-local;erro original",
+      "A duplicado;11222333000181;true;false;SUCCESS;base-publica-local;duplicado",
     ].join("\n");
 
     const result = await compareProcessedCsvWithProvider(csv, provider, {
@@ -80,8 +80,8 @@ describe("provider comparison", () => {
     const provider = createProvider();
     const csv = [
       "cnpj_normalizado;simples_nacional;simei;status;fonte;mensagem",
-      "00000000000191;true;false;SUCCESS;base-publica-local;ok",
-      "00360305000104;;;TEMPORARY_ERROR;base-publica-local;erro",
+      "11222333000181;true;false;SUCCESS;base-publica-local;ok",
+      "12345678000195;;;TEMPORARY_ERROR;base-publica-local;erro",
     ].join("\n");
 
     const result = await compareProcessedCsvWithProvider(csv, provider, {
@@ -90,7 +90,7 @@ describe("provider comparison", () => {
 
     expect(provider.lookup).toHaveBeenCalledTimes(1);
     expect(result.rows).toHaveLength(1);
-    expect(result.rows[0]?.cnpj_normalizado).toBe("00360305000104");
+    expect(result.rows[0]?.cnpj_normalizado).toBe("12345678000195");
     expect(result.rows[0]?.decisao_comparativa).toBe("inconclusivo");
   });
 
@@ -98,9 +98,9 @@ describe("provider comparison", () => {
     const provider = createProvider();
     const csv = [
       "cnpj_normalizado;simples_nacional;simei;status;fonte;mensagem",
-      "00000000000191;true;false;SUCCESS;base-publica-local;ok",
-      "00360305000104;;;TEMPORARY_ERROR;base-publica-local;erro",
-      "03426484000123;;;CAPTCHA_REQUIRED;base-publica-local;captcha",
+      "11222333000181;true;false;SUCCESS;base-publica-local;ok",
+      "12345678000195;;;TEMPORARY_ERROR;base-publica-local;erro",
+      "44555666000181;;;CAPTCHA_REQUIRED;base-publica-local;captcha",
     ].join("\n");
 
     const allErrors = await compareProcessedCsvWithProvider(csv, provider, {
@@ -112,11 +112,11 @@ describe("provider comparison", () => {
     });
 
     expect(allErrors.rows.map((row) => row.cnpj_normalizado)).toEqual([
-      "00360305000104",
-      "03426484000123",
+      "12345678000195",
+      "44555666000181",
     ]);
     expect(limitedErrors.rows.map((row) => row.cnpj_normalizado)).toEqual([
-      "00360305000104",
+      "12345678000195",
     ]);
   });
 
@@ -124,8 +124,8 @@ describe("provider comparison", () => {
     const provider = createProvider();
     const csv = [
       "cnpj_normalizado;simples_nacional;simei;status;fonte;mensagem",
-      "00000000000191;true;false;SUCCESS;base-publica-local;ok",
-      "33000167000101;false;false;SUCCESS;base-publica-local;ok",
+      "11222333000181;true;false;SUCCESS;base-publica-local;ok",
+      "98765432000198;false;false;SUCCESS;base-publica-local;ok",
     ].join("\n");
 
     const result = await compareProcessedCsvWithProvider(csv, provider, {
@@ -135,21 +135,21 @@ describe("provider comparison", () => {
 
     expect(provider.lookup).toHaveBeenCalledTimes(1);
     expect(result.rows).toHaveLength(1);
-    expect(result.rows[0]?.cnpj_normalizado).toBe("00000000000191");
+    expect(result.rows[0]?.cnpj_normalizado).toBe("11222333000181");
   });
 
   it("completes NOT_FOUND rows with another provider without overwriting original results", async () => {
     const provider = createProvider();
     const csv = [
       "cnpj_normalizado;simples_nacional;simei;status;fonte;mensagem",
-      "00000000000191;;;NOT_FOUND;base-publica-local;nao achou na base local",
-      "33000167000101;Sim;Não;SUCCESS;base-publica-local;resultado original",
+      "11222333000181;;;NOT_FOUND;base-publica-local;nao achou na base local",
+      "98765432000198;Sim;Não;SUCCESS;base-publica-local;resultado original",
     ].join("\n");
 
     const result = await completeProcessedCsvWithProvider(csv, provider);
 
     expect(provider.lookup).toHaveBeenCalledTimes(1);
-    expect(provider.lookup).toHaveBeenCalledWith("00000000000191", undefined);
+    expect(provider.lookup).toHaveBeenCalledWith("11222333000181", undefined);
     expect(result.summary).toMatchObject({
       totalCandidates: 1,
       totalCompleted: 1,
@@ -177,9 +177,9 @@ describe("provider comparison", () => {
     const provider = createProvider();
     const csv = [
       "cnpj_normalizado;simples_nacional;simei;status;fonte;mensagem",
-      "00000000000191;;;NOT_FOUND;base-publica-local;primeira linha",
-      "00000000000191;;;NOT_FOUND;base-publica-local;segunda linha",
-      "00000000000191;Sim;Não;SUCCESS;base-publica-local;resultado original",
+      "11222333000181;;;NOT_FOUND;base-publica-local;primeira linha",
+      "11222333000181;;;NOT_FOUND;base-publica-local;segunda linha",
+      "11222333000181;Sim;Não;SUCCESS;base-publica-local;resultado original",
     ].join("\n");
 
     const result = await completeProcessedCsvWithProvider(csv, provider);

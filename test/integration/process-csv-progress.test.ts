@@ -134,8 +134,8 @@ describe("processCsv progress", () => {
   it("reports progress only for unique valid lookups", async () => {
     const csv = [
       "nome;cpf_cnpj",
-      "Empresa A;00.000.000/0001-91",
-      "Empresa B;00.000.000/0001-91",
+      "Empresa A;11.222.333/0001-81",
+      "Empresa B;11.222.333/0001-81",
       "Empresa C;12.345.678/0001-95",
       "Empresa D;123",
     ].join("\n");
@@ -157,7 +157,7 @@ describe("processCsv progress", () => {
     expect(progressEvents[0]).toMatchObject({
       completedUniqueLookups: 1,
       totalUniqueLookups: 2,
-      currentCnpj: "00********0191",
+      currentCnpj: "11********0181",
     });
     expect(progressEvents[1]).toMatchObject({
       completedUniqueLookups: 2,
@@ -171,8 +171,8 @@ describe("processCsv progress", () => {
     const csv = [
       "nome;cpf_cnpj",
       "Empresa A;11.222.333/0001-81",
-      "Empresa B;03.426.484/0001-23",
-      "Empresa C;61.741.631/0001-56",
+      "Empresa B;44.555.666/0001-81",
+      "Empresa C;55.666.777/0001-81",
     ].join("\n");
     const provider = new SlowConcurrentLookupAdapter();
 
@@ -195,10 +195,10 @@ describe("processCsv progress", () => {
     const csv = [
       "nome;cpf_cnpj",
       "Empresa A;11.222.333/0001-81",
-      "Empresa B;03.426.484/0001-23",
-      "Empresa C;61.741.631/0001-56",
+      "Empresa B;44.555.666/0001-81",
+      "Empresa C;55.666.777/0001-81",
     ].join("\n");
-    const provider = new FailingConcurrentLookupAdapter("03426484000123");
+    const provider = new FailingConcurrentLookupAdapter("44555666000181");
     const ledger = new RecordingExecutionLedger();
     const progressEvents: unknown[] = [];
 
@@ -212,7 +212,7 @@ describe("processCsv progress", () => {
       }),
     ).rejects.toThrow("provider failure");
 
-    expect(provider.calls).toEqual(["11222333000181", "03426484000123"]);
+    expect(provider.calls).toEqual(["11222333000181", "44555666000181"]);
     expect(ledger.savedResults).toEqual([]);
     expect(progressEvents).toEqual([]);
   });
@@ -223,10 +223,10 @@ describe("processCsv progress", () => {
   ] as const)("requests a global stop when an experimental assisted lookup returns %s", async (blockingStatus) => {
     const csv = [
       "nome;cpf_cnpj",
-      "Empresa A;00.000.000/0001-91",
+      "Empresa A;11.222.333/0001-81",
       "Empresa B;12.345.678/0001-95",
-      "Empresa C;03.426.484/0001-23",
-      "Empresa D;61.741.631/0001-56",
+      "Empresa C;44.555.666/0001-81",
+      "Empresa D;55.666.777/0001-81",
     ].join("\n");
     const provider = new CaptchaStoppingLookupAdapter(blockingStatus);
     const controller = new AbortController();

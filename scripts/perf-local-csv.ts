@@ -101,7 +101,7 @@ function buildCsv(rows: number): string {
     lines.push(
       [
         `Empresa ${index + 1}`,
-        index % 2 === 0 ? "00.000.000/0001-91" : "33.000.167/0001-01",
+        index % 2 === 0 ? "11.222.333/0001-81" : "98.765.432/0001-98",
         "perf local",
       ].join(";"),
     );

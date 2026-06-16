@@ -2,7 +2,7 @@ import type { SimplesLookupPort } from "../simples-lookup.port";
 import type { SimplesLookupResult } from "../simples-lookup.types";
 
 const FIXTURES: Record<string, Omit<SimplesLookupResult, "cnpj">> = {
-  "00000000000191": {
+  "11222333000181": {
     simplesNacional: true,
     simei: false,
     source: "mock",

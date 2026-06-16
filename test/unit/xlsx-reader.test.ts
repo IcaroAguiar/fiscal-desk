@@ -14,7 +14,7 @@ describe("readXlsx", () => {
         name: "Clientes",
         rows: [
           ["CNPJ", "Nome", "Ativo"],
-          ["03.426.484/0001-23", "Empresa A", true],
+          ["44.555.666/0001-81", "Empresa A", true],
           ["11.222.333/0001-81", "Empresa B", false],
         ],
       },
@@ -28,7 +28,7 @@ describe("readXlsx", () => {
       rows: [
         {
           Ativo: "true",
-          CNPJ: "03.426.484/0001-23",
+          CNPJ: "44.555.666/0001-81",
           Nome: "Empresa A",
         },
         {

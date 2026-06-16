@@ -57,8 +57,8 @@ describe("processCsv", () => {
   it("enriches rows, reuses duplicate lookups, and preserves original columns", async () => {
     const csv = [
       "nome;cpf_cnpj",
-      "Empresa A;00.000.000/0001-91",
-      "Empresa B;00.000.000/0001-91",
+      "Empresa A;11.222.333/0001-81",
+      "Empresa B;11.222.333/0001-81",
       "Empresa C;12.345.678/0001-95",
       "Empresa D;123",
     ].join("\n");
@@ -73,10 +73,10 @@ describe("processCsv", () => {
     expect(result.summary.totalCnpjsUnicosConsultados).toBe(2);
     expect(result.outputCsv).toContain("simples_nacional");
     expect(result.outputCsv).toContain(
-      "Empresa A;00.000.000/0001-91;00.000.000/0001-91;00000000000191;Sim;Sim;Não;SUCCESS;mock;;2",
+      "Empresa A;11.222.333/0001-81;11.222.333/0001-81;11222333000181;Sim;Sim;Não;SUCCESS;mock;;2",
     );
     expect(result.outputCsv).toContain(
-      "Empresa B;00.000.000/0001-91;00.000.000/0001-91;00000000000191;Sim;Sim;Não;SUCCESS;mock;CNPJ repetido. A consulta será reaproveitada da primeira ocorrência válida.;3",
+      "Empresa B;11.222.333/0001-81;11.222.333/0001-81;11222333000181;Sim;Sim;Não;SUCCESS;mock;CNPJ repetido. A consulta será reaproveitada da primeira ocorrência válida.;3",
     );
     expect(result.outputCsv).toContain(
       "Empresa C;12.345.678/0001-95;12.345.678/0001-95;12345678000195;Sim;Não;Não;SUCCESS;mock;;4",
@@ -94,16 +94,16 @@ describe("processCsv", () => {
   it("uses the fiscal ingestion batch as the unique lookup handoff while preserving every output row", async () => {
     const csv = [
       "nome;cpf_cnpj",
-      "Empresa A;00.000.000/0001-91",
+      "Empresa A;11.222.333/0001-81",
       "Empresa B;123",
-      "Empresa A duplicada;00.000.000/0001-91",
+      "Empresa A duplicada;11.222.333/0001-81",
       "Empresa C;12.345.678/0001-95",
     ].join("\n");
     const provider = new CountingSuccessLookupAdapter();
 
     const result = await processCsv(csv, provider);
 
-    expect(provider.calls).toEqual(["00000000000191", "12345678000195"]);
+    expect(provider.calls).toEqual(["11222333000181", "12345678000195"]);
     expect(result.summary).toMatchObject({
       totalLinhas: 4,
       totalCnpjsEncontrados: 4,
@@ -114,7 +114,7 @@ describe("processCsv", () => {
       "Empresa B;123;123;123;Não;;;INVALID_CNPJ;system;CNPJ inválido. Revise os 14 dígitos antes de consultar esta linha.;3",
     );
     expect(result.outputCsv).toContain(
-      "Empresa A duplicada;00.000.000/0001-91;00.000.000/0001-91;00000000000191;Sim;Não;Não;SUCCESS;mock;CNPJ repetido. A consulta será reaproveitada da primeira ocorrência válida.;4",
+      "Empresa A duplicada;11.222.333/0001-81;11.222.333/0001-81;11222333000181;Sim;Não;Não;SUCCESS;mock;CNPJ repetido. A consulta será reaproveitada da primeira ocorrência válida.;4",
     );
   });
 
@@ -153,7 +153,7 @@ describe("processCsv", () => {
   it("can generate an Excel delivery while preserving the CSV output contract", async () => {
     const csv = [
       "nome;cpf_cnpj",
-      "Empresa A;00.000.000/0001-91",
+      "Empresa A;11.222.333/0001-81",
       "Empresa B;123",
     ].join("\n");
 
@@ -172,9 +172,9 @@ describe("processCsv", () => {
   it("processes XLSX input through the fiscal ingestion core", async () => {
     const xlsx = await createXlsxBuffer([
       ["nome", "cpf_cnpj"],
-      ["Empresa A", "00.000.000/0001-91"],
+      ["Empresa A", "11.222.333/0001-81"],
       ["Empresa B", "123"],
-      ["Empresa A duplicada", "00.000.000/0001-91"],
+      ["Empresa A duplicada", "11.222.333/0001-81"],
       ["Empresa C", "12.345.678/0001-95"],
     ]);
     const provider = new CountingSuccessLookupAdapter();
@@ -188,7 +188,7 @@ describe("processCsv", () => {
       provider,
     );
 
-    expect(provider.calls).toEqual(["00000000000191", "12345678000195"]);
+    expect(provider.calls).toEqual(["11222333000181", "12345678000195"]);
     expect(result.summary).toMatchObject({
       totalLinhas: 4,
       totalCnpjsEncontrados: 4,
@@ -199,12 +199,12 @@ describe("processCsv", () => {
       "Empresa B;123;123;123;Não;;;INVALID_CNPJ;system;CNPJ inválido. Revise os 14 dígitos antes de consultar esta linha.;3",
     );
     expect(result.outputCsv).toContain(
-      "Empresa A duplicada;00.000.000/0001-91;00.000.000/0001-91;00000000000191;Sim;Não;Não;SUCCESS;mock;CNPJ repetido. A consulta será reaproveitada da primeira ocorrência válida.;4",
+      "Empresa A duplicada;11.222.333/0001-81;11.222.333/0001-81;11222333000181;Sim;Não;Não;SUCCESS;mock;CNPJ repetido. A consulta será reaproveitada da primeira ocorrência válida.;4",
     );
   });
 
   it("can resolve the current CSV delivery through the F6E1 delivery option id", async () => {
-    const csv = ["nome;cpf_cnpj", "Empresa A;00.000.000/0001-91"].join("\n");
+    const csv = ["nome;cpf_cnpj", "Empresa A;11.222.333/0001-81"].join("\n");
 
     const result = await processCsv(csv, new MockSimplesLookupAdapter(), {
       deliveryOptionId: FISCAL_EXPORT_DELIVERY_OPTION_ID.PRESERVE_COLUMNS_CSV,
@@ -219,7 +219,7 @@ describe("processCsv", () => {
   });
 
   it("can resolve the current XLSX delivery through the F6E1 delivery option id", async () => {
-    const csv = ["nome;cpf_cnpj", "Empresa A;00.000.000/0001-91"].join("\n");
+    const csv = ["nome;cpf_cnpj", "Empresa A;11.222.333/0001-81"].join("\n");
 
     const result = await processCsv(csv, new MockSimplesLookupAdapter(), {
       deliveryOptionId:
@@ -259,7 +259,7 @@ describe("processCsv", () => {
     deliveryOptionId,
     message,
   }) => {
-    const csv = ["nome;cpf_cnpj", "Empresa A;00.000.000/0001-91"].join("\n");
+    const csv = ["nome;cpf_cnpj", "Empresa A;11.222.333/0001-81"].join("\n");
     const provider = new CountingSuccessLookupAdapter();
 
     await expect(
@@ -273,14 +273,14 @@ describe("processCsv", () => {
   it("processes rows with the Base Pública Local provider and records Data da Base in the result", async () => {
     const csv = [
       "nome;cpf_cnpj",
-      "Banco do Brasil;00.000.000/0001-91",
-      "Nao encontrado;11.222.333/0001-81",
+      "Empresa Alfa Demo;11.222.333/0001-81",
+      "Nao encontrado;22.333.444/0001-81",
     ].join("\n");
 
     const prepared = prepareLocalPublicBaseFromCsv({
       content: [
         "cnpj;razao_social;simples_nacional;simei;data_base",
-        "00000000000191;Banco do Brasil S.A.;sim;nao;2026-05-20",
+        "11222333000181;Empresa Alfa Demo Ltda.;sim;nao;2026-05-20",
       ].join("\n"),
       consent: {
         accepted: true,
@@ -306,7 +306,7 @@ describe("processCsv", () => {
     expect(result.summary.totalErros).toBe(1);
     expect(result.outputCsv).toContain("SUCCESS;base-publica-local");
     expect(result.outputCsv).toContain(
-      "Base Pública Local 2026-05-20: Banco do Brasil S.A.",
+      "Base Pública Local 2026-05-20: Empresa Alfa Demo Ltda.",
     );
     expect(result.outputCsv).toContain("NOT_FOUND;base-publica-local");
   });
@@ -314,7 +314,7 @@ describe("processCsv", () => {
   it("keeps tab-separated input and output aligned end to end", async () => {
     const csv = [
       "\uFEFFnome\tcpf_cnpj",
-      "Empresa A\t00.000.000/0001-91",
+      "Empresa A\t11.222.333/0001-81",
       "Empresa B\t12.345.678/0001-95",
     ].join("\r\n");
 
@@ -328,12 +328,12 @@ describe("processCsv", () => {
       true,
     );
     expect(result.outputCsv).toContain(
-      "Empresa A\t00.000.000/0001-91\t00.000.000/0001-91\t00000000000191\tSim\tSim\tNão\tSUCCESS\tmock\t\t2",
+      "Empresa A\t11.222.333/0001-81\t11.222.333/0001-81\t11222333000181\tSim\tSim\tNão\tSUCCESS\tmock\t\t2",
     );
   });
 
   it("processes single-column input end to end", async () => {
-    const csv = ["cnpj", "00.000.000/0001-91", "12.345.678/0001-95"].join("\n");
+    const csv = ["cnpj", "11.222.333/0001-81", "12.345.678/0001-95"].join("\n");
 
     const provider = new MockSimplesLookupAdapter();
 
@@ -343,7 +343,7 @@ describe("processCsv", () => {
     expect(result.summary.totalCnpjsUnicosConsultados).toBe(2);
     expect(result.outputCsv.startsWith("cnpj;cnpj_original")).toBe(true);
     expect(result.outputCsv).toContain(
-      "00.000.000/0001-91;00.000.000/0001-91;00000000000191;Sim;Sim;Não;SUCCESS;mock;;2",
+      "11.222.333/0001-81;11.222.333/0001-81;11222333000181;Sim;Sim;Não;SUCCESS;mock;;2",
     );
   });
 
@@ -352,8 +352,8 @@ describe("processCsv", () => {
       "Tabela 1",
       ";;;;;",
       "Código Fornecedor;Nome 1;CNPJ;Concat;EXT.TEXTO;Regime",
-      "513441;PRESMET;23.843.196/0001-81;PRESMET;PRESMET;Normal",
-      "513656;BRASIL TELERADIO;05.051.624/0001-51;BRASIL;BRASIL;Simples Nacional",
+      "513441;EMPRESA DELTA;66.777.888/0001-81;EMPRESA DELTA;EMPRESA DELTA;Normal",
+      "513656;EMPRESA EPSILON;77.888.999/0001-81;EMPRESA;EMPRESA;Simples Nacional",
     ].join("\n");
 
     const provider = new MockSimplesLookupAdapter();
@@ -368,10 +368,10 @@ describe("processCsv", () => {
     );
     expect(result.outputCsv).not.toContain("Tabela 1");
     expect(result.outputCsv).toContain(
-      "513441;PRESMET;23.843.196/0001-81;PRESMET;PRESMET;Normal;23.843.196/0001-81;23843196000181;Sim;",
+      "513441;EMPRESA DELTA;66.777.888/0001-81;EMPRESA DELTA;EMPRESA DELTA;Normal;66.777.888/0001-81;66777888000181;Sim;",
     );
     expect(result.outputCsv).toContain(
-      "513656;BRASIL TELERADIO;05.051.624/0001-51;BRASIL;BRASIL;Simples Nacional;05.051.624/0001-51;05051624000151;Sim;",
+      "513656;EMPRESA EPSILON;77.888.999/0001-81;EMPRESA;EMPRESA;Simples Nacional;77.888.999/0001-81;77888999000181;Sim;",
     );
     expect(result.outputCsv).toContain(";mock;;4");
     expect(result.outputCsv).toContain(";mock;;5");
@@ -381,8 +381,8 @@ describe("processCsv", () => {
     const csv = [
       "nome;cpf_cnpj",
       "Empresa A;11.222.333/0001-81",
-      "Empresa B;03.426.484/0001-23",
-      "Empresa C;61.741.631/0001-56",
+      "Empresa B;44.555.666/0001-81",
+      "Empresa C;55.666.777/0001-81",
     ].join("\n");
 
     const provider = new ErrorStatusLookupAdapter({
@@ -394,16 +394,16 @@ describe("processCsv", () => {
         status: "BLOCKED",
         message: "Bloqueado pelo portal",
       },
-      "03426484000123": {
-        cnpj: "03426484000123",
+      "44555666000181": {
+        cnpj: "44555666000181",
         simplesNacional: null,
         simei: null,
         source: "receita-web",
         status: "CAPTCHA_REQUIRED",
         message: "CAPTCHA detectado",
       },
-      "61741631000156": {
-        cnpj: "61741631000156",
+      "55666777000181": {
+        cnpj: "55666777000181",
         simplesNacional: null,
         simei: null,
         source: "receita-web",

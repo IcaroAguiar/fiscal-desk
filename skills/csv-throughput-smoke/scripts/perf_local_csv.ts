@@ -81,6 +81,6 @@ async function createProvider(providerName: SimplesProviderName, tempDir: string
 
 function buildCsv(rows: number): string {
   const lines = ["empresa;cnpj;observacao"];
-  for (let index = 0; index < rows; index += 1) lines.push([`Empresa ${index + 1}`, index % 2 === 0 ? "00.000.000/0001-91" : "33.000.167/0001-01", "perf local"].join(";"));
+  for (let index = 0; index < rows; index += 1) lines.push([`Empresa ${index + 1}`, index % 2 === 0 ? "11.222.333/0001-81" : "98.765.432/0001-98", "perf local"].join(";"));
   return lines.join("\n");
 }

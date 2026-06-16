@@ -17,11 +17,10 @@ import {
 const allowedProviders = new Set<SimplesProviderName>([
   SIMPLES_PROVIDER.MOCK,
   SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL,
-  SIMPLES_PROVIDER.CNPJA_OPEN,
 ]);
 const providerName = readProviderName();
 const fixturePath = fileURLToPath(
-  new URL("../test/fixtures/smoke/cnpjs-publicos-reais.csv", import.meta.url),
+  new URL("../test/fixtures/smoke/cnpjs-sinteticos-smoke.csv", import.meta.url),
 );
 const localPublicBaseFixturePath = fileURLToPath(
   new URL("../test/fixtures/smoke/base-publica-local.csv", import.meta.url),
@@ -76,7 +75,7 @@ function readProviderName(): SimplesProviderName {
 
   if (!allowedProviders.has(rawProvider as SimplesProviderName)) {
     throw new Error(
-      `SMOKE_PROVIDER invalido: ${rawProvider}. Use mock, base-publica-local ou cnpja-open. Receita Web e assistido/experimental e deve ter smoke manual separado.`,
+      `SMOKE_PROVIDER invalido: ${rawProvider}. Use mock ou base-publica-local. Providers externos exigem CSV proprio e validacao manual separada.`,
     );
   }
 
@@ -85,9 +84,9 @@ function readProviderName(): SimplesProviderName {
 
 function assertSmokeResult(outputCsv: string): void {
   const requiredFragments = [
-    "00000000000191",
-    "33000167000101",
-    "00360305000104",
+    "11222333000181",
+    "98765432000198",
+    "12345678000195",
     "INVALID_CNPJ",
   ];
 

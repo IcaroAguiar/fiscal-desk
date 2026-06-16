@@ -6,8 +6,8 @@ describe("MockSimplesLookupAdapter", () => {
   it("returns fixture values for known cnpjs", async () => {
     const adapter = new MockSimplesLookupAdapter();
 
-    await expect(adapter.lookup("00000000000191")).resolves.toMatchObject({
-      cnpj: "00000000000191",
+    await expect(adapter.lookup("11222333000181")).resolves.toMatchObject({
+      cnpj: "11222333000181",
       simplesNacional: true,
       simei: false,
       source: "mock",
@@ -18,7 +18,7 @@ describe("MockSimplesLookupAdapter", () => {
   it("returns not found for unknown but valid cnpj", async () => {
     const adapter = new MockSimplesLookupAdapter();
 
-    await expect(adapter.lookup("03426484000123")).resolves.toMatchObject({
+    await expect(adapter.lookup("44555666000181")).resolves.toMatchObject({
       status: "NOT_FOUND",
       source: "mock",
     });

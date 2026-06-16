@@ -37,7 +37,7 @@ class RecordingHttpClient implements HttpClient {
     return {
       status: 200,
       json: async () => ({
-        taxId: "03426484000123",
+        taxId: "44555666000181",
         company: {
           simples: { optant: false, since: null },
           simei: { optant: false, since: null },
@@ -85,7 +85,7 @@ describe("CnpjaOpenSimplesLookupAdapter retry", () => {
         {
           status: 200,
           json: async () => ({
-            taxId: "03426484000123",
+            taxId: "44555666000181",
             company: {
               simples: { optant: false, since: null },
               simei: { optant: false, since: null },
@@ -96,7 +96,7 @@ describe("CnpjaOpenSimplesLookupAdapter retry", () => {
       new FakeRateLimiter(),
     );
 
-    await expect(adapter.lookup("03426484000123")).resolves.toMatchObject({
+    await expect(adapter.lookup("44555666000181")).resolves.toMatchObject({
       status: "SUCCESS",
       source: "cnpja-open",
     });
@@ -111,7 +111,7 @@ describe("CnpjaOpenSimplesLookupAdapter retry", () => {
     );
     const controller = new AbortController();
 
-    await adapter.lookup("03426484000123", { signal: controller.signal });
+    await adapter.lookup("44555666000181", { signal: controller.signal });
 
     expect(httpClient.lastOptions?.signal).toBeDefined();
   });
@@ -126,7 +126,7 @@ describe("CnpjaOpenSimplesLookupAdapter retry", () => {
         {
           status: 200,
           json: async () => ({
-            taxId: "03426484000123",
+            taxId: "44555666000181",
             company: {
               simples: { optant: false, since: null },
               simei: { optant: false, since: null },
@@ -139,7 +139,7 @@ describe("CnpjaOpenSimplesLookupAdapter retry", () => {
       1,
     );
 
-    await expect(adapter.lookup("03426484000123")).resolves.toMatchObject({
+    await expect(adapter.lookup("44555666000181")).resolves.toMatchObject({
       source: "cnpja-open",
       status: "TEMPORARY_ERROR",
     });
@@ -154,7 +154,7 @@ describe("CnpjaOpenSimplesLookupAdapter retry", () => {
     );
     const controller = new AbortController();
 
-    const lookupPromise = adapter.lookup("03426484000123", {
+    const lookupPromise = adapter.lookup("44555666000181", {
       signal: controller.signal,
     });
     await httpClient.started;
@@ -170,7 +170,7 @@ describe("CnpjaOpenSimplesLookupAdapter retry", () => {
       1,
     );
 
-    await expect(adapter.lookup("03426484000123")).resolves.toMatchObject({
+    await expect(adapter.lookup("44555666000181")).resolves.toMatchObject({
       status: "TEMPORARY_ERROR",
       source: "cnpja-open",
       message: expect.stringMatching(/timeout|tempo/i),

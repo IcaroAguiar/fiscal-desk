@@ -33,7 +33,7 @@ describe("preload appBridge", () => {
     };
 
     await appBridge.processCsv({
-      content: "cnpj\n00000000000191",
+      content: "cnpj\n11222333000181",
       deliveryOptionId: PROCESS_CSV_DELIVERY_OPTION_ID.PRESERVE_COLUMNS_CSV,
       executionSpeedProfile: PROCESS_CSV_EXECUTION_SPEED_PROFILE.FAST,
       provider: "mock",
@@ -42,7 +42,7 @@ describe("preload appBridge", () => {
     expect(electronMocks.ipcRenderer.invoke).toHaveBeenCalledWith(
       PROCESS_CSV_IPC_CHANNEL.PROCESS,
       {
-        content: "cnpj\n00000000000191",
+        content: "cnpj\n11222333000181",
         deliveryOptionId: PROCESS_CSV_DELIVERY_OPTION_ID.PRESERVE_COLUMNS_CSV,
         executionSpeedProfile: PROCESS_CSV_EXECUTION_SPEED_PROFILE.FAST,
         provider: "mock",
@@ -161,7 +161,7 @@ describe("preload appBridge", () => {
         acceptedAt: "2026-06-13T12:00:00.000Z",
         noticeVersion: "base-publica-local-v1",
       },
-      content: "cnpj;razao_social\n00000000000191;Empresa Teste",
+      content: "cnpj;razao_social\n11222333000181;Empresa Teste",
       sourceFileName: "base-publica.csv",
       sourceFilePath: "/tmp/base-publica.csv",
     };

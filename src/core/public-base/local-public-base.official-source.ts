@@ -2,6 +2,8 @@ import type { LocalPublicBaseOfficialSource } from "./local-public-base.types";
 
 const OFFICIAL_CNPJ_OPEN_DATA_BASE_URL =
   "https://arquivos.receitafederal.gov.br/dados/cnpj/dados_abertos_cnpj/";
+// Public Receita landing page used to discover the official public Nextcloud share.
+// This URL is intentionally versioned; it is not a private credential.
 const OFFICIAL_NEXTCLOUD_PUBLIC_SHARE_URL =
   "https://arquivos.receitafederal.gov.br/";
 const DEFAULT_OFFICIAL_SOURCE_TIMEOUT_MS = 15_000;

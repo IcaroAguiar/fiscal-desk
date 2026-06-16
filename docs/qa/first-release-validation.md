@@ -82,19 +82,18 @@ licenca/account real, templates/modelos reutilizaveis, PDF/Word/OCR reais ou
 Receita Web live/massiva. Esses itens continuam bloqueados ate owner windows
 proprios, com gates e smokes especificos.
 
-Evidencia pos-Excel runtime: `post_p3_excel_input_runtime_exposure` validou
-entrada XLSX no Electron com `mock` e `base-publica-local`, preservando CSV,
-checkpoint, retomada e autosave XLSX. A validacao canonica registrou 43 arquivos
-/ 283 testes, cobertura global 76.39%, PR coverage 75.59%, lint, typecheck,
-build, ratchet e smoke visual.
+Historico operacional detalhado, goals de agentes e reports gerados foram
+retirados do current tree publico. Esta matriz resume o corte publicado; para
+nova release, reexecute os gates abaixo e anexe a evidencia no GitHub Release ou
+em arquivo local nao versionado.
 
-## Smoke real com arquivo e CNPJs publicos
+## Smoke real com arquivo e CNPJs sinteticos
 
-Fixture publica:
+Fixture versionada:
 
-- `test/fixtures/smoke/cnpjs-publicos-reais.csv`
+- `test/fixtures/smoke/cnpjs-sinteticos-smoke.csv`
 
-Ela contem CNPJs publicos reais de empresas brasileiras, duplicidade proposital e uma linha invalida proposital.
+Ela contem CNPJs sinteticos de smoke, duplicidade proposital e uma linha invalida proposital.
 
 Smoke offline deterministico:
 
@@ -106,18 +105,14 @@ Esse smoke usa o provider `mock`, nao depende de rede e valida:
 
 - leitura de arquivo CSV real;
 - deteccao da coluna `cnpj`;
-- normalizacao de CNPJs reais;
+- normalizacao de CNPJs sintéticos;
 - deduplicacao;
 - linha invalida;
 - geracao de CSV de saida em pasta temporaria.
 
-Smoke com provider real, manual e opt-in:
-
-```bash
-SMOKE_PROVIDER=cnpja-open pnpm smoke:real-csv
-```
-
-Esse caminho depende de internet e disponibilidade do provider externo. Nao deve bloquear CI ate termos politica de retry, rate limit e fallback mais madura.
+`smoke:real-csv` nao aceita provider externo com fixture sintetica. Para
+validacao real de `cnpja-open`, use um CSV proprio e o fluxo manual de
+comparacao, sem versionar CNPJs reais.
 
 `receita-web` nao e aceito pelo smoke deterministico. Ele continua sendo modo assistido/experimental, com navegador visivel, sujeito a bloqueio e validacao manual separada.
 

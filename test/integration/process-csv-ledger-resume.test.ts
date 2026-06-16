@@ -63,7 +63,7 @@ class CountingLookupAdapter implements SimplesLookupPort {
 describe("processCsv execution ledger resume", () => {
   it("restores checkpointed lookups and only calls the provider for missing CNPJs", async () => {
     const resumedResult: SimplesLookupResult = {
-      cnpj: "00000000000191",
+      cnpj: "11222333000181",
       simplesNacional: true,
       simei: false,
       source: "mock",
@@ -75,9 +75,9 @@ describe("processCsv execution ledger resume", () => {
     const provider = new CountingLookupAdapter();
     const csv = [
       "nome;cnpj",
-      "Empresa A;00.000.000/0001-91",
+      "Empresa A;11.222.333/0001-81",
       "Empresa B;12.345.678/0001-95",
-      "Empresa A duplicada;00.000.000/0001-91",
+      "Empresa A duplicada;11.222.333/0001-81",
     ].join("\n");
 
     const result = await processCsv(csv, provider, {
@@ -97,13 +97,13 @@ describe("processCsv execution ledger resume", () => {
       resumedUniqueLookups: 1,
     });
     expect(result.outputCsv).toContain(
-      "Empresa A;00.000.000/0001-91;00.000.000/0001-91;00000000000191;Sim;Sim;Não;SUCCESS;mock;;2",
+      "Empresa A;11.222.333/0001-81;11.222.333/0001-81;11222333000181;Sim;Sim;Não;SUCCESS;mock;;2",
     );
   });
 
   it("does not restore retryable checkpoint statuses from previous executions", async () => {
     const retryableResult: SimplesLookupResult = {
-      cnpj: "00000000000191",
+      cnpj: "11222333000181",
       simplesNacional: null,
       simei: null,
       source: "cnpja-open",
@@ -119,13 +119,13 @@ describe("processCsv execution ledger resume", () => {
       source: "mock",
       status: "SUCCESS",
     }));
-    const csv = ["nome;cnpj", "Empresa A;00.000.000/0001-91"].join("\n");
+    const csv = ["nome;cnpj", "Empresa A;11.222.333/0001-81"].join("\n");
 
     const result = await processCsv(csv, provider, {
       executionLedger: ledger,
     });
 
-    expect(provider.lookups).toEqual(["00000000000191"]);
+    expect(provider.lookups).toEqual(["11222333000181"]);
     expect(result.summary.totalCnpjsRetomados).toBe(0);
     expect(result.outputCsv).toContain(";SUCCESS;mock;");
   });
@@ -141,15 +141,15 @@ describe("processCsv execution ledger resume", () => {
     }));
     const csv = [
       "nome;cnpj",
-      "Empresa A;00.000.000/0001-91",
-      "Empresa A duplicada;00.000.000/0001-91",
+      "Empresa A;11.222.333/0001-81",
+      "Empresa A duplicada;11.222.333/0001-81",
     ].join("\n");
 
     const result = await processCsv(csv, provider, {
       executionLedger: ledger,
     });
 
-    expect(provider.lookups).toEqual(["00000000000191"]);
+    expect(provider.lookups).toEqual(["11222333000181"]);
     expect(ledger.savedResults).toEqual([]);
     expect(result.summary.totalCnpjsUnicosConsultados).toBe(1);
     expect(result.outputCsv).toContain(";TEMPORARY_ERROR;cnpja-open;");

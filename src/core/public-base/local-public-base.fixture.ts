@@ -24,22 +24,22 @@ export const LOCAL_PUBLIC_BASE_STATUS: LocalPublicBaseStatus = {
 
 export const LOCAL_PUBLIC_BASE_RECORDS: readonly LocalPublicBaseRecord[] = [
   {
-    cnpj: "00000000000191",
-    razaoSocial: "Banco do Brasil S.A.",
+    cnpj: "11222333000181",
+    razaoSocial: "Empresa Alfa Demo Ltda.",
     simplesNacional: true,
     simei: false,
     updatedAt: LOCAL_PUBLIC_BASE_SAMPLE_DATE,
   },
   {
-    cnpj: "33000167000101",
-    razaoSocial: "Petróleo Brasileiro S.A. Petrobras",
+    cnpj: "98765432000198",
+    razaoSocial: "Empresa Beta Demo Ltda.",
     simplesNacional: false,
     simei: false,
     updatedAt: LOCAL_PUBLIC_BASE_SAMPLE_DATE,
   },
   {
-    cnpj: "00360305000104",
-    razaoSocial: "Caixa Econômica Federal",
+    cnpj: "12345678000195",
+    razaoSocial: "Empresa Gama Demo Ltda.",
     simplesNacional: false,
     simei: false,
     updatedAt: LOCAL_PUBLIC_BASE_SAMPLE_DATE,

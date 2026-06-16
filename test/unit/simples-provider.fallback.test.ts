@@ -10,7 +10,7 @@ function result(
   status: SimplesLookupResult["status"],
 ): SimplesLookupResult {
   return {
-    cnpj: "03426484000123",
+    cnpj: "44555666000181",
     simplesNacional: status === "SUCCESS" ? true : null,
     simei: status === "SUCCESS" ? false : null,
     source,
@@ -47,7 +47,7 @@ describe("SimplesFallbackLookupAdapter", () => {
       },
     );
 
-    await expect(adapter.lookup("03426484000123")).resolves.toMatchObject({
+    await expect(adapter.lookup("44555666000181")).resolves.toMatchObject({
       source: SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL,
       status: "SUCCESS",
     });
@@ -71,7 +71,7 @@ describe("SimplesFallbackLookupAdapter", () => {
       },
     );
 
-    await expect(adapter.lookup("03426484000123")).resolves.toMatchObject({
+    await expect(adapter.lookup("44555666000181")).resolves.toMatchObject({
       source: SIMPLES_PROVIDER.CNPJA_OPEN,
       status: "NOT_FOUND",
     });
@@ -94,7 +94,7 @@ describe("SimplesFallbackLookupAdapter", () => {
       },
     );
 
-    await expect(adapter.lookup("03426484000123")).resolves.toMatchObject({
+    await expect(adapter.lookup("44555666000181")).resolves.toMatchObject({
       source: SIMPLES_PROVIDER.CNPJA_OPEN,
       status: "TEMPORARY_ERROR",
     });
@@ -112,7 +112,7 @@ describe("SimplesFallbackLookupAdapter", () => {
         providerName === SIMPLES_PROVIDER.RECEITA_WEB ? receitaWeb : mock,
     );
 
-    await expect(adapter.lookup("03426484000123")).resolves.toMatchObject({
+    await expect(adapter.lookup("44555666000181")).resolves.toMatchObject({
       source: SIMPLES_PROVIDER.RECEITA_WEB,
       status: "TEMPORARY_ERROR",
     });
@@ -131,7 +131,7 @@ describe("SimplesFallbackLookupAdapter", () => {
         providerName === SIMPLES_PROVIDER.MOCK ? mock : localBase,
     );
 
-    await expect(adapter.lookup("03426484000123")).resolves.toMatchObject({
+    await expect(adapter.lookup("44555666000181")).resolves.toMatchObject({
       source: SIMPLES_PROVIDER.MOCK,
       status: "SUCCESS",
     });

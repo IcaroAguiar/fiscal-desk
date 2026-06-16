@@ -19,7 +19,7 @@ describe("ingestFiscalCsv", () => {
     const batch = ingestFiscalCsv(
       [
         "CNPJ;Nome",
-        "03.426.484/0001-23;Empresa A",
+        "44.555.666/0001-81;Empresa A",
         "11.222.333/0001-81;Empresa B",
       ].join("\n"),
       {
@@ -44,10 +44,10 @@ describe("ingestFiscalCsv", () => {
     });
     expect(batch.entries).toEqual([
       {
-        cnpjNormalizado: "03426484000123",
-        cnpjOriginal: "03.426.484/0001-23",
+        cnpjNormalizado: "44555666000181",
+        cnpjOriginal: "44.555.666/0001-81",
         row: {
-          CNPJ: "03.426.484/0001-23",
+          CNPJ: "44.555.666/0001-81",
           Nome: "Empresa A",
         },
         rowNumber: 2,
@@ -69,9 +69,9 @@ describe("ingestFiscalCsv", () => {
     const batch = ingestFiscalCsv(
       [
         "cnpj;nome",
-        "03.426.484/0001-23;Empresa A",
+        "44.555.666/0001-81;Empresa A",
         "abc;Empresa invalida",
-        "03.426.484/0001-23;Empresa duplicada",
+        "44.555.666/0001-81;Empresa duplicada",
       ].join("\n"),
       {
         receivedAt: RECEIVED_AT,
@@ -79,7 +79,7 @@ describe("ingestFiscalCsv", () => {
     );
 
     expect(batch.entries.map((entry) => entry.cnpjNormalizado)).toEqual([
-      "03426484000123",
+      "44555666000181",
     ]);
     expect(batch.summary).toMatchObject({
       duplicateCnpjs: 1,
@@ -99,8 +99,8 @@ describe("ingestFiscalCsv", () => {
         severity: FISCAL_INGESTION_ISSUE_SEVERITY.ERROR,
       },
       {
-        cnpjNormalizado: "03426484000123",
-        cnpjOriginal: "03.426.484/0001-23",
+        cnpjNormalizado: "44555666000181",
+        cnpjOriginal: "44.555.666/0001-81",
         kind: FISCAL_INGESTION_ISSUE_KIND.DUPLICATE_CNPJ,
         message:
           "CNPJ repetido. A consulta será reaproveitada da primeira ocorrência válida.",
@@ -174,7 +174,7 @@ describe("ingestFiscalXlsx", () => {
         name: "Clientes",
         rows: [
           ["CNPJ", "Nome"],
-          ["03.426.484/0001-23", "Empresa A"],
+          ["44.555.666/0001-81", "Empresa A"],
           ["11.222.333/0001-81", "Empresa B"],
         ],
       },
@@ -201,10 +201,10 @@ describe("ingestFiscalXlsx", () => {
     });
     expect(batch.entries).toEqual([
       {
-        cnpjNormalizado: "03426484000123",
-        cnpjOriginal: "03.426.484/0001-23",
+        cnpjNormalizado: "44555666000181",
+        cnpjOriginal: "44.555.666/0001-81",
         row: {
-          CNPJ: "03.426.484/0001-23",
+          CNPJ: "44.555.666/0001-81",
           Nome: "Empresa A",
         },
         rowNumber: 2,
@@ -228,9 +228,9 @@ describe("ingestFiscalXlsx", () => {
         name: "Clientes",
         rows: [
           ["cnpj", "nome"],
-          ["03.426.484/0001-23", "Empresa A"],
+          ["44.555.666/0001-81", "Empresa A"],
           ["abc", "Empresa invalida"],
-          ["03.426.484/0001-23", "Empresa duplicada"],
+          ["44.555.666/0001-81", "Empresa duplicada"],
         ],
       },
     ]);
@@ -240,7 +240,7 @@ describe("ingestFiscalXlsx", () => {
     });
 
     expect(batch.entries.map((entry) => entry.cnpjNormalizado)).toEqual([
-      "03426484000123",
+      "44555666000181",
     ]);
     expect(batch.summary).toMatchObject({
       duplicateCnpjs: 1,
@@ -297,7 +297,7 @@ describe("ingestFiscalXlsx", () => {
     const input = await createWorkbookBuffer([
       {
         name: "Clientes",
-        rows: [["CNPJ"], ["03.426.484/0001-23"]],
+        rows: [["CNPJ"], ["44.555.666/0001-81"]],
       },
     ]);
 

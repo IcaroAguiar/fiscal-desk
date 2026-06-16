@@ -178,7 +178,7 @@ export type SimplesProviderName = "mock" | "cnpja-open" | "receita-web";
 ### Por Fase
 
 **Fase 1:**
-- Spike executa com 1-3 CNPJs reais
+- Spike executa com 1-3 CNPJs sintéticos
 - Evidências salvas
 - Resultado documentado
 

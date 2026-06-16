@@ -744,20 +744,20 @@ describe("Base Pública Local", () => {
   it("indexes known public fixture records by normalized CNPJ", () => {
     const index = createLocalPublicBaseIndex();
 
-    expect(index.findByCnpj("00000000000191")).toMatchObject({
-      cnpj: "00000000000191",
-      razaoSocial: "Banco do Brasil S.A.",
+    expect(index.findByCnpj("11222333000181")).toMatchObject({
+      cnpj: "11222333000181",
+      razaoSocial: "Empresa Alfa Demo Ltda.",
       simplesNacional: true,
       simei: false,
     });
-    expect(index.findByCnpj("11222333000181")).toBeNull();
+    expect(index.findByCnpj("22333444000181")).toBeNull();
   });
 
   it("returns Resultado Simples with Data da Base for known and missing CNPJs", async () => {
     const prepared = prepareLocalPublicBaseFromCsv({
       content: [
         "cnpj;razao_social;simples_nacional;simei;data_base",
-        "00000000000191;Banco do Brasil S.A.;sim;nao;2026-05-20",
+        "11222333000181;Empresa Alfa Demo Ltda.;sim;nao;2026-05-20",
       ].join("\n"),
       consent: acceptedConsent,
       sourceFileName: "base.csv",
@@ -769,8 +769,8 @@ describe("Base Pública Local", () => {
       prepared.status,
     );
 
-    await expect(adapter.lookup("00.000.000/0001-91")).resolves.toMatchObject({
-      cnpj: "00000000000191",
+    await expect(adapter.lookup("11.222.333/0001-81")).resolves.toMatchObject({
+      cnpj: "11222333000181",
       simplesNacional: true,
       simei: false,
       source: "base-publica-local",
@@ -792,8 +792,8 @@ describe("Base Pública Local", () => {
       },
     });
 
-    await expect(adapter.lookup("11222333000181")).resolves.toMatchObject({
-      cnpj: "11222333000181",
+    await expect(adapter.lookup("22333444000181")).resolves.toMatchObject({
+      cnpj: "22333444000181",
       simplesNacional: null,
       simei: null,
       source: "base-publica-local",
@@ -828,14 +828,14 @@ describe("Base Pública Local", () => {
       },
     });
     expect(prepared.status.freshnessWarning).toContain("defasada");
-    await expect(adapter.lookup("33000167000101")).resolves.toMatchObject({
+    await expect(adapter.lookup("98765432000198")).resolves.toMatchObject({
       simplesNacional: false,
       simei: false,
       source: "base-publica-local",
       status: "SUCCESS",
       raw: {
         baseDate: "2026-05-20",
-        razaoSocial: "Petróleo Brasileiro S.A. Petrobras",
+        razaoSocial: "Empresa Beta Demo Ltda.",
       },
     });
   });
@@ -855,8 +855,8 @@ describe("Base Pública Local", () => {
     const prepared = prepareLocalPublicBaseFromCsv({
       content: [
         "cnpj;razao_social;simples_nacional;simei;data_base",
-        "00.000.000/0001-91;Banco do Brasil S.A.;sim;nao;2026-05-20",
-        "33.000.167/0001-01;Petrobras;nao;nao;2026-05-20",
+        "11.222.333/0001-81;Empresa Alfa Demo Ltda.;sim;nao;2026-05-20",
+        "98.765.432/0001-98;Empresa Beta Demo;nao;nao;2026-05-20",
         "invalido;Linha invalida;sim;nao;2026-05-20",
       ].join("\n"),
       consent: acceptedConsent,
@@ -886,7 +886,7 @@ describe("Base Pública Local", () => {
     const result = await store.prepareFromCsv({
       content: [
         "cnpj;razao_social;simples_nacional;simei;data_base",
-        "00000000000191;Banco do Brasil S.A.;sim;nao;2026-05-20",
+        "11222333000181;Empresa Alfa Demo Ltda.;sim;nao;2026-05-20",
       ].join("\n"),
       consent: acceptedConsent,
       sourceFileName: "base.csv",
@@ -902,8 +902,8 @@ describe("Base Pública Local", () => {
       sourceFileName: "base.csv",
       state: "ready",
     });
-    expect(index?.findByCnpj("00000000000191")).toMatchObject({
-      razaoSocial: "Banco do Brasil S.A.",
+    expect(index?.findByCnpj("11222333000181")).toMatchObject({
+      razaoSocial: "Empresa Alfa Demo Ltda.",
     });
   });
 
@@ -915,7 +915,7 @@ describe("Base Pública Local", () => {
     await store.prepareFromCsv({
       content: [
         "cnpj;razao_social;simples_nacional;simei;data_base",
-        "00000000000191;Banco do Brasil S.A.;sim;nao;2026-05-20",
+        "11222333000181;Empresa Alfa Demo Ltda.;sim;nao;2026-05-20",
       ].join("\n"),
       consent: acceptedConsent,
       sourceFileName: "base-valida.csv",
@@ -956,7 +956,7 @@ describe("Base Pública Local", () => {
       store.prepareFromCsv({
         content: [
           "cnpj;razao_social;simples_nacional;simei;data_base",
-          "00000000000191;Banco do Brasil S.A.;sim;nao;2026-05-20",
+          "11222333000181;Empresa Alfa Demo Ltda.;sim;nao;2026-05-20",
         ].join("\n"),
         sourceFileName: "base-sem-consentimento.csv",
         sourceFilePath: join(directory, "base-sem-consentimento.csv"),
@@ -987,7 +987,7 @@ describe("Base Pública Local", () => {
         rejectedRows: 0,
         sourceSizeBytes: 10,
         errorMessage: null,
-        records: [{ cnpj: "00000000000191" }],
+        records: [{ cnpj: "11222333000181" }],
       })}\n`,
       "utf8",
     );
@@ -1020,7 +1020,7 @@ describe("Base Pública Local", () => {
     expect(JSON.stringify(warnings)).not.toContain(
       localPublicBaseIndexFileName,
     );
-    expect(JSON.stringify(warnings)).not.toContain("00000000000191");
+    expect(JSON.stringify(warnings)).not.toContain("11222333000181");
     expect(JSON.stringify(warnings)).not.toContain("malformada.csv");
   });
 
@@ -1031,7 +1031,7 @@ describe("Base Pública Local", () => {
     await mkdir(directory, { recursive: true });
     await writeFile(
       join(directory, localPublicBaseIndexFileName),
-      "{ raw payload with CNPJ 00000000000191 and Razao Social }\n",
+      "{ raw payload with CNPJ 11222333000181 and Razao Social }\n",
       "utf8",
     );
 
@@ -1055,7 +1055,7 @@ describe("Base Pública Local", () => {
     ]);
     expect(JSON.stringify(warnings)).not.toContain(directory);
     expect(JSON.stringify(warnings)).not.toContain("raw payload");
-    expect(JSON.stringify(warnings)).not.toContain("00000000000191");
+    expect(JSON.stringify(warnings)).not.toContain("11222333000181");
     expect(JSON.stringify(warnings)).not.toContain("Razao Social");
   });
 

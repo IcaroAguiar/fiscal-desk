@@ -24,10 +24,10 @@ describe("Fiscal Desk F6 contracts", () => {
     const batch = {
       entries: [
         {
-          cnpjNormalizado: "00000000000191",
-          cnpjOriginal: "00.000.000/0001-91",
+          cnpjNormalizado: "11222333000181",
+          cnpjOriginal: "11.222.333/0001-81",
           row: {
-            cnpj: "00.000.000/0001-91",
+            cnpj: "11.222.333/0001-81",
             razao_social: "Empresa exemplo",
           },
           rowNumber: 1,
@@ -43,8 +43,8 @@ describe("Fiscal Desk F6 contracts", () => {
           severity: FISCAL_INGESTION_ISSUE_SEVERITY.ERROR,
         },
         {
-          cnpjNormalizado: "00000000000191",
-          cnpjOriginal: "00.000.000/0001-91",
+          cnpjNormalizado: "11222333000181",
+          cnpjOriginal: "11.222.333/0001-81",
           kind: FISCAL_INGESTION_ISSUE_KIND.DUPLICATE_CNPJ,
           message: "CNPJ duplicado na entrada",
           rowNumber: 3,
@@ -69,10 +69,10 @@ describe("Fiscal Desk F6 contracts", () => {
     expect(batch.summary.source.format).toBe("csv");
     expect(batch.entries).toEqual([
       {
-        cnpjNormalizado: "00000000000191",
-        cnpjOriginal: "00.000.000/0001-91",
+        cnpjNormalizado: "11222333000181",
+        cnpjOriginal: "11.222.333/0001-81",
         row: {
-          cnpj: "00.000.000/0001-91",
+          cnpj: "11.222.333/0001-81",
           razao_social: "Empresa exemplo",
         },
         rowNumber: 1,

@@ -116,9 +116,9 @@ describe("renderer operational copy", () => {
   });
 
   it("derives the auto-save path preview next to the source file", () => {
-    expect(
-      previewAutoSavePath("/Users/icaroaguiar/Downloads/clientes.csv"),
-    ).toBe("/Users/icaroaguiar/Downloads/clientes-processado.csv");
+    expect(previewAutoSavePath("/tmp/clientes.csv")).toBe(
+      "/tmp/clientes-processado.csv",
+    );
   });
 
   it("counts ETA down in real time without going negative", () => {

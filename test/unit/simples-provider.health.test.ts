@@ -11,7 +11,7 @@ describe("SimplesProviderHealthRegistry", () => {
     );
 
     const health = registry.recordResult(SIMPLES_PROVIDER.CNPJA_OPEN, {
-      cnpj: "03426484000123",
+      cnpj: "44555666000181",
       simplesNacional: null,
       simei: null,
       source: SIMPLES_PROVIDER.CNPJA_OPEN,

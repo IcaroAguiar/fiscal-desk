@@ -128,7 +128,7 @@ describe("process-csv IPC", () => {
         status: "SUCCESS",
         totalUniqueLookups: 1,
       },
-      outputCsv: "cnpj;status\n00000000000191;SUCCESS",
+      outputCsv: "cnpj;status\n11222333000181;SUCCESS",
       outputXlsx: null,
       runStatus: "SUCCESS",
       summary: {
@@ -226,7 +226,7 @@ describe("process-csv IPC", () => {
     await expect(
       handler?.(
         {},
-        { content: "cnpj\n47960950000121", provider: "receita-web" },
+        { content: "cnpj\n88777666000100", provider: "receita-web" },
       ),
     ).rejects.toThrow("disponível apenas no Windows");
   });
@@ -265,7 +265,7 @@ describe("process-csv IPC", () => {
 
     const processing = processHandler?.(
       { sender: { send: vi.fn() } },
-      { content: "cnpj\n00000000000191", provider: "mock" },
+      { content: "cnpj\n11222333000181", provider: "mock" },
     );
     await vi.waitFor(() => expect(processCsv).toHaveBeenCalledTimes(1));
 
@@ -287,7 +287,7 @@ describe("process-csv IPC", () => {
         status: "CANCELLED",
         totalUniqueLookups: 1,
       },
-      outputCsv: "cnpj;status\n00000000000191;CANCELLED",
+      outputCsv: "cnpj;status\n11222333000181;CANCELLED",
       outputXlsx: null,
       runStatus: "CANCELLED",
       summary: {
@@ -339,7 +339,7 @@ describe("process-csv IPC", () => {
       new Set(["11222333000181"]),
     );
     vi.mocked(readFile).mockResolvedValueOnce(
-      "cnpj\n11222333000181\n47960950000121\n11222333000181",
+      "cnpj\n11222333000181\n88777666000100\n11222333000181",
     );
     electronMocks.dialog.showSaveDialog.mockResolvedValueOnce({
       canceled: false,
@@ -363,7 +363,7 @@ describe("process-csv IPC", () => {
     );
     expect(writeFile).toHaveBeenCalledWith(
       outputPath,
-      expect.stringContaining("47960950000121"),
+      expect.stringContaining("88777666000100"),
       "utf8",
     );
     expect(String(vi.mocked(writeFile).mock.calls.at(-1)?.[1])).not.toContain(
@@ -378,7 +378,7 @@ describe("process-csv IPC", () => {
       "/tmp/fiscal-desk-test/entrada-processado-complementado.csv",
     );
     const lookup = vi.fn(async () => ({
-      cnpj: "00000000000191",
+      cnpj: "11222333000181",
       simplesNacional: true,
       simei: false,
       source: "receita-web",
@@ -412,8 +412,8 @@ describe("process-csv IPC", () => {
     vi.mocked(readFile).mockResolvedValueOnce(
       [
         "cnpj_normalizado;simples_nacional;simei;status;fonte;mensagem",
-        "00000000000191;;;NOT_FOUND;base-publica-local;nao achou",
-        "33000167000101;Não;Não;SUCCESS;base-publica-local;ok",
+        "11222333000181;;;NOT_FOUND;base-publica-local;nao achou",
+        "98765432000198;Não;Não;SUCCESS;base-publica-local;ok",
       ].join("\n"),
     );
     electronMocks.dialog.showSaveDialog.mockResolvedValueOnce({
@@ -434,7 +434,7 @@ describe("process-csv IPC", () => {
       foundByComplement: 1,
       savedPath: outputPath,
     });
-    expect(lookup).toHaveBeenCalledWith("00000000000191", undefined);
+    expect(lookup).toHaveBeenCalledWith("11222333000181", undefined);
     expect(electronMocks.dialog.showSaveDialog).toHaveBeenCalledWith(
       expect.objectContaining({
         defaultPath: join(
@@ -461,7 +461,7 @@ describe("process-csv IPC", () => {
       handler?.(
         { sender: { send: vi.fn() } },
         {
-          content: "cnpj\n00000000000191",
+          content: "cnpj\n11222333000181",
           provider: "base-publica-local",
         },
       ),
@@ -472,7 +472,7 @@ describe("process-csv IPC", () => {
         { sender: { send: vi.fn() } },
         {
           acceptedLocalPublicBaseNotice: true,
-          content: "cnpj\n00000000000191",
+          content: "cnpj\n11222333000181",
           provider: "base-publica-local",
         },
       ),
@@ -505,7 +505,7 @@ describe("process-csv IPC", () => {
       handler?.(
         {},
         {
-          content: "cnpj;status\n00000000000191;SUCCESS",
+          content: "cnpj;status\n11222333000181;SUCCESS",
           defaultName: "saida.pdf",
           format: "pdf",
         },
@@ -531,7 +531,7 @@ describe("process-csv IPC", () => {
       canceled: false,
       filePaths: [sourceFilePath],
     } as never);
-    vi.mocked(readFile).mockResolvedValue("cnpj\n47960950000121");
+    vi.mocked(readFile).mockResolvedValue("cnpj\n88777666000100");
     const pickHandler = handlers.get("csv:pick-input-file");
     const autoSaveHandler = handlers.get("csv:auto-save-output-file");
 
@@ -553,13 +553,13 @@ describe("process-csv IPC", () => {
       handler?.(
         { sender: { send: vi.fn() } },
         {
-          content: "cnpj\n47960950000121",
+          content: "cnpj\n88777666000100",
           provider: "mock",
           sourceFilePath: "/tmp/nao-confiavel.csv",
         },
       ),
     ).resolves.toMatchObject({
-      outputCsv: "cnpj;status\n00000000000191;SUCCESS",
+      outputCsv: "cnpj;status\n11222333000181;SUCCESS",
       savedPath: null,
       warningMessage: expect.stringContaining("auto-save foi ignorado"),
     });
@@ -575,7 +575,7 @@ describe("process-csv IPC", () => {
 
     const firstProcess = handler?.(
       { sender: { send: vi.fn() } },
-      { content: "cnpj\n00000000000191", provider: "mock" },
+      { content: "cnpj\n11222333000181", provider: "mock" },
     );
 
     await expect(
@@ -652,7 +652,7 @@ describe("process-csv IPC", () => {
     const handler = handlers.get("csv:resume-execution");
     const sender = { send: vi.fn() };
     const sourceFilePath = "/tmp/fiscal-desk-test/entrada.csv";
-    const content = "cnpj\n00000000000191";
+    const content = "cnpj\n11222333000181";
     const { readFile } = await import("node:fs/promises");
     vi.mocked(readFile).mockResolvedValueOnce(content);
     ledgerMocks.getRun.mockResolvedValueOnce({
@@ -705,7 +705,7 @@ describe("process-csv IPC", () => {
       canceled: false,
       filePaths: [sourceFilePath],
     } as never);
-    vi.mocked(readFile).mockResolvedValue("cnpj\n00000000000191");
+    vi.mocked(readFile).mockResolvedValue("cnpj\n11222333000181");
     await handlers.get("csv:pick-input-file")?.({});
     vi.mocked(processCsv).mockResolvedValueOnce({
       delivery: {
@@ -722,7 +722,7 @@ describe("process-csv IPC", () => {
         status: "SUCCESS",
         totalUniqueLookups: 1,
       },
-      outputCsv: "cnpj;status\n00000000000191;SUCCESS",
+      outputCsv: "cnpj;status\n11222333000181;SUCCESS",
       outputXlsx: new Uint8Array([80, 75, 3, 4]),
       runStatus: "SUCCESS",
       summary: {
@@ -739,7 +739,7 @@ describe("process-csv IPC", () => {
 
     await expect(
       handler?.(sender, {
-        content: "cnpj\n00000000000191",
+        content: "cnpj\n11222333000181",
         deliveryFormat: "xlsx",
         provider: "mock",
         sourceFilePath,
@@ -754,7 +754,7 @@ describe("process-csv IPC", () => {
 
     expect(processCsv).toHaveBeenCalledWith(
       {
-        content: "cnpj\n00000000000191",
+        content: "cnpj\n11222333000181",
         format: "csv",
         sourceFilePath,
       },

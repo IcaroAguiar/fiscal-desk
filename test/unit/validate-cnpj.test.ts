@@ -4,7 +4,7 @@ import { validateCnpj } from "../../src/core/cnpj/validate-cnpj";
 
 describe("validateCnpj", () => {
   it("accepts a valid CNPJ", () => {
-    expect(validateCnpj("03426484000123")).toBe(true);
+    expect(validateCnpj("44555666000181")).toBe(true);
   });
 
   it("rejects invalid repeated digits", () => {

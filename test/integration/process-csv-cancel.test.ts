@@ -36,8 +36,8 @@ describe("processCsv cancellation", () => {
     const csv = [
       "nome;cpf_cnpj",
       "Empresa A;11.222.333/0001-81",
-      "Empresa B;03.426.484/0001-23",
-      "Empresa C;61.741.631/0001-56",
+      "Empresa B;44.555.666/0001-81",
+      "Empresa C;55.666.777/0001-81",
     ].join("\n");
     const adapter = new SlowFakeLookupAdapter();
     const controller = new AbortController();
@@ -61,7 +61,7 @@ describe("processCsv cancellation", () => {
     const csv = [
       "nome;cpf_cnpj",
       "Empresa A;11.222.333/0001-81",
-      "Empresa B;03.426.484/0001-23",
+      "Empresa B;44.555.666/0001-81",
     ].join("\n");
     const adapter = new SlowFakeLookupAdapter();
     const controller = new AbortController();

@@ -8,7 +8,7 @@ import {
 describe("mapCnpjaOfficeResponse", () => {
   it("maps simples and simei from the provider payload", () => {
     const result = mapCnpjaOfficeResponse({
-      taxId: "03426484000123",
+      taxId: "44555666000181",
       company: {
         simples: { optant: false, since: null },
         simei: { optant: false, since: null },
@@ -16,7 +16,7 @@ describe("mapCnpjaOfficeResponse", () => {
     });
 
     expect(result).toMatchObject({
-      cnpj: "03426484000123",
+      cnpj: "44555666000181",
       simplesNacional: false,
       simei: false,
       source: "cnpja-open",
@@ -26,12 +26,12 @@ describe("mapCnpjaOfficeResponse", () => {
 
   it("treats missing simples data as permanent error", () => {
     const result = mapCnpjaOfficeResponse({
-      taxId: "03426484000123",
+      taxId: "44555666000181",
       company: {},
     });
 
     expect(result).toMatchObject({
-      cnpj: "03426484000123",
+      cnpj: "44555666000181",
       status: "PERMANENT_ERROR",
       source: "cnpja-open",
     });
@@ -40,21 +40,21 @@ describe("mapCnpjaOfficeResponse", () => {
 
 describe("mapCnpjaResponseError", () => {
   it("maps 404 to not found", () => {
-    expect(mapCnpjaResponseError("03426484000123", 404)).toMatchObject({
+    expect(mapCnpjaResponseError("44555666000181", 404)).toMatchObject({
       status: "NOT_FOUND",
       source: "cnpja-open",
     });
   });
 
   it("maps 429 to temporary error", () => {
-    expect(mapCnpjaResponseError("03426484000123", 429)).toMatchObject({
+    expect(mapCnpjaResponseError("44555666000181", 429)).toMatchObject({
       status: "TEMPORARY_ERROR",
       source: "cnpja-open",
     });
   });
 
   it("maps 400 to permanent error", () => {
-    expect(mapCnpjaResponseError("03426484000123", 400)).toMatchObject({
+    expect(mapCnpjaResponseError("44555666000181", 400)).toMatchObject({
       status: "PERMANENT_ERROR",
       source: "cnpja-open",
     });

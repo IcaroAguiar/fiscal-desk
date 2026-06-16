@@ -115,7 +115,7 @@ describe("process-csv IPC delivery selection", () => {
         status: "SUCCESS",
         totalUniqueLookups: 1,
       },
-      outputCsv: "cnpj;status\n00000000000191;SUCCESS",
+      outputCsv: "cnpj;status\n11222333000181;SUCCESS",
       outputXlsx: null,
       runStatus: "SUCCESS",
       summary: {
@@ -184,7 +184,7 @@ describe("process-csv IPC delivery selection", () => {
       handler?.(
         { sender: { send: vi.fn() } },
         {
-          content: "cnpj\n00000000000191",
+          content: "cnpj\n11222333000181",
           provider: SIMPLES_PROVIDER.RECEITA_WEB_PARALLEL_EXPERIMENTAL,
         },
       ),
@@ -201,7 +201,7 @@ describe("process-csv IPC delivery selection", () => {
       { sender: { send: vi.fn() } },
       {
         acceptedReceitaWebExperimentalNotice: true,
-        content: "cnpj\n00000000000191",
+        content: "cnpj\n11222333000181",
         executionSpeedProfile: PROCESS_CSV_EXECUTION_SPEED_PROFILE.FAST,
         provider: SIMPLES_PROVIDER.RECEITA_WEB_PARALLEL_EXPERIMENTAL,
       },
@@ -225,7 +225,7 @@ describe("process-csv IPC delivery selection", () => {
       handler?.(
         { sender: { send: vi.fn() } },
         {
-          content: "cnpj\n00000000000191",
+          content: "cnpj\n11222333000181",
           deliveryFormat: "pdf",
           provider: "mock",
         },
@@ -243,7 +243,7 @@ describe("process-csv IPC delivery selection", () => {
       handler?.(
         { sender: { send: vi.fn() } },
         {
-          content: "cnpj\n00000000000191",
+          content: "cnpj\n11222333000181",
           deliveryOptionId: PROCESS_CSV_DELIVERY_OPTION_ID.PRESERVE_COLUMNS_CSV,
           provider: "mock",
         },
@@ -257,7 +257,7 @@ describe("process-csv IPC delivery selection", () => {
 
     expect(processCsv).toHaveBeenCalledWith(
       {
-        content: "cnpj\n00000000000191",
+        content: "cnpj\n11222333000181",
         format: "csv",
       },
       expect.any(Object),
@@ -274,7 +274,7 @@ describe("process-csv IPC delivery selection", () => {
     await handler?.(
       { sender: { send: vi.fn() } },
       {
-        content: "cnpj\n00000000000191",
+        content: "cnpj\n11222333000181",
         executionSpeedProfile: PROCESS_CSV_EXECUTION_SPEED_PROFILE.FAST,
         provider: SIMPLES_PROVIDER.MOCK,
       },
@@ -306,7 +306,7 @@ describe("process-csv IPC delivery selection", () => {
         status: "SUCCESS",
         totalUniqueLookups: 1,
       },
-      outputCsv: "cnpj;status\n00000000000191;SUCCESS",
+      outputCsv: "cnpj;status\n11222333000181;SUCCESS",
       outputXlsx: new Uint8Array([80, 75, 3, 4]),
       runStatus: "SUCCESS",
       summary: {
@@ -325,7 +325,7 @@ describe("process-csv IPC delivery selection", () => {
       handler?.(
         { sender: { send: vi.fn() } },
         {
-          content: "cnpj\n00000000000191",
+          content: "cnpj\n11222333000181",
           deliveryOptionId:
             PROCESS_CSV_DELIVERY_OPTION_ID.CURRENT_RESULT_WORKBOOK,
           provider: "mock",
@@ -340,7 +340,7 @@ describe("process-csv IPC delivery selection", () => {
 
     expect(processCsv).toHaveBeenCalledWith(
       {
-        content: "cnpj\n00000000000191",
+        content: "cnpj\n11222333000181",
         format: "csv",
       },
       expect.any(Object),
@@ -383,7 +383,7 @@ describe("process-csv IPC delivery selection", () => {
       handler?.(
         { sender: { send: vi.fn() } },
         {
-          content: "cnpj\n00000000000191",
+          content: "cnpj\n11222333000181",
           deliveryOptionId,
           provider: "mock",
         },
@@ -433,7 +433,7 @@ describe("process-csv IPC delivery selection", () => {
       handler?.(
         {},
         {
-          content: "cnpj;status\n00000000000191;SUCCESS",
+          content: "cnpj;status\n11222333000181;SUCCESS",
           defaultName: "saida.pdf",
           format: "pdf",
         },

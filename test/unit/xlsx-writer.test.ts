@@ -10,7 +10,7 @@ describe("writeXlsxWorkbook", () => {
       generatedAt: new Date("2026-05-20T12:00:00.000Z"),
       rows: [
         {
-          cnpj_normalizado: "00000000000191",
+          cnpj_normalizado: "11222333000181",
           empresa: "Empresa A",
           mensagem: "",
           status: "SUCCESS",

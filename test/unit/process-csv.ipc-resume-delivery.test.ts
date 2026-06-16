@@ -125,7 +125,7 @@ describe("process-csv IPC", () => {
         status: "SUCCESS",
         totalUniqueLookups: 1,
       },
-      outputCsv: "cnpj;status\n00000000000191;SUCCESS",
+      outputCsv: "cnpj;status\n11222333000181;SUCCESS",
       outputXlsx: null,
       runStatus: "SUCCESS",
       summary: {
@@ -157,7 +157,7 @@ describe("process-csv IPC", () => {
 
     const firstProcess = handler?.(
       { sender: { send: vi.fn() } },
-      { content: "cnpj\n00000000000191", provider: "mock" },
+      { content: "cnpj\n11222333000181", provider: "mock" },
     );
 
     await expect(
@@ -183,7 +183,7 @@ describe("process-csv IPC", () => {
       canceled: false,
       filePaths: [sourceFilePath],
     } as never);
-    vi.mocked(readFile).mockResolvedValue("cnpj\n00000000000191");
+    vi.mocked(readFile).mockResolvedValue("cnpj\n11222333000181");
     await handlers.get("csv:pick-input-file")?.({});
 
     vi.mocked(processCsv).mockImplementationOnce(
@@ -215,7 +215,7 @@ describe("process-csv IPC", () => {
             status: "SUCCESS",
             totalUniqueLookups: 1,
           },
-          outputCsv: "cnpj;status\n00000000000191;SUCCESS",
+          outputCsv: "cnpj;status\n11222333000181;SUCCESS",
           outputXlsx: new Uint8Array([80, 75, 3, 4]),
           runStatus: "SUCCESS",
           summary: {
@@ -237,7 +237,7 @@ describe("process-csv IPC", () => {
         handler?.(
           { sender },
           {
-            content: "cnpj\n00000000000191",
+            content: "cnpj\n11222333000181",
             deliveryFormat: "xlsx",
             provider: "mock",
             sourceFilePath,
@@ -276,7 +276,7 @@ describe("process-csv IPC", () => {
           runStatus: "SUCCESS",
         }),
       );
-      expect(serializedLogs).not.toContain("00000000000191");
+      expect(serializedLogs).not.toContain("11222333000181");
       expect(serializedLogs).not.toContain("/tmp/fiscal-desk-test");
       expect(serializedLogs).not.toContain("sourceFilePath");
       expect(serializedLogs).not.toContain("savedPath");
@@ -375,7 +375,7 @@ describe("process-csv IPC", () => {
     const handler = handlers.get("csv:resume-execution");
     const sender = { send: vi.fn() };
     const sourceFilePath = "/tmp/fiscal-desk-test/entrada.csv";
-    const content = "cnpj\n00000000000191";
+    const content = "cnpj\n11222333000181";
     const { readFile } = await import("node:fs/promises");
     vi.mocked(readFile).mockResolvedValueOnce(content);
     ledgerMocks.getRun.mockResolvedValueOnce({
@@ -423,7 +423,7 @@ describe("process-csv IPC", () => {
     const handler = handlers.get("csv:resume-execution");
     const sender = { send: vi.fn() };
     const sourceFilePath = "/tmp/fiscal-desk-test/entrada.csv";
-    const content = "cnpj\n00000000000191";
+    const content = "cnpj\n11222333000181";
     const { readFile } = await import("node:fs/promises");
     vi.mocked(readFile).mockResolvedValueOnce(content);
     ledgerMocks.getRun.mockResolvedValueOnce({
@@ -470,7 +470,7 @@ describe("process-csv IPC", () => {
       canceled: false,
       filePaths: [sourceFilePath],
     } as never);
-    vi.mocked(readFile).mockResolvedValue("cnpj\n00000000000191");
+    vi.mocked(readFile).mockResolvedValue("cnpj\n11222333000181");
     await handlers.get("csv:pick-input-file")?.({});
 
     vi.mocked(processCsv).mockResolvedValueOnce({
@@ -488,7 +488,7 @@ describe("process-csv IPC", () => {
         status: "SUCCESS",
         totalUniqueLookups: 1,
       },
-      outputCsv: "cnpj;status\n00000000000191;SUCCESS",
+      outputCsv: "cnpj;status\n11222333000181;SUCCESS",
       outputXlsx: new Uint8Array([80, 75, 3, 4]),
       runStatus: "SUCCESS",
       summary: {
@@ -505,7 +505,7 @@ describe("process-csv IPC", () => {
 
     await expect(
       handler?.(sender, {
-        content: "cnpj\n00000000000191",
+        content: "cnpj\n11222333000181",
         deliveryFormat: "xlsx",
         provider: "mock",
         sourceFilePath,
@@ -520,7 +520,7 @@ describe("process-csv IPC", () => {
 
     expect(processCsv).toHaveBeenCalledWith(
       {
-        content: "cnpj\n00000000000191",
+        content: "cnpj\n11222333000181",
         format: "csv",
         sourceFilePath,
       },

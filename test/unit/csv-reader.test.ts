@@ -59,7 +59,7 @@ describe("readCsv", () => {
         "Tabela 1",
         ";;;;;",
         "Código Fornecedor;Nome 1;CNPJ;Concat;EXT.TEXTO;Regime",
-        "513441;PRESMET;23843196000181;PRESMET;PRESMET;Normal",
+        "513441;EMPRESA DELTA;66777888000181;EMPRESA DELTA;EMPRESA DELTA;Normal",
       ].join("\n"),
     );
 
@@ -75,10 +75,10 @@ describe("readCsv", () => {
     expect(result.rows).toEqual([
       {
         "Código Fornecedor": "513441",
-        "Nome 1": "PRESMET",
-        CNPJ: "23843196000181",
-        Concat: "PRESMET",
-        "EXT.TEXTO": "PRESMET",
+        "Nome 1": "EMPRESA DELTA",
+        CNPJ: "66777888000181",
+        Concat: "EMPRESA DELTA",
+        "EXT.TEXTO": "EMPRESA DELTA",
         Regime: "Normal",
       },
     ]);

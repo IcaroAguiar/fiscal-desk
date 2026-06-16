@@ -25,7 +25,7 @@ import {
 } from "../src/core/simples/simples-provider.names";
 
 const fixturePath = fileURLToPath(
-  new URL("../test/fixtures/smoke/cnpjs-publicos-reais.csv", import.meta.url),
+  new URL("../test/fixtures/smoke/cnpjs-sinteticos-smoke.csv", import.meta.url),
 );
 const localPublicBaseFixturePath = fileURLToPath(
   new URL("../test/fixtures/smoke/base-publica-local.csv", import.meta.url),
@@ -235,7 +235,7 @@ async function seedInterruptedExecution(): Promise<void> {
 
   await run.setTotalUniqueLookups(3);
   await run.saveLookup({
-    cnpj: "00000000000191",
+    cnpj: "11222333000181",
     simplesNacional: true,
     simei: false,
     source: smokeProvider,

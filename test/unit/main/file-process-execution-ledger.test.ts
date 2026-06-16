@@ -18,7 +18,7 @@ describe("FileProcessExecutionLedger", () => {
   it("reuses checkpoints from interrupted runs for the same input and provider", async () => {
     const directory = await mkdtemp(join(tmpdir(), "ledger-test-"));
     const ledger = new FileProcessExecutionLedger(directory);
-    const inputCsv = "cnpj\n00.000.000/0001-91\n12.345.678/0001-95";
+    const inputCsv = "cnpj\n11.222.333/0001-81\n12.345.678/0001-95";
     const sourceFilePath = join(directory, "entrada.csv");
 
     const firstRun = await ledger.startRun({
@@ -28,7 +28,7 @@ describe("FileProcessExecutionLedger", () => {
     });
     await firstRun.setTotalUniqueLookups(2);
     await firstRun.saveLookup({
-      cnpj: "00000000000191",
+      cnpj: "11222333000181",
       simplesNacional: true,
       simei: false,
       source: "mock",
@@ -47,9 +47,9 @@ describe("FileProcessExecutionLedger", () => {
     });
 
     await expect(
-      secondRun.restoreLookup("00000000000191"),
+      secondRun.restoreLookup("11222333000181"),
     ).resolves.toMatchObject({
-      cnpj: "00000000000191",
+      cnpj: "11222333000181",
       status: "SUCCESS",
     });
     expect(secondRun.runId).not.toBe(firstRun.runId);
@@ -58,18 +58,18 @@ describe("FileProcessExecutionLedger", () => {
   it("persists sanitized lookup checkpoints without provider raw payload", async () => {
     const directory = await mkdtemp(join(tmpdir(), "ledger-test-"));
     const ledger = new FileProcessExecutionLedger(directory);
-    const inputCsv = "cnpj\n00.000.000/0001-91";
+    const inputCsv = "cnpj\n11.222.333/0001-81";
 
     const firstRun = await ledger.startRun({
       inputCsv,
       providerName: "base-publica-local",
     });
     await firstRun.saveLookup({
-      cnpj: "00000000000191",
+      cnpj: "11222333000181",
       message: "Base Pública Local 2026-01-01: Empresa Sensivel Ltda.",
       raw: {
         providerResponse: {
-          cnpj: "00000000000191",
+          cnpj: "11222333000181",
           razaoSocial: "Empresa Sensivel Ltda.",
         },
       },
@@ -96,9 +96,9 @@ describe("FileProcessExecutionLedger", () => {
     });
 
     await expect(
-      secondRun.restoreLookup("00000000000191"),
+      secondRun.restoreLookup("11222333000181"),
     ).resolves.toStrictEqual({
-      cnpj: "00000000000191",
+      cnpj: "11222333000181",
       simplesNacional: true,
       simei: false,
       source: "base-publica-local",
@@ -109,7 +109,7 @@ describe("FileProcessExecutionLedger", () => {
   it("sanitizes legacy checkpoints before reuse and rewrites unsafe payloads", async () => {
     const directory = await mkdtemp(join(tmpdir(), "ledger-test-"));
     const ledger = new FileProcessExecutionLedger(directory);
-    const inputCsv = "cnpj\n00.000.000/0001-91\n12.345.678/0001-95";
+    const inputCsv = "cnpj\n11.222.333/0001-81\n12.345.678/0001-95";
 
     const firstRun = await ledger.startRun({
       inputCsv,
@@ -117,7 +117,7 @@ describe("FileProcessExecutionLedger", () => {
     });
     await firstRun.setTotalUniqueLookups(2);
     await firstRun.saveLookup({
-      cnpj: "00000000000191",
+      cnpj: "11222333000181",
       simplesNacional: true,
       simei: false,
       source: "base-publica-local",
@@ -134,14 +134,14 @@ describe("FileProcessExecutionLedger", () => {
     ) as {
       checkpoints: Record<string, unknown>;
     };
-    legacyDocument.checkpoints["00000000000191"] = {
+    legacyDocument.checkpoints["11222333000181"] = {
       completedAt: new Date().toISOString(),
       result: {
-        cnpj: "00000000000191",
+        cnpj: "11222333000181",
         message: "Base Pública Local 2026-01-01: Empresa Legada S.A.",
         raw: {
           providerResponse: {
-            cnpj: "00000000000191",
+            cnpj: "11222333000181",
             razaoSocial: "Empresa Legada S.A.",
           },
         },
@@ -175,9 +175,9 @@ describe("FileProcessExecutionLedger", () => {
     });
 
     await expect(
-      secondRun.restoreLookup("00000000000191"),
+      secondRun.restoreLookup("11222333000181"),
     ).resolves.toStrictEqual({
-      cnpj: "00000000000191",
+      cnpj: "11222333000181",
       simplesNacional: true,
       simei: false,
       source: "base-publica-local",
@@ -198,14 +198,14 @@ describe("FileProcessExecutionLedger", () => {
   it("does not reuse checkpoints from completed runs", async () => {
     const directory = await mkdtemp(join(tmpdir(), "ledger-test-"));
     const ledger = new FileProcessExecutionLedger(directory);
-    const inputCsv = "cnpj\n00.000.000/0001-91";
+    const inputCsv = "cnpj\n11.222.333/0001-81";
 
     const firstRun = await ledger.startRun({
       inputCsv,
       providerName: "mock",
     });
     await firstRun.saveLookup({
-      cnpj: "00000000000191",
+      cnpj: "11222333000181",
       simplesNacional: true,
       simei: false,
       source: "mock",
@@ -222,13 +222,13 @@ describe("FileProcessExecutionLedger", () => {
       providerName: "mock",
     });
 
-    await expect(secondRun.restoreLookup("00000000000191")).resolves.toBeNull();
+    await expect(secondRun.restoreLookup("11222333000181")).resolves.toBeNull();
   });
 
   it("uses the requested cnpj column in the execution fingerprint", async () => {
     const directory = await mkdtemp(join(tmpdir(), "ledger-test-"));
     const ledger = new FileProcessExecutionLedger(directory);
-    const inputCsv = "cnpj_a;cnpj_b\n00.000.000/0001-91;12.345.678/0001-95";
+    const inputCsv = "cnpj_a;cnpj_b\n11.222.333/0001-81;12.345.678/0001-95";
 
     const firstRun = await ledger.startRun({
       cnpjColumn: "cnpj_a",
@@ -236,7 +236,7 @@ describe("FileProcessExecutionLedger", () => {
       providerName: "mock",
     });
     await firstRun.saveLookup({
-      cnpj: "00000000000191",
+      cnpj: "11222333000181",
       simplesNacional: true,
       simei: false,
       source: "mock",
@@ -254,14 +254,14 @@ describe("FileProcessExecutionLedger", () => {
       providerName: "mock",
     });
 
-    await expect(secondRun.restoreLookup("00000000000191")).resolves.toBeNull();
+    await expect(secondRun.restoreLookup("11222333000181")).resolves.toBeNull();
     expect(secondRun.checkpointPath).not.toBe(firstRun.checkpointPath);
   });
 
   it("separates CSV and XLSX checkpoints in the execution fingerprint", async () => {
     const directory = await mkdtemp(join(tmpdir(), "ledger-test-"));
     const ledger = new FileProcessExecutionLedger(directory);
-    const inputCsv = "cnpj\n00.000.000/0001-91";
+    const inputCsv = "cnpj\n11.222.333/0001-81";
 
     const csvRun = await ledger.startRun({
       inputContent: inputCsv,
@@ -269,7 +269,7 @@ describe("FileProcessExecutionLedger", () => {
       providerName: "mock",
     });
     await csvRun.saveLookup({
-      cnpj: "00000000000191",
+      cnpj: "11222333000181",
       simplesNacional: true,
       simei: false,
       source: "mock",
@@ -287,12 +287,12 @@ describe("FileProcessExecutionLedger", () => {
       providerName: "mock",
     });
 
-    await expect(xlsxRun.restoreLookup("00000000000191")).resolves.toBeNull();
+    await expect(xlsxRun.restoreLookup("11222333000181")).resolves.toBeNull();
     expect(xlsxRun.checkpointPath).not.toBe(csvRun.checkpointPath);
   });
 
   it("uses the effective XLSX parser version in the execution fingerprint", () => {
-    const content = new Uint8Array(Buffer.from("cnpj\n00.000.000/0001-91"));
+    const content = new Uint8Array(Buffer.from("cnpj\n11.222.333/0001-81"));
     const inputContentHash = createHash("sha256")
       .update(Buffer.from(content))
       .digest("hex");
@@ -325,7 +325,7 @@ describe("FileProcessExecutionLedger", () => {
     const directory = await mkdtemp(join(tmpdir(), "ledger-test-"));
     const ledger = new FileProcessExecutionLedger(directory);
     const run = await ledger.startRun({
-      inputCsv: "cnpj\n00.000.000/0001-91",
+      inputCsv: "cnpj\n11.222.333/0001-81",
       providerName: "mock",
     });
     const outputPath = join(directory, "saida.csv");
@@ -374,13 +374,13 @@ describe("FileProcessExecutionLedger", () => {
     const sourceFilePath = join(directory, "entrada.csv");
     const interruptedRun = await ledger.startRun({
       cnpjColumn: "cnpj",
-      inputCsv: "cnpj\n00.000.000/0001-91",
+      inputCsv: "cnpj\n11.222.333/0001-81",
       providerName: "mock",
       sourceFilePath,
     });
     await interruptedRun.setTotalUniqueLookups(2);
     await interruptedRun.saveLookup({
-      cnpj: "00000000000191",
+      cnpj: "11222333000181",
       simplesNacional: true,
       simei: false,
       source: "mock",
@@ -415,14 +415,14 @@ describe("FileProcessExecutionLedger", () => {
     expect(history[0]?.ledgerKey).toMatch(/^mock-[a-f0-9]{24}\.json$/);
     await expect(
       ledger.getCheckpointedCnpjs(history[0]?.ledgerKey ?? ""),
-    ).resolves.toEqual(new Set(["00000000000191"]));
+    ).resolves.toEqual(new Set(["11222333000181"]));
   });
 
   it("marks successful ledgers as history-only instead of resumable", async () => {
     const directory = await mkdtemp(join(tmpdir(), "ledger-test-"));
     const ledger = new FileProcessExecutionLedger(directory);
     const run = await ledger.startRun({
-      inputCsv: "cnpj\n00.000.000/0001-91",
+      inputCsv: "cnpj\n11.222.333/0001-81",
       providerName: "mock",
     });
     await run.finish({
@@ -460,7 +460,7 @@ describe("FileProcessExecutionLedger", () => {
     );
     const ledger = new FileProcessExecutionLedger(directory);
     const run = await ledger.startRun({
-      inputCsv: "cnpj\n00.000.000/0001-91",
+      inputCsv: "cnpj\n11.222.333/0001-81",
       providerName: "mock",
     });
     await run.finish({
@@ -477,7 +477,7 @@ describe("FileProcessExecutionLedger", () => {
 
   it("logs an actionable warning when a ledger file is corrupted", async () => {
     const directory = await mkdtemp(join(tmpdir(), "ledger-test-"));
-    const inputCsv = "cnpj\n00.000.000/0001-91";
+    const inputCsv = "cnpj\n11.222.333/0001-81";
     const firstRun = await new FileProcessExecutionLedger(directory).startRun({
       inputCsv,
       providerName: "mock",
