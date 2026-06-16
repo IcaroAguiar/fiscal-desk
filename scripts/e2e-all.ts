@@ -183,7 +183,7 @@ function runStep(
         ...process.env,
         ...step.env,
       },
-      shell: false,
+      shell: process.platform === "win32",
       stdio: "inherit",
     });
 
