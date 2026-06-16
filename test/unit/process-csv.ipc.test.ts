@@ -1,3 +1,4 @@
+import { join, resolve } from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const handlers = new Map<string, (...args: unknown[]) => unknown>();
@@ -233,16 +234,17 @@ describe("process-csv IPC", () => {
   it("picks XLSX input as bytes with explicit input format", async () => {
     const handler = handlers.get("csv:pick-input-file");
     const { readFile } = await import("node:fs/promises");
+    const inputPath = resolve("/tmp/fiscal-desk-test/entrada.xlsx");
     electronMocks.dialog.showOpenDialog.mockResolvedValueOnce({
       canceled: false,
-      filePaths: ["/tmp/fiscal-desk-test/entrada.xlsx"],
+      filePaths: [inputPath],
     });
     vi.mocked(readFile).mockResolvedValueOnce(Buffer.from([80, 75, 3, 4]));
 
     await expect(handler?.()).resolves.toEqual({
       content: [80, 75, 3, 4],
       fileName: "entrada.xlsx",
-      filePath: "/tmp/fiscal-desk-test/entrada.xlsx",
+      filePath: inputPath,
       inputFormat: "xlsx",
     });
 
@@ -251,7 +253,7 @@ describe("process-csv IPC", () => {
         filters: [{ name: "Planilhas", extensions: ["csv", "xlsx"] }],
       }),
     );
-    expect(readFile).toHaveBeenCalledWith("/tmp/fiscal-desk-test/entrada.xlsx");
+    expect(readFile).toHaveBeenCalledWith(inputPath);
   });
 
   it("pauses active processing through a dedicated IPC channel and aborts the current signal", async () => {
@@ -308,6 +310,7 @@ describe("process-csv IPC", () => {
   it("exports pending CNPJs from an interrupted execution", async () => {
     const handler = handlers.get("csv:export-pending-cnpjs");
     const { readFile, writeFile } = await import("node:fs/promises");
+    const outputPath = resolve("/tmp/fiscal-desk-test/entrada-pendencias.csv");
     ledgerMocks.getRun.mockResolvedValueOnce({
       canExportPending: true,
       canResume: true,
@@ -340,7 +343,7 @@ describe("process-csv IPC", () => {
     );
     electronMocks.dialog.showSaveDialog.mockResolvedValueOnce({
       canceled: false,
-      filePath: "/tmp/fiscal-desk-test/entrada-pendencias.csv",
+      filePath: outputPath,
     });
 
     const result = await handler?.(
@@ -350,16 +353,16 @@ describe("process-csv IPC", () => {
 
     expect(result).toEqual({
       pendingUniqueLookups: 1,
-      savedPath: "/tmp/fiscal-desk-test/entrada-pendencias.csv",
+      savedPath: outputPath,
     });
     expect(electronMocks.dialog.showSaveDialog).toHaveBeenCalledWith(
       expect.objectContaining({
-        defaultPath: "/tmp/fiscal-desk-test/entrada-pendencias.csv",
+        defaultPath: join("/tmp/fiscal-desk-test", "entrada-pendencias.csv"),
         filters: [{ name: "CSV", extensions: ["csv"] }],
       }),
     );
     expect(writeFile).toHaveBeenCalledWith(
-      "/tmp/fiscal-desk-test/entrada-pendencias.csv",
+      outputPath,
       expect.stringContaining("47960950000121"),
       "utf8",
     );
@@ -371,6 +374,9 @@ describe("process-csv IPC", () => {
   it("completes NOT_FOUND rows from a processed CSV using the selected provider", async () => {
     const handler = handlers.get("csv:complete-processed-csv");
     const { readFile, writeFile } = await import("node:fs/promises");
+    const outputPath = resolve(
+      "/tmp/fiscal-desk-test/entrada-processado-complementado.csv",
+    );
     const lookup = vi.fn(async () => ({
       cnpj: "00000000000191",
       simplesNacional: true,
@@ -412,7 +418,7 @@ describe("process-csv IPC", () => {
     );
     electronMocks.dialog.showSaveDialog.mockResolvedValueOnce({
       canceled: false,
-      filePath: "/tmp/fiscal-desk-test/entrada-processado-complementado.csv",
+      filePath: outputPath,
     });
 
     const result = await handler?.(
@@ -426,18 +432,20 @@ describe("process-csv IPC", () => {
     expect(result).toEqual({
       completedLookups: 1,
       foundByComplement: 1,
-      savedPath: "/tmp/fiscal-desk-test/entrada-processado-complementado.csv",
+      savedPath: outputPath,
     });
     expect(lookup).toHaveBeenCalledWith("00000000000191", undefined);
     expect(electronMocks.dialog.showSaveDialog).toHaveBeenCalledWith(
       expect.objectContaining({
-        defaultPath:
-          "/tmp/fiscal-desk-test/entrada-processado-complementado.csv",
+        defaultPath: join(
+          "/tmp/fiscal-desk-test",
+          "entrada-processado-complementado.csv",
+        ),
         filters: [{ name: "CSV", extensions: ["csv"] }],
       }),
     );
     expect(writeFile).toHaveBeenCalledWith(
-      "/tmp/fiscal-desk-test/entrada-processado-complementado.csv",
+      outputPath,
       expect.stringContaining("complemento_status"),
       "utf8",
     );
@@ -518,9 +526,10 @@ describe("process-csv IPC", () => {
   it("allows auto-save only for a source path selected by the file picker", async () => {
     const { readFile } = await import("node:fs/promises");
     const { writeFile } = await import("node:fs/promises");
+    const sourceFilePath = resolve("/tmp/entrada.csv");
     vi.mocked(electronMocks.dialog.showOpenDialog).mockResolvedValue({
       canceled: false,
-      filePaths: ["/tmp/entrada.csv"],
+      filePaths: [sourceFilePath],
     } as never);
     vi.mocked(readFile).mockResolvedValue("cnpj\n47960950000121");
     const pickHandler = handlers.get("csv:pick-input-file");
@@ -529,11 +538,11 @@ describe("process-csv IPC", () => {
     await pickHandler?.({});
     await autoSaveHandler?.(
       {},
-      { sourceFilePath: "/tmp/entrada.csv", content: "ok" },
+      { sourceFilePath, content: "ok" },
     );
 
     expect(writeFile).toHaveBeenCalledWith(
-      "/tmp/entrada-processado.csv",
+      resolve("/tmp/entrada-processado.csv"),
       "ok",
       "utf8",
     );
@@ -694,9 +703,10 @@ describe("process-csv IPC", () => {
     const handler = handlers.get("csv:process");
     const sender = { send: vi.fn() };
     const { readFile, writeFile } = await import("node:fs/promises");
+    const sourceFilePath = resolve("/tmp/fiscal-desk-test/entrada.csv");
     vi.mocked(electronMocks.dialog.showOpenDialog).mockResolvedValue({
       canceled: false,
-      filePaths: ["/tmp/fiscal-desk-test/entrada.csv"],
+      filePaths: [sourceFilePath],
     } as never);
     vi.mocked(readFile).mockResolvedValue("cnpj\n00000000000191");
     await handlers.get("csv:pick-input-file")?.({});
@@ -735,21 +745,21 @@ describe("process-csv IPC", () => {
         content: "cnpj\n00000000000191",
         deliveryFormat: "xlsx",
         provider: "mock",
-        sourceFilePath: "/tmp/fiscal-desk-test/entrada.csv",
+        sourceFilePath,
       }),
     ).resolves.toMatchObject({
       delivery: {
         format: "xlsx",
       },
       outputXlsx: [80, 75, 3, 4],
-      savedPath: "/tmp/fiscal-desk-test/entrada-processado.xlsx",
+      savedPath: resolve("/tmp/fiscal-desk-test/entrada-processado.xlsx"),
     });
 
     expect(processCsv).toHaveBeenCalledWith(
       {
         content: "cnpj\n00000000000191",
         format: "csv",
-        sourceFilePath: "/tmp/fiscal-desk-test/entrada.csv",
+        sourceFilePath,
       },
       expect.any(Object),
       expect.objectContaining({
@@ -757,7 +767,7 @@ describe("process-csv IPC", () => {
       }),
     );
     expect(writeFile).toHaveBeenCalledWith(
-      "/tmp/fiscal-desk-test/entrada-processado.xlsx",
+      resolve("/tmp/fiscal-desk-test/entrada-processado.xlsx"),
       Buffer.from([80, 75, 3, 4]),
     );
   });
