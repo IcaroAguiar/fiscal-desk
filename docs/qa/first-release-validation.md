@@ -184,3 +184,9 @@ O workflow `Desktop unsigned builds` executa por `workflow_dispatch` e tags
 
 Esse workflow nao publica GitHub Release, nao assina, nao notariza, nao habilita
 updater real e mantem `permissions.contents: read`.
+
+Para publicar uma GitHub Release manual com artifacts unsigned, use o contrato
+de [`release-publication.md`](release-publication.md). O workflow
+`Release artifact verification` baixa os artifacts de uma run informada, valida
+presenca dos assets esperados e gera `release-manifest.json` e `SHA256SUMS.txt`
+sem criar tag, sem editar Release e sem permissao `contents: write`.

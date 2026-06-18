@@ -25,6 +25,7 @@
     "test:watch": "vitest",
     "compare:receita-web": "tsx scripts/compare-providers.ts",
     "perf:local-csv": "tsx scripts/perf-local-csv.ts",
+    "release:manifest": "node --import tsx scripts/release-manifest.ts",
     "smoke:real-csv": "tsx scripts/smoke-real-csv.ts",
     "smoke:electron-ui": "pnpm build && tsx scripts/smoke-electron-ui.ts",
     "smoke:visual": "tsx scripts/smoke-visual-ui.ts",
