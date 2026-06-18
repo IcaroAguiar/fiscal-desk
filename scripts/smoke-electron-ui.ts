@@ -62,9 +62,11 @@ try {
   }
 
   electronApp = await electron.launch({
-    args: ["."],
+    args: createElectronLaunchArgs(),
     env: {
       ...process.env,
+      ELECTRON_ENABLE_LOGGING: "1",
+      ELECTRON_ENABLE_STACK_DUMPING: "1",
       [FISCAL_DESK_DISABLE_COMPLETION_DIALOG_ENV]: "1",
       [FISCAL_DESK_DISABLE_DEVTOOLS_ENV]: "1",
       [FISCAL_DESK_DEV_SERVER_URL_ENV]: `http://127.0.0.1:${address.port}`,
@@ -254,6 +256,14 @@ function resolveSmokeProvider(value: string | undefined): SimplesProviderName {
   }
 
   return SIMPLES_PROVIDER.MOCK;
+}
+
+function createElectronLaunchArgs(): string[] {
+  if (process.platform !== "linux") {
+    return ["."];
+  }
+
+  return ["--no-sandbox", "--disable-gpu", "--disable-dev-shm-usage", "."];
 }
 
 function resolveSmokeInputFormat(
