@@ -57,6 +57,25 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Verify build run provenance
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BUILD_RUN_ID: ${{ inputs.build_run_id }}
+          TARGET_SHA: ${{ inputs.target_sha }}
+        run: |
+          run_metadata="$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${BUILD_RUN_ID}" --jq '[.head_sha, .status, (.conclusion // "")] | @tsv')"
+          IFS=$'\t' read -r run_sha run_status run_conclusion <<< "$run_metadata"
+
+          if [ "$run_sha" != "$TARGET_SHA" ]; then
+            echo "::error::Build run ${BUILD_RUN_ID} was produced from ${run_sha}, not ${TARGET_SHA}."
+            exit 1
+          fi
+
+          if [ "$run_status" != "completed" ] || [ "$run_conclusion" != "success" ]; then
+            echo "::error::Build run ${BUILD_RUN_ID} is ${run_status}/${run_conclusion}, not completed/success."
+            exit 1
+          fi
+
       - name: Download Windows artifact
         uses: actions/download-artifact@v4
         with:

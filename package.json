@@ -29,7 +29,7 @@
     "smoke:real-csv": "tsx scripts/smoke-real-csv.ts",
     "smoke:electron-ui": "pnpm build && tsx scripts/smoke-electron-ui.ts",
     "smoke:visual": "tsx scripts/smoke-visual-ui.ts",
-    "dist:mac": "pnpm build && pnpm build:browser && electron-builder --mac dmg --publish never",
+    "dist:mac": "pnpm build && pnpm build:browser && electron-builder --mac dmg zip --publish never",
     "dist:win": "pnpm build && pnpm build:browser:win && electron-builder --win nsis --x64 --publish never",
     "dist:win:arm64": "pnpm build && pnpm build:browser:win && electron-builder --win nsis --arm64 --publish never",
     "dist:dir": "pnpm build && electron-builder --dir --publish never",

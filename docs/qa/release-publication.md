@@ -48,8 +48,9 @@ sem confirmação explícita do owner.
    `PR Quality Gate`.
 3. Rodar `Desktop unsigned builds` por `workflow_dispatch` ou por tag `v*`.
 4. Esperar os artifacts:
-   - `fiscal-desk-windows-x64`;
-   - `fiscal-desk-macos`.
+   - `fiscal-desk-windows-x64`: instalador `.exe`, metadata `.yml` e
+     `.blockmap`;
+   - `fiscal-desk-macos`: `.dmg`, `.zip`, metadata `.yml` e `.blockmap`.
 5. Rodar `Release artifact verification` por `workflow_dispatch` informando:
    - `build_run_id`: run ID do workflow `Desktop unsigned builds`;
    - `target_sha`: SHA exato do commit;
@@ -84,6 +85,10 @@ O script falha se:
   `fiscal-desk-windows-x64`;
 - faltar `.dmg`, `.zip`, metadata `.yml`/`.yaml` ou `.blockmap` em
   `fiscal-desk-macos`.
+
+O workflow falha antes de baixar artifacts se o `build_run_id` informado não
+estiver `completed/success` ou se o `head_sha` da run não bater exatamente com
+`target_sha`.
 
 O manifesto sempre declara:
 
