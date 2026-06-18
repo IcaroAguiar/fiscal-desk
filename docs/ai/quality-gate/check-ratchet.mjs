@@ -61,15 +61,18 @@ function changedFiles() {
 }
 
 function lineCount(path) { try { return readFileSync(join(root, path), "utf8").split(/\r?\n/).length; } catch { return 0; } }
-function commentDensity(path) {
-  let text = "";
-  try { text = readFileSync(join(root, path), "utf8"); } catch { return 0; }
+function commentDensityFromText(text) {
   const lines = text.split(/\r?\n/);
   const commentLines = lines.filter((line) => {
     const trimmed = line.trim();
     return trimmed.startsWith("//") || trimmed.startsWith("#") || trimmed.startsWith("--") || trimmed.startsWith("/*") || trimmed.startsWith("*") || trimmed.startsWith("<!--");
   }).length;
   return lines.length ? Number((commentLines / lines.length).toFixed(4)) : 0;
+}
+function commentDensity(path) {
+  let text = "";
+  try { text = readFileSync(join(root, path), "utf8"); } catch { return 0; }
+  return commentDensityFromText(text);
 }
 
 function walk(current = root, files = []) {
@@ -103,6 +106,40 @@ function collectCodeMetrics() {
     totalLines += lines;
     commentLines += comments;
     byFile.push({ path: rel, lines, commentLines: comments, commentDensity: density });
+  }
+  byFile.sort((a, b) => b.lines - a.lines);
+  return { sourceFiles: byFile.length, totalLines, commentLines, commentDensity: totalLines ? Number((commentLines / totalLines).toFixed(4)) : null, largeFiles: byFile.filter((file) => file.lines > config.thresholds.maxNewFileLines).length, largestFiles: byFile.slice(0, 50) };
+}
+function sourceFilesAtRef(ref) {
+  const tracked = git(["ls-tree", "-r", "--name-only", ref], { required: true });
+  const files = tracked ? tracked.split(/\r?\n/) : [];
+  return files.filter((path) => sourceExtensions.has(extname(path)));
+}
+function textAtRef(ref, path) {
+  try {
+    return execFileSync("git", ["show", ref + ":" + path], {
+      cwd: root,
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "pipe"],
+      maxBuffer: 20 * 1024 * 1024,
+    });
+  } catch {
+    return "";
+  }
+}
+function collectCodeMetricsAtRef(ref) {
+  const byFile = [];
+  let totalLines = 0;
+  let commentLines = 0;
+  for (const path of sourceFilesAtRef(ref)) {
+    const text = textAtRef(ref, path);
+    if (!text) continue;
+    const lines = text.split(/\r?\n/).length;
+    const density = commentDensityFromText(text);
+    const comments = Math.round(lines * density);
+    totalLines += lines;
+    commentLines += comments;
+    byFile.push({ path, lines, commentLines: comments, commentDensity: density });
   }
   byFile.sort((a, b) => b.lines - a.lines);
   return { sourceFiles: byFile.length, totalLines, commentLines, commentDensity: totalLines ? Number((commentLines / totalLines).toFixed(4)) : null, largeFiles: byFile.filter((file) => file.lines > config.thresholds.maxNewFileLines).length, largestFiles: byFile.slice(0, 50) };
@@ -223,6 +260,10 @@ function feedbackMetric() {
 
 const files = changedFiles();
 const code = collectCodeMetrics();
+const liveBaseRef = usesWorktreeDiff ? "HEAD" : baseRef();
+const codeBaseline = liveBaseRef ? collectCodeMetricsAtRef(liveBaseRef) : baseline.metrics.code;
+const codeBaselineSource = liveBaseRef || "baseline.json";
+const largeFileBaseline = codeBaseline?.largeFiles ?? baseline.metrics.code.largeFiles;
 const coverage = coverageMetric();
 const prCoverage = prCoverageMetric();
 const duplication = duplicationMetric();
@@ -291,9 +332,9 @@ else if (duplication !== null) {
   if (duplication > config.thresholds.newDuplicationMax) fail("duplication.maximum", "Duplication " + duplication + "% exceeds " + config.thresholds.newDuplicationMax + "%.");
   if (baselineDuplication !== undefined && duplication > baselineDuplication + config.thresholds.duplicationIncreaseMax) fail("duplication.ratchet", "Duplication increased from " + baselineDuplication + "% to " + duplication + "%.");
 }
-if (code.largeFiles > baseline.metrics.code.largeFiles + config.thresholds.maxLargeFileCountIncrease) fail("code.large-file-ratchet", "Large file count increased from " + baseline.metrics.code.largeFiles + " to " + code.largeFiles + ".");
+if (code.largeFiles > largeFileBaseline + config.thresholds.maxLargeFileCountIncrease) fail("code.large-file-ratchet", "Large file count increased from " + largeFileBaseline + " (" + codeBaselineSource + ") to " + code.largeFiles + ".");
 
-const baselineFileByPath = new Map((baseline.metrics.code.largestFiles || []).map((file) => [file.path, file]));
+const baselineFileByPath = new Map((codeBaseline?.largestFiles || baseline.metrics.code.largestFiles || []).map((file) => [file.path, file]));
 for (const file of files) {
   if (!sourceExtensions.has(extname(file))) continue;
   const lines = lineCount(file);
@@ -321,7 +362,7 @@ const rows = [
   { metric: "PR test coverage", baseline: prCoverage ? String(prCoverage.covered) + "/" + String(prCoverage.total) + " changed lines" : "n/a", current: prCoverage ? pct(prCoverage.pct) : "n/a", target: ">=" + pct(config.thresholds.prCoverageMin) + " (goal " + pct(config.thresholds.prCoverageTarget) + ")", delta: "n/a", status: !failures.some((f) => f.id === "coverage.pr-minimum") },
   { metric: "Global test coverage", baseline: pct(baselineCoverage), current: pct(coverage), target: pct(config.thresholds.newCoverageMin), delta: delta(coverage, baselineCoverage), status: !failures.some((f) => f.id === "coverage.minimum" || f.id === "coverage.ratchet" || f.id === "coverage.missing") },
   { metric: "Duplication", baseline: pct(baselineDuplication), current: pct(duplication), target: "<= " + pct(config.thresholds.newDuplicationMax), delta: delta(duplication, baselineDuplication), status: !failures.some((f) => f.id.startsWith("duplication.")) },
-  { metric: "Large files", baseline: baseline.metrics.code.largeFiles, current: code.largeFiles, target: "no increase", delta: code.largeFiles - baseline.metrics.code.largeFiles, status: !failures.some((f) => f.id.startsWith("code.") || f.id.startsWith("file.") || f.id.startsWith("touched-bad-area")) },
+  { metric: "Large files", baseline: largeFileBaseline, current: code.largeFiles, target: "no increase", delta: code.largeFiles - largeFileBaseline, status: !failures.some((f) => f.id.startsWith("code.") || f.id.startsWith("file.") || f.id.startsWith("touched-bad-area")) },
   { metric: "Agentic review blocking", baseline: 0, current: review?.status === "NOT_ENFORCED" ? "NOT_ENFORCED" : review?.blocking ?? "n/a", target: review?.status === "NOT_ENFORCED" ? "PR closeout" : 0, delta: review?.status === "NOT_ENFORCED" ? "n/a" : review?.blocking ?? null, status: review?.status !== "NOT_ENFORCED" && !failures.some((f) => f.id.startsWith("agentic-review.")) },
   { metric: "Feedback false negatives", baseline: "tracked", current: feedback.falseNegative, target: 0, delta: feedback.falseNegative, status: feedback.falseNegative === 0 },
 ];
@@ -344,7 +385,7 @@ const markdown = [
   improvements.length ? improvements.map((item) => "- **" + item.type + " / " + item.rule + "**: " + item.recommendation + " (source: " + item.source + ")").join("\n") : "- None",
   "",
 ].join("\n");
-const report = { status: failures.length ? "fail" : "pass", generatedAt: new Date().toISOString(), diffMode, failures, warnings, improvements, metrics: { coverage, prCoverage, duplication, code, review, feedback, rows }, changedFiles: files };
+const report = { status: failures.length ? "fail" : "pass", generatedAt: new Date().toISOString(), diffMode, failures, warnings, improvements, metrics: { coverage, prCoverage, duplication, code, codeBaseline: { source: codeBaselineSource, largeFiles: largeFileBaseline }, review, feedback, rows }, changedFiles: files };
 mkdirSync(gateDir, { recursive: true });
 writeFileSync(join(gateDir, "quality-gate-report.json"), JSON.stringify(report, null, 2) + "\n");
 writeFileSync(join(gateDir, "quality-gate-report.md"), markdown + "\n");
