@@ -9,10 +9,12 @@ coverage
 .claude
 .lazyweb/
 .playwright-cli
+# Contexto local privado; contexto publico versionado fica em docs/project-context.md
 CONTEXT.md
 .visual-fidelity/
-docs/fiscal-desk/private/
-docs/fiscal-desk/generated/
+# Workstream/ADR local ainda nao curado para o repositorio publico
+docs/adr/
+docs/fiscal-desk/
 docs/goals/
 docs/qa/visual-smoke-artifacts/
 docs/qa/e2e-artifacts/
