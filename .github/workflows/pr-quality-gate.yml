@@ -50,6 +50,9 @@ jobs:
       - name: Typecheck
         run: pnpm typecheck
 
+      - name: Install Playwright Linux dependencies
+        run: pnpm exec playwright install-deps chromium
+
       - name: Deterministic E2E
         env:
           FISCAL_DESK_E2E_OUTPUT_DIR: docs/qa/e2e-artifacts

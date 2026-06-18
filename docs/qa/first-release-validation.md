@@ -171,10 +171,10 @@ Cada PR deve informar:
 
 ## GitHub Actions
 
-O workflow `PR Quality Gate` executa `pnpm test:e2e` em Ubuntu com `xvfb-run`,
-mantendo lint, typecheck, build, gitleaks e ratchet. Isso coloca coverage,
-smoke CSV, smoke Electron e smoke visual sob um unico receipt automatizado de
-CI.
+O workflow `PR Quality Gate` instala dependencias Linux do Playwright/Chromium e
+executa `pnpm test:e2e` em Ubuntu com `xvfb-run`, mantendo lint, typecheck,
+build, gitleaks e ratchet. Isso coloca coverage, smoke CSV, smoke Electron e
+smoke visual sob um unico receipt automatizado de CI.
 
 O workflow `Desktop unsigned builds` executa por `workflow_dispatch` e tags
 `v*`, com matriz Windows/macOS:
