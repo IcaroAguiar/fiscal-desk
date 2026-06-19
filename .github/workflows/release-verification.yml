@@ -1,0 +1,119 @@
+name: Release artifact verification
+run-name: Release artifact verification - ${{ inputs.version }} @ ${{ inputs.target_sha }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      build_run_id:
+        description: "Run ID from Desktop unsigned builds"
+        required: true
+        type: string
+      target_sha:
+        description: "Commit SHA expected for the release"
+        required: true
+        type: string
+      version:
+        description: "Expected package.json version, without v prefix"
+        required: true
+        type: string
+      tag:
+        description: "Release tag being verified, for example v0.1.2"
+        required: false
+        type: string
+
+permissions:
+  actions: read
+  contents: read
+
+concurrency:
+  group: release-artifact-verification-${{ inputs.target_sha }}
+  cancel-in-progress: false
+
+jobs:
+  verify-release-artifacts:
+    name: Verify unsigned release artifacts
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout release commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.target_sha }}
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.32.1
+          run_install: false
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Verify build run provenance
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BUILD_RUN_ID: ${{ inputs.build_run_id }}
+          TARGET_SHA: ${{ inputs.target_sha }}
+        run: |
+          run_metadata="$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${BUILD_RUN_ID}" --jq '[.head_sha, .status, (.conclusion // "")] | @tsv')"
+          IFS=$'\t' read -r run_sha run_status run_conclusion <<< "$run_metadata"
+
+          if [ "$run_sha" != "$TARGET_SHA" ]; then
+            echo "::error::Build run ${BUILD_RUN_ID} was produced from ${run_sha}, not ${TARGET_SHA}."
+            exit 1
+          fi
+
+          if [ "$run_status" != "completed" ] || [ "$run_conclusion" != "success" ]; then
+            echo "::error::Build run ${BUILD_RUN_ID} is ${run_status}/${run_conclusion}, not completed/success."
+            exit 1
+          fi
+
+      - name: Download Windows artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: fiscal-desk-windows-x64
+          path: release-artifacts/fiscal-desk-windows-x64
+          github-token: ${{ github.token }}
+          run-id: ${{ inputs.build_run_id }}
+
+      - name: Download macOS artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: fiscal-desk-macos
+          path: release-artifacts/fiscal-desk-macos
+          github-token: ${{ github.token }}
+          run-id: ${{ inputs.build_run_id }}
+
+      - name: Generate release manifest
+        env:
+          RELEASE_TAG: ${{ inputs.tag }}
+        run: |
+          args=(
+            --input-dir release-artifacts \
+            --output-dir release-verification \
+            --expected-sha "${{ inputs.target_sha }}" \
+            --expected-version "${{ inputs.version }}" \
+            --artifact-run-id "${{ inputs.build_run_id }}"
+          )
+
+          if [ -n "$RELEASE_TAG" ]; then
+            args+=(--tag "$RELEASE_TAG")
+          fi
+
+          pnpm release:manifest -- "${args[@]}"
+
+      - name: Upload verification receipt
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-verification-${{ inputs.version }}
+          path: release-verification/**
+          if-no-files-found: error
+          retention-days: 14

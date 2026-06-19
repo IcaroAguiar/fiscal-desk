@@ -10,6 +10,7 @@ Mapa da documentação versionada do projeto.
 ## Validação e release
 
 - [`qa/first-release-validation.md`](qa/first-release-validation.md): matriz de validação para PRs materiais, smokes, e2e e builds unsigned.
+- [`qa/release-publication.md`](qa/release-publication.md): contrato de publicação manual com artifacts unsigned, manifesto e hashes.
 - [`ai/quality-gate/README.md`](ai/quality-gate/README.md): funcionamento do quality gate versionado.
 
 ## Planos técnicos versionados

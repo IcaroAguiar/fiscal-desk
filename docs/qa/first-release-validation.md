@@ -171,10 +171,10 @@ Cada PR deve informar:
 
 ## GitHub Actions
 
-O workflow `PR Quality Gate` executa `pnpm test:e2e` em Ubuntu com `xvfb-run`,
-mantendo lint, typecheck, build, gitleaks e ratchet. Isso coloca coverage,
-smoke CSV, smoke Electron e smoke visual sob um unico receipt automatizado de
-CI.
+O workflow `PR Quality Gate` instala dependencias Linux do Playwright/Chromium e
+executa `pnpm test:e2e` em Ubuntu com `xvfb-run`, mantendo lint, typecheck,
+build, gitleaks e ratchet. Isso coloca coverage, smoke CSV, smoke Electron e
+smoke visual sob um unico receipt automatizado de CI.
 
 O workflow `Desktop unsigned builds` executa por `workflow_dispatch` e tags
 `v*`, com matriz Windows/macOS:
@@ -184,3 +184,9 @@ O workflow `Desktop unsigned builds` executa por `workflow_dispatch` e tags
 
 Esse workflow nao publica GitHub Release, nao assina, nao notariza, nao habilita
 updater real e mantem `permissions.contents: read`.
+
+Para publicar uma GitHub Release manual com artifacts unsigned, use o contrato
+de [`release-publication.md`](release-publication.md). O workflow
+`Release artifact verification` baixa os artifacts de uma run informada, valida
+presenca dos assets esperados e gera `release-manifest.json` e `SHA256SUMS.txt`
+sem criar tag, sem editar Release e sem permissao `contents: write`.
