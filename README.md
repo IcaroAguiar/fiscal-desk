@@ -1,6 +1,6 @@
-# Consulta Simples CSV
+# Fiscal Desk
 
-Aplicativo desktop para processar arquivos CSV com CNPJs, consultar enquadramento no Simples Nacional e no SIMEI e devolver um CSV enriquecido, pronto para operação e conferência.
+Aplicativo desktop para processar planilhas com CNPJs, consultar enquadramento no Simples Nacional e no SIMEI e devolver uma entrega enriquecida em CSV ou XLSX, pronta para operação e conferência.
 
 O projeto foi desenhado para funcionar localmente, com baixo atrito para o usuário final e arquitetura preparada para trocar o provider no futuro sem reescrever o fluxo principal.
 

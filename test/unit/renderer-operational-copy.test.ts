@@ -23,7 +23,7 @@ describe("renderer operational copy", () => {
   });
 
   it("formats the provider mode label", () => {
-    expect(formatProviderMode("mock")).toBe("Simulação");
+    expect(formatProviderMode("mock")).toBe("Teste local offline");
     expect(formatProviderMode("base-publica-local")).toBe("Base local");
     expect(formatProviderMode("cnpja-open")).toBe("CNPJá Open");
     expect(formatProviderMode("receita-web")).toBe("Receita Web manual");
@@ -70,7 +70,7 @@ describe("renderer operational copy", () => {
 
   it("formats the command bar summary with file and provider", () => {
     expect(formatCommandBarSummary("clientes.csv", "mock")).toBe(
-      "clientes.csv • Simulação",
+      "clientes.csv • Teste local offline",
     );
     expect(formatCommandBarSummary(null, "cnpja-open")).toBe(
       "Nenhuma planilha selecionada • CNPJá Open",
@@ -91,7 +91,7 @@ describe("renderer operational copy", () => {
       "Selecione uma planilha CSV ou Excel para continuar",
     );
     expect(formatProviderHint("clientes.csv", "mock")).toBe(
-      "Consulta configurada em Simulação.",
+      "Consulta configurada em Teste local offline.",
     );
     expect(formatProviderHint("clientes.csv", "base-publica-local")).toBe(
       "A Base local usa a data do arquivo preparado neste computador.",

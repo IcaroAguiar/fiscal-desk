@@ -69,16 +69,17 @@ async function writeVisualArtifacts(
 async function captureDomLandmarks(page: Page): Promise<Record<string, unknown>> {
   return page.evaluate(() => {
     const selectors = {
-      windowChrome: ".window-chrome",
-      sidebar: ".sidebar",
-      operationHeader: ".ops-topbar",
-      entryZone: ".entry-zone",
-      configZone: ".config-zone",
-      queueZone: ".queue-zone",
-      kpiStrip: ".kpi-strip",
-      historyZone: ".history-zone",
-      logZone: ".log-zone",
-      outputZone: ".output-zone",
+      shell: ".fd-shell",
+      sidebar: ".fd-sidebar",
+      header: ".fd-header",
+      command: ".fd-command",
+      metrics: ".fd-metrics",
+      pipeline: ".fd-pipeline",
+      providerGrid: ".fd-provider-grid",
+      settings: ".fd-settings",
+      execution: ".fd-execution",
+      output: ".fd-output",
+      history: ".fd-history",
     };
 
     return Object.fromEntries(
@@ -142,9 +143,7 @@ async function clippedPrimaryButtons(
     const selectors = [
       {
         selector: '[data-action="pick-file"]',
-        required:
-          currentScenario === "idle" ||
-          currentScenario === "reference-v5-a-painel",
+        required: currentScenario === "idle",
       },
       { selector: '[data-action="process-file"]', required: true },
       { selector: '[data-action="cancel-processing"]', required: false },
@@ -155,7 +154,18 @@ async function clippedPrimaryButtons(
     ];
 
     return selectors.flatMap(({ selector, required }) => {
-      const element = document.querySelector<HTMLElement>(selector);
+      const element = Array.from(
+        document.querySelectorAll<HTMLElement>(selector),
+      ).find((candidate) => {
+        const style = window.getComputedStyle(candidate);
+        const rect = candidate.getBoundingClientRect();
+        return (
+          style.display !== "none" &&
+          style.visibility !== "hidden" &&
+          rect.width > 0 &&
+          rect.height > 0
+        );
+      });
       if (!element) return required ? [selector + ":missing"] : [];
       const rect = element.getBoundingClientRect();
       const style = window.getComputedStyle(element);
@@ -175,19 +185,21 @@ async function clippedPrimaryButtons(
 async function siblingOverlaps(page: Page): Promise<string[]> {
   return page.evaluate<string[]>(`(() => {
     const parents = [
-      ".ops-topbar",
-      ".ops-topbar__status",
-      ".system-strip",
-      ".workbench-grid",
-      ".surface__header",
-      ".stepper",
-      ".file-dropzone",
-      ".controls-row--workbench",
-      ".command-bar--workbench",
-      ".command-bar__actions",
-      ".result-actions",
-      ".provider-list",
-      ".sidebar-nav",
+      ".fd-header",
+      ".fd-header__actions",
+      ".fd-command",
+      ".fd-metrics",
+      ".fd-section-head",
+      ".fd-pipeline__stages",
+      ".fd-provider-grid",
+      ".fd-settings__grid",
+      ".fd-import",
+      ".fd-base-prep",
+      ".fd-base-prep__actions",
+      ".fd-execution__grid",
+      ".fd-suggestions",
+      ".fd-actions-row",
+      ".fd-nav",
       ".history-list",
     ];
 

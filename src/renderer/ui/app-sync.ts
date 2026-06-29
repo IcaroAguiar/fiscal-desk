@@ -15,7 +15,6 @@ import {
   syncReceitaWebAvailability,
 } from "./app-provider";
 import type { AppRefs } from "./app-refs";
-import { syncReferenceV5A } from "./app-sync-reference";
 import {
   shouldDisableLocalPublicBaseDiscoverButton,
   shouldDisableLocalPublicBasePrepareButton,
@@ -28,7 +27,6 @@ import {
   getProgressPercent,
   getProviderStatusLabel,
   getProviderStatusVariant,
-  isReferenceV5A,
 } from "./app-view";
 import {
   buildDedupeLabel,
@@ -44,11 +42,6 @@ import {
 import { renderSummaryInto } from "./render-summary";
 
 export function syncUi(refs: AppRefs, state: UiState): void {
-  if (isReferenceV5A(state)) {
-    syncReferenceV5A(refs, state, syncLocalPublicBaseNotice, syncActiveView);
-    return;
-  }
-
   if (refs.message) {
     refs.message.textContent = state.message;
   }
@@ -58,6 +51,8 @@ export function syncUi(refs: AppRefs, state: UiState): void {
     syncReceitaWebAvailability(refs.providerSelect, state);
     refs.providerSelect.value = state.provider;
   }
+
+  syncProviderChoices(refs, state);
 
   if (refs.columnInput) {
     refs.columnInput.value = state.cnpjColumn;
@@ -141,6 +136,25 @@ export function syncUi(refs: AppRefs, state: UiState): void {
   syncExecutionRefs(refs, state);
   syncActiveView(refs, state);
   syncButtons(refs, state);
+}
+
+function syncProviderChoices(refs: AppRefs, state: UiState): void {
+  const isProcessing = state.status === "processing";
+
+  for (const choice of refs.providerChoices) {
+    const isReceitaWebChoice =
+      choice.value === SIMPLES_PROVIDER.RECEITA_WEB ||
+      choice.value === SIMPLES_PROVIDER.RECEITA_WEB_PARALLEL_EXPERIMENTAL;
+    const isUnavailableReceitaWebChoice =
+      isReceitaWebChoice && !state.receitaWebAvailable;
+    const isChecked = choice.value === state.provider;
+    const providerCard = choice.closest<HTMLElement>(".fd-provider");
+
+    choice.checked = isChecked;
+    choice.disabled = isProcessing || isUnavailableReceitaWebChoice;
+    providerCard?.classList.toggle("fd-provider--selected", isChecked);
+    providerCard?.classList.toggle("fd-provider--disabled", choice.disabled);
+  }
 }
 
 function syncProtocolRefs(refs: AppRefs, state: UiState): void {
@@ -438,14 +452,14 @@ function syncActiveView(refs: AppRefs, state: UiState): void {
     state.status === "error";
 
   for (const link of refs.viewLinks) {
-    const isActive = link.dataset.view === state.activeView;
+    const isPrimaryPanel = link.dataset.primaryPanel === "true";
+    const isActive =
+      link.dataset.view === state.activeView &&
+      (state.activeView !== "painel" || isPrimaryPanel);
     const viewSurface = link.dataset.viewSurface;
+    link.classList.toggle("fd-tab--active", viewSurface === "tab" && isActive);
     link.classList.toggle(
-      "ops-tabs__item--active",
-      viewSurface === "tab" && isActive,
-    );
-    link.classList.toggle(
-      "sidebar-nav__item--active",
+      "fd-nav__item--active",
       viewSurface === "sidebar" && isActive,
     );
 
@@ -486,18 +500,35 @@ function syncButtons(refs: AppRefs, state: UiState): void {
       : "Selecionar CSV";
   }
 
+  const shouldDisableProcess =
+    state.status === "processing" ||
+    state.localPublicBasePrepareStatus === "loading" ||
+    !state.content ||
+    (state.provider === SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL &&
+      (!state.localPublicBaseNoticeAccepted ||
+        state.localPublicBaseStatus?.state !== "ready")) ||
+    (state.provider === SIMPLES_PROVIDER.RECEITA_WEB_PARALLEL_EXPERIMENTAL &&
+      !state.receitaWebExperimentalNoticeAccepted);
+
   if (refs.processButton) {
-    refs.processButton.disabled =
-      state.status === "processing" ||
-      state.localPublicBasePrepareStatus === "loading" ||
-      !state.content ||
-      (state.provider === SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL &&
-        (!state.localPublicBaseNoticeAccepted ||
-          state.localPublicBaseStatus?.state !== "ready")) ||
-      (state.provider === SIMPLES_PROVIDER.RECEITA_WEB_PARALLEL_EXPERIMENTAL &&
-        !state.receitaWebExperimentalNoticeAccepted);
-    refs.processButton.textContent =
-      state.status === "processing" ? "Consultando..." : "Iniciar consulta";
+    const processButtons =
+      refs.processButton.ownerDocument?.querySelectorAll<HTMLButtonElement>(
+        '[data-action="process-file"]',
+      );
+    for (const processButton of Array.from(
+      processButtons ?? [refs.processButton],
+    )) {
+      const isSidebarProcessButton =
+        typeof processButton.classList?.contains === "function" &&
+        processButton.classList.contains("fd-sidebar__cta");
+      processButton.disabled = shouldDisableProcess;
+      processButton.textContent =
+        isSidebarProcessButton && state.status !== "processing"
+          ? "Iniciar consulta"
+          : state.status === "processing"
+            ? "Consultando..."
+            : "Processar CNPJs";
+    }
   }
 
   if (refs.localPublicBasePrepareButton) {

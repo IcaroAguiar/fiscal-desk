@@ -31,7 +31,7 @@ function createWindow(): BrowserWindow {
     minWidth: 980,
     minHeight: 720,
     backgroundColor: "#0f172a",
-    title: "Consulta Simples CSV",
+    title: "Fiscal Desk",
     webPreferences: {
       preload: path.join(__dirname, "preload.cjs"),
       contextIsolation: true,

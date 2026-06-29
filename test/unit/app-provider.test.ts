@@ -60,6 +60,6 @@ describe("app provider helpers", () => {
     };
 
     expect(prepareLocalPublicBaseResume(state, historyItem)).toBe(true);
-    expect(state.provider).toBe("mock");
+    expect(state.provider).toBe("base-publica-local");
   });
 });

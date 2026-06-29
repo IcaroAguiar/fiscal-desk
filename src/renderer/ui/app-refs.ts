@@ -46,6 +46,7 @@ export type AppRefs = {
   progressBar: HTMLElement | null;
   progressLine: HTMLElement | null;
   progressSection: HTMLElement | null;
+  providerChoices: HTMLInputElement[];
   providerSelect: HTMLSelectElement | null;
   providerStatus: HTMLElement | null;
   protocolBase: HTMLElement | null;
@@ -111,6 +112,11 @@ export function collectAppRefs(appRoot: HTMLElement): AppRefs {
     ),
     providerSelect: appRoot.querySelector<HTMLSelectElement>(
       '[data-field="provider"]',
+    ),
+    providerChoices: Array.from(
+      appRoot.querySelectorAll<HTMLInputElement>(
+        '[data-field="provider-choice"]',
+      ),
     ),
     columnInput: appRoot.querySelector<HTMLInputElement>(
       '[data-field="cnpj-column"]',

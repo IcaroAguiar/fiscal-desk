@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
   "generatedAt": "2026-05-18T01:38:06.577Z",
-  "rootName": "consulta-simples-csv",
+  "rootName": "fiscal-desk",
   "strategy": "ratchet-clean-as-you-code",
   "commands": {
     "packageManager": "pnpm",

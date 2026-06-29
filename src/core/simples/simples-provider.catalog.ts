@@ -36,7 +36,7 @@ const DEFAULT_RETRY_POLICY: SimplesProviderRetryPolicy = {
 const PROVIDER_CATALOG = {
   [SIMPLES_PROVIDER.MOCK]: {
     name: SIMPLES_PROVIDER.MOCK,
-    label: "Simulação offline",
+    label: "Teste local offline",
     mode: "offline",
     capabilities: {
       automaticFallback: false,

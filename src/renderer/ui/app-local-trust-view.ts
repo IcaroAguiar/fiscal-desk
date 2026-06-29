@@ -182,7 +182,7 @@ function formatCommercialBoundary(
   }
 
   if (boundary === FISCAL_DESK_COMMERCIAL_BOUNDARY.MUST_PRESERVE_MOCK_OFFLINE) {
-    return "simulação offline preservada";
+    return "teste local offline preservado";
   }
 
   return "dados e histórico preservados";

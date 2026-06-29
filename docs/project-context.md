@@ -6,7 +6,7 @@ Este documento é o contexto público e versionado do projeto. Ele substitui a i
 
 ## Identidade
 
-O repositório ainda se chama `consulta-simples-csv`, mas o produto está evoluindo para **Fiscal Desk**.
+O produto e o repositório usam o nome **Fiscal Desk**.
 
 O primeiro produto vendável continua sendo uma ferramenta desktop local para CNPJ em lote: entrada por planilha, validação, consulta de Simples Nacional/SIMEI, execução controlada e entrega profissional em CSV/XLSX.
 

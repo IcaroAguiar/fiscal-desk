@@ -92,22 +92,22 @@ describe("app sync", () => {
     expect(refs.executionBlocker?.textContent).toBe(
       "Sem bloqueio sistêmico detectado.",
     );
-    expect(refs.speedPlanLabel?.textContent).toBe("Simulação rápida");
-    expect(refs.activitySpeedLabel?.textContent).toBe("Simulação rápida");
+    expect(refs.speedPlanLabel?.textContent).toBe("Volume local pendente");
+    expect(refs.activitySpeedLabel?.textContent).toBe("Volume local pendente");
     expect(refs.activitySpeedDetail?.textContent).toBe(
-      "Valida o fluxo sem internet; troque de base antes de consultar dados reais.",
+      "Prepare a Base local antes de lotes grandes para evitar navegador e CAPTCHA.",
     );
     expect(refs.speedControlLabel?.textContent).toBe(
-      "Use Pausar para checkpoint e retomada; Cancelar interrompe a execução.",
+      "Use Pausar para checkpoint; perfil de velocidade controla concorrência local.",
     );
     expect(refs.activityControlLabel?.textContent).toBe(
-      "Use Pausar para checkpoint e retomada; Cancelar interrompe a execução.",
+      "Use Pausar para checkpoint; perfil de velocidade controla concorrência local.",
     );
     expect(refs.executionCheckpointCopy?.textContent).toBe(
       "2 CNPJs retomados do checkpoint local.",
     );
     expect(refs.activitySuggestion?.textContent).toBe(
-      "Sugestão: simulação valida o fluxo; troque para Base local antes de dados reais.",
+      "Sugestão: mantenha em Base local; é o caminho de volume neste computador.",
     );
     expect(refs.pauseButton?.disabled).toBe(false);
     expect(refs.cancelButton?.disabled).toBe(false);
@@ -244,6 +244,7 @@ function makeRefs(): AppRefs {
     progressBar: null,
     progressLine: null,
     progressSection: null,
+    providerChoices: [],
     protocolBase: null,
     protocolBaseHint: null,
     protocolEntry: null,

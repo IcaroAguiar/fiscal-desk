@@ -2,12 +2,7 @@ import {
   SIMPLES_PROVIDER,
   type SimplesProviderName,
 } from "../../core/simples/simples-provider.names";
-import {
-  initialState,
-  type PickCsvResult,
-  type UiState,
-  type VisualFixture,
-} from "./app.types";
+import { initialState, type PickCsvResult, type UiState } from "./app.types";
 import {
   applyProcessResult,
   getDefaultOutputFileName,
@@ -35,10 +30,7 @@ export function mountApp(root: HTMLDivElement | null): void {
   }
 
   const appRoot = root;
-  const state: UiState = {
-    ...initialState,
-    visualFixture: getDevVisualFixture(),
-  };
+  const state: UiState = { ...initialState };
   appRoot.innerHTML = renderShell(state);
 
   const refs = collectAppRefs(appRoot);
@@ -70,12 +62,15 @@ export function mountApp(root: HTMLDivElement | null): void {
   async function initializeDefaults(): Promise<void> {
     try {
       const defaults = await window.appBridge.getDefaults();
-      state.provider = defaults.provider;
+      state.provider =
+        defaults.provider === SIMPLES_PROVIDER.MOCK
+          ? SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL
+          : defaults.provider;
       state.receitaWebAvailable = defaults.receitaWebAvailable;
       state.localPublicBaseStatus = defaults.localPublicBaseStatus;
       syncUi();
     } catch {
-      state.provider = "mock";
+      state.provider = SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL;
       state.receitaWebAvailable = false;
       state.localPublicBaseStatus = null;
       syncUi();
@@ -108,6 +103,15 @@ export function mountApp(root: HTMLDivElement | null): void {
       const action = target.closest<HTMLElement>("[data-action]");
 
       if (!action) {
+        return;
+      }
+
+      if (action.dataset.action === "process-file") {
+        if (state.status === "processing") {
+          return;
+        }
+
+        void handleProcessFile();
         return;
       }
 
@@ -209,15 +213,48 @@ export function mountApp(root: HTMLDivElement | null): void {
     });
 
     refs.providerSelect?.addEventListener("change", (event) => {
-      state.provider = (event.currentTarget as HTMLSelectElement)
-        .value as SimplesProviderName;
+      applyProviderChange(
+        (event.currentTarget as HTMLSelectElement).value as SimplesProviderName,
+      );
+    });
+
+    appRoot.addEventListener("change", (event) => {
+      const target = event.target as HTMLElement;
+      const providerChoice = target.closest<HTMLInputElement>(
+        '[data-field="provider-choice"]',
+      );
+
+      if (!providerChoice || !providerChoice.checked) {
+        return;
+      }
+
+      applyProviderChange(providerChoice.value as SimplesProviderName);
+    });
+
+    appRoot.addEventListener("click", (event) => {
+      const target = event.target as HTMLElement;
+      const providerCard = target.closest<HTMLElement>(".fd-provider");
+      const providerChoice = providerCard?.querySelector<HTMLInputElement>(
+        '[data-field="provider-choice"]',
+      );
+
+      if (!providerChoice || providerChoice.disabled) {
+        return;
+      }
+
+      providerChoice.checked = true;
+      applyProviderChange(providerChoice.value as SimplesProviderName);
+    });
+
+    function applyProviderChange(provider: SimplesProviderName): void {
+      state.provider = provider;
       state.localPublicBaseNoticeAccepted = false;
       state.receitaWebExperimentalNoticeAccepted = false;
       if (state.provider === SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL) {
         void refreshLocalPublicBaseStatus(state);
       }
       syncUi();
-    });
+    }
 
     refs.columnInput?.addEventListener("input", (event) => {
       state.cnpjColumn = (event.currentTarget as HTMLInputElement).value;
@@ -717,16 +754,4 @@ function isUiView(value: string | undefined): value is UiState["activeView"] {
     value === "atividade" ||
     value === "historico"
   );
-}
-
-function getDevVisualFixture(): VisualFixture | null {
-  if (!import.meta.env.DEV) {
-    return null;
-  }
-
-  const candidate = (
-    window as Window & { __FISCAL_DESK_VISUAL_FIXTURE__?: VisualFixture }
-  ).__FISCAL_DESK_VISUAL_FIXTURE__;
-
-  return candidate?.scenario === "reference-v5-a" ? candidate : null;
 }

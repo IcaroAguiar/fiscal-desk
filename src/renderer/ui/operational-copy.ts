@@ -95,7 +95,7 @@ export function formatProviderMode(provider: SimplesProviderName): string {
     return "Receita Web experimental";
   }
 
-  return "Simulação";
+  return "Teste local offline";
 }
 
 export function formatCommandBarSummary(
@@ -289,7 +289,7 @@ function formatSpeedLabel(source: OperationalPanelSource): string {
     return `Assistido experimental ${formatSpeedProfileLabel(resolveSpeedProfile(source))}`;
   }
 
-  return "Simulação rápida";
+  return "Teste local offline";
 }
 
 function formatSpeedDetailLabel(source: OperationalPanelSource): string {
@@ -541,7 +541,7 @@ function formatSuggestionLabel(
       return "Sugestão: monitore rate limit; cancele e retome se o ETA crescer muito.";
     }
 
-    return "Sugestão: simulação valida o fluxo; troque para Base local antes de dados reais.";
+    return "Sugestão: teste local valida o fluxo sem rede; troque para Base local antes de dados reais.";
   }
 
   if (source.summary) {

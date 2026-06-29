@@ -4,28 +4,6 @@ import { escapeHtml } from "./app-helpers";
 import { formatProviderMode } from "./operational-copy";
 
 export function renderExecutionHistory(state: UiState): string {
-  if (state.visualFixture?.scenario === "reference-v5-a") {
-    return `
-      <ol class="history-list history-list--reference">
-        ${(state.visualFixture?.historyRows ?? [])
-          .map((row) => {
-            return `
-              <li class="history-list__item">
-                <div class="history-list__main">
-                  <strong>${escapeHtml(row.fileName)}</strong>
-                  <span><span class="status-token ${getReferenceStatusVariant(row.status)}">${escapeHtml(row.status)}</span></span>
-                  <span>${escapeHtml(String(row.rowCount))}</span>
-                  <span>${escapeHtml(row.provider)}</span>
-                  <span>${escapeHtml(row.resultStatus)}</span>
-                </div>
-              </li>
-            `;
-          })
-          .join("")}
-      </ol>
-    `;
-  }
-
   if (state.historyStatus === "loading") {
     return '<p class="history-empty">Carregando consultas recentes...</p>';
   }
@@ -123,7 +101,7 @@ function renderCompletionProviderOptions(state: UiState): string {
       false,
       !localBaseReady,
     ),
-    renderProviderOption(SIMPLES_PROVIDER.MOCK, "Simulação", false),
+    renderProviderOption(SIMPLES_PROVIDER.MOCK, "Teste local offline", false),
   ].join("");
 }
 
@@ -134,12 +112,6 @@ function renderProviderOption(
   disabled = false,
 ): string {
   return `<option value="${escapeHtml(value)}" ${selected ? "selected" : ""} ${disabled ? "disabled hidden" : ""}>${escapeHtml(label)}</option>`;
-}
-
-function getReferenceStatusVariant(status: string): string {
-  if (status === "concluído") return "status-token--success";
-  if (status === "erro") return "status-token--danger";
-  return "status-token--warning";
 }
 
 function formatHistoryDate(value: string): string {

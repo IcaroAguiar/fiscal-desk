@@ -1,4 +1,7 @@
-import type { SimplesProviderName } from "../../core/simples/simples-provider.names";
+import {
+  SIMPLES_PROVIDER,
+  type SimplesProviderName,
+} from "../../core/simples/simples-provider.names";
 import type {
   CompleteProcessedCsvResult,
   ExportPendingCnpjsResult,
@@ -124,38 +127,7 @@ export type UiView =
   | "atividade"
   | "historico";
 
-export type VisualFixture = {
-  scenario: "reference-v5-a";
-  providerPrimaryStatus: string;
-  providerSecondaryStatus: string;
-  fileStatus: string;
-  entryTitle: string;
-  entryHint: string;
-  queueCount: string;
-  queueRows: Array<{
-    fileName: string;
-    statusHint: string;
-    status: string;
-  }>;
-  kpis: Array<{
-    label: string;
-    value: string;
-    detail: string;
-  }>;
-  historyRows: Array<{
-    fileName: string;
-    status: string;
-    rowCount: number;
-    provider: string;
-    resultStatus: string;
-  }>;
-  logs: string[];
-  outputText: string;
-  outputFormat: string;
-};
-
 export type UiState = {
-  visualFixture: VisualFixture | null;
   activeView: UiView;
   fileName: string | null;
   filePath: string | null;
@@ -189,13 +161,12 @@ export type UiState = {
 };
 
 export const initialState: UiState = {
-  visualFixture: null,
   activeView: "painel",
   fileName: null,
   filePath: null,
   content: null,
   inputFormat: "csv",
-  provider: "mock",
+  provider: SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL,
   deliveryFormat: "csv",
   executionSpeedProfile: PROCESS_CSV_EXECUTION_SPEED_PROFILE.BALANCED,
   localPublicBaseNoticeAccepted: false,

@@ -30,27 +30,21 @@ export function syncReceitaWebAvailability(
     (state.provider === SIMPLES_PROVIDER.RECEITA_WEB ||
       state.provider === SIMPLES_PROVIDER.RECEITA_WEB_PARALLEL_EXPERIMENTAL)
   ) {
-    state.provider = "mock";
+    state.provider = SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL;
   }
 }
 
 export function syncLocalPublicBaseAvailability(
   providerSelect: HTMLSelectElement,
-  state: UiState,
+  _state: UiState,
 ): void {
   const option = providerSelect.querySelector<HTMLOptionElement>(
     `option[value="${SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL}"]`,
   );
-  const isPrepared = state.localPublicBaseStatus?.state === "ready";
 
   if (option) {
-    option.disabled = !isPrepared;
-    option.hidden = !isPrepared;
-  }
-
-  if (!isPrepared && state.provider === SIMPLES_PROVIDER.BASE_PUBLICA_LOCAL) {
-    state.provider = SIMPLES_PROVIDER.MOCK;
-    state.localPublicBaseNoticeAccepted = false;
+    option.disabled = false;
+    option.hidden = false;
   }
 }
 

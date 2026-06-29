@@ -10,11 +10,6 @@ import {
   type ViewportCase,
   type VisualSmokeResult,
 } from "./visual-smoke-checks";
-import {
-  referenceFixtureViewports,
-  referenceScenarioName,
-  referenceV5AState,
-} from "./visual-smoke-fixture";
 
 const viewports: ViewportCase[] = [
   { name: "desktop-wide", width: 1440, height: 1000 },
@@ -75,9 +70,7 @@ try {
       },
     });
 
-    await page.evaluate(
-      `document.querySelector('[data-action="pick-file"]')?.click()`,
-    );
+    await page.locator('[data-action="pick-file"]').click();
     await page.waitForFunction(
       `document.querySelector('[data-slot="file-badge"]')?.textContent?.includes("clientes-fiscais-com-nome-longo")`,
     );
@@ -88,17 +81,21 @@ try {
       "selected",
       screenshots,
       {
-      clippedButtons,
-      overlaps,
-      setOverflow: (value) => {
-        overflow = overflow || value;
-      },
+        clippedButtons,
+        overlaps,
+        setOverflow: (value) => {
+          overflow = overflow || value;
+        },
       },
     );
 
-    await page.evaluate(
-      `document.querySelector('[data-action="process-file"]')?.click()`,
+    await page.locator('[data-primary-panel="true"]').click();
+    await page.locator('label:has(input[value="mock"])').click();
+    await page.waitForFunction(
+      `document.querySelector('input[value="mock"]')?.checked === true`,
     );
+    await page.locator(".fd-header [data-action=\"process-file\"]").click();
+    await page.locator('[data-view="resultados"]').click();
     await page.waitForFunction(
       `document.querySelector('[data-slot="run-status-pill"]')?.textContent?.includes("Concluído") &&
         document.querySelector('[data-slot="output-preview"]')?.textContent?.includes("entrada-processado.csv")`,
@@ -110,11 +107,11 @@ try {
       "success",
       screenshots,
       {
-      clippedButtons,
-      overlaps,
-      setOverflow: (value) => {
-        overflow = overflow || value;
-      },
+        clippedButtons,
+        overlaps,
+        setOverflow: (value) => {
+          overflow = overflow || value;
+        },
       },
     );
 
@@ -128,67 +125,6 @@ try {
     });
     await page.close();
 
-    // Cenário adicional de referência V5-A, só nas variantes desktop/mobile alvo.
-    if (referenceFixtureViewports.has(viewport.name)) {
-      const referencePage = await browser.newPage({
-        viewport: { width: viewport.width, height: viewport.height },
-      });
-      referencePage.on("pageerror", (error) => {
-        throw error;
-      });
-      await installAppBridgeMock(referencePage, { referenceState: true });
-      await referencePage.goto(`http://127.0.0.1:${address.port}/`, {
-        waitUntil: "networkidle",
-      });
-      await referencePage.waitForSelector("text=Consulta fiscal", {
-        state: "visible",
-      });
-
-      const referenceScreenshots: Record<string, string> = {};
-      let referenceOverflow = false;
-      const referenceClippedButtons: string[] = [];
-      const referenceOverlaps: string[] = [];
-      const referenceChecks = {
-        clippedButtons: referenceClippedButtons,
-        overlaps: referenceOverlaps,
-        setOverflow: (value: boolean) => {
-          referenceOverflow = referenceOverflow || value;
-        },
-      };
-
-      await collectScenarioChecks(
-        referencePage,
-        outputDir,
-        viewport,
-        `${referenceScenarioName}-painel`,
-        referenceScreenshots,
-        referenceChecks,
-      );
-
-      for (const view of ["fila", "atividade", "resultados", "historico"]) {
-        await referencePage.click(
-          `.ops-tabs [data-view="${view}"], .sidebar-nav [data-view="${view}"]`,
-        );
-        await collectScenarioChecks(
-          referencePage,
-          outputDir,
-          viewport,
-          `${referenceScenarioName}-${view}`,
-          referenceScreenshots,
-          referenceChecks,
-        );
-      }
-
-      results.push({
-        scenario: referenceScenarioName,
-        viewport,
-        overflow: referenceOverflow,
-        clippedButtons: [...new Set(referenceClippedButtons)],
-        overlaps: [...new Set(referenceOverlaps)],
-        screenshots: referenceScreenshots,
-      });
-      await referencePage.close();
-    }
   }
 
   const failed = results.filter(
@@ -235,11 +171,7 @@ async function installAppBridgeMock(
   await page.addInitScript({
     content: `
     const history = [];
-    const fixture = ${JSON.stringify(referenceV5AState)};
     const useReferenceState = ${JSON.stringify(options.referenceState)};
-    if (useReferenceState) {
-      window.__FISCAL_DESK_VISUAL_FIXTURE__ = fixture;
-    }
 
     const baseDefaults = {
       localPublicBaseStatus: {
@@ -252,44 +184,17 @@ async function installAppBridgeMock(
           "A Base Pública Local pode estar defasada; confirme casos sensíveis.",
         state: "ready",
       },
-      provider: "mock",
-      providerStatus: "Simulação",
+      provider: "base-publica-local",
+      providerStatus: "Base Pública Local",
       secondaryStatus: "Receita Web exige acompanhamento",
       fileStatus: "aguardando arquivo",
       receitaWebAvailable: true,
     };
 
-    const referenceDefaults = {
-      localPublicBaseStatus: {
-        baseDate: "2026-05-20",
-        diskUsageLabel: "sem download adicional nesta versão",
-        estimatedPreparationTimeLabel: "pronta para uso neste corte",
-        estimatedRows: 3,
-        estimatedSizeLabel: "menos de 1 MB nesta amostra local",
-        freshnessWarning:
-          "A Base Pública Local pode estar defasada; confirme casos sensíveis.",
-        state: "ready",
-      },
-      provider: "mock",
-      providerStatus: fixture.providerPrimaryStatus,
-      secondaryStatus: fixture.providerSecondaryStatus,
-      fileStatus: fixture.fileStatus,
-      receitaWebAvailable: true,
-    };
-
     window.appBridge = {
-      getDefaults: async () =>
-        useReferenceState ? referenceDefaults : baseDefaults,
+      getDefaults: async () => baseDefaults,
       pickCsvFile: async () => {
         const rows = ["cnpj", "11222333000181", "44555666000190"];
-        if (useReferenceState) {
-          return {
-            filePath: "/tmp/fiscal-desk/clientes-maio.csv",
-            fileName: "clientes-maio.csv",
-            content: rows.join("\\n"),
-          };
-        }
-
         return {
           filePath:
             "/tmp/fiscal-desk/clientes-fiscais-com-nome-longo-para-validacao-responsiva.csv",
@@ -299,32 +204,21 @@ async function installAppBridgeMock(
         };
       },
       processCsv: async () => {
-        const summary = useReferenceState
-          ? {
-              totalLinhas: 1284,
-              totalCnpjsEncontrados: 1284,
-              totalCnpjsValidos: 1282,
-              totalCnpjsUnicosConsultados: 1284,
-              totalCnpjsRetomados: 0,
-              totalOptantesSimples: 804,
-              totalNaoOptantesSimples: 478,
-              totalErros: 2,
-            }
-          : {
-              totalLinhas: 2,
-              totalCnpjsEncontrados: 2,
-              totalCnpjsValidos: 2,
-              totalCnpjsUnicosConsultados: 2,
-              totalCnpjsRetomados: 0,
-              totalOptantesSimples: 1,
-              totalNaoOptantesSimples: 1,
-              totalErros: 0,
-            };
+        const summary = {
+          totalLinhas: 2,
+          totalCnpjsEncontrados: 2,
+          totalCnpjsValidos: 2,
+          totalCnpjsUnicosConsultados: 2,
+          totalCnpjsRetomados: 0,
+          totalOptantesSimples: 1,
+          totalNaoOptantesSimples: 1,
+          totalErros: 0,
+        };
 
         const result = {
           delivery: {
-            extension: useReferenceState ? fixture.outputFormat : "csv",
-            format: useReferenceState ? fixture.outputFormat : "csv",
+            extension: "csv",
+            format: "csv",
             mimeType: "text/csv",
           },
           outputCsv: ["cnpj,situacao", "11222333000181,optante"].join("\\n"),
@@ -333,88 +227,45 @@ async function installAppBridgeMock(
           runStatus: "SUCCESS",
           execution: {
             checkpointPath: "/tmp/fiscal-desk/ledger-visual.json",
-            completedUniqueLookups: useReferenceState ? 1284 : 2,
+            completedUniqueLookups: 2,
             resumedUniqueLookups: 0,
-            runId: useReferenceState ? "reference-v5-a-run" : "visual-smoke-run",
+            runId: "visual-smoke-run",
             status: "SUCCESS",
-            totalUniqueLookups: useReferenceState ? 1284 : 2,
+            totalUniqueLookups: 2,
           },
-          savedPath: "/tmp/fiscal-desk/entrada-processado." +
-            (useReferenceState ? fixture.outputFormat : "csv"),
+          savedPath: "/tmp/fiscal-desk/entrada-processado.csv",
           warningMessage: null,
         };
 
-        if (useReferenceState) {
-          history.splice(
-            0,
-            history.length,
-            ...fixture.historyRows.map((row) => ({
-              canResume: false,
-              checkpointPath: "/tmp/fiscal-desk/ledger-visual.json",
-              checkpointedUniqueLookups: row.rowCount,
-              cnpjColumn: null,
-              completedAt: "2026-05-21T17:40:00.000Z",
-              ledgerKey: "visual-" + row.fileName,
-              sourceFileName: row.fileName,
-              sourceFilePath: "/tmp/fiscal-desk/" + row.fileName,
-              outputPath: "/tmp/fiscal-desk/entrada-processado.csv",
-              providerConfigVersion: "visual",
-              providerName: row.provider,
-              resumeBlockedReason: row.resultStatus,
-              runId: "visual-smoke-" + row.fileName,
-              startedAt: "2026-05-21T17:39:00.000Z",
-              status: row.status.toUpperCase(),
-              summary,
-              totalUniqueLookups: row.rowCount,
-              updatedAt: "2026-05-21T17:40:00.000Z",
-            })),
-          );
-        } else {
-          history.splice(0, history.length, {
-            canResume: false,
-            checkpointPath: "/tmp/fiscal-desk/ledger-visual.json",
-            checkpointedUniqueLookups: 2,
-            cnpjColumn: null,
-            completedAt: "2026-05-21T17:40:00.000Z",
-            ledgerKey: "visual-smoke",
-            outputPath: "/tmp/fiscal-desk/entrada-processado.csv",
-            providerConfigVersion: "visual",
-            providerName: "mock",
-            resumeBlockedReason: "Execução concluída.",
-            runId: "visual-smoke-run",
-            sourceFileName:
-              "clientes-fiscais-com-nome-longo-para-validacao-responsiva.csv",
-            sourceFilePath:
-              "/tmp/fiscal-desk/clientes-fiscais-com-nome-longo-para-validacao-responsiva.csv",
-            startedAt: "2026-05-21T17:39:00.000Z",
-            status: "SUCCESS",
-            summary: result.summary,
-            totalUniqueLookups: 2,
-            updatedAt: "2026-05-21T17:40:00.000Z",
-          });
-        }
+        history.splice(0, history.length, {
+          canResume: false,
+          checkpointPath: "/tmp/fiscal-desk/ledger-visual.json",
+          checkpointedUniqueLookups: 2,
+          cnpjColumn: null,
+          completedAt: "2026-05-21T17:40:00.000Z",
+          ledgerKey: "visual-smoke",
+          outputPath: "/tmp/fiscal-desk/entrada-processado.csv",
+          providerConfigVersion: "visual",
+          providerName: "base-publica-local",
+          resumeBlockedReason: "Execução concluída.",
+          runId: "visual-smoke-run",
+          sourceFileName:
+            "clientes-fiscais-com-nome-longo-para-validacao-responsiva.csv",
+          sourceFilePath:
+            "/tmp/fiscal-desk/clientes-fiscais-com-nome-longo-para-validacao-responsiva.csv",
+          startedAt: "2026-05-21T17:39:00.000Z",
+          status: "SUCCESS",
+          summary: result.summary,
+          totalUniqueLookups: 2,
+          updatedAt: "2026-05-21T17:40:00.000Z",
+        });
 
         return result;
       },
       cancelProcessing: async () => false,
       listExecutions: async () => history,
-      listQueue: async () =>
-        useReferenceState
-          ? fixture.queueRows.map((row) => ({
-              ...row,
-              fileStatusText: row.statusHint,
-            }))
-          : [],
-      listExecutionHistory: async () =>
-        useReferenceState
-          ? fixture.historyRows.map((row) => ({
-              fileName: row.fileName,
-              status: row.status,
-              rowCount: row.rowCount,
-            }))
-          : [],
-      getReferenceV5AState: async () =>
-        useReferenceState ? fixture : null,
+      listQueue: async () => [],
+      listExecutionHistory: async () => [],
       saveCsvFile: async () => null,
       saveOutputFile: async () => null,
       onLookupProgress: () => () => {},

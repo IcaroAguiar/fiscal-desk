@@ -25,14 +25,9 @@ describe("app view execution history", () => {
     expect(html).toContain("Equilibrado");
     expect(html).toContain("Máximo");
     expect(html).toContain("Base Pública Local");
-    expect(html).toContain(
-      `value="base-publica-local"  hidden disabled>Base local`,
-    );
-    expect(html).toContain(
-      "base oficial do Governo Federal a partir do Simples.zip publicado pela Receita",
-    );
-    expect(html).toContain("confiável para a Data da Base exibida");
-    expect(html).toContain("O risco principal é temporal");
+    expect(html).toContain('data-field="provider-choice"');
+    expect(html).toContain("Teste local offline");
+    expect(html).toContain("Não usar para dados reais");
     expect(html).toContain('data-field="local-public-base-notice"');
     expect(html).toContain('data-action="discover-official-source"');
     expect(html).toContain('data-action="prepare-official-source"');
@@ -42,7 +37,6 @@ describe("app view execution history", () => {
     );
     expect(html).toContain("Buscar fonte oficial");
     expect(html).toContain("Baixar e preparar oficial");
-    expect(html).toContain('aria-label="Plano de velocidade"');
     expect(html).toContain('data-slot="speed-plan-label"');
     expect(html).toContain('data-slot="speed-plan-detail"');
     expect(html).toContain('data-slot="speed-control-label"');
@@ -158,7 +152,7 @@ describe("app view execution history", () => {
     expect(html).toContain("Pro futuro opcional");
     expect(html).toContain("uso local básico preservado");
     expect(html).toContain("exportações preservadas");
-    expect(html).toContain("simulação offline preservada");
+    expect(html).toContain("teste local offline preservado");
     expect(html).not.toMatch(
       /data-action="[^"]*(?:update|download|install|diagnostic|telemetry|license|account|send)[^"]*"/i,
     );
@@ -192,9 +186,9 @@ describe("app view execution history", () => {
     expect(html).toContain('data-slot="execution-suggestion"');
     expect(html).toContain("Consultando 11********0144");
     expect(html).toContain("estimativa móvel: cerca de 1m 30s restantes.");
-    expect(html).toContain("Simulação rápida");
+    expect(html).toContain("Volume local pendente");
     expect(html).toContain(
-      "simulação valida o fluxo; troque para Base local antes de dados reais.",
+      "Sugestão: mantenha em Base local; é o caminho de volume neste computador.",
     );
     expect(html).toContain("Retomada local disponível.");
     expect(html).toContain('data-action="pause-processing"');
