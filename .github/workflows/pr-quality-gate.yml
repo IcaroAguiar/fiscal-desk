@@ -1,94 +1,140 @@
+---
 name: PR Quality Gate
 run-name: PR Quality Gate - ${{ github.ref_name }}
-
-on:
-  pull_request:
-    branches: [main]
-  push:
-    branches: [main]
-  workflow_dispatch:
-
 permissions:
   contents: read
   issues: write
   pull-requests: write
-
 concurrency:
-  group: pr-quality-gate-${{ github.workflow }}-${{ github.ref }}
+  group: "${{ github.workflow }}-${{ github.event.pull_request.number || github.ref
+    }}-${{ github.event.action == 'labeled' && 'label' || 'code' }}"
   cancel-in-progress: true
-
 jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+    - name: Start work budget
+      shell: bash
+      run: echo "VERIFY_STARTED=$(date +%s)" >> "$GITHUB_ENV"
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    - name: Setup pnpm
+      uses: pnpm/action-setup@v4
+      with:
+        version: 10.32.1
+        run_install: false
+    - name: Setup Node
+      uses: actions/setup-node@v4
+      with:
+        node-version: 22
+        cache: pnpm
+        cache-dependency-path: pnpm-lock.yaml
+    - name: Install dependencies
+      run: pnpm install --frozen-lockfile
+    - name: Lint
+      run: pnpm lint
+    - name: Typecheck
+      run: pnpm typecheck
+    - name: Secret scan
+      uses: gitleaks/gitleaks-action@v2
+      env:
+        GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+        GITLEAKS_ENABLE_COMMENTS: 'false'
+        GITLEAKS_ENABLE_UPLOAD_ARTIFACT: 'false'
+    - name: Affected unit tests
+      shell: bash
+      env:
+        BASE_SHA: "${{ github.event.pull_request.base.sha }}"
+      run: pnpm exec vitest run --changed "$BASE_SHA" --passWithNoTests --maxWorkers=2
+    - name: Work budget (300 seconds)
+      if: always()
+      shell: bash
+      run: |-
+        elapsed=$(( $(date +%s) - VERIFY_STARTED ))
+        echo "verify: ${elapsed}s / 300s"
+        [[ $elapsed -le 300 ]]
+    if: github.event_name == 'pull_request' && (github.event.pull_request.head.repo.full_name
+      == github.repository || contains(github.event.pull_request.labels.*.name, 'run-ci'))
+      && (github.event.action != 'labeled' || github.event.label.name == 'run-ci')
+    env:
+      PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+      ELECTRON_SKIP_BINARY_DOWNLOAD: '1'
   quality-gate:
     runs-on: ubuntu-latest
     timeout-minutes: 30
-
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 10.32.1
-          run_install: false
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: pnpm
-          cache-dependency-path: pnpm-lock.yaml
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Lint
-        run: pnpm lint
-
-      - name: Typecheck
-        run: pnpm typecheck
-
-      - name: Install Playwright Linux dependencies
-        run: pnpm exec playwright install-deps chromium
-
-      - name: Deterministic E2E
-        env:
-          FISCAL_DESK_E2E_OUTPUT_DIR: docs/qa/e2e-artifacts
-        run: xvfb-run --auto-servernum --server-args="-screen 0 1280x960x24" pnpm test:e2e
-
-      - name: Build
-        run: pnpm build
-
-      - name: Secret scan
-        uses: gitleaks/gitleaks-action@v2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITLEAKS_ENABLE_COMMENTS: "false"
-          GITLEAKS_ENABLE_UPLOAD_ARTIFACT: "false"
-
-      - name: Ratchet quality report
-        env:
-          AGENTIC_REVIEW_BASE: origin/${{ github.base_ref || 'main' }}
-        run: node docs/ai/quality-gate/check-ratchet.mjs
-
-      - name: Publish quality gate PR comment
-        if: always() && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PR_NUMBER: ${{ github.event.pull_request.number }}
-        run: node docs/ai/quality-gate/comment-pr-report.mjs
-
-      - name: Upload quality artifacts
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: pr-quality-gate
-          retention-days: 14
-          path: |
-            docs/ai/quality-gate/*report*.json
-            docs/ai/quality-gate/*report*.md
-            docs/ai/quality-gate/quality-trend-entry.json
-            docs/ai/quality-gate/auto-improvement-queue.json
-            docs/qa/e2e-artifacts/**
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    - name: Setup pnpm
+      uses: pnpm/action-setup@v4
+      with:
+        version: 10.32.1
+        run_install: false
+    - name: Setup Node
+      uses: actions/setup-node@v4
+      with:
+        node-version: 22
+        cache: pnpm
+        cache-dependency-path: pnpm-lock.yaml
+    - name: Install dependencies
+      run: pnpm install --frozen-lockfile
+    - name: Lint
+      run: pnpm lint
+    - name: Typecheck
+      run: pnpm typecheck
+    - name: Install Playwright Linux dependencies
+      run: pnpm exec playwright install-deps chromium
+    - name: Deterministic E2E
+      env:
+        FISCAL_DESK_E2E_OUTPUT_DIR: docs/qa/e2e-artifacts
+      run: xvfb-run --auto-servernum --server-args="-screen 0 1280x960x24" pnpm test:e2e
+    - name: Build
+      run: pnpm build
+    - name: Secret scan
+      uses: gitleaks/gitleaks-action@v2
+      env:
+        GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+        GITLEAKS_ENABLE_COMMENTS: 'false'
+        GITLEAKS_ENABLE_UPLOAD_ARTIFACT: 'false'
+    - name: Ratchet quality report
+      env:
+        AGENTIC_REVIEW_BASE: origin/${{ github.base_ref || 'main' }}
+      run: node docs/ai/quality-gate/check-ratchet.mjs
+    - name: Publish quality gate PR comment
+      if: always() && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name
+        == github.repository
+      env:
+        GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+        PR_NUMBER: "${{ github.event.pull_request.number }}"
+      run: node docs/ai/quality-gate/comment-pr-report.mjs
+    - name: Upload quality artifacts
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: pr-quality-gate
+        retention-days: 14
+        path: |
+          docs/ai/quality-gate/*report*.json
+          docs/ai/quality-gate/*report*.md
+          docs/ai/quality-gate/quality-trend-entry.json
+          docs/ai/quality-gate/auto-improvement-queue.json
+          docs/qa/e2e-artifacts/**
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request'
+      && contains(github.event.pull_request.labels.*.name, 'run-full-ci') && (github.event.pull_request.head.repo.full_name
+      == github.repository || contains(github.event.pull_request.labels.*.name, 'run-ci')))
+'on':
+  pull_request:
+    branches:
+    - main
+    types:
+    - opened
+    - synchronize
+    - reopened
+    - ready_for_review
+    - labeled
+  workflow_dispatch:
