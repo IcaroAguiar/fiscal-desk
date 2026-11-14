@@ -246,3 +246,10 @@ Próximos passos naturais:
 - assinatura de código no Windows
 - assinatura/notarização no macOS
 - suporte a providers pagos com maior throughput
+
+## CI
+
+Cada PR executa o job `verify`, com orçamento de 300 segundos. PRs de forks
+precisam do rótulo `run-ci` e de um push ou reabertura posterior; adicionar
+o rótulo não dispara `verify`. O workflow `full-ci.yml` executa E2E, build
+e ratchet com `run-full-ci`, push para `main` ou execução manual.
