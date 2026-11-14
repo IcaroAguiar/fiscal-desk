@@ -32,7 +32,7 @@ concurrency:
 jobs:
   verify-release-artifacts:
     name: Verify unsigned release artifacts
-    runs-on: ubuntu-latest
+    runs-on: ${{ fromJSON(vars.ACTIONS_RUNNER_LABELS_CI || '["ubuntu-latest"]') }}
     timeout-minutes: 20
 
     steps:

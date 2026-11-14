@@ -41,7 +41,7 @@ concurrency:
 jobs:
   publish-release-assets:
     name: Publish verified assets
-    runs-on: ubuntu-latest
+    runs-on: ${{ fromJSON(vars.ACTIONS_RUNNER_LABELS_CI || '["ubuntu-latest"]') }}
     timeout-minutes: 20
 
     env:
