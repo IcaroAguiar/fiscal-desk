@@ -1,16 +1,19 @@
 name: Full CI
+run-name: PR Quality Gate - ${{ github.ref_name }}
 
 on:
   pull_request:
     branches: [main]
     types: [labeled, synchronize, reopened]
+  push:
+    branches: [main]
   workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}-${{ github.event.action == 'labeled' && github.event.label.name != 'run-full-ci' && 'other' || 'main' }}
   cancel-in-progress: ${{ github.event.action != 'labeled' }}
 
 jobs:
